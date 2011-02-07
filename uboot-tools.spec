@@ -1,6 +1,6 @@
 Name:           uboot-tools
 Version:        2010.03
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -60,6 +60,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2010.03-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
 * Thu May 27 2010 Dan Horák <dan[at]danny.cz> 2010.03-1
 - updated to to 2010.03
 - applied review feedback - added docs and expanded description
