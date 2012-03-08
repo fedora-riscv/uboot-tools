@@ -14,32 +14,18 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 %global with_env 1
 %endif
 
-
 %description
 This package contains a few U-Boot utilities - mkimage for creating boot images
 and fw_printenv/fw_setenv for manipulating the boot environment variables.
 
-
 %prep
 %setup -q -n u-boot-%{version}
 
-
 %build
-make sheevaplug_config
-
-# create files normally created by cross-compiler
-touch include/autoconf.mk
-touch include/autoconf.mk.dep
-mkdir include/generated
-touch include/generated/generic-asm-offsets.h
-touch lib/asm-offsets.s
-touch {arch/arm/cpu/arm926ejs,examples/standalone,tools,tools/env}/.depend
-
 make tools HOSTCC="gcc $RPM_OPT_FLAGS" HOSTSTRIP=/bin/true CROSS_COMPILE=""
 %if 0%{?with_env}
 make env HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 %endif
-
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -58,10 +44,8 @@ install -p -m 0755 tools/env/fw_printenv $RPM_BUILD_ROOT%{_bindir}
 install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
-
 %clean
 rm -rf $RPM_BUILD_ROOT
-
 
 %files
 %defattr(-,root,root,-)
@@ -73,7 +57,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/fw_setenv
 %config(noreplace) %{_sysconfdir}/fw_env.config
 %endif
-
 
 %changelog
 * Thu Mar 08 2012 Dennis Gilmore <dennis@ausil.us> - 2011.12-1
