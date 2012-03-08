@@ -1,6 +1,6 @@
 Name:           uboot-tools
-Version:        2011.03
-Release:        2%{?dist}
+Version:        2011.12
+Release:        1%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -76,6 +76,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Mar 08 2012 Dennis Gilmore <dennis@ausil.us> - 2011.12-1
+- update to 2011.12 release
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2011.03-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
