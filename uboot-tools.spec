@@ -1,13 +1,17 @@
 Name:           uboot-tools
-Version:        2011.12
-Release:        1%{?dist}
+Version:        2012.04
+Release:        0.1%{?dist}.rc3
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
 License:        GPLv2+
 URL:            http://www.denx.de/wiki/U-Boot
-Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}.tar.bz2
+Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}-rc3.tar.bz2
+Patch0:         0001-enable-bootz-support-for-ti-omap-targets.patch
+Patch1:         0001-panda-convert-to-uEnv.txt-bootscript.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+
 
 # build the tool for manipulation with environment only on arm
 %ifarch %{arm}
@@ -18,12 +22,62 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 This package contains a few U-Boot utilities - mkimage for creating boot images
 and fw_printenv/fw_setenv for manipulating the boot environment variables.
 
+%ifarch %{arm}
+%package     -n uboot-beagle
+Summary:     u-boot bootloader binaries for beagleboard
+Requires:    uboot-tools
+
+%description -n uboot-beagle
+u-boot bootloader binaries for beagleboard
+
+%package     -n uboot-panda
+Summary:     u-boot bootloader binaries for pandaboard
+Requires:    uboot-tools
+
+%description -n uboot-panda
+u-boot bootloader binaries for pandaboard
+
+%package     -n uboot-origen
+Summary:     u-boot bootloader binaries for origenboard
+Requires:    uboot-tools
+
+%description -n uboot-origen
+u-boot bootloader binaries for origenboard
+%endif
+
 %prep
-%setup -q -n u-boot-%{version}
+%setup -q -n u-boot-%{version}-rc3
+%patch0 -p1
+%patch1 -p1
+mkdir builds
 
 %build
+%ifarch %{arm}
+make CROSS_COMPILE="" omap3_beagle_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p MLO builds/MLO.beagle
+cp -p u-boot.img builds/u-boot.img.beagle
+cp -p u-boot.bin builds/u-boot.bin.beagle
+make distclean 
+
+make CROSS_COMPILE="" omap4_panda_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p MLO builds/MLO.panda
+cp -p u-boot.img builds/u-boot.img.panda
+cp -p u-boot.bin builds/u-boot.bin.panda
+make distclean 
+
+make CROSS_COMPILE="" origen_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p spl/origen-spl.bin builds/origen-spl.bin.origen
+cp -p u-boot.bin builds/u-boot.bin.origen
+make distclean
+%endif
+
 make tools HOSTCC="gcc $RPM_OPT_FLAGS" HOSTSTRIP=/bin/true CROSS_COMPILE=""
+
 %if 0%{?with_env}
+make CROSS_COMPILE="" sheevaplug_config
 make env HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 %endif
 
@@ -33,6 +87,22 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
+%ifarch %{arm}
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-panda/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-origen/
+
+for board in beagle panda
+do
+install -p -m 0644 builds/u-boot.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot.bin
+install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot.img
+done
+install -p -m 0644 builds/MLO.beagle $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/MLO
+install -p -m 0644 builds/MLO.panda $RPM_BUILD_ROOT%{_datadir}/uboot-panda/MLO
+install -p -m 0644 builds/origen-spl.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-origen/origen-spl.bin
+install -p -m 0644 builds/u-boot.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-origen/u-boot.bin
+
+%endif
 
 install -p -m 0755 tools/mkimage $RPM_BUILD_ROOT%{_bindir}
 install -p -m 0644 doc/mkimage.1 $RPM_BUILD_ROOT%{_mandir}/man1
@@ -57,8 +127,25 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/fw_setenv
 %config(noreplace) %{_sysconfdir}/fw_env.config
 %endif
+%ifarch %{arm}
+%files -n uboot-beagle
+%defattr(-,root,root,-)
+%{_datadir}/uboot-beagle/
+
+%files -n uboot-panda
+%defattr(-,root,root,-)
+%{_datadir}/uboot-panda/
+
+%files -n uboot-origen
+%defattr(-,root,root,-)
+%{_datadir}/uboot-origen/
+%endif
 
 %changelog
+* Thu Apr 19 2012 Dennis Gilmore <dennis@ausil.us> - 2012.04-0.1.rc3
+- update to 2012.04-rc3
+- build uboot binaries for beagle, panda and origen boards
+
 * Thu Mar 08 2012 Dennis Gilmore <dennis@ausil.us> - 2011.12-1
 - update to 2011.12 release
 
