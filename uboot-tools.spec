@@ -1,12 +1,12 @@
 Name:           uboot-tools
 Version:        2012.04
-Release:        0.1%{?dist}.rc3
+Release:        1%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
 License:        GPLv2+
 URL:            http://www.denx.de/wiki/U-Boot
-Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}-rc3.tar.bz2
+Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}.tar.bz2
 Patch0:         0001-enable-bootz-support-for-ti-omap-targets.patch
 Patch1:         0001-panda-convert-to-uEnv.txt-bootscript.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -46,7 +46,7 @@ u-boot bootloader binaries for origenboard
 %endif
 
 %prep
-%setup -q -n u-boot-%{version}-rc3
+%setup -q -n u-boot-%{version}
 %patch0 -p1
 %patch1 -p1
 mkdir builds
@@ -142,6 +142,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Apr 24 2012 Dennis Gilmore <dennis@ausil.us> - 2012.04-1
+- update to final 2012.04 release
+
 * Thu Apr 19 2012 Dennis Gilmore <dennis@ausil.us> - 2012.04-0.1.rc3
 - update to 2012.04-rc3
 - build uboot binaries for beagle, panda and origen boards
