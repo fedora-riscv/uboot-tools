@@ -1,5 +1,5 @@
 Name:           uboot-tools
-Version:        2012.04
+Version:        2012.04.01
 Release:        1%{?dist}
 Summary:        U-Boot utilities
 
@@ -142,6 +142,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon May 07 2012 Dennis Gilmore <dennis@ausil.us> - 2012.04.01-1
+- update to 2012.04.01 release
+- http://lists.denx.de/pipermail/u-boot/2012-April/123011.html
+
 * Tue Apr 24 2012 Dennis Gilmore <dennis@ausil.us> - 2012.04-1
 - update to final 2012.04 release
 
