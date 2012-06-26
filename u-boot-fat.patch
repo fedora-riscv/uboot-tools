@@ -1,0 +1,12 @@
+diff -uNr u-boot-2012.04.01.orig/fs/fat/fat.c u-boot-2012.04.01/fs/fat/fat.c
+--- u-boot-2012.04.01.orig/fs/fat/fat.c	2012-04-25 08:22:50.000000000 -0500
++++ u-boot-2012.04.01/fs/fat/fat.c	2012-06-19 14:06:16.605337811 -0500
+@@ -114,7 +114,7 @@
+ 	/* Check for FAT12/FAT16/FAT32 filesystem */
+ 	if (!memcmp(buffer + DOS_FS_TYPE_OFFSET, "FAT", 3))
+ 		return 0;
+-	if (!memcmp(buffer + DOS_FS32_TYPE_OFFSET, "FAT32", 5))
++	if (!memcmp(buffer + DOS_FS32_TYPE_OFFSET, "FAT", 3))
+ 		return 0;
+ 
+ 	cur_dev = NULL;
