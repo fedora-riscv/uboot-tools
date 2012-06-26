@@ -1,6 +1,6 @@
 Name:           uboot-tools
 Version:        2012.04.01
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -9,6 +9,7 @@ URL:            http://www.denx.de/wiki/U-Boot
 Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}.tar.bz2
 Patch0:         0001-enable-bootz-support-for-ti-omap-targets.patch
 Patch1:         0001-panda-convert-to-uEnv.txt-bootscript.patch
+Patch2:         u-boot-fat.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 
@@ -49,6 +50,7 @@ u-boot bootloader binaries for origenboard
 %setup -q -n u-boot-%{version}
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 mkdir builds
 
 %build
@@ -142,6 +144,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Jun 25 2012 Dennis Gilmore <dennis@ausil.us> - 2012.04.01-2
+- add patch so the MLO detects fat16 partitions correctly
+
 * Mon May 07 2012 Dennis Gilmore <dennis@ausil.us> - 2012.04.01-1
 - update to 2012.04.01 release
 - http://lists.denx.de/pipermail/u-boot/2012-April/123011.html
