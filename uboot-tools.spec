@@ -1,6 +1,6 @@
 Name:           uboot-tools
 Version:        2012.04.01
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -31,6 +31,13 @@ Requires:    uboot-tools
 %description -n uboot-beagle
 u-boot bootloader binaries for beagleboard
 
+%package     -n uboot-beaglebone
+Summary:     u-boot bootloader binaries for beaglebone
+Requires:    uboot-tools
+
+%description -n uboot-beaglebone
+u-boot bootloader binaries for beaglebone
+
 %package     -n uboot-panda
 Summary:     u-boot bootloader binaries for pandaboard
 Requires:    uboot-tools
@@ -55,19 +62,19 @@ mkdir builds
 
 %build
 %ifarch %{arm}
-make CROSS_COMPILE="" omap3_beagle_config
+make CROSS_COMPILE="" am335x_evm_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
-cp -p MLO builds/MLO.beagle
-cp -p u-boot.img builds/u-boot.img.beagle
-cp -p u-boot.bin builds/u-boot.bin.beagle
-make distclean 
+cp -p MLO builds/MLO.beaglebone
+cp -p u-boot.img builds/u-boot.img.beaglebone
+cp -p u-boot.bin builds/u-boot.bin.beaglebone
+make distclean
 
 make CROSS_COMPILE="" omap4_panda_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p MLO builds/MLO.panda
 cp -p u-boot.img builds/u-boot.img.panda
 cp -p u-boot.bin builds/u-boot.bin.panda
-make distclean 
+make distclean
 
 make CROSS_COMPILE="" origen_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
@@ -92,9 +99,10 @@ mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 %ifarch %{arm}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-panda/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-beaglebone/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-origen/
 
-for board in beagle panda
+for board in beaglebone beagle panda
 do
 install -p -m 0644 builds/u-boot.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot.bin
 install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot.img
@@ -130,6 +138,10 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{_sysconfdir}/fw_env.config
 %endif
 %ifarch %{arm}
+%files -n uboot-beaglebone
+%defattr(-,root,root,-)
+%{_datadir}/uboot-beaglebone/
+
 %files -n uboot-beagle
 %defattr(-,root,root,-)
 %{_datadir}/uboot-beagle/
@@ -144,6 +156,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sat Jul 07 2012 Dennis Gilmore <dennis@ausil.us> - 2012.04.01-3
+- build beaglebone uboot images
+
 * Mon Jun 25 2012 Dennis Gilmore <dennis@ausil.us> - 2012.04.01-2
 - add patch so the MLO detects fat16 partitions correctly
 
