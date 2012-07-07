@@ -71,7 +71,7 @@ make distclean
 
 make CROSS_COMPILE="" omap3_beagle_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
-cp -p MLO builds/iMLO.beagle
+cp -p MLO builds/MLO.beagle
 cp -p u-boot.img builds/u-boot.img.beagle
 cp -p u-boot.bin builds/u-boot.bin.beagle
 make distclean
@@ -113,9 +113,8 @@ for board in beaglebone beagle panda
 do
 install -p -m 0644 builds/u-boot.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot.bin
 install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot.img
+install -p -m 0644 builds/MLO.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/MLO
 done
-install -p -m 0644 builds/MLO.beagle $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/MLO
-install -p -m 0644 builds/MLO.panda $RPM_BUILD_ROOT%{_datadir}/uboot-panda/MLO
 install -p -m 0644 builds/origen-spl.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-origen/origen-spl.bin
 install -p -m 0644 builds/u-boot.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-origen/u-boot.bin
 
