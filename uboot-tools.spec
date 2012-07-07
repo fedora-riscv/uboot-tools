@@ -1,6 +1,6 @@
 Name:           uboot-tools
 Version:        2012.04.01
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -67,6 +67,13 @@ make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p MLO builds/MLO.beaglebone
 cp -p u-boot.img builds/u-boot.img.beaglebone
 cp -p u-boot.bin builds/u-boot.bin.beaglebone
+make distclean
+
+make CROSS_COMPILE="" omap3_beagle_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p MLO builds/iMLO.beagle
+cp -p u-boot.img builds/u-boot.img.beagle
+cp -p u-boot.bin builds/u-boot.bin.beagle
 make distclean
 
 make CROSS_COMPILE="" omap4_panda_config
@@ -156,6 +163,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sat Jul 07 2012 Dennis Gilmore <dennis@ausil.us> - 2012.04.01-4
+- still build the beagleboard image
+
 * Sat Jul 07 2012 Dennis Gilmore <dennis@ausil.us> - 2012.04.01-3
 - build beaglebone uboot images
 
