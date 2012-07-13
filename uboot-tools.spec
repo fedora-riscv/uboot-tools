@@ -1,15 +1,14 @@
 Name:           uboot-tools
-Version:        2012.04.01
-Release:        4%{?dist}
+Version:        2012.07
+Release:        0.1.rc1%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
 License:        GPLv2+
 URL:            http://www.denx.de/wiki/U-Boot
-Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}.tar.bz2
-Patch0:         0001-enable-bootz-support-for-ti-omap-targets.patch
-Patch1:         0001-panda-convert-to-uEnv.txt-bootscript.patch
-Patch2:         u-boot-fat.patch
+Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}-rc1.tar.bz2
+Patch0:         0001-panda-convert-to-uEnv.txt-bootscript.patch
+Patch1:         u-boot-fat.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 
@@ -54,10 +53,9 @@ u-boot bootloader binaries for origenboard
 %endif
 
 %prep
-%setup -q -n u-boot-%{version}
+%setup -q -n u-boot-%{version}-rc1
 %patch0 -p1
 %patch1 -p1
-%patch2 -p1
 mkdir builds
 
 %build
@@ -162,6 +160,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Jul 12 2012 Dennis Gilmore <dennis@ausil.us> - 2012.07-0.1.rc1
+- update to rc1 of 2012.07 release
+
 * Sat Jul 07 2012 Dennis Gilmore <dennis@ausil.us> - 2012.04.01-4
 - still build the beagleboard image
 
