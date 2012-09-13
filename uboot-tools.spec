@@ -1,12 +1,14 @@
+#global candidate rc1
+
 Name:           uboot-tools
 Version:        2012.07
-Release:        1%{?dist}
+Release:        1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
 License:        GPLv2+
 URL:            http://www.denx.de/wiki/U-Boot
-Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}-rc1.tar.bz2
+Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Patch0:         0001-panda-convert-to-uEnv.txt-bootscript.patch
 Patch1:         u-boot-fat.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -53,7 +55,7 @@ u-boot bootloader binaries for origenboard
 %endif
 
 %prep
-%setup -q -n u-boot-%{version}-rc1
+%setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
 %patch0 -p1
 %patch1 -p1
 mkdir builds
