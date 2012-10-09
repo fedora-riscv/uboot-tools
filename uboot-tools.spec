@@ -1,8 +1,8 @@
-#global candidate rc1
+global candidate rc3
 
 Name:           uboot-tools
-Version:        2012.07
-Release:        1%{?candidate:.%{candidate}}%{?dist}
+Version:        2012.10
+Release:        0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -162,6 +162,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Oct 09 2012 Dennis Gilmore <dennis@ausil.us> - 2012.10-0.1.rc3
+- update to 2010.10 rc3
+
 * Fri Aug 24 2012 Dennis Gilmore <dennis@ausil.us> - 2012.01-1
 - update to 2012.07 release
 
