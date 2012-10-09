@@ -1,4 +1,4 @@
-global candidate rc3
+%global candidate rc3
 
 Name:           uboot-tools
 Version:        2012.10
