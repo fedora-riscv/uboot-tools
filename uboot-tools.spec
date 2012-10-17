@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate rc3
 
 Name:           uboot-tools
 Version:        2012.10
-Release:        0.1%{?candidate:.%{candidate}}%{?dist}
+Release:        1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -52,6 +52,14 @@ Requires:    uboot-tools
 
 %description -n uboot-origen
 u-boot bootloader binaries for origenboard
+
+%package     -n uboot-smdkv310
+Summary:     u-boot bootloader binaries for smdk310 board
+Requires:    uboot-tools
+
+%description -n uboot-smdkv310
+u-boot bootloader binaries for smdk310 board
+
 %endif
 
 %prep
@@ -88,6 +96,12 @@ make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p spl/origen-spl.bin builds/origen-spl.bin.origen
 cp -p u-boot.bin builds/u-boot.bin.origen
 make distclean
+
+make CROSS_COMPILE="" smdkv310_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p spl/smdkv310-spl.bin builds/smdkv310-spl.bin.smdkv310
+cp -p u-boot.bin builds/u-boot.bin.smdkv310
+make distclean
 %endif
 
 make tools HOSTCC="gcc $RPM_OPT_FLAGS" HOSTSTRIP=/bin/true CROSS_COMPILE=""
@@ -108,6 +122,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-panda/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-beaglebone/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-origen/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/
 
 for board in beaglebone beagle panda
 do
@@ -117,6 +132,9 @@ install -p -m 0644 builds/MLO.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(
 done
 install -p -m 0644 builds/origen-spl.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-origen/origen-spl.bin
 install -p -m 0644 builds/u-boot.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-origen/u-boot.bin
+
+install -p -m 0644 builds/smdkv310-spl.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/smdkv310-spl.bin
+install -p -m 0644 builds/u-boot.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/u-boot.bin
 
 %endif
 
@@ -159,9 +177,19 @@ rm -rf $RPM_BUILD_ROOT
 %files -n uboot-origen
 %defattr(-,root,root,-)
 %{_datadir}/uboot-origen/
+
+%files -n uboot-smdkv310
+%defattr(-,root,root,-)
+%{_datadir}/uboot-smdkv310/
 %endif
 
 %changelog
+* Wed Oct 17 2012 Dennis Gilmore <dennis@ausil.us> - 2012.10-1
+update to final 2012.10 release
+
+* Thu Oct 11 2012 Mauro Carvalho Chehab <mchehab@redhat.com>
+- Also generate uboot for SMDK310
+
 * Tue Oct 09 2012 Dennis Gilmore <dennis@ausil.us> - 2012.10-0.1.rc3
 - update to 2010.10 rc3
 
