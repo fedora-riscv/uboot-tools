@@ -1,7 +1,7 @@
 #global candidate rc3
 
 Name:           uboot-tools
-Version:        2012.10
+Version:        2013.01
 Release:        1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
@@ -11,8 +11,9 @@ URL:            http://www.denx.de/wiki/U-Boot
 Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Patch0:         0001-panda-convert-to-uEnv.txt-bootscript.patch
 Patch1:         u-boot-fat.patch
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Patch2:         uboot-omap-fit.patch
 
+Requires:       dtc
 
 
 # build the tool for manipulation with environment only on arm
@@ -66,6 +67,7 @@ u-boot bootloader binaries for smdk310 board
 %setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 mkdir builds
 
 %build
@@ -184,6 +186,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Jan 24 2013 Dennis Gilmore <dennis@ausil.us> - 2013.01-1
+- update to 2013.01 release
+
 * Wed Oct 17 2012 Dennis Gilmore <dennis@ausil.us> - 2012.10-1
 update to final 2012.10 release
 
