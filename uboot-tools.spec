@@ -1,7 +1,7 @@
 #global candidate rc3
 
 Name:           uboot-tools
-Version:        2013.01
+Version:        2013.01.01
 Release:        1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
@@ -186,6 +186,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Fri Mar 01 2013 Dennis Gilmore <dennis@ausil.us> - 2013.01.01-1
+- update to 2013.01.01 for bug#907139
+
 * Thu Jan 24 2013 Dennis Gilmore <dennis@ausil.us> - 2013.01-1
 - update to 2013.01 release
 
