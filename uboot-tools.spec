@@ -1,15 +1,14 @@
-#global candidate rc3
+%global candidate rc2
 
 Name:           uboot-tools
-Version:        2013.01.01
-Release:        1%{?candidate:.%{candidate}}%{?dist}
+Version:        2013.04
+Release:        0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
 License:        GPLv2+
 URL:            http://www.denx.de/wiki/U-Boot
 Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
-Patch0:         0001-panda-convert-to-uEnv.txt-bootscript.patch
 Patch1:         u-boot-fat.patch
 Patch2:         uboot-omap-fit.patch
 
@@ -65,7 +64,6 @@ u-boot bootloader binaries for smdk310 board
 
 %prep
 %setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
-%patch0 -p1
 %patch1 -p1
 %patch2 -p1
 mkdir builds
@@ -186,6 +184,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sun Mar 31 2013 Dennis Gilmore <dennis@ausil.us> - 2013.04-0.1.rc1
+- update to 2013.04-rc2
+
 * Fri Mar 01 2013 Dennis Gilmore <dennis@ausil.us> - 2013.01.01-1
 - update to 2013.01.01 for bug#907139
 

@@ -1,6 +1,6 @@
 --- u-boot-2012.07/include/configs/omap4_common.h.orig	2013-01-24 00:20:40.334731642 -0600
 +++ u-boot-2012.07/include/configs/omap4_common.h	2013-01-24 00:21:08.708953803 -0600
-@@ -278,4 +278,6 @@
+@@ -280,4 +280,6 @@
  
  #define CONFIG_SYS_THUMB_BUILD
  
