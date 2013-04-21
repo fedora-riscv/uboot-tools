@@ -1,8 +1,8 @@
-%global candidate rc2
+#%global candidate
 
 Name:           uboot-tools
 Version:        2013.04
-Release:        0.1%{?candidate:.%{candidate}}%{?dist}
+Release:        1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -60,6 +60,20 @@ Requires:    uboot-tools
 %description -n uboot-smdkv310
 u-boot bootloader binaries for smdk310 board
 
+%package     -n uboot-wandboard_dl
+Summary:     u-boot bootloader binaries for Wandboard i.MX6 Dual Lite
+Requires:    uboot-tools
+
+%description -n uboot-wandboard_dl
+u-boot bootloader binaries for Wandboard i.MX6 Dual Lite
+
+%package     -n uboot-wandboard_solo
+Summary:     u-boot bootloader binaries for Wandboard i.MX6 Solo
+Requires:    uboot-tools
+
+%description -n uboot-wandboard_solo
+u-boot bootloader binaries for Wandboard i.MX6 Solo
+
 %endif
 
 %prep
@@ -102,6 +116,16 @@ make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p spl/smdkv310-spl.bin builds/smdkv310-spl.bin.smdkv310
 cp -p u-boot.bin builds/u-boot.bin.smdkv310
 make distclean
+
+make CROSS_COMPILE="" wandboard_dl_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p u-boot.imx builds/u-boot.imx.dl
+make distclean
+
+make CROSS_COMPILE="" wandboard_solo_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p u-boot.imx builds/u-boot.imx.solo
+make distclean
 %endif
 
 make tools HOSTCC="gcc $RPM_OPT_FLAGS" HOSTSTRIP=/bin/true CROSS_COMPILE=""
@@ -123,6 +147,8 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-beaglebone/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-origen/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6solo/
 
 for board in beaglebone beagle panda
 do
@@ -136,6 +162,8 @@ install -p -m 0644 builds/u-boot.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-ori
 install -p -m 0644 builds/smdkv310-spl.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/smdkv310-spl.bin
 install -p -m 0644 builds/u-boot.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/u-boot.bin
 
+install -p -m 0644 builds/u-boot.imx.dl $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/u-boot.bin
+install -p -m 0644 builds/u-boot.imx.solo $RPM_BUILD_ROOT%{_datadir}/uboot-imx6solo/u-boot.bin
 %endif
 
 install -p -m 0755 tools/mkimage $RPM_BUILD_ROOT%{_bindir}
@@ -181,9 +209,21 @@ rm -rf $RPM_BUILD_ROOT
 %files -n uboot-smdkv310
 %defattr(-,root,root,-)
 %{_datadir}/uboot-smdkv310/
+
+%files -n uboot-wandboard_dl
+%defattr(-,root,root,-)
+%{_datadir}/uboot-imx6dl/
+
+%files -n uboot-wandboard_solo
+%defattr(-,root,root,-)
+%{_datadir}/uboot-imx6solo/
 %endif
 
 %changelog
+* Sun Apr 21 2013 Peter Robinson <pbrobinson@fedoraproject.org> 2013.04-1
+- Update to 2013.04 release
+- Build i.MX6 Wandboard Dual Lite and Solo Boards
+
 * Sun Mar 31 2013 Dennis Gilmore <dennis@ausil.us> - 2013.04-0.1.rc1
 - update to 2013.04-rc2
 
@@ -194,7 +234,7 @@ rm -rf $RPM_BUILD_ROOT
 - update to 2013.01 release
 
 * Wed Oct 17 2012 Dennis Gilmore <dennis@ausil.us> - 2012.10-1
-update to final 2012.10 release
+- update to final 2012.10 release
 
 * Thu Oct 11 2012 Mauro Carvalho Chehab <mchehab@redhat.com>
 - Also generate uboot for SMDK310
