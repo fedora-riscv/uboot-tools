@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2013.04
-Release:        1%{?candidate:.%{candidate}}%{?dist}
+Release:        2%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -11,6 +11,22 @@ URL:            http://www.denx.de/wiki/U-Boot
 Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Patch1:         u-boot-fat.patch
 Patch2:         uboot-omap-fit.patch
+
+# Beagle Bone Black support
+Patch10: 0001-beaglebone-default-to-beaglebone-black-for-unknown-E.patch
+Patch11: 0002-am335x-mux-don-t-hang-on-unknown-EEPROMs-assume-Beag.patch
+Patch12: 0003-beaglebone-HACK-always-return-1-for-is_bone_lt.patch
+Patch13: 0004-beaglebone-HACK-raise-USB-current-limit.patch
+Patch14: 0005-beaglebone-use-kloadaddr-to-avoid-copying-the-kernel.patch
+Patch15: 0006-beaglebone-try-to-load-uEnv-uImage-from-eMMC-first.patch
+Patch16: 0007-beaglebone-Don-t-trigger-uboot-variable-lenght-limit.patch
+Patch17: 0008-beaglebone-HACK-change-mmc-order-to-avoid-u-boot-cra.patch
+Patch18: 0009-beaglebone-update-bootpart-variable-after-mmc-scan.patch
+Patch19: 0010-am335x_evm-enable-gpio-command.patch
+Patch20: 0011-am335x_evm-HACK-to-turn-on-BeagleBone-LEDs.patch
+Patch21: 0012-Fix-for-screen-rolling-when-video-played-back-in-bro.patch
+Patch22: 0013-beaglebone-enable-CONFIG_SUPPORT_RAW_INITRD-option.patch
+Patch23: 0014-mmc-Add-RSTN-enable-for-emmc.patch
 
 Requires:       dtc
 
@@ -80,6 +96,23 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
 %patch1 -p1
 %patch2 -p1
+
+# Beagle Bone Black support
+%patch10 -p1
+%patch11 -p1
+%patch12 -p1
+%patch13 -p1
+%patch14 -p1
+%patch15 -p1
+%patch16 -p1
+%patch17 -p1
+%patch18 -p1
+%patch19 -p1
+%patch20 -p1
+%patch21 -p1
+%patch22 -p1
+%patch23 -p1
+
 mkdir builds
 
 %build
@@ -220,6 +253,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon May 13 2013 Peter Robinson <pbrobinson@fedoraproject.org> 2013.04-2
+- Add patches for initial support for the Beagle Bone Black
+
 * Sun Apr 21 2013 Peter Robinson <pbrobinson@fedoraproject.org> 2013.04-1
 - Update to 2013.04 release
 - Build i.MX6 Wandboard Dual Lite and Solo Boards
