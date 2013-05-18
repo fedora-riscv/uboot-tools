@@ -1,8 +1,8 @@
-#%global candidate
+#global candidate
 
 Name:           uboot-tools
 Version:        2013.04
-Release:        2%{?candidate:.%{candidate}}%{?dist}
+Release:        3%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -29,7 +29,9 @@ Patch22: 0013-beaglebone-enable-CONFIG_SUPPORT_RAW_INITRD-option.patch
 Patch23: 0014-mmc-Add-RSTN-enable-for-emmc.patch
 
 Requires:       dtc
-
+%ifarch %{arm}
+Requires: arm-boot-config
+%endif
 
 # build the tool for manipulation with environment only on arm
 %ifarch %{arm}
@@ -75,6 +77,13 @@ Requires:    uboot-tools
 
 %description -n uboot-smdkv310
 u-boot bootloader binaries for smdk310 board
+
+%package     -n uboot-uevm
+Summary:     u-boot bootloader binaries for uevm, omap5 pandaboard
+Requires:    uboot-tools
+
+%description -n uboot-uevm
+u-boot bootloader binaries for uevm, omap5 pandaboard
 
 %package     -n uboot-wandboard_dl
 Summary:     u-boot bootloader binaries for Wandboard i.MX6 Dual Lite
@@ -159,6 +168,14 @@ make CROSS_COMPILE="" wandboard_solo_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p u-boot.imx builds/u-boot.imx.solo
 make distclean
+
+make CROSS_COMPILE="" omap5_uevm_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p MLO builds/MLO.uevm
+cp -p u-boot.img builds/u-boot.img.uevm
+cp -p u-boot.bin builds/u-boot.bin.uevm
+make distclean
+
 %endif
 
 make tools HOSTCC="gcc $RPM_OPT_FLAGS" HOSTSTRIP=/bin/true CROSS_COMPILE=""
@@ -182,8 +199,9 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-origen/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6solo/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-uevm/
 
-for board in beaglebone beagle panda
+for board in beaglebone beagle panda uevm
 do
 install -p -m 0644 builds/u-boot.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot.bin
 install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot.img
@@ -250,9 +268,17 @@ rm -rf $RPM_BUILD_ROOT
 %files -n uboot-wandboard_solo
 %defattr(-,root,root,-)
 %{_datadir}/uboot-imx6solo/
+
+%files -n uboot-uevm
+%defattr(-,root,root,-)
+%{_datadir}/uboot-uevm/
 %endif
 
 %changelog
+* Sat May 18 2013 Dennis Gilmore <dennis@ausil.us> - 2013.04-3
+- add uevm, the omap5 based pandaboard
+- Require arm-boot-config on arm arches 
+
 * Mon May 13 2013 Peter Robinson <pbrobinson@fedoraproject.org> 2013.04-2
 - Add patches for initial support for the Beagle Bone Black
 
