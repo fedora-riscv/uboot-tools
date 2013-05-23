@@ -2,13 +2,20 @@
 
 Name:           uboot-tools
 Version:        2013.04
-Release:        3%{?candidate:.%{candidate}}%{?dist}
+Release:        4%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
 License:        GPLv2+
 URL:            http://www.denx.de/wiki/U-Boot
 Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
+Source1:        uEnv.txt.beagle
+Source2:        uEnv.txt.beaglebone
+Source3:        uEnv.txt.beagle_xm
+Source4:        uEnv.txt.panda
+Source5:        uEnv.txt.panda_a4
+Source6:        uEnv.txt.panda_es
+Source7:        uEnv.txt.uevm
 Patch1:         u-boot-fat.patch
 Patch2:         uboot-omap-fit.patch
 
@@ -99,6 +106,13 @@ Requires:    uboot-tools
 %description -n uboot-wandboard_solo
 u-boot bootloader binaries for Wandboard i.MX6 Solo
 
+%package     -n uboot-vexpress
+Summary:     u-boot bootloader binaries for vexpress
+Requires:    uboot-tools
+BuildArch:   noarch
+
+%description -n uboot-vexpress
+u-boot bootloader binaries for vexpress
 %endif
 
 %prep
@@ -131,6 +145,11 @@ make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p MLO builds/MLO.beaglebone
 cp -p u-boot.img builds/u-boot.img.beaglebone
 cp -p u-boot.bin builds/u-boot.bin.beaglebone
+make distclean
+
+make CROSS_COMPILE="" ca9x4_ct_vxp_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p u-boot.bin builds/u-boot.bin.vexpress
 make distclean
 
 make CROSS_COMPILE="" omap3_beagle_config
@@ -200,6 +219,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6solo/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-uevm/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-vexpress/
 
 for board in beaglebone beagle panda uevm
 do
@@ -207,6 +227,7 @@ install -p -m 0644 builds/u-boot.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/u
 install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot.img
 install -p -m 0644 builds/MLO.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/MLO
 done
+
 install -p -m 0644 builds/origen-spl.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-origen/origen-spl.bin
 install -p -m 0644 builds/u-boot.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-origen/u-boot.bin
 
@@ -215,6 +236,16 @@ install -p -m 0644 builds/u-boot.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot-s
 
 install -p -m 0644 builds/u-boot.imx.dl $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/u-boot.bin
 install -p -m 0644 builds/u-boot.imx.solo $RPM_BUILD_ROOT%{_datadir}/uboot-imx6solo/u-boot.bin
+
+install -p -m 0644 builds/u-boot.bin.vexpress $RPM_BUILD_ROOT%{_datadir}/uboot-vexpress/u-boot.bin
+install -p -m 0644 %{SOURCE1}  $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/uEnv.txt.beagle
+install -p -m 0644 %{SOURCE2}  $RPM_BUILD_ROOT%{_datadir}/uboot-beaglebone/uEnv.txt.beaglebone
+install -p -m 0644 %{SOURCE3}  $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/uEnv.txt.beagle_xm
+install -p -m 0644 %{SOURCE4}  $RPM_BUILD_ROOT%{_datadir}/uboot-panda/uEnv.txt.panda
+install -p -m 0644 %{SOURCE5}  $RPM_BUILD_ROOT%{_datadir}/uboot-panda/uEnv.txt.panda_a4
+install -p -m 0644 %{SOURCE6}  $RPM_BUILD_ROOT%{_datadir}/uboot-panda/uEnv.txt.panda_es
+install -p -m 0644 %{SOURCE7}  $RPM_BUILD_ROOT%{_datadir}/uboot-uevm/uEnv.txt.uevm
+
 %endif
 
 install -p -m 0755 tools/mkimage $RPM_BUILD_ROOT%{_bindir}
@@ -272,9 +303,17 @@ rm -rf $RPM_BUILD_ROOT
 %files -n uboot-uevm
 %defattr(-,root,root,-)
 %{_datadir}/uboot-uevm/
+
+%files -n uboot-vexpress
+%defattr(-,root,root,-)
+%{_datadir}/uboot-vexpress/
 %endif
 
 %changelog
+* Wed May 22 2013 Dennis Gilmore <dennis@ausil.us> - 2013.04-4
+- build vexpress image
+- add uEnv.txt files for various supported omap systems
+
 * Sat May 18 2013 Dennis Gilmore <dennis@ausil.us> - 2013.04-3
 - add uevm, the omap5 based pandaboard
 - Require arm-boot-config on arm arches 
