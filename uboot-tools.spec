@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2013.04
-Release:        4%{?candidate:.%{candidate}}%{?dist}
+Release:        5%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -18,6 +18,8 @@ Source6:        uEnv.txt.panda_es
 Source7:        uEnv.txt.uevm
 Patch1:         u-boot-fat.patch
 Patch2:         uboot-omap-fit.patch
+Patch3:         mlo-ext.patch
+Patch4:         exynos-ext.patch
 
 # Beagle Bone Black support
 Patch10: 0001-beaglebone-default-to-beaglebone-black-for-unknown-E.patch
@@ -36,9 +38,6 @@ Patch22: 0013-beaglebone-enable-CONFIG_SUPPORT_RAW_INITRD-option.patch
 Patch23: 0014-mmc-Add-RSTN-enable-for-emmc.patch
 
 Requires:       dtc
-%ifarch %{arm}
-Requires: arm-boot-config
-%endif
 
 # build the tool for manipulation with environment only on arm
 %ifarch %{arm}
@@ -63,6 +62,14 @@ Requires:    uboot-tools
 
 %description -n uboot-beaglebone
 u-boot bootloader binaries for beaglebone
+
+%package     -n uboot-highbank
+Summary:     u-boot bootloader binaries for calxeda highbank
+Requires:    uboot-tools
+BuildArch:   noarch
+
+%description -n uboot-highbank
+u-boot bootloader binaries for calxeda highbank
 
 %package     -n uboot-panda
 Summary:     u-boot bootloader binaries for pandaboard
@@ -119,6 +126,8 @@ u-boot bootloader binaries for vexpress
 %setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
+%patch4 -p1
 
 # Beagle Bone Black support
 %patch10 -p1
@@ -157,6 +166,11 @@ make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p MLO builds/MLO.beagle
 cp -p u-boot.img builds/u-boot.img.beagle
 cp -p u-boot.bin builds/u-boot.bin.beagle
+make distclean
+
+make CROSS_COMPILE="" highbank_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p u-boot.bin builds/u-boot.bin.highbank
 make distclean
 
 make CROSS_COMPILE="" omap4_panda_config
@@ -214,6 +228,7 @@ mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-panda/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-beaglebone/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-highbank/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-origen/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/
@@ -228,6 +243,8 @@ install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/u
 install -p -m 0644 builds/MLO.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/MLO
 done
 
+install -p -m 0644 builds/u-boot.bin.highbank $RPM_BUILD_ROOT%{_datadir}/uboot-highbank/u-boot.bin
+
 install -p -m 0644 builds/origen-spl.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-origen/origen-spl.bin
 install -p -m 0644 builds/u-boot.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-origen/u-boot.bin
 
@@ -238,6 +255,7 @@ install -p -m 0644 builds/u-boot.imx.dl $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/
 install -p -m 0644 builds/u-boot.imx.solo $RPM_BUILD_ROOT%{_datadir}/uboot-imx6solo/u-boot.bin
 
 install -p -m 0644 builds/u-boot.bin.vexpress $RPM_BUILD_ROOT%{_datadir}/uboot-vexpress/u-boot.bin
+
 install -p -m 0644 %{SOURCE1}  $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/uEnv.txt.beagle
 install -p -m 0644 %{SOURCE2}  $RPM_BUILD_ROOT%{_datadir}/uboot-beaglebone/uEnv.txt.beaglebone
 install -p -m 0644 %{SOURCE3}  $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/uEnv.txt.beagle_xm
@@ -280,6 +298,10 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_datadir}/uboot-beagle/
 
+%files -n uboot-highbank
+%defattr(-,root,root,-)
+%{_datadir}/uboot-highbank/
+
 %files -n uboot-panda
 %defattr(-,root,root,-)
 %{_datadir}/uboot-panda/
@@ -310,6 +332,11 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Jun 05 2013 Dennis Gilmore <dennis@ausil.us> - 2013.04-5
+- add patches to support ext filesystems in exynos and omap SPL's
+- drop bringing in arm-boot-config on arm systems
+- build a highbank u-boot (intention is to use in qemu)
+
 * Wed May 22 2013 Dennis Gilmore <dennis@ausil.us> - 2013.04-4
 - build vexpress image
 - add uEnv.txt files for various supported omap systems
