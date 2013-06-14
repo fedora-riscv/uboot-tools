@@ -37,6 +37,8 @@ Patch21: 0012-Fix-for-screen-rolling-when-video-played-back-in-bro.patch
 Patch22: 0013-beaglebone-enable-CONFIG_SUPPORT_RAW_INITRD-option.patch
 Patch23: 0014-mmc-Add-RSTN-enable-for-emmc.patch
 
+Patch30: uboot-wandboard-quad.patch
+
 Requires:       dtc
 
 # build the tool for manipulation with environment only on arm
@@ -106,6 +108,13 @@ Requires:    uboot-tools
 %description -n uboot-wandboard_dl
 u-boot bootloader binaries for Wandboard i.MX6 Dual Lite
 
+%package     -n uboot-wandboard_quad
+Summary:     u-boot bootloader binaries for Wandboard i.MX6 Quad
+Requires:    uboot-tools
+
+%description -n uboot-wandboard_quad
+u-boot bootloader binaries for Wandboard i.MX6 Quad
+
 %package     -n uboot-wandboard_solo
 Summary:     u-boot bootloader binaries for Wandboard i.MX6 Solo
 Requires:    uboot-tools
@@ -144,6 +153,8 @@ u-boot bootloader binaries for vexpress
 %patch21 -p1
 %patch22 -p1
 %patch23 -p1
+
+%patch30 -p1
 
 mkdir builds
 
@@ -197,6 +208,11 @@ make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p u-boot.imx builds/u-boot.imx.dl
 make distclean
 
+make CROSS_COMPILE="" wandboard_quad_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p u-boot.imx builds/u-boot.imx.quad
+make distclean
+
 make CROSS_COMPILE="" wandboard_solo_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p u-boot.imx builds/u-boot.imx.solo
@@ -232,6 +248,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-highbank/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-origen/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6quad/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6solo/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-uevm/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-vexpress/
@@ -252,6 +269,7 @@ install -p -m 0644 builds/smdkv310-spl.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/u
 install -p -m 0644 builds/u-boot.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/u-boot.bin
 
 install -p -m 0644 builds/u-boot.imx.dl $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/u-boot.bin
+install -p -m 0644 builds/u-boot.imx.quad $RPM_BUILD_ROOT%{_datadir}/uboot-imx6quad/u-boot.bin
 install -p -m 0644 builds/u-boot.imx.solo $RPM_BUILD_ROOT%{_datadir}/uboot-imx6solo/u-boot.bin
 
 install -p -m 0644 builds/u-boot.bin.vexpress $RPM_BUILD_ROOT%{_datadir}/uboot-vexpress/u-boot.bin
@@ -317,6 +335,10 @@ rm -rf $RPM_BUILD_ROOT
 %files -n uboot-wandboard_dl
 %defattr(-,root,root,-)
 %{_datadir}/uboot-imx6dl/
+
+%files -n uboot-wandboard_quad
+%defattr(-,root,root,-)
+%{_datadir}/uboot-imx6quad/
 
 %files -n uboot-wandboard_solo
 %defattr(-,root,root,-)

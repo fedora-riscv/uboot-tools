@@ -1,0 +1,38 @@
+diff -ur u-boot-2013.04.orig/board/wandboard/README u-boot-2013.04/board/wandboard/README
+--- u-boot-2013.04.orig/board/wandboard/README	2013-04-19 09:25:43.000000000 -0500
++++ u-boot-2013.04/board/wandboard/README	2013-06-14 09:01:59.935818158 -0500
+@@ -17,6 +17,11 @@
+ $ make wanboard_dl_config
+ $ make
+ 
++To build U-Boot for the Wandboard Quad version:
++
++$ make wandboard_quad_config
++$ make
++
+ To build U-Boot for the Wandboard Solo version:
+ 
+ $ make wanboard_solo_config
+diff -ur u-boot-2013.04.orig/boards.cfg u-boot-2013.04/boards.cfg
+--- u-boot-2013.04.orig/boards.cfg	2013-04-19 09:25:43.000000000 -0500
++++ u-boot-2013.04/boards.cfg	2013-06-14 09:04:30.281695305 -0500
+@@ -267,6 +267,7 @@
+ nitrogen6s                   arm         armv7       nitrogen6x          boundary       mx6		nitrogen6x:IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6s.cfg,MX6S,DDR_MB=512
+ nitrogen6s1g                 arm         armv7       nitrogen6x          boundary       mx6		nitrogen6x:IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6s1g.cfg,MX6S,DDR_MB=1024
+ wandboard_dl		     arm	 armv7	     wandboard		 -		mx6 wandboard:IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6dl.cfg,MX6DL,DDR_MB=1024
++wandboard_quad		     arm	 armv7	     wandboard		 -		mx6 wandboard:IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6q2g.cfg,MX6Q,DDR_MB=2048
+ wandboard_solo		     arm	 armv7	     wandboard		 -		mx6 wandboard:IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6s.cfg,MX6S,DDR_MB=512
+ cm_t35                       arm         armv7       cm_t35              -              omap3
+ omap3_overo                  arm         armv7       overo               -              omap3
+diff -ur u-boot-2013.04.orig/include/configs/wandboard.h u-boot-2013.04/include/configs/wandboard.h
+--- u-boot-2013.04.orig/include/configs/wandboard.h	2013-04-19 09:25:43.000000000 -0500
++++ u-boot-2013.04/include/configs/wandboard.h	2013-06-14 09:05:38.164639557 -0500
+@@ -83,6 +83,8 @@
+ 
+ #if defined(CONFIG_MX6DL)
+ #define CONFIG_DEFAULT_FDT_FILE		"imx6dl-wandboard.dtb"
++#elif defined(CONFIG_MX6Q)
++#define CONFIG_DEFAULT_FDT_FILE		"imx6q-wandboard.dtb"
+ #elif defined(CONFIG_MX6S)
+ #define CONFIG_DEFAULT_FDT_FILE		"imx6s-wandboard.dtb"
+ #endif
