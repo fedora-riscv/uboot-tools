@@ -358,6 +358,7 @@ rm -rf $RPM_BUILD_ROOT
 - add patches to support ext filesystems in exynos and omap SPL's
 - drop bringing in arm-boot-config on arm systems
 - build a highbank u-boot (intention is to use in qemu)
+- add wandboard quad u-boot
 
 * Wed May 22 2013 Dennis Gilmore <dennis@ausil.us> - 2013.04-4
 - build vexpress image
