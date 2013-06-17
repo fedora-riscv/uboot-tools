@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2013.04
-Release:        5%{?candidate:.%{candidate}}%{?dist}
+Release:        5%{?candidate:.%{candidate}}%{?dist}.1
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -135,8 +135,6 @@ u-boot bootloader binaries for vexpress
 %setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
 %patch1 -p1
 %patch2 -p1
-%patch3 -p1
-%patch4 -p1
 
 # Beagle Bone Black support
 %patch10 -p1
@@ -354,6 +352,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Jun 17 2013 Dennis Gilmore <dennis@ausil.us> - 2013.04-5.1
+- dont apply ext mlo patches
+
 * Wed Jun 05 2013 Dennis Gilmore <dennis@ausil.us> - 2013.04-5
 - add patches to support ext filesystems in exynos and omap SPL's
 - drop bringing in arm-boot-config on arm systems
