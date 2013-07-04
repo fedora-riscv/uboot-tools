@@ -1,0 +1,130 @@
+From e561e4c80077e9876d1609cb5379023d53f09b5c Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Thu, 4 Jul 2013 10:53:10 -0500
+Subject: [PATCH 14/14] mmc: Add RSTN enable for emmc
+
+eMMC has the capability of using an external RSTn line.
+It has to be enabled via an access to the ECSD so add a command to do so.
+
+Signed-off-by: Pantelis Antoniou <panto@antoniou-consulting.com>
+---
+ common/cmd_mmc.c  | 24 ++++++++++++++++++++++++
+ drivers/mmc/mmc.c | 32 ++++++++++++++++++++++++++++++++
+ include/mmc.h     |  4 ++++
+ 3 files changed, 60 insertions(+)
+
+diff --git a/common/cmd_mmc.c b/common/cmd_mmc.c
+index 5f1ed43..87f8577 100644
+--- a/common/cmd_mmc.c
++++ b/common/cmd_mmc.c
+@@ -238,6 +238,29 @@ static int do_mmcops(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+ 			return CMD_RET_USAGE;
+ 		print_mmc_devices('\n');
+ 		return 0;
++	} else if (strncmp(argv[1], "rstn", 4) == 0) {
++		struct mmc *mmc;
++		u8 val;
++		int err;
++
++		if (argc != 3)
++			return CMD_RET_USAGE;
++
++		val = simple_strtol(argv[2], NULL, 10);
++
++		mmc = find_mmc_device(curr_device);
++		if (!mmc) {
++			printf("no mmc device at slot %x\n", curr_device);
++			return 1;
++		}
++		err = mmc_set_rst_n(mmc, val);
++		if (err != 0) {
++			printf("failed to set RST_N to 0x%02x\n",
++					(unsigned int)val & 0xff);
++			return 1;
++		}
++
++		return 0;
+ 	} else if (strcmp(argv[1], "dev") == 0) {
+ 		int dev, part = -1;
+ 		struct mmc *mmc;
+@@ -431,6 +454,7 @@ U_BOOT_CMD(
+ 	"mmc part - lists available partition on current mmc device\n"
+ 	"mmc dev [dev] [part] - show or set current mmc device [partition]\n"
+ 	"mmc list - lists available devices\n"
++	"mmc rstn - enable hardware reset of emmc\n"
+ #ifdef CONFIG_SUPPORT_EMMC_BOOT
+ 	"mmc open <dev> <boot_partition>\n"
+ 	" - Enable boot_part for booting and enable R/W access of boot_part\n"
+diff --git a/drivers/mmc/mmc.c b/drivers/mmc/mmc.c
+index 73f7195..b866d77 100644
+--- a/drivers/mmc/mmc.c
++++ b/drivers/mmc/mmc.c
+@@ -1491,6 +1491,38 @@ static void do_preinit(void)
+ }
+ 
+ 
++/* enable hardware reset signal */
++int mmc_set_rst_n(struct mmc *mmc, u8 val)
++{
++	ALLOC_CACHE_ALIGN_BUFFER(u8, ext_csd, 512);
++	int err;
++
++	memset(ext_csd, 0, 512);
++	err = mmc_send_ext_csd(mmc, ext_csd);
++	if (err)
++		return err;
++
++	printf("before: RST_N=0x%02x\n",
++			(unsigned int)ext_csd[EXT_CSD_RST_N_FUNCTION] & 0xff);
++
++	printf("setting rstn to 0x%02x\n", (unsigned int)val & 0xff);
++
++	err = mmc_switch(mmc, EXT_CSD_CMD_SET_NORMAL,
++			EXT_CSD_RST_N_FUNCTION, val);
++	if (err)
++		return err;
++
++	memset(ext_csd, 0, 512);
++	err = mmc_send_ext_csd(mmc, ext_csd);
++	if (err)
++		return err;
++
++	printf("after: RST_N=0x%02x\n",
++			(unsigned int)ext_csd[EXT_CSD_RST_N_FUNCTION] & 0xff);
++
++	return 0;
++}
++
+ int mmc_initialize(bd_t *bis)
+ {
+ 	INIT_LIST_HEAD (&mmc_devices);
+diff --git a/include/mmc.h b/include/mmc.h
+index 583c30e..a9f68dc 100644
+--- a/include/mmc.h
++++ b/include/mmc.h
+@@ -165,6 +165,7 @@
+  */
+ #define EXT_CSD_GP_SIZE_MULT		143	/* R/W */
+ #define EXT_CSD_PARTITIONING_SUPPORT	160	/* RO */
++#define EXT_CSD_RST_N_FUNCTION          162     /* R/W */
+ #define EXT_CSD_RPMB_MULT		168	/* RO */
+ #define EXT_CSD_ERASE_GROUP_DEF		175	/* R/W */
+ #define EXT_CSD_BOOT_BUS_WIDTH		177
+@@ -178,6 +179,7 @@
+ #define EXT_CSD_HC_ERASE_GRP_SIZE	224	/* RO */
+ #define EXT_CSD_BOOT_MULT		226	/* RO */
+ 
++
+ /*
+  * EXT_CSD field definitions
+  */
+@@ -357,4 +359,6 @@ struct mmc *mmc_spi_init(uint bus, uint cs, uint speed, uint mode);
+ int mmc_legacy_init(int verbose);
+ #endif
+ 
++int mmc_set_rst_n(struct mmc *mmc, u8 val);
++
+ #endif /* _MMC_H_ */
+-- 
+1.8.3.1
+

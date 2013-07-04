@@ -1,0 +1,108 @@
+From 1ff842e1735d07a41a0e152bca0b9076768a889a Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Sun, 30 Jun 2013 15:18:08 -0500
+Subject: [PATCH 01/14] Add wandboard quad support
+
+---
+ board/boundary/nitrogen6x/nitrogen6quad.cfg | 45 +++++++++++++++++++++++++++++
+ board/wandboard/README                      |  5 ++++
+ boards.cfg                                  |  1 +
+ include/configs/wandboard.h                 |  2 ++
+ 4 files changed, 53 insertions(+)
+ create mode 100644 board/boundary/nitrogen6x/nitrogen6quad.cfg
+
+diff --git a/board/boundary/nitrogen6x/nitrogen6quad.cfg b/board/boundary/nitrogen6x/nitrogen6quad.cfg
+new file mode 100644
+index 0000000..dccd497
+--- /dev/null
++++ b/board/boundary/nitrogen6x/nitrogen6quad.cfg
+@@ -0,0 +1,45 @@
++/*
++ * Copyright (C) 2013 Boundary Devices
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not write to the Free Software
++ * Foundation Inc. 51 Franklin Street Fifth Floor Boston,
++ * MA 02110-1301 USA
++ *
++ * Refer doc/README.imximage for more details about how-to configure
++ * and create imximage boot image
++ *
++ * The syntax is taken as close as possible with the kwbimage
++ */
++
++/* image version */
++IMAGE_VERSION 2
++
++/*
++ * Boot Device : one of
++ * spi, sd (the board has no nand neither onenand)
++ */
++BOOT_FROM      sd
++
++#define __ASSEMBLY__
++#include <config.h>
++#include "asm/arch/mx6-ddr.h"
++#include "asm/arch/iomux.h"
++#include "asm/arch/crm_regs.h"
++
++#include "ddr-setup.cfg"
++#include "800mhz_4x256mx16.cfg"
++#include "clocks.cfg"
+diff --git a/board/wandboard/README b/board/wandboard/README
+index ce83bbe..65d3d05 100644
+--- a/board/wandboard/README
++++ b/board/wandboard/README
+@@ -17,6 +17,11 @@ To build U-Boot for the Wandboard Dual Lite version:
+ $ make wandboard_dl_config
+ $ make
+ 
++To build U-Boot for the Wandboard Quad version:
++
++$ make wandboard_quad_config
++$ make
++
+ To build U-Boot for the Wandboard Solo version:
+ 
+ $ make wandboard_solo_config
+diff --git a/boards.cfg b/boards.cfg
+index c0c4282..9604bf2 100644
+--- a/boards.cfg
++++ b/boards.cfg
+@@ -281,6 +281,7 @@ nitrogen6q2g                 arm         armv7       nitrogen6x          boundar
+ nitrogen6s                   arm         armv7       nitrogen6x          boundary       mx6		nitrogen6x:IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6s.cfg,MX6S,DDR_MB=512
+ nitrogen6s1g                 arm         armv7       nitrogen6x          boundary       mx6		nitrogen6x:IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6s1g.cfg,MX6S,DDR_MB=1024
+ wandboard_dl		     arm	 armv7	     wandboard		 -		mx6 wandboard:IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6dl.cfg,MX6DL,DDR_MB=1024
++wandboard_quad		     arm	 armv7	     wandboard		 -		mx6 wandboard:IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6q2g.cfg,MX6Q,DDR_MB=2048
+ wandboard_solo		     arm	 armv7	     wandboard		 -		mx6 wandboard:IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6s.cfg,MX6S,DDR_MB=512
+ omap3_overo                  arm         armv7       overo               -              omap3
+ omap3_pandora                arm         armv7       pandora             -              omap3
+diff --git a/include/configs/wandboard.h b/include/configs/wandboard.h
+index 5593f1c..b2995d8 100644
+--- a/include/configs/wandboard.h
++++ b/include/configs/wandboard.h
+@@ -103,6 +103,8 @@
+ 
+ #if defined(CONFIG_MX6DL)
+ #define CONFIG_DEFAULT_FDT_FILE		"imx6dl-wandboard.dtb"
++#elif defined(CONFIG_MX6Q)
++#define CONFIG_DEFAULT_FDT_FILE		"imx6q-wandboard.dtb"
+ #elif defined(CONFIG_MX6S)
+ #define CONFIG_DEFAULT_FDT_FILE		"imx6s-wandboard.dtb"
+ #endif
+-- 
+1.8.3.1
+
