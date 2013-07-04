@@ -1,8 +1,8 @@
-#global candidate
+%global candidate rc2
 
 Name:           uboot-tools
-Version:        2013.04
-Release:        5%{?candidate:.%{candidate}}%{?dist}
+Version:        2013.07
+Release:        0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -21,8 +21,9 @@ Patch2:         uboot-omap-fit.patch
 Patch3:         mlo-ext.patch
 Patch4:         exynos-ext.patch
 
+# Wandboard quad support
+Patch10: 0001-Add-wandboard-quad-support.patch
 # Beagle Bone Black support
-Patch10: 0001-beaglebone-default-to-beaglebone-black-for-unknown-E.patch
 Patch11: 0002-am335x-mux-don-t-hang-on-unknown-EEPROMs-assume-Beag.patch
 Patch12: 0003-beaglebone-HACK-always-return-1-for-is_bone_lt.patch
 Patch13: 0004-beaglebone-HACK-raise-USB-current-limit.patch
@@ -36,8 +37,6 @@ Patch20: 0011-am335x_evm-HACK-to-turn-on-BeagleBone-LEDs.patch
 Patch21: 0012-Fix-for-screen-rolling-when-video-played-back-in-bro.patch
 Patch22: 0013-beaglebone-enable-CONFIG_SUPPORT_RAW_INITRD-option.patch
 Patch23: 0014-mmc-Add-RSTN-enable-for-emmc.patch
-
-Patch30: uboot-wandboard-quad.patch
 
 Requires:       dtc
 
@@ -135,11 +134,12 @@ u-boot bootloader binaries for vexpress
 %setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
 %patch1 -p1
 %patch2 -p1
-%patch3 -p1
-%patch4 -p1
+#patch3 -p1
+#patch4 -p1
 
-# Beagle Bone Black support
+# wandboard quad support
 %patch10 -p1
+# Beagle Bone Black support
 %patch11 -p1
 %patch12 -p1
 %patch13 -p1
@@ -153,8 +153,6 @@ u-boot bootloader binaries for vexpress
 %patch21 -p1
 %patch22 -p1
 %patch23 -p1
-
-%patch30 -p1
 
 mkdir builds
 
@@ -354,6 +352,11 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Jul 04 2013 Dennis Gilmore <dennis@ausil.us> - 2013.07-0.1.rc2
+- update beaglebone patches 
+- update wandboard quad patch
+- upstream 2013.07-rc2 update
+
 * Wed Jun 05 2013 Dennis Gilmore <dennis@ausil.us> - 2013.04-5
 - add patches to support ext filesystems in exynos and omap SPL's
 - drop bringing in arm-boot-config on arm systems
