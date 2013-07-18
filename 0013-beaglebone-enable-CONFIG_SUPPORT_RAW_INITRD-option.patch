@@ -1,7 +1,7 @@
-From 8c6c1b898473226483c7c155aac22bb0bb84e832 Mon Sep 17 00:00:00 2001
+From 69204af251563cc8300ef681bfd5132944972a40 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Thu, 25 Apr 2013 13:50:35 -0500
-Subject: [PATCH 13/14] beaglebone: enable CONFIG_SUPPORT_RAW_INITRD option
+Subject: [PATCH 13/15] beaglebone: enable CONFIG_SUPPORT_RAW_INITRD option
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---

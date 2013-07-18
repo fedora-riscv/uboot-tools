@@ -1,7 +1,7 @@
-From bdd305d2ca2ab1704f8b937de6a13bf421999bac Mon Sep 17 00:00:00 2001
+From 88dfa478398f9fdf8e99c19b39f98b4ce1def19b Mon Sep 17 00:00:00 2001
 From: Koen Kooi <koen@dominion.thruhere.net>
 Date: Wed, 3 Apr 2013 11:39:16 +0200
-Subject: [PATCH 07/14] beaglebone: Don't trigger uboot variable lenght limit
+Subject: [PATCH 07/15] beaglebone: Don't trigger uboot variable lenght limit
 
 Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
 ---

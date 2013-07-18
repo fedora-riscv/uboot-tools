@@ -1,7 +1,7 @@
-From 3be081c0e46b1608d0d2e6d81de62c3c254700dd Mon Sep 17 00:00:00 2001
+From a7eb66eefa4a536e4eec37f9d005bae31ce14ae4 Mon Sep 17 00:00:00 2001
 From: Koen Kooi <koen@dominion.thruhere.net>
 Date: Wed, 3 Apr 2013 08:27:09 +0200
-Subject: [PATCH 04/14] beaglebone: HACK: raise USB current limit
+Subject: [PATCH 04/15] beaglebone: HACK: raise USB current limit
 
 Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
 ---

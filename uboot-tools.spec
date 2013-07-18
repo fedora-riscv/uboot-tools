@@ -1,8 +1,9 @@
-%global candidate rc2
+%global candidate rc3
+%global _default_patch_fuzz 2
 
 Name:           uboot-tools
 Version:        2013.07
-Release:        0.1%{?candidate:.%{candidate}}%{?dist}
+Release:        0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -37,6 +38,7 @@ Patch20: 0011-am335x_evm-HACK-to-turn-on-BeagleBone-LEDs.patch
 Patch21: 0012-Fix-for-screen-rolling-when-video-played-back-in-bro.patch
 Patch22: 0013-beaglebone-enable-CONFIG_SUPPORT_RAW_INITRD-option.patch
 Patch23: 0014-mmc-Add-RSTN-enable-for-emmc.patch
+Patch24: 0015-wandboard-add-pxe-support-set-default-boot-command-l.patch
 
 Requires:       dtc
 
@@ -121,13 +123,6 @@ Requires:    uboot-tools
 %description -n uboot-wandboard_solo
 u-boot bootloader binaries for Wandboard i.MX6 Solo
 
-%package     -n uboot-vexpress
-Summary:     u-boot bootloader binaries for vexpress
-Requires:    uboot-tools
-BuildArch:   noarch
-
-%description -n uboot-vexpress
-u-boot bootloader binaries for vexpress
 %endif
 
 %prep
@@ -153,6 +148,7 @@ u-boot bootloader binaries for vexpress
 %patch21 -p1
 %patch22 -p1
 %patch23 -p1
+%patch24 -p1
 
 mkdir builds
 
@@ -163,11 +159,6 @@ make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p MLO builds/MLO.beaglebone
 cp -p u-boot.img builds/u-boot.img.beaglebone
 cp -p u-boot.bin builds/u-boot.bin.beaglebone
-make distclean
-
-make CROSS_COMPILE="" ca9x4_ct_vxp_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
-cp -p u-boot.bin builds/u-boot.bin.vexpress
 make distclean
 
 make CROSS_COMPILE="" omap3_beagle_config
@@ -266,11 +257,10 @@ install -p -m 0644 builds/u-boot.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-ori
 install -p -m 0644 builds/smdkv310-spl.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/smdkv310-spl.bin
 install -p -m 0644 builds/u-boot.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/u-boot.bin
 
-install -p -m 0644 builds/u-boot.imx.dl $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/u-boot.bin
-install -p -m 0644 builds/u-boot.imx.quad $RPM_BUILD_ROOT%{_datadir}/uboot-imx6quad/u-boot.bin
-install -p -m 0644 builds/u-boot.imx.solo $RPM_BUILD_ROOT%{_datadir}/uboot-imx6solo/u-boot.bin
+install -p -m 0644 builds/u-boot.imx.dl $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/u-boot.imx
+install -p -m 0644 builds/u-boot.imx.quad $RPM_BUILD_ROOT%{_datadir}/uboot-imx6quad/u-boot.imx
+install -p -m 0644 builds/u-boot.imx.solo $RPM_BUILD_ROOT%{_datadir}/uboot-imx6solo/u-boot.imx
 
-install -p -m 0644 builds/u-boot.bin.vexpress $RPM_BUILD_ROOT%{_datadir}/uboot-vexpress/u-boot.bin
 
 install -p -m 0644 %{SOURCE1}  $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/uEnv.txt.beagle
 install -p -m 0644 %{SOURCE2}  $RPM_BUILD_ROOT%{_datadir}/uboot-beaglebone/uEnv.txt.beaglebone
@@ -345,13 +335,13 @@ rm -rf $RPM_BUILD_ROOT
 %files -n uboot-uevm
 %defattr(-,root,root,-)
 %{_datadir}/uboot-uevm/
-
-%files -n uboot-vexpress
-%defattr(-,root,root,-)
-%{_datadir}/uboot-vexpress/
 %endif
 
 %changelog
+* Thu Jul 18 2013 Dennis Gilmore <dennis@ausil.us> - 2013.07-0.2.rc3
+- update to 2013.07 rc3
+- set wandboard to use extlinux.conf by default
+
 * Thu Jul 04 2013 Dennis Gilmore <dennis@ausil.us> - 2013.07-0.1.rc2
 - update beaglebone patches 
 - update wandboard quad patch

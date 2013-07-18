@@ -1,7 +1,7 @@
-From 4a23caa5663bfd11fc7a802339568a4dc08bfd24 Mon Sep 17 00:00:00 2001
+From 939bbe4dad5072738b0e4453d8d0d7cebd889450 Mon Sep 17 00:00:00 2001
 From: Koen Kooi <koen@dominion.thruhere.net>
 Date: Wed, 3 Apr 2013 08:25:04 +0200
-Subject: [PATCH 05/14] beaglebone: use kloadaddr to avoid copying the kernel
+Subject: [PATCH 05/15] beaglebone: use kloadaddr to avoid copying the kernel
  around
 
 Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>

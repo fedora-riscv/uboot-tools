@@ -1,7 +1,7 @@
-From e561e4c80077e9876d1609cb5379023d53f09b5c Mon Sep 17 00:00:00 2001
+From d24d6e58aa0d5d64c3d9df3fd4d20c17680a6e8e Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Thu, 4 Jul 2013 10:53:10 -0500
-Subject: [PATCH 14/14] mmc: Add RSTN enable for emmc
+Subject: [PATCH 14/15] mmc: Add RSTN enable for emmc
 
 eMMC has the capability of using an external RSTn line.
 It has to be enabled via an access to the ECSD so add a command to do so.
