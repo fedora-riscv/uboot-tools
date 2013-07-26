@@ -1,9 +1,9 @@
-%global candidate rc3
+#global candidate rc
 %global _default_patch_fuzz 2
 
 Name:           uboot-tools
 Version:        2013.07
-Release:        0.2%{?candidate:.%{candidate}}%{?dist}
+Release:        1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -338,6 +338,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Fri Jul 26 2013 Dennis Gilmore <dennis@ausil.us> - 2013.07-1
+- update to 2013.07 final 
+
 * Thu Jul 18 2013 Dennis Gilmore <dennis@ausil.us> - 2013.07-0.2.rc3
 - update to 2013.07 rc3
 - set wandboard to use extlinux.conf by default
