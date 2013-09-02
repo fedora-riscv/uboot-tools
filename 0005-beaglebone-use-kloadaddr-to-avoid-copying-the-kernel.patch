@@ -1,7 +1,7 @@
-From a8861624e48f2ecf0f39da3827211c485ed2f0cb Mon Sep 17 00:00:00 2001
+From 939bbe4dad5072738b0e4453d8d0d7cebd889450 Mon Sep 17 00:00:00 2001
 From: Koen Kooi <koen@dominion.thruhere.net>
 Date: Wed, 3 Apr 2013 08:25:04 +0200
-Subject: [PATCH 05/14] beaglebone: use kloadaddr to avoid copying the kernel
+Subject: [PATCH 05/15] beaglebone: use kloadaddr to avoid copying the kernel
  around
 
 Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
@@ -10,10 +10,10 @@ Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/include/configs/am335x_evm.h b/include/configs/am335x_evm.h
-index 8de4cc9..14b0a08 100644
+index c143137..7a9628e 100644
 --- a/include/configs/am335x_evm.h
 +++ b/include/configs/am335x_evm.h
-@@ -54,6 +54,7 @@
+@@ -55,6 +55,7 @@
  #ifndef CONFIG_SPL_BUILD
  #define CONFIG_EXTRA_ENV_SETTINGS \
  	"loadaddr=0x80200000\0" \
@@ -21,7 +21,7 @@ index 8de4cc9..14b0a08 100644
  	"fdtaddr=0x80F80000\0" \
  	"fdt_high=0xffffffff\0" \
  	"rdaddr=0x81000000\0" \
-@@ -112,11 +113,11 @@
+@@ -113,11 +114,11 @@
  		"root=${ramroot} " \
  		"rootfstype=${ramrootfstype}\0" \
  	"loadramdisk=load mmc ${mmcdev} ${rdaddr} ramdisk.gz\0" \
@@ -36,5 +36,5 @@ index 8de4cc9..14b0a08 100644
  		"run nandargs; " \
  		"nand read ${loadaddr} ${nandsrcaddr} ${nandimgsize}; " \
 -- 
-1.8.1.4
+1.8.3.1
 

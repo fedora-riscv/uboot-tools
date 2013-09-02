@@ -1,0 +1,97 @@
+From e156720cf4ca48c3e955b0e48f17bf324fe992f4 Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Wed, 17 Jul 2013 09:11:57 -0500
+Subject: [PATCH 15/15] wandboard: add pxe support, set default boot command
+ like highbank
+
+---
+ include/configs/wandboard.h | 42 +++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 39 insertions(+), 3 deletions(-)
+
+diff --git a/include/configs/wandboard.h b/include/configs/wandboard.h
+index ee6bf21..159f950 100644
+--- a/include/configs/wandboard.h
++++ b/include/configs/wandboard.h
+@@ -58,6 +58,8 @@
+ #define CONFIG_LOADADDR			0x12000000
+ #define CONFIG_SYS_TEXT_BASE		0x17800000
+ 
++#define CONFIG_SUPPORT_RAW_INITRD
++
+ /* MMC Configuration */
+ #define CONFIG_FSL_ESDHC
+ #define CONFIG_FSL_USDHC
+@@ -72,6 +74,14 @@
+ #define CONFIG_CMD_FAT
+ #define CONFIG_DOS_PARTITION
+ 
++/* PXE support */
++#define CONFIG_BOOTP_PXE
++#define CONFIG_BOOTP_PXE_CLIENTARCH     0x100
++#define CONFIG_BOOTP_VCI_STRING         "U-boot.armv7.wandboard"
++#define CONFIG_CMD_PXE
++#define CONFIG_MENU
++
++
+ /* Ethernet Configuration */
+ #define CONFIG_CMD_PING
+ #define CONFIG_CMD_DHCP
+@@ -117,7 +127,32 @@
+ 	"initrd_high=0xffffffff\0" \
+ 	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
+ 	"fdt_addr=0x11000000\0" \
++	"pxefile_addr_r=0x12000000\0" \
++	"kernel_addr_r=0x13000000\0" \
++	"ramdisk_addr_r=0x32000000\0" \
++	"fdt_addr_r=0x11000000\0" \
+ 	"boot_fdt=try\0" \
++	"bootcmd_setup=mmc rescan\0" \
++	"bootcmd_pxe=setenv bootfile \"\" ;dhcp; pxe get; pxe boot\0" \
++	"bootcmd_disk_scr=ext2load ${boot_ifc} ${bootdevice} ${scr_addr_r} boot.scr && source ${scr_addr_r}\0" \
++	"bootcmd_disk_sysboot1=setenv bootfile /boot/extlinux/extlinux.conf; sysboot ${boot_ifc} ${bootdevice} ext2\0" \
++	"bootcmd_disk_sysboot2=setenv bootfile /extlinux/extlinux.conf; sysboot ${boot_ifc} ${bootdevice} ext2\0" \
++	"bootcmd_disk_uenv=ext2load ${boot_ifc} ${bootdevice} ${uenv_addr_r} uEnv.txt; env import -t ${uenv_addr_r} ${filesize}; run bootcmd_uenv\0" \
++	"bootcmd_disk_kernel=ext2load ${boot_ifc} ${bootdevice} ${kernel_addr_r} vmlinuz && ext2load ${boot_ifc} ${bootdevice} ${ramdisk_addr_r} initrd.img && bootz ${kernel_addr_r} ${ramdisk_addr_r}:${filesize} ${fdt_addr}\0" \
++	"bootcmd_disk=run bootcmd_disk_sysboot1; run bootcmd_disk_sysboot2; run bootcmd_disk_uenv; run bootcmd_disk_scr; run bootcmd_disk_kernel\0" \
++	"bootcmd_sata=setenv boot_ifc scsi; scsi scan && run bootcmd_disk\0" \
++	"bootcmd_mmc=setenv boot_ifc mmc; mmc rescan && run bootcmd_disk\0" \
++	"bootcmd_default=run bootcmd_mmc; run bootcmd_sata; run bootcmd_pxe\0" \
++	"bootcmd0=run bootcmd_setup; run bootcmd_default\0" \
++	"bootcmd1=run bootcmd_setup; run bootcmd_pxe; run bootcmd_default\0" \
++	"bootcmd2=run bootcmd_setup; run bootcmd_sata; run bootcmd_default\0" \
++	"bootcmd15=run bootcmd_setup; run bootcmd_mmc; run bootcmd_default\0" \
++	"localcmd=run bootcmd_sata\0" \
++	"bootdevice=0\0" \
++	"bootargs=console=ttymxc0 root=LABEL=rootfs\0" \
++	"bootdelay=2\0" \
++	"bootretry=90\0" \
++	"netretry=once\0" \
+ 	"ip_dyn=yes\0" \
+ 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
+ 	"mmcpart=1\0" \
+@@ -139,11 +174,11 @@
+ 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
+ 		"root=${mmcroot}\0" \
+ 	"loadbootscript=" \
+-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
++		"load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
+ 	"bootscript=echo Running bootscript from mmc ...; " \
+ 		"source\0" \
+-	"loaduimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${uimage}\0" \
+-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
++	"loaduimage=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${uimage}\0" \
++	"loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+@@ -186,6 +221,7 @@
+ 
+ #define CONFIG_BOOTCOMMAND \
+ 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
++		   "run bootcmd_default; " \
+ 		   "if run loadbootscript; then " \
+ 			   "run bootscript; " \
+ 		   "else " \
+-- 
+1.8.3.1
+

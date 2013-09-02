@@ -1,0 +1,81 @@
+From f7687f75a5cba567a8dbccb43dc5826c9deb8de4 Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Sun, 30 Jun 2013 15:18:08 -0500
+Subject: [PATCH 01/15] Add wandboard quad support
+
+---
+ board/boundary/nitrogen6x/nitrogen6quad.cfg | 45 +++++++++++++++++++++++++++++
+ board/wandboard/README                      |  5 ++++
+ 2 files changed, 50 insertions(+)
+ create mode 100644 board/boundary/nitrogen6x/nitrogen6quad.cfg
+
+diff --git a/board/boundary/nitrogen6x/nitrogen6quad.cfg b/board/boundary/nitrogen6x/nitrogen6quad.cfg
+new file mode 100644
+index 0000000..dccd497
+--- /dev/null
++++ b/board/boundary/nitrogen6x/nitrogen6quad.cfg
+@@ -0,0 +1,45 @@
++/*
++ * Copyright (C) 2013 Boundary Devices
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not write to the Free Software
++ * Foundation Inc. 51 Franklin Street Fifth Floor Boston,
++ * MA 02110-1301 USA
++ *
++ * Refer doc/README.imximage for more details about how-to configure
++ * and create imximage boot image
++ *
++ * The syntax is taken as close as possible with the kwbimage
++ */
++
++/* image version */
++IMAGE_VERSION 2
++
++/*
++ * Boot Device : one of
++ * spi, sd (the board has no nand neither onenand)
++ */
++BOOT_FROM      sd
++
++#define __ASSEMBLY__
++#include <config.h>
++#include "asm/arch/mx6-ddr.h"
++#include "asm/arch/iomux.h"
++#include "asm/arch/crm_regs.h"
++
++#include "ddr-setup.cfg"
++#include "800mhz_4x256mx16.cfg"
++#include "clocks.cfg"
+diff --git a/board/wandboard/README b/board/wandboard/README
+index 498db2f..4e54ee3 100644
+--- a/board/wandboard/README
++++ b/board/wandboard/README
+@@ -17,6 +17,11 @@ To build U-Boot for the Wandboard Dual Lite version:
+ $ make wandboard_dl_config
+ $ make
+ 
++To build U-Boot for the Wandboard Quad version:
++
++$ make wandboard_quad_config
++$ make
++
+ To build U-Boot for the Wandboard Solo version:
+ 
+ $ make wandboard_solo_config
+-- 
+1.8.3.1
+

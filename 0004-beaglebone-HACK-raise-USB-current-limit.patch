@@ -1,7 +1,7 @@
-From 713fb639c8d4920ae7581908de8da9fbbe83f3ae Mon Sep 17 00:00:00 2001
+From a7eb66eefa4a536e4eec37f9d005bae31ce14ae4 Mon Sep 17 00:00:00 2001
 From: Koen Kooi <koen@dominion.thruhere.net>
 Date: Wed, 3 Apr 2013 08:27:09 +0200
-Subject: [PATCH 04/14] beaglebone: HACK: raise USB current limit
+Subject: [PATCH 04/15] beaglebone: HACK: raise USB current limit
 
 Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
 ---
@@ -9,10 +9,10 @@ Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
  1 file changed, 1 insertion(+)
 
 diff --git a/include/configs/am335x_evm.h b/include/configs/am335x_evm.h
-index 2ac89af..8de4cc9 100644
+index c5a6d4b..c143137 100644
 --- a/include/configs/am335x_evm.h
 +++ b/include/configs/am335x_evm.h
-@@ -149,6 +149,7 @@
+@@ -151,6 +151,7 @@
  #endif
  
  #define CONFIG_BOOTCOMMAND \
@@ -21,5 +21,5 @@ index 2ac89af..8de4cc9 100644
  	"mmc dev ${mmcdev}; if mmc rescan; then " \
  		"echo SD/MMC found on device ${mmcdev};" \
 -- 
-1.8.1.4
+1.8.3.1
 

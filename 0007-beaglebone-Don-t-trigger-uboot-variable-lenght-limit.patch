@@ -1,7 +1,7 @@
-From 2bb3b2b5b50dc70af4ef6686642350cbd5ec870a Mon Sep 17 00:00:00 2001
+From 88dfa478398f9fdf8e99c19b39f98b4ce1def19b Mon Sep 17 00:00:00 2001
 From: Koen Kooi <koen@dominion.thruhere.net>
 Date: Wed, 3 Apr 2013 11:39:16 +0200
-Subject: [PATCH 07/14] beaglebone: Don't trigger uboot variable lenght limit
+Subject: [PATCH 07/15] beaglebone: Don't trigger uboot variable lenght limit
 
 Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
 ---
@@ -9,10 +9,10 @@ Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
  1 file changed, 3 insertions(+), 17 deletions(-)
 
 diff --git a/include/configs/am335x_evm.h b/include/configs/am335x_evm.h
-index a21fe8e..9051249 100644
+index 2547a87..afe7348 100644
 --- a/include/configs/am335x_evm.h
 +++ b/include/configs/am335x_evm.h
-@@ -152,23 +152,11 @@
+@@ -154,23 +154,11 @@
  #define CONFIG_BOOTCOMMAND \
  	"i2c mw 0x24 1 0x3e; " \
  	"run findfdt; " \
@@ -39,7 +39,7 @@ index a21fe8e..9051249 100644
  	"fi;" \
  	"mmc dev ${mmcdev}; if mmc rescan; then " \
  		"echo SD/MMC found on device ${mmcdev};" \
-@@ -184,8 +172,6 @@
+@@ -186,8 +174,6 @@
  			"run loadfdt;" \
  			"run mmcboot;" \
  		"fi;" \
@@ -49,5 +49,5 @@ index a21fe8e..9051249 100644
  
  /* Clock Defines */
 -- 
-1.8.1.4
+1.8.3.1
 

@@ -1,7 +1,7 @@
-From bcfde7885d6adbf067db5dd54cd4d9cea7426870 Mon Sep 17 00:00:00 2001
+From 49f32a629c69828226995fc6234818b1e206e2c3 Mon Sep 17 00:00:00 2001
 From: Jason Kridner <jdk@ti.com>
 Date: Thu, 4 Apr 2013 07:16:41 +0000
-Subject: [PATCH 11/14] am335x_evm: HACK to turn on BeagleBone LEDs
+Subject: [PATCH 11/15] am335x_evm: HACK to turn on BeagleBone LEDs
 
 * This might break non-BeagleBone platforms
 ---
@@ -9,10 +9,10 @@ Subject: [PATCH 11/14] am335x_evm: HACK to turn on BeagleBone LEDs
  1 file changed, 4 insertions(+)
 
 diff --git a/include/configs/am335x_evm.h b/include/configs/am335x_evm.h
-index f2838ac..9e39d00 100644
+index 70ace70..37c4b2b 100644
 --- a/include/configs/am335x_evm.h
 +++ b/include/configs/am335x_evm.h
-@@ -150,6 +150,7 @@
+@@ -152,6 +152,7 @@
  #endif
  
  #define CONFIG_BOOTCOMMAND \
@@ -20,7 +20,7 @@ index f2838ac..9e39d00 100644
  	"i2c mw 0x24 1 0x3e; " \
  	"run findfdt; " \
  	"mmc dev 0; if mmc rescan ; then " \
-@@ -161,6 +162,7 @@
+@@ -163,6 +164,7 @@
  	"fi;" \
  	"setenv bootpart ${mmcdev}:2;" \
  	"mmc dev ${mmcdev}; if mmc rescan; then " \
@@ -28,7 +28,7 @@ index f2838ac..9e39d00 100644
  		"echo SD/MMC found on device ${mmcdev};" \
  		"if run loadbootenv; then " \
  			"echo Loaded environment from ${bootenv};" \
-@@ -170,7 +172,9 @@
+@@ -172,7 +174,9 @@
  			"echo Running uenvcmd ...;" \
  			"run uenvcmd;" \
  		"fi;" \
@@ -39,5 +39,5 @@ index f2838ac..9e39d00 100644
  			"run mmcboot;" \
  		"fi;" \
 -- 
-1.8.1.4
+1.8.3.1
 

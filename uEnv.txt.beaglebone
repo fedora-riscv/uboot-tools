@@ -1,4 +1,5 @@
 abcboard=am335x-bone
 bootpart=0:3
 bootfile=boot.scr
-uenvcmd=ext4load mmc ${bootpart} ${loadaddr} ${bootdir}/${bootfile}; echo Running boot.scr script from mmc ...; source ${loadaddr} 
+bootdir=/boot
+uenvcmd=ext2load mmc ${bootpart} ${loadaddr} ${bootdir}/${bootfile}; echo Running boot.scr script from mmc ...; source ${loadaddr} 
