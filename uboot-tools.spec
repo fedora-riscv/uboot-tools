@@ -3,7 +3,7 @@
 
 Name:           uboot-tools
 Version:        2013.07
-Release:        1%{?candidate:.%{candidate}}%{?dist}
+Release:        2%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -39,6 +39,10 @@ Patch21: 0012-Fix-for-screen-rolling-when-video-played-back-in-bro.patch
 Patch22: 0013-beaglebone-enable-CONFIG_SUPPORT_RAW_INITRD-option.patch
 Patch23: 0014-mmc-Add-RSTN-enable-for-emmc.patch
 Patch24: 0015-wandboard-add-pxe-support-set-default-boot-command-l.patch
+
+# Panda ES memory timing issue
+Patch25: omap4-panda-memtiming.patch
+
 
 Requires:       dtc
 
@@ -149,6 +153,7 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %patch22 -p1
 %patch23 -p1
 %patch24 -p1
+%patch25 -p1 -b .panda
 
 mkdir builds
 
@@ -338,6 +343,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sun Sep  1 2013 Peter Robinson <pbrobinson@fedoraproject.org> 2013.07-2
+- Add patch for Panda ES memory type issue
+
 * Fri Jul 26 2013 Dennis Gilmore <dennis@ausil.us> - 2013.07-1
 - update to 2013.07 final 
 
