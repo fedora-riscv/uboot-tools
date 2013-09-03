@@ -1,9 +1,8 @@
-#global candidate rc
-%global _default_patch_fuzz 2
+%global candidate rc2
 
 Name:           uboot-tools
-Version:        2013.07
-Release:        2%{?candidate:.%{candidate}}%{?dist}
+Version:        2013.10
+Release:        0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -18,30 +17,28 @@ Source5:        uEnv.txt.panda_a4
 Source6:        uEnv.txt.panda_es
 Source7:        uEnv.txt.uevm
 Patch1:         u-boot-fat.patch
-Patch2:         uboot-omap-fit.patch
 Patch3:         mlo-ext.patch
 Patch4:         exynos-ext.patch
 
-# Wandboard quad support
-Patch10: 0001-Add-wandboard-quad-support.patch
-# Beagle Bone Black support
-Patch11: 0002-am335x-mux-don-t-hang-on-unknown-EEPROMs-assume-Beag.patch
-Patch12: 0003-beaglebone-HACK-always-return-1-for-is_bone_lt.patch
-Patch13: 0004-beaglebone-HACK-raise-USB-current-limit.patch
-Patch14: 0005-beaglebone-use-kloadaddr-to-avoid-copying-the-kernel.patch
-Patch15: 0006-beaglebone-try-to-load-uEnv-uImage-from-eMMC-first.patch
-Patch16: 0007-beaglebone-Don-t-trigger-uboot-variable-lenght-limit.patch
-Patch17: 0008-beaglebone-HACK-change-mmc-order-to-avoid-u-boot-cra.patch
-Patch18: 0009-beaglebone-update-bootpart-variable-after-mmc-scan.patch
-Patch19: 0010-am335x_evm-enable-gpio-command.patch
-Patch20: 0011-am335x_evm-HACK-to-turn-on-BeagleBone-LEDs.patch
-Patch21: 0012-Fix-for-screen-rolling-when-video-played-back-in-bro.patch
-Patch22: 0013-beaglebone-enable-CONFIG_SUPPORT_RAW_INITRD-option.patch
-Patch23: 0014-mmc-Add-RSTN-enable-for-emmc.patch
-Patch24: 0015-wandboard-add-pxe-support-set-default-boot-command-l.patch
+Patch10:        0001-add-distro-default-commands-and-config-options.patch
+Patch11:        0002-add-option-to-include-generic-distro-config.patch
+Patch12:        0003-set-omap4-boards-to-use-the-generic-distro-support.patch
+Patch13:        0004-set-wandboard-to-use-generic-commands-and-set-needed.patch
+Patch14:        0005-set-the-default-wandboard-boot-commands.patch
+Patch15:        0006-set-omap4-to-use-extlinux.conf-by-default.patch
+Patch16:        0007-enable-CONFIG_CMD_BOOTMENU-for-distro-configs.patch
+Patch17:        0008-DISABLE-FIT-image-support-since-it-fails-to-build.patch
+Patch18:        0009-add-defualt-DHCP-config-options.patch
+Patch19:        0010-remove-USB-from-distro-default-not-all-systems-suppo.patch
+Patch20:        0011-set-omap5-up-to-use-generic-distro-configs.patch
+Patch21:        0012-setup-omap5-to-load-extlinux.conf.patch
+Patch22:        0013-Setup-beagleboard-to-used-generic-distro-configs.patch
+Patch23:        0014-setup-beagleboard-to-load-extlinux.conf.patch
+Patch24:        0015-setup-address-variables-needed-for-distro-config.patch
+Patch25:        0016-setup-am335x_evm-to-load-extlinux.conf.patch
 
 # Panda ES memory timing issue
-Patch25: omap4-panda-memtiming.patch
+Patch50: omap4-panda-memtiming.patch
 
 
 Requires:       dtc
@@ -132,13 +129,10 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %prep
 %setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
 %patch1 -p1
-%patch2 -p1
 #patch3 -p1
 #patch4 -p1
 
-# wandboard quad support
 %patch10 -p1
-# Beagle Bone Black support
 %patch11 -p1
 %patch12 -p1
 %patch13 -p1
@@ -153,7 +147,8 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %patch22 -p1
 %patch23 -p1
 %patch24 -p1
-%patch25 -p1 -b .panda
+%patch25 -p1
+%patch50 -p1 -b .panda
 
 mkdir builds
 
@@ -163,14 +158,12 @@ make CROSS_COMPILE="" am335x_evm_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p MLO builds/MLO.beaglebone
 cp -p u-boot.img builds/u-boot.img.beaglebone
-cp -p u-boot.bin builds/u-boot.bin.beaglebone
 make distclean
 
 make CROSS_COMPILE="" omap3_beagle_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p MLO builds/MLO.beagle
 cp -p u-boot.img builds/u-boot.img.beagle
-cp -p u-boot.bin builds/u-boot.bin.beagle
 make distclean
 
 make CROSS_COMPILE="" highbank_config
@@ -182,7 +175,6 @@ make CROSS_COMPILE="" omap4_panda_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p MLO builds/MLO.panda
 cp -p u-boot.img builds/u-boot.img.panda
-cp -p u-boot.bin builds/u-boot.bin.panda
 make distclean
 
 make CROSS_COMPILE="" origen_config
@@ -216,7 +208,6 @@ make CROSS_COMPILE="" omap5_uevm_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p MLO builds/MLO.uevm
 cp -p u-boot.img builds/u-boot.img.uevm
-cp -p u-boot.bin builds/u-boot.bin.uevm
 make distclean
 
 %endif
@@ -249,7 +240,6 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-vexpress/
 
 for board in beaglebone beagle panda uevm
 do
-install -p -m 0644 builds/u-boot.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot.bin
 install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot.img
 install -p -m 0644 builds/MLO.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/MLO
 done
@@ -292,7 +282,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc COPYING README doc/README.imximage doc/README.kwbimage doc/uImage.FIT
+%doc README doc/README.imximage doc/README.kwbimage doc/uImage.FIT
 %{_bindir}/mkimage
 %{_mandir}/man1/mkimage.1*
 %if 0%{?with_env}
@@ -343,6 +333,11 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Sep 02 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-0.1.rc2
+- update  to 2013.10-rc2
+- enable extlinux.conf support on most boards
+- add distro generic configuration options
+
 * Sun Sep  1 2013 Peter Robinson <pbrobinson@fedoraproject.org> 2013.07-2
 - Add patch for Panda ES memory type issue
 
