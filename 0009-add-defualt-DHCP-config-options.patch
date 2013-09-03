@@ -1,0 +1,30 @@
+From 10785df495adbfea7856800a93a2ac14fddbd559 Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Mon, 2 Sep 2013 18:26:17 -0500
+Subject: [PATCH 09/16] add defualt DHCP config options
+
+---
+ include/config_distro_default.h | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/include/config_distro_default.h b/include/config_distro_default.h
+index 44731ad..8c786d2 100644
+--- a/include/config_distro_default.h
++++ b/include/config_distro_default.h
+@@ -14,8 +14,12 @@
+  * required by distros to support boards in a standardised and consitant manner.
+  */
+ 
+-
++#define CONFIG_BOOTP_BOOTPATH
++#define CONFIG_BOOTP_DNS
++#define CONFIG_BOOTP_GATEWAY
++#define CONFIG_BOOTP_HOSTNAME
+ #define CONFIG_BOOTP_PXE
++#define CONFIG_BOOTP_SUBNETMASK
+ 
+ #if defined(__arm__)
+ #define CONFIG_BOOTP_PXE_CLIENTARCH     0x100
+-- 
+1.8.3.1
+
