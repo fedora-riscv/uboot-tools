@@ -1,4 +1,4 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:           uboot-tools
 Version:        2013.10
@@ -38,7 +38,7 @@ Patch24:        0015-setup-address-variables-needed-for-distro-config.patch
 Patch25:        0016-setup-am335x_evm-to-load-extlinux.conf.patch
 
 # Panda ES memory timing issue
-Patch50: omap4-panda-memtiming.patch
+#Patch50: omap4-panda-memtiming.patch
 
 
 Requires:       dtc
@@ -333,6 +333,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Sep 19 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-0.1.rc3
+- update to 2013.10-rc3
+- disable panda timing patch for now
+
 * Mon Sep 02 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-0.1.rc2
 - update  to 2013.10-rc2
 - enable extlinux.conf support on most boards
