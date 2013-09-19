@@ -148,7 +148,7 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %patch23 -p1
 %patch24 -p1
 %patch25 -p1
-%patch50 -p1 -b .panda
+#%patch50 -p1 -b .panda
 
 mkdir builds
 
