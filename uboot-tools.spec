@@ -203,7 +203,7 @@ make distclean
 
 make CROSS_COMPILE="" arndale_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
-cp -p spl/arndale-spl.bin builds/arndale-spl.bin
+cp -p spl/arndale-spl.bin builds/arndale-spl.bin.arndale
 cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.arndale
 make distclean
 
@@ -318,7 +318,7 @@ install -p -m 0644 builds/u-boot-nodtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%
 install -p -m 0644 builds/u-boot-dtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-paz00/u-boot-dtb-tegra.bin
 done
 
-install -p -m 0644 builds/arndale-spl.bin $RPM_BUILD_ROOT%{_datadir}/uboot-origen/arndale-spl.bin
+install -p -m 0644 builds/arndale-spl.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot-origen/arndale-spl.bin
 install -p -m 0644 builds/u-boot-dtb.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot-arndale/u-boot-dtb.bin
 
 install -p -m 0644 builds/u-boot.bin.highbank $RPM_BUILD_ROOT%{_datadir}/uboot-highbank/u-boot.bin
