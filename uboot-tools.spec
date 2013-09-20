@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2013.10
-Release:        0.1%{?candidate:.%{candidate}}%{?dist}
+Release:        0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -40,7 +40,7 @@ Patch25:        0016-setup-am335x_evm-to-load-extlinux.conf.patch
 # Panda ES memory timing issue
 #Patch50: omap4-panda-memtiming.patch
 
-
+BuildRequires:  dtc
 Requires:       dtc
 
 # build the tool for manipulation with environment only on arm
@@ -53,6 +53,13 @@ This package contains a few U-Boot utilities - mkimage for creating boot images
 and fw_printenv/fw_setenv for manipulating the boot environment variables.
 
 %ifarch %{arm}
+%package     -n uboot-arndale
+Summary:     u-boot bootloader binaries for arndale board
+Requires:    uboot-tools
+
+%description -n uboot-arndale
+u-boot bootloader binaries for arndale board
+
 %package     -n uboot-beagle
 Summary:     u-boot bootloader binaries for beagleboard
 Requires:    uboot-tools
@@ -89,12 +96,40 @@ Requires:    uboot-tools
 %description -n uboot-origen
 u-boot bootloader binaries for origenboard
 
+%package     -n uboot-paz00
+Summary:     u-boot bootloader binaries for the paz00 board aka ac100
+Requires:    uboot-tools
+
+%description -n uboot-paz00
+u-boot bootloader binaries for paz00 board
+
 %package     -n uboot-smdkv310
 Summary:     u-boot bootloader binaries for smdk310 board
 Requires:    uboot-tools
 
 %description -n uboot-smdkv310
 u-boot bootloader binaries for smdk310 board
+
+%package     -n uboot-snow
+Summary:     u-boot bootloader binaries for snow board aka chromebook
+Requires:    uboot-tools
+
+%description -n uboot-snow
+u-boot bootloader binaries for snow board
+
+%package     -n uboot-snowball
+Summary:     u-boot bootloader binaries for snowball board
+Requires:    uboot-tools
+
+%description -n uboot-snowball
+u-boot bootloader binaries for snowball board
+
+%package     -n uboot-trimslice
+Summary:     u-boot bootloader binaries for trimslice board
+Requires:    uboot-tools
+
+%description -n uboot-trimslice
+u-boot bootloader binaries for trimslice board
 
 %package     -n uboot-uevm
 Summary:     u-boot bootloader binaries for uevm, omap5 pandaboard
@@ -166,6 +201,12 @@ cp -p MLO builds/MLO.beagle
 cp -p u-boot.img builds/u-boot.img.beagle
 make distclean
 
+make CROSS_COMPILE="" arndale_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p spl/arndale-spl.bin builds/arndale-spl.bin
+cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.arndale
+make distclean
+
 make CROSS_COMPILE="" highbank_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p u-boot.bin builds/u-boot.bin.highbank
@@ -183,10 +224,32 @@ cp -p spl/origen-spl.bin builds/origen-spl.bin.origen
 cp -p u-boot.bin builds/u-boot.bin.origen
 make distclean
 
+make CROSS_COMPILE="" paz00_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p u-boot-dtb-tegra.bin builds/u-boot-dtb-tegra.bin.paz00
+cp -p u-boot-nodtb-tegra.bin builds/u-boot-nodtb-tegra.bin.paz00
+make distclean
+
 make CROSS_COMPILE="" smdkv310_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
 cp -p spl/smdkv310-spl.bin builds/smdkv310-spl.bin.smdkv310
 cp -p u-boot.bin builds/u-boot.bin.smdkv310
+make distclean
+
+make CROSS_COMPILE="" snow_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.snow
+make distclean
+
+make CROSS_COMPILE="" snowball_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p u-boot.bin builds/u-boot.bin.snowball
+make distclean
+
+make CROSS_COMPILE="" trimslice_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+cp -p u-boot-dtb-tegra.bin builds/u-boot-dtb-tegra.bin.trimslice
+cp -p u-boot-nodtb-tegra.bin builds/u-boot-nodtb-tegra.bin.trimslice
 make distclean
 
 make CROSS_COMPILE="" wandboard_dl_config
@@ -226,12 +289,17 @@ mkdir -p $RPM_BUILD_ROOT%{_bindir}
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 %ifarch %{arm}
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-panda/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-arndale/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-beaglebone/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-highbank/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-origen/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-panda/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-paz00/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-snow/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-snowball/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-trimslice/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6quad/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6solo/
@@ -244,6 +312,15 @@ install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/u
 install -p -m 0644 builds/MLO.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/MLO
 done
 
+for board in paz00 trimslice
+do
+install -p -m 0644 builds/u-boot-nodtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-paz00/u-boot-nodtb-tegra.bin
+install -p -m 0644 builds/u-boot-dtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-paz00/u-boot-dtb-tegra.bin
+done
+
+install -p -m 0644 builds/arndale-spl.bin $RPM_BUILD_ROOT%{_datadir}/uboot-origen/arndale-spl.bin
+install -p -m 0644 builds/u-boot-dtb.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot-arndale/u-boot-dtb.bin
+
 install -p -m 0644 builds/u-boot.bin.highbank $RPM_BUILD_ROOT%{_datadir}/uboot-highbank/u-boot.bin
 
 install -p -m 0644 builds/origen-spl.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-origen/origen-spl.bin
@@ -252,10 +329,12 @@ install -p -m 0644 builds/u-boot.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-ori
 install -p -m 0644 builds/smdkv310-spl.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/smdkv310-spl.bin
 install -p -m 0644 builds/u-boot.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/u-boot.bin
 
+install -p -m 0644 builds/u-boot-dtb.bin.snow $RPM_BUILD_ROOT%{_datadir}/uboot-snow/u-boot-dtb.bin
+install -p -m 0644 builds/u-boot.bin.snowball $RPM_BUILD_ROOT%{_datadir}/uboot-snowball/u-boot.bin
+
 install -p -m 0644 builds/u-boot.imx.dl $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/u-boot.imx
 install -p -m 0644 builds/u-boot.imx.quad $RPM_BUILD_ROOT%{_datadir}/uboot-imx6quad/u-boot.imx
 install -p -m 0644 builds/u-boot.imx.solo $RPM_BUILD_ROOT%{_datadir}/uboot-imx6solo/u-boot.imx
-
 
 install -p -m 0644 %{SOURCE1}  $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/uEnv.txt.beagle
 install -p -m 0644 %{SOURCE2}  $RPM_BUILD_ROOT%{_datadir}/uboot-beaglebone/uEnv.txt.beaglebone
@@ -264,7 +343,6 @@ install -p -m 0644 %{SOURCE4}  $RPM_BUILD_ROOT%{_datadir}/uboot-panda/uEnv.txt.p
 install -p -m 0644 %{SOURCE5}  $RPM_BUILD_ROOT%{_datadir}/uboot-panda/uEnv.txt.panda_a4
 install -p -m 0644 %{SOURCE6}  $RPM_BUILD_ROOT%{_datadir}/uboot-panda/uEnv.txt.panda_es
 install -p -m 0644 %{SOURCE7}  $RPM_BUILD_ROOT%{_datadir}/uboot-uevm/uEnv.txt.uevm
-
 %endif
 
 install -p -m 0755 tools/mkimage $RPM_BUILD_ROOT%{_bindir}
@@ -291,6 +369,10 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{_sysconfdir}/fw_env.config
 %endif
 %ifarch %{arm}
+%files -n uboot-arndale
+%defattr(-,root,root,-)
+%{_datadir}/uboot-arndale/
+
 %files -n uboot-beaglebone
 %defattr(-,root,root,-)
 %{_datadir}/uboot-beaglebone/
@@ -307,13 +389,29 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_datadir}/uboot-panda/
 
+%files -n uboot-paz00
+%defattr(-,root,root,-)
+%{_datadir}/uboot-paz00/
+
 %files -n uboot-origen
 %defattr(-,root,root,-)
 %{_datadir}/uboot-origen/
 
+%files -n uboot-snow
+%defattr(-,root,root,-)
+%{_datadir}/uboot-snow/
+
+%files -n uboot-snowball
+%defattr(-,root,root,-)
+%{_datadir}/uboot-snowball/
+
 %files -n uboot-smdkv310
 %defattr(-,root,root,-)
 %{_datadir}/uboot-smdkv310/
+
+%files -n uboot-trimslice
+%defattr(-,root,root,-)
+%{_datadir}/uboot-trimslice/
 
 %files -n uboot-wandboard_dl
 %defattr(-,root,root,-)
@@ -333,6 +431,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Fri Sep 20 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-0.2.rc3
+- enable arndale, paz00, snow, snowball and trimslice builds
+
 * Thu Sep 19 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-0.1.rc3
 - update to 2013.10-rc3
 - disable panda timing patch for now
