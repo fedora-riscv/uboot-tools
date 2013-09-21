@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2013.10
-Release:        0.2%{?candidate:.%{candidate}}%{?dist}
+Release:        0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -314,8 +314,8 @@ done
 
 for board in paz00 trimslice
 do
-install -p -m 0644 builds/u-boot-nodtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-paz00/u-boot-nodtb-tegra.bin
-install -p -m 0644 builds/u-boot-dtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-paz00/u-boot-dtb-tegra.bin
+install -p -m 0644 builds/u-boot-nodtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot-nodtb-tegra.bin
+install -p -m 0644 builds/u-boot-dtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot-dtb-tegra.bin
 done
 
 install -p -m 0644 builds/arndale-spl.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot-origen/arndale-spl.bin
@@ -431,6 +431,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Fri Sep 20 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-0.3.rc3
+- install trimslice u-boot correctly
+
 * Fri Sep 20 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-0.2.rc3
 - enable arndale, paz00, snow, snowball and trimslice builds
 
