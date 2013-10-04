@@ -1,8 +1,8 @@
-%global candidate rc3
+%global candidate rc4
 
 Name:           uboot-tools
 Version:        2013.10
-Release:        0.4%{?candidate:.%{candidate}}%{?dist}
+Release:        0.5%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -434,6 +434,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Fri Oct 04 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-0.5.rc4
+- update to 2013.10-rc4
+
 * Fri Sep 20 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-0.4.rc3
 - install u-boot.map for trimslice and paz00
 
