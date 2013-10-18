@@ -9,13 +9,7 @@ Group:          Development/Tools
 License:        GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:            http://www.denx.de/wiki/U-Boot
 Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
-Source1:        uEnv.txt.beagle
-Source2:        uEnv.txt.beaglebone
-Source3:        uEnv.txt.beagle_xm
-Source4:        uEnv.txt.panda
-Source5:        uEnv.txt.panda_a4
-Source6:        uEnv.txt.panda_es
-Source7:        uEnv.txt.uevm
+Source1:        uEnv.txt
 Patch1:         u-boot-fat.patch
 Patch3:         mlo-ext.patch
 Patch4:         exynos-ext.patch
@@ -26,16 +20,15 @@ Patch12:        0003-set-omap4-boards-to-use-the-generic-distro-support.patch
 Patch13:        0004-set-wandboard-to-use-generic-commands-and-set-needed.patch
 Patch14:        0005-set-the-default-wandboard-boot-commands.patch
 Patch15:        0006-set-omap4-to-use-extlinux.conf-by-default.patch
-Patch16:        0007-enable-CONFIG_CMD_BOOTMENU-for-distro-configs.patch
-Patch17:        0008-DISABLE-FIT-image-support-since-it-fails-to-build.patch
+Patch16:        0007-remove-CONFIG_MENU_SHOW-from-distro-config.patch
+Patch17:        0008-disable-FIT-image-support-since-it-fails-to-build.patch
 Patch18:        0009-add-defualt-DHCP-config-options.patch
 Patch19:        0010-remove-USB-from-distro-default-not-all-systems-suppo.patch
-Patch20:        0011-set-omap5-up-to-use-generic-distro-configs.patch
-Patch21:        0012-setup-omap5-to-load-extlinux.conf.patch
-Patch22:        0013-Setup-beagleboard-to-used-generic-distro-configs.patch
-Patch23:        0014-setup-beagleboard-to-load-extlinux.conf.patch
-Patch24:        0015-setup-address-variables-needed-for-distro-config.patch
-Patch25:        0016-setup-am335x_evm-to-load-extlinux.conf.patch
+Patch20:        0011-Setup-beagleboard-to-used-generic-distro-configs.patch
+Patch21:        0012-setup-beagleboard-to-load-extlinux.conf.patch
+Patch22:        0013-setup-distro-common-variables-on-beaglebones.patch
+Patch23:        0014-Use-SPDX-header-in-distro-config.patch
+Patch24:        0015-WANDBOARD-adjust-addrs-to-work-with-calculated-value.patch
 
 # Panda ES memory timing issue
 #Patch50: omap4-panda-memtiming.patch
@@ -182,7 +175,6 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %patch22 -p1
 %patch23 -p1
 %patch24 -p1
-%patch25 -p1
 #%patch50 -p1 -b .panda
 
 mkdir builds
@@ -290,62 +282,57 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
+install -p -m 0644 %{SOURCE1}  $RPM_BUILD_ROOT%{_datadir}/uboot/uEnv.txt
+
 %ifarch %{arm}
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-arndale/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-beaglebone/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-highbank/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-origen/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-panda/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-paz00/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-snow/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-snowball/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-trimslice/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6quad/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-imx6solo/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-uevm/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot-vexpress/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beagle/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beaglebone/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/highbank/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/origen/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/panda/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/paz00/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/snow/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/snowball/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/smdkv310/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/trimslice/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/imx6dl/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/imx6quad/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/imx6solo/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/uevm/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/vexpress/
 
 for board in beaglebone beagle panda uevm
 do
-install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot.img
-install -p -m 0644 builds/MLO.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/MLO
+install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.img
+install -p -m 0644 builds/MLO.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/MLO
 done
 
 for board in paz00 trimslice
 do
-install -p -m 0644 builds/u-boot-nodtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot-nodtb-tegra.bin
-install -p -m 0644 builds/u-boot-dtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot-dtb-tegra.bin
-install -p -m 0644 builds/u-boot.map.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot-$(echo $board)/u-boot.map
+install -p -m 0644 builds/u-boot-nodtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-nodtb-tegra.bin
+install -p -m 0644 builds/u-boot-dtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-dtb-tegra.bin
+install -p -m 0644 builds/u-boot.map.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.map
 done
 
-install -p -m 0644 builds/arndale-spl.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot-origen/arndale-spl.bin
-install -p -m 0644 builds/u-boot-dtb.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot-arndale/u-boot-dtb.bin
+install -p -m 0644 builds/arndale-spl.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/arndale-spl.bin
+install -p -m 0644 builds/u-boot-dtb.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/u-boot-dtb.bin
 
-install -p -m 0644 builds/u-boot.bin.highbank $RPM_BUILD_ROOT%{_datadir}/uboot-highbank/u-boot.bin
+install -p -m 0644 builds/u-boot.bin.highbank $RPM_BUILD_ROOT%{_datadir}/uboot/highbank/u-boot.bin
 
-install -p -m 0644 builds/origen-spl.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-origen/origen-spl.bin
-install -p -m 0644 builds/u-boot.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot-origen/u-boot.bin
+install -p -m 0644 builds/origen-spl.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot/origen/origen-spl.bin
+install -p -m 0644 builds/u-boot.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot/origen/u-boot.bin
 
-install -p -m 0644 builds/smdkv310-spl.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/smdkv310-spl.bin
-install -p -m 0644 builds/u-boot.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot-smdkv310/u-boot.bin
+install -p -m 0644 builds/smdkv310-spl.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot/smdkv310/smdkv310-spl.bin
+install -p -m 0644 builds/u-boot.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot/smdkv310/u-boot.bin
 
-install -p -m 0644 builds/u-boot-dtb.bin.snow $RPM_BUILD_ROOT%{_datadir}/uboot-snow/u-boot-dtb.bin
-install -p -m 0644 builds/u-boot.bin.snowball $RPM_BUILD_ROOT%{_datadir}/uboot-snowball/u-boot.bin
+install -p -m 0644 builds/u-boot-dtb.bin.snow $RPM_BUILD_ROOT%{_datadir}/uboot/snow/u-boot-dtb.bin
+install -p -m 0644 builds/u-boot.bin.snowball $RPM_BUILD_ROOT%{_datadir}/uboot/snowball/u-boot.bin
 
-install -p -m 0644 builds/u-boot.imx.dl $RPM_BUILD_ROOT%{_datadir}/uboot-imx6dl/u-boot.imx
-install -p -m 0644 builds/u-boot.imx.quad $RPM_BUILD_ROOT%{_datadir}/uboot-imx6quad/u-boot.imx
-install -p -m 0644 builds/u-boot.imx.solo $RPM_BUILD_ROOT%{_datadir}/uboot-imx6solo/u-boot.imx
-
-install -p -m 0644 %{SOURCE1}  $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/uEnv.txt.beagle
-install -p -m 0644 %{SOURCE2}  $RPM_BUILD_ROOT%{_datadir}/uboot-beaglebone/uEnv.txt.beaglebone
-install -p -m 0644 %{SOURCE3}  $RPM_BUILD_ROOT%{_datadir}/uboot-beagle/uEnv.txt.beagle_xm
-install -p -m 0644 %{SOURCE4}  $RPM_BUILD_ROOT%{_datadir}/uboot-panda/uEnv.txt.panda
-install -p -m 0644 %{SOURCE5}  $RPM_BUILD_ROOT%{_datadir}/uboot-panda/uEnv.txt.panda_a4
-install -p -m 0644 %{SOURCE6}  $RPM_BUILD_ROOT%{_datadir}/uboot-panda/uEnv.txt.panda_es
-install -p -m 0644 %{SOURCE7}  $RPM_BUILD_ROOT%{_datadir}/uboot-uevm/uEnv.txt.uevm
+install -p -m 0644 builds/u-boot.imx.dl $RPM_BUILD_ROOT%{_datadir}/uboot/imx6dl/u-boot.imx
+install -p -m 0644 builds/u-boot.imx.quad $RPM_BUILD_ROOT%{_datadir}/uboot/imx6quad/u-boot.imx
+install -p -m 0644 builds/u-boot.imx.solo $RPM_BUILD_ROOT%{_datadir}/uboot/imx6solo/u-boot.imx
 %endif
 
 install -p -m 0755 tools/mkimage $RPM_BUILD_ROOT%{_bindir}
@@ -366,6 +353,8 @@ rm -rf $RPM_BUILD_ROOT
 %doc README doc/README.imximage doc/README.kwbimage doc/uImage.FIT
 %{_bindir}/mkimage
 %{_mandir}/man1/mkimage.1*
+%dir %{_datadir}/uboot/
+%{_datadir}/uboot/uEnv.txt
 %if 0%{?with_env}
 %{_bindir}/fw_printenv
 %{_bindir}/fw_setenv
@@ -374,68 +363,69 @@ rm -rf $RPM_BUILD_ROOT
 %ifarch %{arm}
 %files -n uboot-arndale
 %defattr(-,root,root,-)
-%{_datadir}/uboot-arndale/
+%{_datadir}/uboot/arndale/
 
 %files -n uboot-beaglebone
 %defattr(-,root,root,-)
-%{_datadir}/uboot-beaglebone/
+%{_datadir}/uboot/beaglebone/
 
 %files -n uboot-beagle
 %defattr(-,root,root,-)
-%{_datadir}/uboot-beagle/
+%{_datadir}/uboot/beagle/
 
 %files -n uboot-highbank
 %defattr(-,root,root,-)
-%{_datadir}/uboot-highbank/
+%{_datadir}/uboot/highbank/
 
 %files -n uboot-panda
 %defattr(-,root,root,-)
-%{_datadir}/uboot-panda/
+%{_datadir}/uboot/panda/
 
 %files -n uboot-paz00
 %defattr(-,root,root,-)
-%{_datadir}/uboot-paz00/
+%{_datadir}/uboot/paz00/
 
 %files -n uboot-origen
 %defattr(-,root,root,-)
-%{_datadir}/uboot-origen/
+%{_datadir}/uboot/origen/
 
 %files -n uboot-snow
 %defattr(-,root,root,-)
-%{_datadir}/uboot-snow/
+%{_datadir}/uboot/snow/
 
 %files -n uboot-snowball
 %defattr(-,root,root,-)
-%{_datadir}/uboot-snowball/
+%{_datadir}/uboot/snowball/
 
 %files -n uboot-smdkv310
 %defattr(-,root,root,-)
-%{_datadir}/uboot-smdkv310/
+%{_datadir}/uboot/smdkv310/
 
 %files -n uboot-trimslice
 %defattr(-,root,root,-)
-%{_datadir}/uboot-trimslice/
+%{_datadir}/uboot/trimslice/
 
 %files -n uboot-wandboard_dl
 %defattr(-,root,root,-)
-%{_datadir}/uboot-imx6dl/
+%{_datadir}/uboot/imx6dl/
 
 %files -n uboot-wandboard_quad
 %defattr(-,root,root,-)
-%{_datadir}/uboot-imx6quad/
+%{_datadir}/uboot/imx6quad/
 
 %files -n uboot-wandboard_solo
 %defattr(-,root,root,-)
-%{_datadir}/uboot-imx6solo/
+%{_datadir}/uboot/imx6solo/
 
 %files -n uboot-uevm
 %defattr(-,root,root,-)
-%{_datadir}/uboot-uevm/
+%{_datadir}/uboot/uevm/
 %endif
 
 %changelog
 * Thu Oct 17 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-1
 - update to 2013.10 final
+- refactor where u-boot binaries are stored
 
 * Fri Oct 04 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-0.5.rc4
 - update to 2013.10-rc4
