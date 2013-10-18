@@ -1,4 +1,3 @@
-abcboard=am335x-bone
 bootpart=0:3
 bootfile=boot.scr
 bootdir=/boot

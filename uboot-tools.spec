@@ -1,12 +1,12 @@
-%global candidate rc4
+#global candidate
 
 Name:           uboot-tools
 Version:        2013.10
-Release:        0.5%{?candidate:.%{candidate}}%{?dist}
+Release:        1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
-License:        GPLv2+
+License:        GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:            http://www.denx.de/wiki/U-Boot
 Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:        uEnv.txt.beagle
@@ -434,6 +434,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Oct 17 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-1
+- update to 2013.10 final
+
 * Fri Oct 04 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-0.5.rc4
 - update to 2013.10-rc4
 
