@@ -1,0 +1,47 @@
+From b76a0828e3c62e74f59eda1d128dc9518c44f4ab Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Mon, 2 Sep 2013 21:55:37 -0500
+Subject: [PATCH 12/15] setup beagleboard to load extlinux.conf
+
+---
+ include/configs/omap3_beagle.h | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/include/configs/omap3_beagle.h b/include/configs/omap3_beagle.h
+index 2dbb5d9..f97c244 100644
+--- a/include/configs/omap3_beagle.h
++++ b/include/configs/omap3_beagle.h
+@@ -255,6 +255,22 @@
+ 			"setenv fdtfile omap3-beagle-xm.dtb; fi; " \
+ 		"if test $fdtfile = undefined; then " \
+ 			"echo WARNING: Could not determine device tree to use; fi; \0" \
++	"bootcmd_setup=mmc rescan\0" \
++	"bootcmd_pxe=setenv bootfile \"\" ;dhcp; pxe get; pxe boot\0" \
++	"bootcmd_disk_scr=ext2load ${boot_ifc} ${bootdevice} ${scr_addr_r} boot.scr && source ${scr_addr_r}\0" \
++	"bootcmd_disk_sysboot1=setenv bootfile /boot/extlinux/extlinux.conf; sysboot ${boot_ifc} ${bootdevice} ext2\0" \
++	"bootcmd_disk_sysboot2=setenv bootfile /extlinux/extlinux.conf; sysboot ${boot_ifc} ${bootdevice} ext2\0" \
++	"bootcmd_disk_uenv=ext2load ${boot_ifc} ${bootdevice} ${uenv_addr_r} uEnv.txt; env import -t ${uenv_addr_r} ${filesize}; run bootcmd_uenv\0" \
++	"bootcmd_disk_kernel=ext2load ${boot_ifc} ${bootdevice} ${kernel_addr_r} vmlinuz && ext2load ${boot_ifc} ${bootdevice} ${ramdisk_addr_r} initrd.img && bootz ${kernel_addr_r} ${ramdisk_addr_r}:${filesize} ${fdt_addr}\0" \
++	"bootcmd_disk=run bootcmd_disk_sysboot1; run bootcmd_disk_sysboot2; run bootcmd_disk_uenv; run bootcmd_disk_scr; run bootcmd_disk_kernel\0" \
++	"bootcmd_mmc=setenv boot_ifc mmc; mmc rescan && run bootcmd_disk\0" \
++	"bootcmd_default=run bootcmd_mmc; run bootcmd_pxe\0" \
++	"localcmd=run bootcmd_mmc\0" \
++	"bootdevice=0\0" \
++	"bootargs=console=${console} root=LABEL=rootfs\0" \
++	"bootdelay=2\0" \
++	"bootretry=90\0" \
++	"netretry=once\0" \
+ 	"bootenv=uEnv.txt\0" \
+ 	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
+ 	"importbootenv=echo Importing environment from mmc ...; " \
+@@ -292,6 +308,7 @@
+ #define CONFIG_BOOTCOMMAND \
+ 	"run findfdt; " \
+ 	"mmc dev ${mmcdev}; if mmc rescan; then " \
++                "run bootcmd_default; " \
+ 		"if run userbutton; then " \
+ 			"setenv bootenv uEnv.txt;" \
+ 		"else " \
+-- 
+1.8.3.1
+

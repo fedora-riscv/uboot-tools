@@ -1,0 +1,57 @@
+From 0893da22f56bda219e6437057a1145932a8311ac Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Mon, 2 Sep 2013 21:47:40 -0500
+Subject: [PATCH 11/15] Setup beagleboard to used generic distro configs
+
+---
+ include/configs/omap3_beagle.h | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/include/configs/omap3_beagle.h b/include/configs/omap3_beagle.h
+index 9fcd50b..2dbb5d9 100644
+--- a/include/configs/omap3_beagle.h
++++ b/include/configs/omap3_beagle.h
+@@ -130,6 +130,9 @@
+ /* commands to include */
+ #include <config_cmd_default.h>
+ 
++/* enable generic distro config */
++#define DISTRO_DEFAULTS 1
++
+ #define CONFIG_CMD_ASKENV
+ 
+ #define CONFIG_CMD_CACHE
+@@ -194,9 +197,13 @@
+ 
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+ 	"loadaddr=0x80200000\0" \
++	"pxefile_addr_r=0x82000000\0" \
++	"kernel_addr_r=0x84000000\0" \
++	"ramdisk_addr_r=0x90000000\0" \
++	"fdt_addr_r=0x83000000\0" \
+ 	"rdaddr=0x81000000\0" \
+ 	"fdt_high=0xffffffff\0" \
+-	"fdtaddr=0x80f80000\0" \
++	"fdt_addr=0x80f80000\0" \
+ 	"usbtty=cdc_acm\0" \
+ 	"bootfile=uImage\0" \
+ 	"ramdisk=ramdisk.gz\0" \
+@@ -263,13 +270,13 @@
+ 		"rootfstype=${ramrootfstype}\0" \
+ 	"loadramdisk=load mmc ${bootpart} ${rdaddr} ${bootdir}/${ramdisk}\0" \
+ 	"loadimage=load mmc ${bootpart} ${loadaddr} ${bootdir}/${bootfile}\0" \
+-	"loadfdt=load mmc ${bootpart} ${fdtaddr} ${bootdir}/${fdtfile}\0" \
++	"loadfdt=load mmc ${bootpart} ${fdt_addr} ${bootdir}/${fdtfile}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"bootm ${loadaddr}\0" \
+ 	"mmcbootz=echo Booting with DT from mmc${mmcdev} ...; " \
+ 		"run mmcargs; " \
+-		"bootz ${loadaddr} - ${fdtaddr}\0" \
++		"bootz ${loadaddr} - ${fdt_addr}\0" \
+ 	"nandboot=echo Booting from nand ...; " \
+ 		"run nandargs; " \
+ 		"nand read ${loadaddr} 280000 400000; " \
+-- 
+1.8.3.1
+

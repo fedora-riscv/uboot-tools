@@ -1,0 +1,48 @@
+From e213040f9253ebf299a1dd491443419e9d37d7b8 Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Mon, 2 Sep 2013 11:44:40 -0500
+Subject: [PATCH 05/15] set the default wandboard boot commands
+
+---
+ include/configs/wandboard.h | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/include/configs/wandboard.h b/include/configs/wandboard.h
+index 423d94e..ae16694 100644
+--- a/include/configs/wandboard.h
++++ b/include/configs/wandboard.h
+@@ -122,6 +122,23 @@
+ 	"ramdisk_addr_r=0x32000000\0" \
+ 	"fdt_addr_r=0x12000000\0" \
+ 	"boot_fdt=try\0" \
++	"bootcmd_setup=mmc rescan\0" \
++	"bootcmd_pxe=setenv bootfile \"\" ;dhcp; pxe get; pxe boot\0" \
++	"bootcmd_disk_scr=ext2load ${boot_ifc} ${bootdevice} ${scr_addr_r} boot.scr && source ${scr_addr_r}\0" \
++	"bootcmd_disk_sysboot1=setenv bootfile /boot/extlinux/extlinux.conf; sysboot ${boot_ifc} ${bootdevice} ext2\0" \
++	"bootcmd_disk_sysboot2=setenv bootfile /extlinux/extlinux.conf; sysboot ${boot_ifc} ${bootdevice} ext2\0" \
++	"bootcmd_disk_uenv=ext2load ${boot_ifc} ${bootdevice} ${uenv_addr_r} uEnv.txt; env import -t ${uenv_addr_r} ${filesize}; run bootcmd_uenv\0" \
++	"bootcmd_disk_kernel=ext2load ${boot_ifc} ${bootdevice} ${kernel_addr_r} vmlinuz && ext2load ${boot_ifc} ${bootdevice} ${ramdisk_addr_r} initrd.img && bootz ${kernel_addr_r} ${ramdisk_addr_r}:${filesize} ${fdt_addr}\0" \
++	"bootcmd_disk=run bootcmd_disk_sysboot1; run bootcmd_disk_sysboot2; run bootcmd_disk_uenv; run bootcmd_disk_scr; run bootcmd_disk_kernel\0" \
++	"bootcmd_sata=setenv boot_ifc scsi; scsi scan && run bootcmd_disk\0" \
++	"bootcmd_mmc=setenv boot_ifc mmc; mmc rescan && run bootcmd_disk\0" \
++	"bootcmd_default=run bootcmd_mmc; run bootcmd_sata; run bootcmd_pxe\0" \
++	"localcmd=run bootcmd_mmc\0" \
++	"bootdevice=0\0" \
++	"bootargs=console=ttymxc0 root=LABEL=rootfs\0" \
++	"bootdelay=2\0" \
++	"bootretry=90\0" \
++	"netretry=once\0" \
+ 	"ip_dyn=yes\0" \
+ 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
+ 	"mmcpart=1\0" \
+@@ -190,6 +207,7 @@
+ 
+ #define CONFIG_BOOTCOMMAND \
+ 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
++                   "run bootcmd_default; " \
+ 		   "if run loadbootscript; then " \
+ 			   "run bootscript; " \
+ 		   "else " \
+-- 
+1.8.3.1
+
