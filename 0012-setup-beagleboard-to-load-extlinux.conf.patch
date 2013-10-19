@@ -1,14 +1,14 @@
-From 57ed04c0f92c8eb06af2984001b9792fcbdc653b Mon Sep 17 00:00:00 2001
+From b76a0828e3c62e74f59eda1d128dc9518c44f4ab Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 2 Sep 2013 21:55:37 -0500
-Subject: [PATCH 14/16] setup beagleboard to load extlinux.conf
+Subject: [PATCH 12/16] setup beagleboard to load extlinux.conf
 
 ---
  include/configs/omap3_beagle.h | 17 +++++++++++++++++
  1 file changed, 17 insertions(+)
 
 diff --git a/include/configs/omap3_beagle.h b/include/configs/omap3_beagle.h
-index 11426c5..80587bb 100644
+index 2dbb5d9..f97c244 100644
 --- a/include/configs/omap3_beagle.h
 +++ b/include/configs/omap3_beagle.h
 @@ -255,6 +255,22 @@

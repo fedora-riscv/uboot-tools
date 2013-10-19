@@ -1,4 +1,4 @@
-From 10785df495adbfea7856800a93a2ac14fddbd559 Mon Sep 17 00:00:00 2001
+From c50183e7caa3a26d90cc41b43fd705a9a6a7afdd Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 2 Sep 2013 18:26:17 -0500
 Subject: [PATCH 09/16] add defualt DHCP config options
@@ -8,7 +8,7 @@ Subject: [PATCH 09/16] add defualt DHCP config options
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/include/config_distro_default.h b/include/config_distro_default.h
-index 44731ad..8c786d2 100644
+index 56a5557..7f4c310 100644
 --- a/include/config_distro_default.h
 +++ b/include/config_distro_default.h
 @@ -14,8 +14,12 @@

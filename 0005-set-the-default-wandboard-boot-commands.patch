@@ -1,4 +1,4 @@
-From 1ed999468cef0281272f13bc1377f3f9937d6441 Mon Sep 17 00:00:00 2001
+From e213040f9253ebf299a1dd491443419e9d37d7b8 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 2 Sep 2013 11:44:40 -0500
 Subject: [PATCH 05/16] set the default wandboard boot commands
@@ -8,10 +8,10 @@ Subject: [PATCH 05/16] set the default wandboard boot commands
  1 file changed, 18 insertions(+)
 
 diff --git a/include/configs/wandboard.h b/include/configs/wandboard.h
-index 75827cd..4796cdb 100644
+index 423d94e..ae16694 100644
 --- a/include/configs/wandboard.h
 +++ b/include/configs/wandboard.h
-@@ -124,6 +124,23 @@
+@@ -122,6 +122,23 @@
  	"ramdisk_addr_r=0x32000000\0" \
  	"fdt_addr_r=0x12000000\0" \
  	"boot_fdt=try\0" \
@@ -35,7 +35,7 @@ index 75827cd..4796cdb 100644
  	"ip_dyn=yes\0" \
  	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
  	"mmcpart=1\0" \
-@@ -192,6 +209,7 @@
+@@ -190,6 +207,7 @@
  
  #define CONFIG_BOOTCOMMAND \
  	   "mmc dev ${mmcdev}; if mmc rescan; then " \

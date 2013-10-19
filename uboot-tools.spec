@@ -1,8 +1,8 @@
-%global candidate rc4
+#global candidate rc4
 
 Name:           uboot-tools
 Version:        2013.10
-Release:        0.5%{?candidate:.%{candidate}}%{?dist}
+Release:        1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -26,16 +26,17 @@ Patch12:        0003-set-omap4-boards-to-use-the-generic-distro-support.patch
 Patch13:        0004-set-wandboard-to-use-generic-commands-and-set-needed.patch
 Patch14:        0005-set-the-default-wandboard-boot-commands.patch
 Patch15:        0006-set-omap4-to-use-extlinux.conf-by-default.patch
-Patch16:        0007-enable-CONFIG_CMD_BOOTMENU-for-distro-configs.patch
-Patch17:        0008-DISABLE-FIT-image-support-since-it-fails-to-build.patch
+Patch16:        0007-remove-CONFIG_MENU_SHOW-from-distro-config.patch
+Patch17:        0008-disable-FIT-image-support-since-it-fails-to-build.patch
 Patch18:        0009-add-defualt-DHCP-config-options.patch
 Patch19:        0010-remove-USB-from-distro-default-not-all-systems-suppo.patch
-Patch20:        0011-set-omap5-up-to-use-generic-distro-configs.patch
-Patch21:        0012-setup-omap5-to-load-extlinux.conf.patch
-Patch22:        0013-Setup-beagleboard-to-used-generic-distro-configs.patch
-Patch23:        0014-setup-beagleboard-to-load-extlinux.conf.patch
-Patch24:        0015-setup-address-variables-needed-for-distro-config.patch
-Patch25:        0016-setup-am335x_evm-to-load-extlinux.conf.patch
+Patch20:        0011-Setup-beagleboard-to-used-generic-distro-configs.patch
+Patch21:        0012-setup-beagleboard-to-load-extlinux.conf.patch
+Patch22:        0013-setup-distro-common-variables-on-beaglebones.patch
+Patch23:        0014-Use-SPDX-header-in-distro-config.patch
+Patch24:        0015-WANDBOARD-adjust-addrs-to-work-with-calculated-value.patch
+Patch25:        0016-WANDBOARD-use-ext2load-to-load-dtbs.patch
+
 
 # Panda ES memory timing issue
 #Patch50: omap4-panda-memtiming.patch
@@ -434,6 +435,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sat Oct 19 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-1
+- update to final 2013.10 release
+
 * Fri Oct 04 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-0.5.rc4
 - update to 2013.10-rc4
 
