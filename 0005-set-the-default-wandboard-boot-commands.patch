@@ -1,7 +1,7 @@
 From e213040f9253ebf299a1dd491443419e9d37d7b8 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 2 Sep 2013 11:44:40 -0500
-Subject: [PATCH 05/15] set the default wandboard boot commands
+Subject: [PATCH 05/16] set the default wandboard boot commands
 
 ---
  include/configs/wandboard.h | 18 ++++++++++++++++++

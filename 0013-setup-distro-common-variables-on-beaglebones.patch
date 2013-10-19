@@ -1,7 +1,7 @@
 From c1ce44384122a284dad8efb084fe6f1c047633ea Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Thu, 17 Oct 2013 18:21:54 -0500
-Subject: [PATCH 13/15] setup distro common variables on beaglebones
+Subject: [PATCH 13/16] setup distro common variables on beaglebones
 
 ---
  include/configs/am335x_evm.h | 21 ++++++++++++---------

@@ -1,7 +1,7 @@
 From 2394d596e963d5532f3ff00e097ebcf5c8338610 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Thu, 17 Oct 2013 17:55:53 -0500
-Subject: [PATCH 08/15] disable FIT image support since it fails to build
+Subject: [PATCH 08/16] disable FIT image support since it fails to build
 
 ---
  include/config_distro_default.h | 1 -

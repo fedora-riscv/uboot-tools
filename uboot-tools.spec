@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2013.10
-Release:        1%{?candidate:.%{candidate}}%{?dist}
+Release:        2%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -29,6 +29,7 @@ Patch21:        0012-setup-beagleboard-to-load-extlinux.conf.patch
 Patch22:        0013-setup-distro-common-variables-on-beaglebones.patch
 Patch23:        0014-Use-SPDX-header-in-distro-config.patch
 Patch24:        0015-WANDBOARD-adjust-addrs-to-work-with-calculated-value.patch
+Patch25:        0016-WANDBOARD-use-ext2load-to-load-dtbs.patch
 
 # Panda ES memory timing issue
 #Patch50: omap4-panda-memtiming.patch
@@ -175,6 +176,7 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %patch22 -p1
 %patch23 -p1
 %patch24 -p1
+%patch25 -p1
 #%patch50 -p1 -b .panda
 
 mkdir builds
@@ -423,6 +425,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sat Oct 19 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-2
+- use ext2load for dtb loading
+- cleanup duplicate defines
+
 * Thu Oct 17 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-1
 - update to 2013.10 final
 - refactor where u-boot binaries are stored

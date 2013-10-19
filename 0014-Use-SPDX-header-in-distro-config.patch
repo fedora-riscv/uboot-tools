@@ -1,7 +1,7 @@
 From f5c7ad35415218c20b904edf1981a33a47bcdf92 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Thu, 17 Oct 2013 18:55:25 -0500
-Subject: [PATCH 14/15] Use SPDX header in distro config
+Subject: [PATCH 14/16] Use SPDX header in distro config
 
 ---
  include/config_distro_default.h | 4 +---

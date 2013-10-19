@@ -1,7 +1,7 @@
 From b76a0828e3c62e74f59eda1d128dc9518c44f4ab Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 2 Sep 2013 21:55:37 -0500
-Subject: [PATCH 12/15] setup beagleboard to load extlinux.conf
+Subject: [PATCH 12/16] setup beagleboard to load extlinux.conf
 
 ---
  include/configs/omap3_beagle.h | 17 +++++++++++++++++

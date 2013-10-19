@@ -1,7 +1,7 @@
 From db994bffd3db0a6d02fa049eca0ff83720e22e73 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Thu, 17 Oct 2013 19:12:52 -0500
-Subject: [PATCH 15/15] WANDBOARD: adjust addrs to work with calculated values.
+Subject: [PATCH 15/16] WANDBOARD: adjust addrs to work with calculated values.
  add scr_addr_r so the fall back to boot.scr has somewhere to be loaded have
  pxe boot load a fdt have sysboot load a fdt
 

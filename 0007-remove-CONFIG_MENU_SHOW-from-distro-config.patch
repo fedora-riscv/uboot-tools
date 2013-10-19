@@ -1,7 +1,7 @@
 From d1b689f0beec17c0531189fb15b076082f0f282e Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Thu, 17 Oct 2013 17:54:26 -0500
-Subject: [PATCH 07/15] remove CONFIG_MENU_SHOW from distro config
+Subject: [PATCH 07/16] remove CONFIG_MENU_SHOW from distro config
 
 ---
  include/config_distro_default.h | 1 -

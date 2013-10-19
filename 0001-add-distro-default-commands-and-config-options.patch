@@ -1,7 +1,7 @@
 From 9172c5926e6875a59a8d1cc82d30b2118ab7308b Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Wed, 7 Aug 2013 23:00:42 -0500
-Subject: [PATCH 01/15] add distro default commands and config options
+Subject: [PATCH 01/16] add distro default commands and config options
 
 ---
  include/config_distro_default.h | 51 +++++++++++++++++++++++++++++++++++++++++

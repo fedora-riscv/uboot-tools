@@ -1,7 +1,7 @@
 From 3c3c10fad1f61f8ad01414c868080e0e1bb5fc91 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Sun, 1 Sep 2013 21:42:48 -0500
-Subject: [PATCH 02/15] add option to include generic distro config
+Subject: [PATCH 02/16] add option to include generic distro config
 
 ---
  include/common.h | 5 +++++

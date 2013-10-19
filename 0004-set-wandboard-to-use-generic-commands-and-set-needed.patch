@@ -1,7 +1,7 @@
 From 4fe19544ffda98c8ab9eea55d29f8c9179716e88 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 2 Sep 2013 11:33:46 -0500
-Subject: [PATCH 04/15] set wandboard to use generic commands and set needed
+Subject: [PATCH 04/16] set wandboard to use generic commands and set needed
  variables
 
 ---

@@ -1,7 +1,7 @@
 From 0893da22f56bda219e6437057a1145932a8311ac Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 2 Sep 2013 21:47:40 -0500
-Subject: [PATCH 11/15] Setup beagleboard to used generic distro configs
+Subject: [PATCH 11/16] Setup beagleboard to used generic distro configs
 
 ---
  include/configs/omap3_beagle.h | 13 ++++++++++---
