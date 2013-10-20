@@ -356,8 +356,10 @@ rm -rf $RPM_BUILD_ROOT
 %doc README doc/README.imximage doc/README.kwbimage doc/uImage.FIT
 %{_bindir}/mkimage
 %{_mandir}/man1/mkimage.1*
+%ifarch %{arm}
 %dir %{_datadir}/uboot/
 %{_datadir}/uboot/uEnv.txt
+%endif
 %if 0%{?with_env}
 %{_bindir}/fw_printenv
 %{_bindir}/fw_setenv
