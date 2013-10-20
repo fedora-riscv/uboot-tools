@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2013.10
-Release:        2%{?candidate:.%{candidate}}%{?dist}
+Release:        3%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -184,98 +184,98 @@ mkdir builds
 %build
 %ifarch %{arm}
 make CROSS_COMPILE="" am335x_evm_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p MLO builds/MLO.beaglebone
 cp -p u-boot.img builds/u-boot.img.beaglebone
 make distclean
 
 make CROSS_COMPILE="" omap3_beagle_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p MLO builds/MLO.beagle
 cp -p u-boot.img builds/u-boot.img.beagle
 make distclean
 
 make CROSS_COMPILE="" arndale_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p spl/arndale-spl.bin builds/arndale-spl.bin.arndale
 cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.arndale
 make distclean
 
 make CROSS_COMPILE="" highbank_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.bin builds/u-boot.bin.highbank
 make distclean
 
 make CROSS_COMPILE="" omap4_panda_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p MLO builds/MLO.panda
 cp -p u-boot.img builds/u-boot.img.panda
 make distclean
 
 make CROSS_COMPILE="" origen_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p spl/origen-spl.bin builds/origen-spl.bin.origen
 cp -p u-boot.bin builds/u-boot.bin.origen
 make distclean
 
 make CROSS_COMPILE="" paz00_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot-dtb-tegra.bin builds/u-boot-dtb-tegra.bin.paz00
 cp -p u-boot-nodtb-tegra.bin builds/u-boot-nodtb-tegra.bin.paz00
 cp -p u-boot.map builds/u-boot.map.paz00
 make distclean
 
 make CROSS_COMPILE="" smdkv310_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p spl/smdkv310-spl.bin builds/smdkv310-spl.bin.smdkv310
 cp -p u-boot.bin builds/u-boot.bin.smdkv310
 make distclean
 
 make CROSS_COMPILE="" snow_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.snow
 make distclean
 
 make CROSS_COMPILE="" snowball_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.bin builds/u-boot.bin.snowball
 make distclean
 
 make CROSS_COMPILE="" trimslice_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot-dtb-tegra.bin builds/u-boot-dtb-tegra.bin.trimslice
 cp -p u-boot-nodtb-tegra.bin builds/u-boot-nodtb-tegra.bin.trimslice
 cp -p u-boot.map builds/u-boot.map.trimslice
 make distclean
 
 make CROSS_COMPILE="" wandboard_dl_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.imx builds/u-boot.imx.dl
 make distclean
 
 make CROSS_COMPILE="" wandboard_quad_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.imx builds/u-boot.imx.quad
 make distclean
 
 make CROSS_COMPILE="" wandboard_solo_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.imx builds/u-boot.imx.solo
 make distclean
 
 make CROSS_COMPILE="" omap5_uevm_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p MLO builds/MLO.uevm
 cp -p u-boot.img builds/u-boot.img.uevm
 make distclean
 
 %endif
 
-make tools HOSTCC="gcc $RPM_OPT_FLAGS" HOSTSTRIP=/bin/true CROSS_COMPILE=""
+make tools HOSTCC="gcc $RPM_OPT_FLAGS" HOSTSTRIP=/bin/true CROSS_COMPILE="" %{?_smp_mflags}
 
 %if 0%{?with_env}
 make CROSS_COMPILE="" sheevaplug_config
-make env HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE=""
+make env HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 %endif
 
 %install
@@ -284,10 +284,11 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
+
+%ifarch %{arm}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
 install -p -m 0644 %{SOURCE1}  $RPM_BUILD_ROOT%{_datadir}/uboot/uEnv.txt
 
-%ifarch %{arm}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beagle/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beaglebone/
@@ -425,6 +426,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sun Oct 20 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-3
+- fix ftbfs for wandboard
+- use _smp_mflags
+
 * Sat Oct 19 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-2
 - use ext2load for dtb loading
 - cleanup duplicate defines
