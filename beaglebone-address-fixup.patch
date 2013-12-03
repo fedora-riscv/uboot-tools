@@ -1,0 +1,21 @@
+--- u-boot-2013.10/include/configs/am335x_evm.h.orig	2013-12-01 19:27:42.390308539 -0600
++++ u-boot-2013.10/include/configs/am335x_evm.h	2013-12-01 19:35:29.442725044 -0600
+@@ -56,12 +56,12 @@
+ 
+ #ifndef CONFIG_SPL_BUILD
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+-	"loadaddr=0x80200000\0" \
+-	"pxefile_addr_r=0x80500000\0" \
+-	"kernel_addr_r=0x80600000\0" \
+-	"ramdisk_addr_r=0x82600000\0" \
+-	"fdt_addr_r=0x80300000\0" \
+-	"fdt_addr=0x80400000\0" \
++	"loadaddr=0x81000000\0" \
++	"pxefile_addr_r=0x81300000\0" \
++	"kernel_addr_r=0x81400000\0" \
++	"ramdisk_addr_r=0x83400000\0" \
++	"fdt_addr_r=0x81100000\0" \
++	"fdt_addr=0x81200000\0" \
+ 	"fdt_high=0xffffffff\0" \
+ 	"boot_fdt=try\0" \
+ 	"bootpart=0:2\0" \

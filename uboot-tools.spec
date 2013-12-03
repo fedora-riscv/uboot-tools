@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2013.10
-Release:        2%{?candidate:.%{candidate}}%{?dist}
+Release:        3%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -36,7 +36,7 @@ Patch22:        0013-setup-distro-common-variables-on-beaglebones.patch
 Patch23:        0014-Use-SPDX-header-in-distro-config.patch
 Patch24:        0015-WANDBOARD-adjust-addrs-to-work-with-calculated-value.patch
 Patch25:        0016-WANDBOARD-use-ext2load-to-load-dtbs.patch
-
+Patch26:        beaglebone-address-fixup.patch
 
 # Panda ES memory timing issue
 #Patch50: omap4-panda-memtiming.patch
@@ -184,6 +184,7 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %patch23 -p1
 %patch24 -p1
 %patch25 -p1
+%patch26 -p1
 #%patch50 -p1 -b .panda
 
 mkdir builds
@@ -435,6 +436,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Dec 03 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-3
+- fixup beaglebone addresses, bellow 0x81000000 is not available to the kernel
+
 * Sat Oct 19 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-2
 - fix ftbfs for wandboard
 - use _smp_mflags
