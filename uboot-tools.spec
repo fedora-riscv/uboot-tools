@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2013.10
-Release:        3%{?candidate:.%{candidate}}%{?dist}
+Release:        4%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -16,6 +16,7 @@ Source4:        uEnv.txt.panda
 Source5:        uEnv.txt.panda_a4
 Source6:        uEnv.txt.panda_es
 Source7:        uEnv.txt.uevm
+Source8:        fedora.bmp
 Patch1:         u-boot-fat.patch
 Patch3:         mlo-ext.patch
 Patch4:         exynos-ext.patch
@@ -38,6 +39,7 @@ Patch24:        0015-WANDBOARD-adjust-addrs-to-work-with-calculated-value.patch
 Patch25:        0016-WANDBOARD-use-ext2load-to-load-dtbs.patch
 Patch26:        beaglebone-address-fixup.patch
 
+Patch30:        wandboard-console-speed.patch
 # Panda ES memory timing issue
 #Patch50: omap4-panda-memtiming.patch
 
@@ -185,9 +187,16 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %patch24 -p1
 %patch25 -p1
 %patch26 -p1
+
+%patch30 -p1
+
 #%patch50 -p1 -b .panda
 
 mkdir builds
+for bmp in tools/logos/*bmp
+do
+cp %{SOURCE8} $bmp
+done
 
 %build
 %ifarch %{arm}
@@ -436,6 +445,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Jan 02 2014 Dennis Gilmore <dennis@ausil.us> - 2013.10-4
+- set speed on wandboard console
+- replace all the logos witha  fedora logo
+
 * Tue Dec 03 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-3
 - fixup beaglebone addresses, bellow 0x81000000 is not available to the kernel
 

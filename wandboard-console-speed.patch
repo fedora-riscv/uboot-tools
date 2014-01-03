@@ -1,0 +1,11 @@
+--- u-boot-2013.10/include/configs/wandboard.h.orig	2014-01-02 18:55:56.836069619 -0600
++++ u-boot-2013.10/include/configs/wandboard.h	2014-01-02 18:56:14.212196887 -0600
+@@ -118,7 +118,7 @@
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+ 	"script=boot.scr\0" \
+ 	"uimage=uImage\0" \
+-	"console=ttymxc0\0" \
++	"console=ttymxc0,115200\0" \
+ 	"splashpos=m,m\0" \
+ 	"fdt_high=0xffffffff\0" \
+ 	"initrd_high=0xffffffff\0" \
