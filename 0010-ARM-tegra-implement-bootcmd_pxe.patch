@@ -1,0 +1,129 @@
+From be95b3d9ea5e9478a52d8fca66b62ed85b39dc08 Mon Sep 17 00:00:00 2001
+From: Stephen Warren <swarren@nvidia.com>
+Date: Thu, 23 Jan 2014 13:17:04 -0700
+Subject: [PATCH 10/13] ARM: tegra: implement bootcmd_pxe
+
+This retrieves a PXE config file over the network, and executes it. This
+allows an extlinux config file  to be retrieved over the network and
+executed, whereas the existing bootcmd_dhcp retrieves a U-Boot script.
+
+Signed-off-by: Stephen Warren <swarren@nvidia.com>
+---
+ include/configs/tegra-common-post.h | 18 +++++++++++++++++-
+ include/configs/tegra114-common.h   |  4 ++++
+ include/configs/tegra20-common.h    |  4 ++++
+ include/configs/tegra30-common.h    |  4 ++++
+ 4 files changed, 29 insertions(+), 1 deletion(-)
+
+diff --git a/include/configs/tegra-common-post.h b/include/configs/tegra-common-post.h
+index 493f6df..a3eb875 100644
+--- a/include/configs/tegra-common-post.h
++++ b/include/configs/tegra-common-post.h
+@@ -66,6 +66,20 @@
+ #define BOOT_TARGETS_DHCP ""
+ #endif
+ 
++#if defined(CONFIG_CMD_DHCP) && defined(CONFIG_CMD_PXE)
++#define BOOTCMDS_PXE \
++	"bootcmd_pxe=" \
++		BOOTCMD_INIT_USB \
++		"dhcp; " \
++		"if pxe get; then " \
++			"pxe boot; " \
++		"fi\0"
++#define BOOT_TARGETS_PXE "pxe"
++#else
++#define BOOTCMDS_PXE ""
++#define BOOT_TARGETS_PXE ""
++#endif
++
+ #define BOOTCMDS_COMMON \
+ 	"rootpart=1\0" \
+ 	\
+@@ -108,6 +122,7 @@
+ 	"boot_targets=" \
+ 		BOOT_TARGETS_MMC " " \
+ 		BOOT_TARGETS_USB " " \
++		BOOT_TARGETS_PXE " " \
+ 		BOOT_TARGETS_DHCP " " \
+ 		"\0" \
+ 	\
+@@ -117,7 +132,8 @@
+ 	\
+ 	BOOTCMDS_MMC \
+ 	BOOTCMDS_USB \
+-	BOOTCMDS_DHCP
++	BOOTCMDS_DHCP \
++	BOOTCMDS_PXE
+ 
+ #define CONFIG_BOOTCOMMAND \
+ 	"for target in ${boot_targets}; do run bootcmd_${target}; done"
+diff --git a/include/configs/tegra114-common.h b/include/configs/tegra114-common.h
+index a4e8a5f..e7d4373 100644
+--- a/include/configs/tegra114-common.h
++++ b/include/configs/tegra114-common.h
+@@ -51,6 +51,9 @@
+  * scriptaddr can be pretty much anywhere that doesn't conflict with something
+  *   else. Put it above BOOTMAPSZ to eliminate conflicts.
+  *
++ * pxefile_addr_r can be pretty much anywhere that doesn't conflict with
++ *   something else. Put it above BOOTMAPSZ to eliminate conflicts.
++ *
+  * kernel_addr_r must be within the first 128M of RAM in order for the
+  *   kernel's CONFIG_AUTO_ZRELADDR option to work. Since the kernel will
+  *   decompress itself to 0x8000 after the start of RAM, kernel_addr_r
+@@ -68,6 +71,7 @@
+  */
+ #define MEM_LAYOUT_ENV_SETTINGS \
+ 	"scriptaddr=0x90000000\0" \
++	"pxefile_addr_r=0x90100000\0" \
+ 	"kernel_addr_r=0x81000000\0" \
+ 	"fdt_addr_r=0x82000000\0" \
+ 	"ramdisk_addr_r=0x82100000\0"
+diff --git a/include/configs/tegra20-common.h b/include/configs/tegra20-common.h
+index b009a31..ca39722 100644
+--- a/include/configs/tegra20-common.h
++++ b/include/configs/tegra20-common.h
+@@ -49,6 +49,9 @@
+  * scriptaddr can be pretty much anywhere that doesn't conflict with something
+  *   else. Put it above BOOTMAPSZ to eliminate conflicts.
+  *
++ * pxefile_addr_r can be pretty much anywhere that doesn't conflict with
++ *   something else. Put it above BOOTMAPSZ to eliminate conflicts.
++ *
+  * kernel_addr_r must be within the first 128M of RAM in order for the
+  *   kernel's CONFIG_AUTO_ZRELADDR option to work. Since the kernel will
+  *   decompress itself to 0x8000 after the start of RAM, kernel_addr_r
+@@ -66,6 +69,7 @@
+  */
+ #define MEM_LAYOUT_ENV_SETTINGS \
+ 	"scriptaddr=0x10000000\0" \
++	"pxefile_addr_r=0x10100000\0" \
+ 	"kernel_addr_r=0x01000000\0" \
+ 	"fdt_addr_r=0x02000000\0" \
+ 	"ramdisk_addr_r=0x02100000\0"
+diff --git a/include/configs/tegra30-common.h b/include/configs/tegra30-common.h
+index b5550d7..95d1547 100644
+--- a/include/configs/tegra30-common.h
++++ b/include/configs/tegra30-common.h
+@@ -48,6 +48,9 @@
+  * scriptaddr can be pretty much anywhere that doesn't conflict with something
+  *   else. Put it above BOOTMAPSZ to eliminate conflicts.
+  *
++ * pxefile_addr_r can be pretty much anywhere that doesn't conflict with
++ *   something else. Put it above BOOTMAPSZ to eliminate conflicts.
++ *
+  * kernel_addr_r must be within the first 128M of RAM in order for the
+  *   kernel's CONFIG_AUTO_ZRELADDR option to work. Since the kernel will
+  *   decompress itself to 0x8000 after the start of RAM, kernel_addr_r
+@@ -65,6 +68,7 @@
+  */
+ #define MEM_LAYOUT_ENV_SETTINGS \
+ 	"scriptaddr=0x90000000\0" \
++	"pxefile_addr_r=0x90100000\0" \
+ 	"kernel_addr_r=0x81000000\0" \
+ 	"fdt_addr_r=0x82000000\0" \
+ 	"ramdisk_addr_r=0x82100000\0"
+-- 
+1.8.5.3
+

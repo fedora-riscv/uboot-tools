@@ -1,8 +1,8 @@
 #global candidate
 
 Name:           uboot-tools
-Version:        2013.10
-Release:        3%{?candidate:.%{candidate}}%{?dist}
+Version:        2014.01
+Release:        1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -14,27 +14,25 @@ Patch1:         u-boot-fat.patch
 Patch3:         mlo-ext.patch
 Patch4:         exynos-ext.patch
 
-Patch10:        0001-add-distro-default-commands-and-config-options.patch
-Patch11:        0002-add-option-to-include-generic-distro-config.patch
-Patch12:        0003-set-omap4-boards-to-use-the-generic-distro-support.patch
-Patch13:        0004-set-wandboard-to-use-generic-commands-and-set-needed.patch
-Patch14:        0005-set-the-default-wandboard-boot-commands.patch
-Patch15:        0006-set-omap4-to-use-extlinux.conf-by-default.patch
-Patch16:        0007-remove-CONFIG_MENU_SHOW-from-distro-config.patch
-Patch17:        0008-disable-FIT-image-support-since-it-fails-to-build.patch
-Patch18:        0009-add-defualt-DHCP-config-options.patch
-Patch19:        0010-remove-USB-from-distro-default-not-all-systems-suppo.patch
-Patch20:        0011-Setup-beagleboard-to-used-generic-distro-configs.patch
-Patch21:        0012-setup-beagleboard-to-load-extlinux.conf.patch
-Patch22:        0013-setup-distro-common-variables-on-beaglebones.patch
-Patch23:        0014-Use-SPDX-header-in-distro-config.patch
-Patch24:        0015-WANDBOARD-adjust-addrs-to-work-with-calculated-value.patch
-Patch25:        0016-WANDBOARD-use-ext2load-to-load-dtbs.patch
+Patch10:        0001-pxe-support-devicetree-tag.patch
+Patch11:        0002-pxe-implement-fdtdir-extlinux.conf-tag.patch
+Patch12:        0003-cmd_pxe.c-add-any-option-for-filesystem-with-sysboot.patch
+Patch13:        0004-config-add-config_distro_defaults.h.patch
+Patch14:        0005-fs-fix-generic-save-command-implementation.patch
+Patch15:        0006-ARM-tegra-convert-tegra-to-use-distro-defaults.patch
+Patch16:        0007-fs-implement-infra-structure-for-an-exists-function.patch
+Patch17:        0008-ARM-tegra-rework-boot-scripts.patch
+Patch18:        0009-sandbox-implement-fs_exists-and-sb-exists-shell-func.patch
+Patch19:        0010-ARM-tegra-implement-bootcmd_pxe.patch
+Patch20:        0011-ext4-implement-exists-for-ext4fs.patch
+Patch21:        0012-fat-implement-exists-for-FAT-fs.patch
+Patch22:        0013-Modify-wandboard-to-include-the-distro-defaults-head.patch
 
 # Panda ES memory timing issue
 #Patch50: omap4-panda-memtiming.patch
 
 BuildRequires:  dtc
+BuildRequires:  fedora-logos, netpbm-progs
 Requires:       dtc
 
 # build the tool for manipulation with environment only on arm
@@ -45,6 +43,15 @@ Requires:       dtc
 %description
 This package contains a few U-Boot utilities - mkimage for creating boot images
 and fw_printenv/fw_setenv for manipulating the boot environment variables.
+
+%ifarch aarch64
+%package     -n uboot-vexpress_aemv8a
+Summary:     u-boot bootloader binaries for the aarch64 vexpress_aemv8a
+Requires:    uboot-tools
+
+%description -n uboot-vexpress_aemv8a
+u-boot bootloader binaries for the aarch64 vexpress_aemv8a
+%endif
 
 %ifarch %{arm}
 %package     -n uboot-arndale
@@ -174,14 +181,27 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %patch20 -p1
 %patch21 -p1
 %patch22 -p1
-%patch23 -p1
-%patch24 -p1
-%patch25 -p1
-#%patch50 -p1 -b .panda
+
 
 mkdir builds
+# convert fedora logo to bmp for use in u-boot
+pngtopnm /usr/share/pixmaps/fedora-logo.png | ppmquant 256 | ppmtobmp -bpp 8 >fedora.bmp
+
+#replace the logos with fedora's
+for bmp in tools/logos/*bmp
+do
+cp fedora.bmp $bmp
+done
 
 %build
+%ifarch aarch64
+make CROSS_COMPILE="" vexpress_aemv8a_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
+cp -p u-boot.bin builds/u-boot.bin.vexpress_aemv8a
+make distclean
+
+%endif
+
 %ifarch %{arm}
 make CROSS_COMPILE="" am335x_evm_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
@@ -285,6 +305,12 @@ mkdir -p $RPM_BUILD_ROOT%{_bindir}
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 
+%ifarch aarch64
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/vexpress_aemv8a/
+
+install -p -m 0644 builds/u-boot.bin.vexpress_aemv8a $RPM_BUILD_ROOT%{_datadir}/uboot/vexpress_aemv8a/u-boot.bin
+%endif
+
 %ifarch %{arm}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
 install -p -m 0644 %{SOURCE1}  $RPM_BUILD_ROOT%{_datadir}/uboot/uEnv.txt
@@ -365,6 +391,13 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/fw_setenv
 %config(noreplace) %{_sysconfdir}/fw_env.config
 %endif
+
+%ifarch aarch64
+%files -n uboot-vexpress_aemv8a
+%defattr(-,root,root,-)
+%{_datadir}/uboot/vexpress_aemv8a/
+%endif
+
 %ifarch %{arm}
 %files -n uboot-arndale
 %defattr(-,root,root,-)

@@ -1,0 +1,97 @@
+From 7a9929813cf912b424da18b8faa1320751baec2d Mon Sep 17 00:00:00 2001
+From: Stephen Warren <swarren@nvidia.com>
+Date: Thu, 23 Jan 2014 12:57:00 -0700
+Subject: [PATCH 12/13] fat: implement exists() for FAT fs
+
+This hooks into the generic "file exists" support added in an earlier
+patch, and provides an implementation for the ext4 filesystem.
+
+Signed-off-by: Stephen Warren <swarren@nvidia.com>
+---
+ fs/fat/fat.c  | 18 ++++++++++++++----
+ fs/fs.c       |  2 +-
+ include/fat.h |  1 +
+ 3 files changed, 16 insertions(+), 5 deletions(-)
+
+diff --git a/fs/fat/fat.c b/fs/fat/fat.c
+index b41d62e..bc06c0a 100644
+--- a/fs/fat/fat.c
++++ b/fs/fat/fat.c
+@@ -808,7 +808,7 @@ __u8 do_fat_read_at_block[MAX_CLUSTSIZE]
+ 
+ long
+ do_fat_read_at(const char *filename, unsigned long pos, void *buffer,
+-	       unsigned long maxsize, int dols)
++	       unsigned long maxsize, int dols, int dogetsize)
+ {
+ 	char fnamecopy[2048];
+ 	boot_sector bs;
+@@ -1152,7 +1152,10 @@ rootdir_done:
+ 			subname = nextname;
+ 	}
+ 
+-	ret = get_contents(mydata, dentptr, pos, buffer, maxsize);
++	if (dogetsize)
++		ret = FAT2CPU32(dentptr->size);
++	else
++		ret = get_contents(mydata, dentptr, pos, buffer, maxsize);
+ 	debug("Size: %d, got: %ld\n", FAT2CPU32(dentptr->size), ret);
+ 
+ exit:
+@@ -1163,7 +1166,7 @@ exit:
+ long
+ do_fat_read(const char *filename, void *buffer, unsigned long maxsize, int dols)
+ {
+-	return do_fat_read_at(filename, 0, buffer, maxsize, dols);
++	return do_fat_read_at(filename, 0, buffer, maxsize, dols, 0);
+ }
+ 
+ int file_fat_detectfs(void)
+@@ -1233,11 +1236,18 @@ int file_fat_ls(const char *dir)
+ 	return do_fat_read(dir, NULL, 0, LS_YES);
+ }
+ 
++int fat_exists(const char *filename)
++{
++	int sz;
++	sz = do_fat_read_at(filename, 0, NULL, 0, LS_NO, 1);
++	return (sz >= 0) ? 0 : 1;
++}
++
+ long file_fat_read_at(const char *filename, unsigned long pos, void *buffer,
+ 		      unsigned long maxsize)
+ {
+ 	printf("reading %s\n", filename);
+-	return do_fat_read_at(filename, pos, buffer, maxsize, LS_NO);
++	return do_fat_read_at(filename, pos, buffer, maxsize, LS_NO, 0);
+ }
+ 
+ long file_fat_read(const char *filename, void *buffer, unsigned long maxsize)
+diff --git a/fs/fs.c b/fs/fs.c
+index 3f14d01..d2bc8d0 100644
+--- a/fs/fs.c
++++ b/fs/fs.c
+@@ -80,7 +80,7 @@ static struct fstype_info fstypes[] = {
+ 		.probe = fat_set_blk_dev,
+ 		.close = fat_close,
+ 		.ls = file_fat_ls,
+-		.exists = fs_exists_unsupported,
++		.exists = fat_exists,
+ 		.read = fat_read_file,
+ 		.write = fs_write_unsupported,
+ 	},
+diff --git a/include/fat.h b/include/fat.h
+index 2c951e7..c8eb7cc 100644
+--- a/include/fat.h
++++ b/include/fat.h
+@@ -188,6 +188,7 @@ file_read_func		file_fat_read;
+ int file_cd(const char *path);
+ int file_fat_detectfs(void);
+ int file_fat_ls(const char *dir);
++int fat_exists(const char *filename);
+ long file_fat_read_at(const char *filename, unsigned long pos, void *buffer,
+ 		      unsigned long maxsize);
+ long file_fat_read(const char *filename, void *buffer, unsigned long maxsize);
+-- 
+1.8.5.3
+
