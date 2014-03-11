@@ -28,9 +28,6 @@ Patch20:        0011-ext4-implement-exists-for-ext4fs.patch
 Patch21:        0012-fat-implement-exists-for-FAT-fs.patch
 Patch22:        0013-Modify-wandboard-to-include-the-distro-defaults-head.patch
 
-# Panda ES memory timing issue
-#Patch50: omap4-panda-memtiming.patch
-
 BuildRequires:  dtc
 BuildRequires:  fedora-logos, netpbm-progs
 Requires:       dtc
