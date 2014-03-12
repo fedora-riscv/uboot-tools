@@ -1,0 +1,217 @@
+From 9d3718215daa053f100cdc6f274e6b04813caef5 Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Wed, 12 Mar 2014 14:45:54 -0500
+Subject: [PATCH 2/4] convert beaglebone to use generic distro boot commands
+
+---
+ include/configs/am335x_evm.h      | 74 +++++++++++----------------------------
+ include/configs/ti_armv7_common.h | 28 +++------------
+ 2 files changed, 26 insertions(+), 76 deletions(-)
+
+diff --git a/include/configs/am335x_evm.h b/include/configs/am335x_evm.h
+index 2020e7f..7d110e9 100644
+--- a/include/configs/am335x_evm.h
++++ b/include/configs/am335x_evm.h
+@@ -50,9 +50,9 @@
+ 	"nandrootfstype=ubifs rootwait=1\0" \
+ 	"nandboot=echo Booting from nand ...; " \
+ 		"run nandargs; " \
+-		"nand read ${fdtaddr} u-boot-spl-os; " \
+-		"nand read ${loadaddr} kernel; " \
+-		"bootz ${loadaddr} - ${fdtaddr}\0"
++		"nand read ${fdt_addr_r} u-boot-spl-os; " \
++		"nand read ${kernel_addr_r} kernel; " \
++		"bootz ${kernel_addr_r} - ${fdt_addr_r}\0"
+ #else
+ #define NANDARGS ""
+ #endif
+@@ -61,14 +61,16 @@
+ 
+ #ifndef CONFIG_SPL_BUILD
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+-	"loadaddr=0x80200000\0" \
+-	"fdtaddr=0x80F80000\0" \
+-	"fdt_high=0xffffffff\0" \
++	"fdt_addr_r=0x88000000\0" \
++	"fdt_high=0xA0000000\0" \
+ 	"boot_fdt=try\0" \
+-	"rdaddr=0x81000000\0" \
+ 	"bootpart=0:2\0" \
+ 	"bootdir=/boot\0" \
+ 	"bootfile=zImage\0" \
++	"ramdisk_addr_r=0x88100000\0" \
++	"kernel_addr_r=0x81000000\0" \
++	"pxe_addr_r=0x87F00000\0" \
++	"scriptaddr=0x87E00000\0" \
+ 	"fdtfile=undefined\0" \
+ 	"console=ttyO0,115200n8\0" \
+ 	"partitions=" \
+@@ -82,7 +84,7 @@
+ 	"nfsopts=nolock\0" \
+ 	"static_ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}" \
+ 		"::off\0" \
+-	"ramroot=/dev/ram0 rw ramdisk_size=65536 initrd=${rdaddr},64M\0" \
++	"ramroot=/dev/ram0 rw ramdisk_size=65536 initrd=${ramdisk_addr_r},64M\0" \
+ 	"ramrootfstype=ext2\0" \
+ 	"mmcargs=setenv bootargs console=${console} " \
+ 		"${optargs} " \
+@@ -103,60 +105,28 @@
+ 		"nfsroot=${serverip}:${rootpath},${nfsopts} rw " \
+ 		"ip=dhcp\0" \
+ 	"bootenv=uEnv.txt\0" \
+-	"loadbootenv=load mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
++	"loadbootenv=load mmc ${mmcdev} ${kernel_addr_r} ${bootenv}\0" \
+ 	"importbootenv=echo Importing environment from mmc ...; " \
+-		"env import -t $loadaddr $filesize\0" \
++		"env import -t $kernel_addr_r $filesize\0" \
+ 	"ramargs=setenv bootargs console=${console} " \
+ 		"${optargs} " \
+ 		"root=${ramroot} " \
+ 		"rootfstype=${ramrootfstype}\0" \
+-	"loadramdisk=load mmc ${mmcdev} ${rdaddr} ramdisk.gz\0" \
+-	"loadimage=load mmc ${bootpart} ${loadaddr} ${bootdir}/${bootfile}\0" \
+-	"loadfdt=load mmc ${bootpart} ${fdtaddr} ${bootdir}/${fdtfile}\0" \
+-	"mmcloados=run mmcargs; " \
+-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+-			"if run loadfdt; then " \
+-				"bootz ${loadaddr} - ${fdtaddr}; " \
+-			"else " \
+-				"if test ${boot_fdt} = try; then " \
+-					"bootz; " \
+-				"else " \
+-					"echo WARN: Cannot load the DT; " \
+-				"fi; " \
+-			"fi; " \
+-		"else " \
+-			"bootz; " \
+-		"fi;\0" \
+-	"mmcboot=mmc dev ${mmcdev}; " \
+-		"if mmc rescan; then " \
+-			"echo SD/MMC found on device ${mmcdev};" \
+-			"if run loadbootenv; then " \
+-				"echo Loaded environment from ${bootenv};" \
+-				"run importbootenv;" \
+-			"fi;" \
+-			"if test -n $uenvcmd; then " \
+-				"echo Running uenvcmd ...;" \
+-				"run uenvcmd;" \
+-			"fi;" \
+-			"if run loadimage; then " \
+-				"run mmcloados;" \
+-			"fi;" \
+-		"fi;\0" \
+ 	"spiboot=echo Booting from spi ...; " \
+ 		"run spiargs; " \
+ 		"sf probe ${spibusno}:0; " \
+-		"sf read ${loadaddr} ${spisrcaddr} ${spiimgsize}; " \
+-		"bootz ${loadaddr}\0" \
++		"sf read ${kernel_addr_r} ${spisrcaddr} ${spiimgsize}; " \
++		"bootz ${kernel_addr_r}\0" \
+ 	"netboot=echo Booting from network ...; " \
+ 		"setenv autoload no; " \
+ 		"dhcp; " \
+-		"tftp ${loadaddr} ${bootfile}; " \
+-		"tftp ${fdtaddr} ${fdtfile}; " \
++		"tftp ${kernel_addr_r} ${bootfile}; " \
++		"tftp ${fdt_addr_r} ${fdtfile}; " \
+ 		"run netargs; " \
+-		"bootz ${loadaddr} - ${fdtaddr}\0" \
++		"bootz ${kernel_addr_r} - ${fdt_addr_r}\0" \
+ 	"ramboot=echo Booting from ramdisk ...; " \
+ 		"run ramargs; " \
+-		"bootz ${loadaddr} ${rdaddr} ${fdtaddr}\0" \
++		"bootz ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}\0" \
+ 	"findfdt="\
+ 		"if test $board_name = A335BONE; then " \
+ 			"setenv fdtfile am335x-bone.dtb; fi; " \
+@@ -169,15 +139,13 @@
+ 		"if test $fdtfile = undefined; then " \
+ 			"echo WARNING: Could not determine device tree to use; fi; \0" \
+ 	NANDARGS \
+-	DFUARGS
++	DFUARGS \
++	BOOTCMDS_COMMON
+ #endif
+ 
+ #define CONFIG_BOOTCOMMAND \
+ 	"run findfdt; " \
+-	"run mmcboot;" \
+-	"setenv mmcdev 1; " \
+-	"setenv bootpart 1:2; " \
+-	"run mmcboot;" \
++	"for target in ${boot_targets}; do run bootcmd_${target}; done" \
+ 	"run nandboot;"
+ 
+ /* NS16550 Configuration */
+diff --git a/include/configs/ti_armv7_common.h b/include/configs/ti_armv7_common.h
+index 69d69a5..988f98d 100644
+--- a/include/configs/ti_armv7_common.h
++++ b/include/configs/ti_armv7_common.h
+@@ -28,7 +28,6 @@
+ #define CONFIG_SYS_NO_FLASH
+ 
+ /* Support both device trees and ATAGs. */
+-#define CONFIG_OF_LIBFDT
+ #define CONFIG_CMDLINE_TAG
+ #define CONFIG_SETUP_MEMORY_TAGS
+ #define CONFIG_INITRD_TAG
+@@ -40,11 +39,6 @@
+ #define CONFIG_SYS_LOAD_ADDR		0x80000000
+ 
+ /*
+- * Default to a quick boot delay.
+- */
+-#define CONFIG_BOOTDELAY		1
+-
+-/*
+  * DDR information.  If the CONFIG_NR_DRAM_BANKS is not defined,
+  * we say (for simplicity) that we have 1 bank, always, even when
+  * we have more.  We always start at 0x80000000, and we place the
+@@ -105,19 +99,12 @@
+  * console baudrate of 115200 and use the default baud rate table.
+  */
+ #define CONFIG_SYS_MALLOC_LEN		(1024 << 10)
+-#define CONFIG_SYS_HUSH_PARSER
+ #define CONFIG_SYS_PROMPT		"U-Boot# "
+ #define CONFIG_SYS_CONSOLE_INFO_QUIET
+ #define CONFIG_BAUDRATE			115200
+ #define CONFIG_ENV_VARS_UBOOT_CONFIG	/* Strongly encouraged */
+ #define CONFIG_ENV_OVERWRITE		/* Overwrite ethaddr / serial# */
+ 
+-/* As stated above, the following choices are optional. */
+-#define CONFIG_SYS_LONGHELP
+-#define CONFIG_AUTO_COMPLETE
+-#define CONFIG_CMDLINE_EDITING
+-#define CONFIG_VERSION_VARIABLE
+-
+ /* We set the max number of command args high to avoid HUSH bugs. */
+ #define CONFIG_SYS_MAXARGS		64
+ 
+@@ -150,19 +137,14 @@
+ #include <config_cmd_default.h>
+ #define CONFIG_CMD_ASKENV
+ #define CONFIG_CMD_ECHO
+-#define CONFIG_CMD_BOOTZ
+ 
+ /*
+- * Common filesystems support.  When we have removable storage we
+- * enabled a number of useful commands and support.
++ * Include the generic config options and boot environment when not
++ * building our SPL
+  */
+-#if defined(CONFIG_MMC) || defined(CONFIG_USB_STORAGE)
+-#define CONFIG_DOS_PARTITION
+-#define CONFIG_CMD_FAT
+-#define CONFIG_FAT_WRITE
+-#define CONFIG_CMD_EXT2
+-#define CONFIG_CMD_EXT4
+-#define CONFIG_CMD_FS_GENERIC
++#ifndef CONFIG_SPL_BUILD
++#include <config_distro_defaults.h>
++#include <config_distro_bootcmd.h>
+ #endif
+ 
+ /*
+-- 
+1.9.0
+

@@ -1,8 +1,8 @@
-#global candidate
+%global candidate rc2
 
 Name:           uboot-tools
-Version:        2014.01
-Release:        1%{?candidate:.%{candidate}}%{?dist}
+Version:        2014.04
+Release:        0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -11,22 +11,12 @@ URL:            http://www.denx.de/wiki/U-Boot
 Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:        uEnv.txt
 Patch1:         u-boot-fat.patch
-Patch3:         mlo-ext.patch
-Patch4:         exynos-ext.patch
 
-Patch10:        0001-pxe-support-devicetree-tag.patch
-Patch11:        0002-pxe-implement-fdtdir-extlinux.conf-tag.patch
-Patch12:        0003-cmd_pxe.c-add-any-option-for-filesystem-with-sysboot.patch
-Patch13:        0004-config-add-config_distro_defaults.h.patch
-Patch14:        0005-fs-fix-generic-save-command-implementation.patch
-Patch15:        0006-ARM-tegra-convert-tegra-to-use-distro-defaults.patch
-Patch16:        0007-fs-implement-infra-structure-for-an-exists-function.patch
-Patch17:        0008-ARM-tegra-rework-boot-scripts.patch
-Patch18:        0009-sandbox-implement-fs_exists-and-sb-exists-shell-func.patch
-Patch19:        0010-ARM-tegra-implement-bootcmd_pxe.patch
-Patch20:        0011-ext4-implement-exists-for-ext4fs.patch
-Patch21:        0012-fat-implement-exists-for-FAT-fs.patch
-Patch22:        0013-Modify-wandboard-to-include-the-distro-defaults-head.patch
+Patch10:        0001-add-README.distro.patch
+Patch11:        0002-convert-beaglebone-to-use-generic-distro-boot-comman.patch
+Patch12:        0003-convert-wandboard-to-use-generic-boot-commands.patch
+Patch13:        0004-convert-omap4-boards-over-to-distro-configs.patch
+
 
 BuildRequires:  dtc
 BuildRequires:  fedora-logos, netpbm-progs
@@ -162,22 +152,6 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %prep
 %setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
 %patch1 -p1
-#patch3 -p1
-#patch4 -p1
-
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
-%patch14 -p1
-%patch15 -p1
-%patch16 -p1
-%patch17 -p1
-%patch18 -p1
-%patch19 -p1
-%patch20 -p1
-%patch21 -p1
-%patch22 -p1
 
 
 mkdir builds
@@ -267,17 +241,17 @@ make distclean
 
 make CROSS_COMPILE="" wandboard_dl_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
-cp -p u-boot.imx builds/u-boot.imx.dl
+cp -p u-boot.imx builds/u-boot.imx.wbdl
 make distclean
 
 make CROSS_COMPILE="" wandboard_quad_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
-cp -p u-boot.imx builds/u-boot.imx.quad
+cp -p u-boot.imx builds/u-boot.imx.wbquad
 make distclean
 
 make CROSS_COMPILE="" wandboard_solo_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
-cp -p u-boot.imx builds/u-boot.imx.solo
+cp -p u-boot.imx builds/u-boot.imx.wbsolo
 make distclean
 
 make CROSS_COMPILE="" omap5_uevm_config
@@ -323,9 +297,9 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/snow/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/snowball/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/smdkv310/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/trimslice/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/imx6dl/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/imx6quad/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/imx6solo/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_dl/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_quad/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_solo/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/uevm/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/vexpress/
 
@@ -356,9 +330,9 @@ install -p -m 0644 builds/u-boot.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot/s
 install -p -m 0644 builds/u-boot-dtb.bin.snow $RPM_BUILD_ROOT%{_datadir}/uboot/snow/u-boot-dtb.bin
 install -p -m 0644 builds/u-boot.bin.snowball $RPM_BUILD_ROOT%{_datadir}/uboot/snowball/u-boot.bin
 
-install -p -m 0644 builds/u-boot.imx.dl $RPM_BUILD_ROOT%{_datadir}/uboot/imx6dl/u-boot.imx
-install -p -m 0644 builds/u-boot.imx.quad $RPM_BUILD_ROOT%{_datadir}/uboot/imx6quad/u-boot.imx
-install -p -m 0644 builds/u-boot.imx.solo $RPM_BUILD_ROOT%{_datadir}/uboot/imx6solo/u-boot.imx
+install -p -m 0644 builds/u-boot.imx.wbdl $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_dl/u-boot.imx
+install -p -m 0644 builds/u-boot.imx.wbquad $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_quad/u-boot.imx
+install -p -m 0644 builds/u-boot.imx.wbsolo $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_solo/u-boot.imx
 %endif
 
 install -p -m 0755 tools/mkimage $RPM_BUILD_ROOT%{_bindir}
@@ -442,15 +416,15 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -n uboot-wandboard_dl
 %defattr(-,root,root,-)
-%{_datadir}/uboot/imx6dl/
+%{_datadir}/uboot/wandboard_dl/
 
 %files -n uboot-wandboard_quad
 %defattr(-,root,root,-)
-%{_datadir}/uboot/imx6quad/
+%{_datadir}/uboot/wandboard_quad/
 
 %files -n uboot-wandboard_solo
 %defattr(-,root,root,-)
-%{_datadir}/uboot/imx6solo/
+%{_datadir}/uboot/wandboard_solo/
 
 %files -n uboot-uevm
 %defattr(-,root,root,-)
@@ -458,6 +432,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Mar 12 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-0.1.rc2
+- update to 2014.04-rc2 
+- add patches to convert some boards to generic distro configs
+
 * Sun Oct 20 2013 Dennis Gilmore <dennis@ausil.us> - 2013.10-3
 - fix ftbfs for wandboard
 - use _smp_mflags

@@ -1,0 +1,97 @@
+From 3fdbcb063121de09e3cdc12144f51251d3fbc86c Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Sat, 8 Mar 2014 10:42:34 -0600
+Subject: [PATCH 1/4] add README.distro
+
+Add instructions on how to setup a system to boot using the generic boot
+framework.
+---
+ doc/README.distro | 76 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 76 insertions(+)
+ create mode 100644 doc/README.distro
+
+diff --git a/doc/README.distro b/doc/README.distro
+new file mode 100644
+index 0000000..a4b50b5
+--- /dev/null
++++ b/doc/README.distro
+@@ -0,0 +1,76 @@
++/*
++ * (C) Copyright 2014 Red Hat Inc.
++ *
++ * SPDX-License-Identifier:     GPL-2.0+
++ */
++
++Generic distro configuration
++----------------------------
++
++configuring
++-----------
++To configure a board to run the generic distro setup and enable generic distros
++to easily support your board.
++
++you will need to include a pair of headers to enable the boot environment and
++configuration options needed. It is best to only include when not doing an
++SPL build.
++
++#ifndef CONFIG_SPL_BUILD
++#include <config_distro_defaults.h>
++#include <config_distro_bootcmd.h>
++#endif
++
++There is some memory addresses you will need to define in
++CONFIG_EXTRA_ENV_SETTINGS
++fdt_addr:
++Optional, If specified a dtb to boot the system must be available at the given
++address.
++
++fdt_addr_r:
++Mandatory, This is the location where the sysboot/pxeboot with load the dtb to,
++using the fdtdir/devicetreedir or fdt/devicetree options in the pxe/extlinux
++config file. The location can be anywhere in ram it just needs to not overlap
++with anything, allowing 1 megabyte seems to be a safe option.
++
++ramdisk_addr_r:
++Mandatory, This is the location where the sysboot/pxeboot with load the
++initramfs to, using the initrd option in the pxe/extlinux config file, the
++location of the initramfs does not matter, there needs to be enough room to be
++able to store any image. Making the image the last item stored should allow for
++any initramfs to fit and not overwrite anything else.
++
++kernel_addr_r:
++Mandatory, This is the location where the sysboot/pxeboot with load the kernel
++to,using the kernel option in the pxe/extlinux config file, the location of the
++kernel needs to 
++
++pxe_addr_r:
++Mandatory, used by the PXE code to hold the pxelinux config file. The location
++can be anywhere in ram it just needs to not overlap with anything, allowing 1 
++megabyte seems to be a safe option.
++
++scriptaddr:
++Mandatory, used to load boot.scr to The location can be anywhere in ram it just
++needs to not overlap with anything, allowing 1 megabyte seems to be a safe
++option.
++
++suggested mapping:
++For suggestions on memory locations for arm systems  you must follow the
++guidelines specified in Documentation/arm/Booting in the Linux kernel tree.
++For other architectures you must follow the guidelines for the architecture.
++
++make sure you also include BOOTCMDS_COMMON in CONFIG_EXTRA_ENV_SETTINGS
++
++You should not set initrd_high and fdt_high to 0xffffffff as the user should
++not need to edit the memory locations having the initramfs and dtb being
++relocatable is best to ensure the system will boot in all situations. 
++
++booting your system
++-------------------
++in the most simplest form CONFIG_BOOTCOMMAND just needs one line
++
++"for target in ${boot_targets}; do run bootcmd_${target}; done"
++
++you can run any setup before going through the targets for example run a
++command to set "fdtfile" variable for the dtb for your board.
+-- 
+1.9.0
+
