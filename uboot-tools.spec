@@ -356,8 +356,6 @@ rm -rf $RPM_BUILD_ROOT
 %ifarch %{arm}
 %dir %{_datadir}/uboot/
 %{_datadir}/uboot/uEnv.txt
-%endif
-%if 0%{?with_env}
 %{_bindir}/fw_printenv
 %{_bindir}/fw_setenv
 %config(noreplace) %{_sysconfdir}/fw_env.config
