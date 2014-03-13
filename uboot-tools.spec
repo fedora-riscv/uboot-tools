@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.04
-Release:        0.1%{?candidate:.%{candidate}}%{?dist}
+Release:        0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -150,6 +150,10 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
 %patch1 -p1
 
+%patch10 -p1
+%patch11 -p1
+%patch12 -p1
+%patch13 -p1
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
@@ -430,6 +434,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Mar 13 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-0.2.rc2
+- actually apply patches
+
 * Wed Mar 12 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-0.1.rc2
 - update to 2014.04-rc2 
 - add patches to convert some boards to generic distro configs
