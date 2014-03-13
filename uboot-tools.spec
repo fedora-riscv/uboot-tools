@@ -17,15 +17,12 @@ Patch11:        0002-convert-beaglebone-to-use-generic-distro-boot-comman.patch
 Patch12:        0003-convert-wandboard-to-use-generic-boot-commands.patch
 Patch13:        0004-convert-omap4-boards-over-to-distro-configs.patch
 
-
+%ifnarch %{arm}
+BuildRequires:  gcc-arm-linux-gnu
+%endif
 BuildRequires:  dtc
 BuildRequires:  fedora-logos, netpbm-progs
 Requires:       dtc
-
-# build the tool for manipulation with environment only on arm
-%ifarch %{arm}
-%global with_env 1
-%endif
 
 %description
 This package contains a few U-Boot utilities - mkimage for creating boot images
@@ -166,7 +163,7 @@ done
 
 %build
 %ifarch aarch64
-make CROSS_COMPILE="" vexpress_aemv8a_config
+make vexpress_aemv8a_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.bin builds/u-boot.bin.vexpress_aemv8a
 make distclean
@@ -174,99 +171,102 @@ make distclean
 %endif
 
 %ifarch %{arm}
-make CROSS_COMPILE="" am335x_evm_config
+make am335x_evm_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p MLO builds/MLO.beaglebone
 cp -p u-boot.img builds/u-boot.img.beaglebone
 make distclean
 
-make CROSS_COMPILE="" omap3_beagle_config
+make omap3_beagle_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p MLO builds/MLO.beagle
 cp -p u-boot.img builds/u-boot.img.beagle
 make distclean
 
-make CROSS_COMPILE="" arndale_config
+make arndale_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p spl/arndale-spl.bin builds/arndale-spl.bin.arndale
 cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.arndale
 make distclean
 
-make CROSS_COMPILE="" highbank_config
+make highbank_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.bin builds/u-boot.bin.highbank
 make distclean
 
-make CROSS_COMPILE="" omap4_panda_config
+make omap4_panda_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p MLO builds/MLO.panda
 cp -p u-boot.img builds/u-boot.img.panda
 make distclean
 
-make CROSS_COMPILE="" origen_config
+make origen_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p spl/origen-spl.bin builds/origen-spl.bin.origen
 cp -p u-boot.bin builds/u-boot.bin.origen
 make distclean
 
-make CROSS_COMPILE="" paz00_config
+make paz00_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot-dtb-tegra.bin builds/u-boot-dtb-tegra.bin.paz00
 cp -p u-boot-nodtb-tegra.bin builds/u-boot-nodtb-tegra.bin.paz00
 cp -p u-boot.map builds/u-boot.map.paz00
 make distclean
 
-make CROSS_COMPILE="" smdkv310_config
+make smdkv310_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p spl/smdkv310-spl.bin builds/smdkv310-spl.bin.smdkv310
 cp -p u-boot.bin builds/u-boot.bin.smdkv310
 make distclean
 
-make CROSS_COMPILE="" snow_config
+make snow_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.snow
 make distclean
 
-make CROSS_COMPILE="" snowball_config
+make snowball_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.bin builds/u-boot.bin.snowball
 make distclean
 
-make CROSS_COMPILE="" trimslice_config
+make trimslice_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot-dtb-tegra.bin builds/u-boot-dtb-tegra.bin.trimslice
 cp -p u-boot-nodtb-tegra.bin builds/u-boot-nodtb-tegra.bin.trimslice
 cp -p u-boot.map builds/u-boot.map.trimslice
 make distclean
 
-make CROSS_COMPILE="" wandboard_dl_config
+make wandboard_dl_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.imx builds/u-boot.imx.wbdl
 make distclean
 
-make CROSS_COMPILE="" wandboard_quad_config
+make wandboard_quad_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.imx builds/u-boot.imx.wbquad
 make distclean
 
-make CROSS_COMPILE="" wandboard_solo_config
+make wandboard_solo_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.imx builds/u-boot.imx.wbsolo
 make distclean
 
-make CROSS_COMPILE="" omap5_uevm_config
+make omap5_uevm_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p MLO builds/MLO.uevm
 cp -p u-boot.img builds/u-boot.img.uevm
 make distclean
 
 %endif
+%ifnarch %{arm}
+make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE=arm-linux-gnu- sheevaplug_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE=arm-linux-gnu- tools
+%endif
 
-make tools HOSTCC="gcc $RPM_OPT_FLAGS" HOSTSTRIP=/bin/true CROSS_COMPILE="" %{?_smp_mflags}
-
-%if 0%{?with_env}
-make CROSS_COMPILE="" sheevaplug_config
-make env HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
+%ifarch %{arm}
+make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" sheevaplug_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" tools
+make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" env
 %endif
 
 %install
@@ -338,7 +338,7 @@ install -p -m 0644 builds/u-boot.imx.wbsolo $RPM_BUILD_ROOT%{_datadir}/uboot/wan
 install -p -m 0755 tools/mkimage $RPM_BUILD_ROOT%{_bindir}
 install -p -m 0644 doc/mkimage.1 $RPM_BUILD_ROOT%{_mandir}/man1
 
-%if 0%{?with_env}
+%ifarch %{arm}
 install -p -m 0755 tools/env/fw_printenv $RPM_BUILD_ROOT%{_bindir}
 ( cd $RPM_BUILD_ROOT%{_bindir}; ln -sf fw_printenv fw_setenv )
 
