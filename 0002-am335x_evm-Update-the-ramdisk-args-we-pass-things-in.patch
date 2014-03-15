@@ -1,0 +1,27 @@
+From d501ece818fe10845bb0a005d986acf1e143a313 Mon Sep 17 00:00:00 2001
+From: Tom Rini <trini@ti.com>
+Date: Tue, 11 Mar 2014 15:42:02 -0400
+Subject: [PATCH 2/8] am335x_evm: Update the ramdisk args, we pass things in
+ just fine via DT
+
+Signed-off-by: Tom Rini <trini@ti.com>
+---
+ include/configs/am335x_evm.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/am335x_evm.h b/include/configs/am335x_evm.h
+index 6bd8aec..11088b3 100644
+--- a/include/configs/am335x_evm.h
++++ b/include/configs/am335x_evm.h
+@@ -79,7 +79,7 @@
+ 	"nfsopts=nolock\0" \
+ 	"static_ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}" \
+ 		"::off\0" \
+-	"ramroot=/dev/ram0 rw ramdisk_size=65536 initrd=${rdaddr},64M\0" \
++	"ramroot=/dev/ram0 rw\0" \
+ 	"ramrootfstype=ext2\0" \
+ 	"mmcargs=setenv bootargs console=${console} " \
+ 		"${optargs} " \
+-- 
+1.9.0
+

@@ -1,7 +1,7 @@
-From afa1bca89f7a7ee05ca6e7cd63e76d15718da4aa Mon Sep 17 00:00:00 2001
+From 4a7a3fb87348895c605ec36e4ff1e8272d41ce7c Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Sat, 8 Mar 2014 10:59:00 -0600
-Subject: [PATCH 3/4] convert wandboard to use generic boot commands
+Subject: [PATCH 6/8] convert wandboard to use generic boot commands
 
 ---
  include/configs/wandboard.h | 91 +++++++--------------------------------------

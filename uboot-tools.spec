@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.04
-Release:        0.2%{?candidate:.%{candidate}}%{?dist}
+Release:        0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -12,10 +12,14 @@ Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{ca
 Source1:        uEnv.txt
 Patch1:         u-boot-fat.patch
 
-Patch10:        0001-add-README.distro.patch
-Patch11:        0002-convert-beaglebone-to-use-generic-distro-boot-comman.patch
-Patch12:        0003-convert-wandboard-to-use-generic-boot-commands.patch
-Patch13:        0004-convert-omap4-boards-over-to-distro-configs.patch
+Patch10:        0001-TI-Add-use-a-DEFAULT_LINUX_BOOT_ENV-environment-stri.patch
+Patch11:        0002-am335x_evm-Update-the-ramdisk-args-we-pass-things-in.patch
+Patch12:        0003-am43xx_evm-Update-the-ramdisk-args-we-pass-things-in.patch
+Patch13:        0004-add-README.distro.patch
+Patch14:        0005-add-generic-bootcmd-header.patch
+Patch15:        0006-convert-wandboard-to-use-generic-boot-commands.patch
+Patch16:        0007-convert-beaglebone-to-use-generic-boot-commands.patch
+Patch17:        0008-convert-pandaboard-to-use-generic-boot-commands.patch
 
 %ifnarch %{arm}
 BuildRequires:  gcc-arm-linux-gnu
@@ -154,6 +158,10 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %patch11 -p1
 %patch12 -p1
 %patch13 -p1
+%patch14 -p1
+%patch15 -p1
+%patch16 -p1
+%patch17 -p1
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
@@ -434,6 +442,12 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sat Mar 15 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-0.3.rc2
+- Add missing header
+- pull in patches on their way upstream to fix some issues with ti
+- systems.
+- refactor beaglebone and pandaboard patches
+
 * Thu Mar 13 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-0.2.rc2
 - actually apply patches
 

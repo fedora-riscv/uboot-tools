@@ -1,12 +1,12 @@
-From 1bab90af7e0c00bf5aa4718b864cac767cd34c18 Mon Sep 17 00:00:00 2001
+From dfdd6312dc00d1b2dde14f00fe7bd7fb4e8bdd2c Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
-Date: Wed, 12 Mar 2014 14:40:35 -0500
-Subject: [PATCH 4/4] convert omap4 boards over to distro configs
+Date: Sat, 15 Mar 2014 10:26:49 -0500
+Subject: [PATCH 8/8] convert pandaboard to use generic boot commands
 
 ---
  include/configs/omap4_panda.h     |  3 ---
- include/configs/ti_omap4_common.h | 44 +++++++++++++--------------------------
- 2 files changed, 15 insertions(+), 32 deletions(-)
+ include/configs/ti_omap4_common.h | 34 ++++++++--------------------------
+ 2 files changed, 8 insertions(+), 29 deletions(-)
 
 diff --git a/include/configs/omap4_panda.h b/include/configs/omap4_panda.h
 index 7378acd..26f7aee 100644
@@ -25,28 +25,10 @@ index 7378acd..26f7aee 100644
  /* GPIO */
  #define CONFIG_CMD_GPIO
 diff --git a/include/configs/ti_omap4_common.h b/include/configs/ti_omap4_common.h
-index bcb5eab..69af58b 100644
+index 387f570..a92e681 100644
 --- a/include/configs/ti_omap4_common.h
 +++ b/include/configs/ti_omap4_common.h
-@@ -87,10 +87,14 @@
-  * Environment setup
-  */
- #define CONFIG_EXTRA_ENV_SETTINGS \
--	"loadaddr=0x82000000\0" \
-+	"kernel_addr_r=0x82000000\0" \
- 	"console=ttyO2,115200n8\0" \
--	"fdt_high=0xffffffff\0" \
--	"fdtaddr=0x80f80000\0" \
-+	"fdt_high=0xA0000000\0" \
-+	"kernel_addr_r=0x81000000\0" \
-+	"scriptaddr=0x87E00000\0" \
-+	"pxe_addr_r=0x87F00000\0" \
-+	"fdt_addr_r=0x88000000\0" \
-+	"ramdisk_addr_r=0x88100000\0" \
- 	"fdtfile=undefined\0" \
- 	"bootpart=0:2\0" \
- 	"bootdir=/boot\0" \
-@@ -104,16 +108,16 @@
+@@ -102,16 +102,16 @@
  		"vram=${vram} " \
  		"root=${mmcroot} " \
  		"rootfstype=${mmcrootfstype}\0" \
@@ -69,7 +51,7 @@ index bcb5eab..69af58b 100644
  	"findfdt="\
  		"if test $board_name = sdp4430; then " \
  			"setenv fdtfile omap4-sdp.dtb; fi; " \
-@@ -125,29 +129,11 @@
+@@ -123,29 +123,11 @@
  			"setenv fdtfile omap4-panda-es.dtb; fi;" \
  		"if test $fdtfile = undefined; then " \
  			"echo WARNING: Could not determine device tree to use; fi; \0" \

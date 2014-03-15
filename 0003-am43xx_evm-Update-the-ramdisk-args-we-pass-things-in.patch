@@ -1,0 +1,27 @@
+From 59459e211168e3465c2bdb1b78bfc9c594c9b479 Mon Sep 17 00:00:00 2001
+From: Tom Rini <trini@ti.com>
+Date: Tue, 11 Mar 2014 15:42:03 -0400
+Subject: [PATCH 3/8] am43xx_evm: Update the ramdisk args, we pass things in
+ just fine via DT
+
+Signed-off-by: Tom Rini <trini@ti.com>
+---
+ include/configs/am43xx_evm.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/am43xx_evm.h b/include/configs/am43xx_evm.h
+index 27777c5..2d9825b 100644
+--- a/include/configs/am43xx_evm.h
++++ b/include/configs/am43xx_evm.h
+@@ -128,7 +128,7 @@
+ 	"usbroot=/dev/sda2 rw\0" \
+ 	"usbrootfstype=ext4 rootwait\0" \
+ 	"usbdev=0\0" \
+-	"ramroot=/dev/ram0 rw ramdisk_size=65536 initrd=${rdaddr},64M\0" \
++	"ramroot=/dev/ram0 rw\0" \
+ 	"ramrootfstype=ext2\0" \
+ 	"mmcargs=setenv bootargs console=${console} " \
+ 		"${optargs} " \
+-- 
+1.9.0
+
