@@ -1,13 +1,14 @@
-From 2033dc1af5641e61a7c3053bec1c93cb61f3fca8 Mon Sep 17 00:00:00 2001
+From 1f6136261de93467a4e9d7e48df55df74715af6a Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
-Date: Sat, 15 Mar 2014 11:34:31 -0500
+Date: Sat, 15 Mar 2014 11:52:33 -0500
 Subject: [PATCH 9/9] fix up some sillies
 
 ---
  include/config_distro_bootcmd.h   | 8 ++++----
  include/configs/omap4_panda.h     | 1 +
+ include/configs/ti_armv7_common.h | 2 ++
  include/configs/ti_omap4_common.h | 2 +-
- 3 files changed, 6 insertions(+), 5 deletions(-)
+ 4 files changed, 8 insertions(+), 5 deletions(-)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
 index bf44734..0fe94be 100644
@@ -61,6 +62,19 @@ index 26f7aee..1b81a24 100644
  
  /* GPIO */
  #define CONFIG_CMD_GPIO
+diff --git a/include/configs/ti_armv7_common.h b/include/configs/ti_armv7_common.h
+index 79af66e..96c6bd0 100644
+--- a/include/configs/ti_armv7_common.h
++++ b/include/configs/ti_armv7_common.h
+@@ -169,6 +169,8 @@
+ #include <config_distro_bootcmd.h>
+ #endif
+ 
++#define CONFIG_CMD_FAT
++
+ /*
+  * Our platforms make use of SPL to initalize the hardware (primarily
+  * memory) enough for full U-Boot to be loaded.  We also support Falcon
 diff --git a/include/configs/ti_omap4_common.h b/include/configs/ti_omap4_common.h
 index a92e681..eb3240a 100644
 --- a/include/configs/ti_omap4_common.h
