@@ -1,7 +1,7 @@
 From 59459e211168e3465c2bdb1b78bfc9c594c9b479 Mon Sep 17 00:00:00 2001
 From: Tom Rini <trini@ti.com>
 Date: Tue, 11 Mar 2014 15:42:03 -0400
-Subject: [PATCH 3/8] am43xx_evm: Update the ramdisk args, we pass things in
+Subject: [PATCH 3/9] am43xx_evm: Update the ramdisk args, we pass things in
  just fine via DT
 
 Signed-off-by: Tom Rini <trini@ti.com>

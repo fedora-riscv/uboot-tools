@@ -1,7 +1,7 @@
 From db270067bf3b35802fdd8ecc647a80f25bbd7851 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Sat, 15 Mar 2014 10:13:39 -0500
-Subject: [PATCH 5/8] add generic bootcmd header
+Subject: [PATCH 5/9] add generic bootcmd header
 
 ---
  include/config_distro_bootcmd.h | 208 ++++++++++++++++++++++++++++++++++++++++

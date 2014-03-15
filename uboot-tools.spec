@@ -20,6 +20,7 @@ Patch14:        0005-add-generic-bootcmd-header.patch
 Patch15:        0006-convert-wandboard-to-use-generic-boot-commands.patch
 Patch16:        0007-convert-beaglebone-to-use-generic-boot-commands.patch
 Patch17:        0008-convert-pandaboard-to-use-generic-boot-commands.patch
+Patch18:        0009-fix-up-some-sillies.patch
 
 %ifnarch %{arm}
 BuildRequires:  gcc-arm-linux-gnu
@@ -162,6 +163,7 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %patch15 -p1
 %patch16 -p1
 %patch17 -p1
+%patch18 -p1
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot

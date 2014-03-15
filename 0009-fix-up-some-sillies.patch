@@ -1,0 +1,79 @@
+From 2033dc1af5641e61a7c3053bec1c93cb61f3fca8 Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Sat, 15 Mar 2014 11:34:31 -0500
+Subject: [PATCH 9/9] fix up some sillies
+
+---
+ include/config_distro_bootcmd.h   | 8 ++++----
+ include/configs/omap4_panda.h     | 1 +
+ include/configs/ti_omap4_common.h | 2 +-
+ 3 files changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
+index bf44734..0fe94be 100644
+--- a/include/config_distro_bootcmd.h
++++ b/include/config_distro_bootcmd.h
+@@ -42,7 +42,7 @@
+ 			"run scan_boot; " \
+ 		"fi\0" \
+ 	\
+-	"bootcmd_usb0=setenv devnum 0; run usb_boot;\0"
++	"bootcmd_usb0=setenv devnum 0; run usb_boot;\0" \
+ 	"bootcmd_usb1=setenv devnum 1; run usb_boot;\0"
+ #define BOOT_TARGETS_USB "usb0 usb1"
+ #else
+@@ -59,7 +59,7 @@
+ 			"run scan_boot; " \
+ 		"fi\0" \
+ 	\
+-	"bootcmd_sata0=setenv devnum 0; run sata_boot;\0"
++	"bootcmd_sata0=setenv devnum 0; run sata_boot;\0" \
+ 	"bootcmd_sata1=setenv devnum 1; run sata_boot;\0"
+ #define BOOT_TARGETS_SATA "sata0 sata1"
+ #else
+@@ -75,7 +75,7 @@
+                         "run scan_boot; " \
+                 "fi\0" \
+         \
+-        "bootcmd_scsi0=setenv devnum 0; run scsi_boot;\0"
++        "bootcmd_scsi0=setenv devnum 0; run scsi_boot;\0" \
+         "bootcmd_scsi1=setenv devnum 1; run scsi_boot;\0"
+ #define BOOT_TARGETS_SCSI "scsi0 scsi1"
+ #else
+@@ -91,7 +91,7 @@
+                         "run scan_boot; " \
+                 "fi\0" \
+         \
+-        "bootcmd_ide0=setenv devnum 0; run ide_boot;\0"
++        "bootcmd_ide0=setenv devnum 0; run ide_boot;\0" \
+         "bootcmd_ide1=setenv devnum 1; run ide_boot;\0"
+ #define BOOT_TARGETS_IDE "ide0 ide1"
+ #else
+diff --git a/include/configs/omap4_panda.h b/include/configs/omap4_panda.h
+index 26f7aee..1b81a24 100644
+--- a/include/configs/omap4_panda.h
++++ b/include/configs/omap4_panda.h
+@@ -35,6 +35,7 @@
+ 
+ 
+ #include <configs/ti_omap4_common.h>
++#define CONFIG_CMD_NET
+ 
+ /* GPIO */
+ #define CONFIG_CMD_GPIO
+diff --git a/include/configs/ti_omap4_common.h b/include/configs/ti_omap4_common.h
+index a92e681..eb3240a 100644
+--- a/include/configs/ti_omap4_common.h
++++ b/include/configs/ti_omap4_common.h
+@@ -127,7 +127,7 @@
+ 
+ #define CONFIG_BOOTCOMMAND \
+ 	"run findfdt; " \
+-	for target in ${boot_targets}; do run bootcmd_${target}; done
++	"for target in ${boot_targets}; do run bootcmd_${target}; done"
+ /*
+  * Defines for SPL
+  * It is known that this will break HS devices. Since the current size of
+-- 
+1.9.0
+

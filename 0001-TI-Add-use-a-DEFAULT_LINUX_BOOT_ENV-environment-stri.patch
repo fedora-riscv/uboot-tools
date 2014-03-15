@@ -1,7 +1,7 @@
 From b2f0945f9542a53960d8e394725f9de199059974 Mon Sep 17 00:00:00 2001
 From: Tom Rini <trini@ti.com>
 Date: Tue, 11 Mar 2014 15:42:01 -0400
-Subject: [PATCH 1/8] TI: Add, use a DEFAULT_LINUX_BOOT_ENV environment string
+Subject: [PATCH 1/9] TI: Add, use a DEFAULT_LINUX_BOOT_ENV environment string
 
 To deal with a reoccurring problem properly we need to specify addresses
 for the Linux kernel, Flatted Device Tree and ramdisk that obey the
