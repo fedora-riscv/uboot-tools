@@ -1,7 +1,7 @@
-From 1f6136261de93467a4e9d7e48df55df74715af6a Mon Sep 17 00:00:00 2001
+From 5b08e934e4e76f434297fc6de11764a615bc65ab Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Sat, 15 Mar 2014 11:52:33 -0500
-Subject: [PATCH 9/9] fix up some sillies
+Subject: [PATCH 09/13] fix up some sillies
 
 ---
  include/config_distro_bootcmd.h   | 8 ++++----

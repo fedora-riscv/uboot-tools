@@ -1,7 +1,7 @@
-From 2ef279ec9eb812e4d67e7ae5eb695eadc63d8570 Mon Sep 17 00:00:00 2001
+From 2e52b4b057bf022f00da378186ae9a5a0b6dba13 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Sat, 8 Mar 2014 10:42:34 -0600
-Subject: [PATCH 4/9] add README.distro
+Subject: [PATCH 04/13] add README.distro
 
 Add instructions on how to setup a system to boot using the generic boot
 framework.

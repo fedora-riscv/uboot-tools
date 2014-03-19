@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.04
-Release:        0.3%{?candidate:.%{candidate}}%{?dist}
+Release:        0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -21,6 +21,10 @@ Patch15:        0006-convert-wandboard-to-use-generic-boot-commands.patch
 Patch16:        0007-convert-beaglebone-to-use-generic-boot-commands.patch
 Patch17:        0008-convert-pandaboard-to-use-generic-boot-commands.patch
 Patch18:        0009-fix-up-some-sillies.patch
+Patch19:        0010-fixups-for-wandboard-to-ensure-the-environment-is-co.patch
+Patch20:        0011-convert-fdt_file-to-fdtfile-globally.patch
+Patch21:        0012-check-for-fdtfile-and-fdt_file-to-find-the-devicetre.patch
+Patch22:        0013-cleanups-to-make-panda-and-beaglebone-work.patch
 
 %ifnarch %{arm}
 BuildRequires:  gcc-arm-linux-gnu
@@ -164,6 +168,10 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %patch16 -p1
 %patch17 -p1
 %patch18 -p1
+%patch19 -p1
+%patch20 -p1
+%patch21 -p1
+%patch22 -p1
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
@@ -444,6 +452,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Mar 19 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-0.4.rc2
+- apply fixes for panda and beaglebone
+
 * Sat Mar 15 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-0.3.rc2
 - Add missing header
 - pull in patches on their way upstream to fix some issues with ti

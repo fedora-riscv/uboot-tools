@@ -1,7 +1,7 @@
-From dfdd6312dc00d1b2dde14f00fe7bd7fb4e8bdd2c Mon Sep 17 00:00:00 2001
+From 1afa628d19c3ab8bb4059f9d8af34b897cca8a12 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Sat, 15 Mar 2014 10:26:49 -0500
-Subject: [PATCH 8/9] convert pandaboard to use generic boot commands
+Subject: [PATCH 08/13] convert pandaboard to use generic boot commands
 
 ---
  include/configs/omap4_panda.h     |  3 ---

@@ -1,0 +1,59 @@
+From e0c237a890aa404caf941c8f5e05c9748a7e8344 Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Mon, 17 Mar 2014 10:30:41 -0500
+Subject: [PATCH 10/13] fixups for wandboard to ensure the environment is
+ correct
+
+---
+ include/configs/wandboard.h | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/include/configs/wandboard.h b/include/configs/wandboard.h
+index 6aaa439..386fe78 100644
+--- a/include/configs/wandboard.h
++++ b/include/configs/wandboard.h
+@@ -41,11 +41,6 @@
+ #define CONFIG_CONS_INDEX		1
+ #define CONFIG_BAUDRATE			115200
+ 
+-#ifndef CONFIG_SPL_BUILD
+-#include <config_distro_defaults.h>
+-#include <config_distro_bootcmd.h>
+-#endif
+-
+ /* Command definition */
+ #include <config_cmd_default.h>
+ 
+@@ -96,6 +91,11 @@
+ #define CONFIG_IPUV3_CLK 260000000
+ #define CONFIG_IMX_HDMI
+ 
++#ifndef CONFIG_SPL_BUILD
++#include <config_distro_defaults.h>
++#include <config_distro_bootcmd.h>
++#endif
++
+ #if defined(CONFIG_MX6DL) || defined(CONFIG_MX6S)
+ #define CONFIG_DEFAULT_FDT_FILE		"imx6dl-wandboard.dtb"
+ #elif defined(CONFIG_MX6Q)
+@@ -107,15 +107,14 @@
+ 	"image=zImage\0" \
+ 	"console=ttymxc0\0" \
+ 	"splashpos=m,m\0" \
+-	"fdt_high=0xa0000000\0" \
+-	"initrd_high=0xa0000000\0" \
+-	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
++	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
+ 	"fdt_addr_r=0x18000000\0" \
+ 	"boot_fdt=try\0" \
+ 	"pxefile_addr_r=0x17f00000\0" \
+ 	"scriptaddr=0x17e00000\0" \
+ 	"kernel_addr_r=0x11000000\0" \
+ 	"ramdisk_addr_r=0x18100000\0" \
++	"bootm_size=0x20000000\0" \
+ 	"ip_dyn=yes\0" \
+ 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
+ 	"mmcpart=1\0" \
+-- 
+1.9.0
+

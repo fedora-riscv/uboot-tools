@@ -1,0 +1,738 @@
+From e3a1ae5aa03d5d3e4dd4e7981f44f06eb851f83e Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Mon, 17 Mar 2014 10:45:14 -0500
+Subject: [PATCH 11/13] convert fdt_file to fdtfile globally
+
+cmd_pxe.c requires that the veriable for the fdt file name be called
+fdtfile. Some boards are using fdt_file so this patch converts them
+all to fdtfile. thei will enable any board to be converted to using
+the generic framework in development
+---
+ include/configs/PMC440.h           | 4 ++--
+ include/configs/TQM5200.h          | 4 ++--
+ include/configs/TQM834x.h          | 2 +-
+ include/configs/alpr.h             | 4 ++--
+ include/configs/amcc-common.h      | 6 +++---
+ include/configs/cgtqmx6eval.h      | 4 ++--
+ include/configs/charon.h           | 2 +-
+ include/configs/cm5200.h           | 4 ++--
+ include/configs/digsy_mtc.h        | 2 +-
+ include/configs/enbw_cmc.h         | 4 ++--
+ include/configs/hummingboard.h     | 6 +++---
+ include/configs/manroland/common.h | 4 ++--
+ include/configs/motionpro.h        | 6 +++---
+ include/configs/muas3001.h         | 8 ++++----
+ include/configs/mx23_olinuxino.h   | 6 +++---
+ include/configs/mx23evk.h          | 4 ++--
+ include/configs/mx28evk.h          | 8 ++++----
+ include/configs/mx51evk.h          | 6 +++---
+ include/configs/mx53ard.h          | 6 +++---
+ include/configs/mx53loco.h         | 6 +++---
+ include/configs/mx6sabre_common.h  | 6 +++---
+ include/configs/mx6slevk.h         | 6 +++---
+ include/configs/nitrogen6x.h       | 6 +++---
+ include/configs/o2dnt-common.h     | 4 ++--
+ include/configs/socrates.h         | 6 +++---
+ include/configs/udoo.h             | 6 +++---
+ include/configs/vf610twr.h         | 6 +++---
+ 27 files changed, 68 insertions(+), 68 deletions(-)
+
+diff --git a/include/configs/PMC440.h b/include/configs/PMC440.h
+index c5e2f16..53d0385 100644
+--- a/include/configs/PMC440.h
++++ b/include/configs/PMC440.h
+@@ -200,7 +200,7 @@
+ #define CONFIG_EXTRA_ENV_SETTINGS					\
+ 	CONFIG_SYS_BOOTFILE						\
+ 	CONFIG_SYS_ROOTPATH						\
+-	"fdt_file=/tftpboot/pmc440/pmc440.dtb\0"			\
++	"fdtfile=/tftpboot/pmc440/pmc440.dtb\0"			\
+ 	"netdev=eth0\0"							\
+ 	"ethrotate=no\0"						\
+ 	"nfsargs=setenv bootargs root=/dev/nfs rw "			\
+@@ -215,7 +215,7 @@
+ 	"nand_boot_fdt=run nandargs addip addtty addmisc;"		\
+ 		"bootm ${kernel_addr} - ${fdt_addr}\0"			\
+ 	"net_nfs_fdt=tftp ${kernel_addr_r} ${bootfile};"		\
+-		"tftp  ${fdt_addr_r} ${fdt_file};"			\
++		"tftp  ${fdt_addr_r} ${fdtfile};"			\
+ 		"run nfsargs addip addtty addmisc;"			\
+ 		"bootm ${kernel_addr_r} - ${fdt_addr_r}\0"		\
+ 	"kernel_addr=ffc00000\0"					\
+diff --git a/include/configs/TQM5200.h b/include/configs/TQM5200.h
+index 69c0336..db32819 100644
+--- a/include/configs/TQM5200.h
++++ b/include/configs/TQM5200.h
+@@ -241,7 +241,7 @@
+ #define CUSTOM_ENV_SETTINGS						\
+ 	"hostname=tqm5200\0"						\
+ 	"bootfile=/tftpboot/tqm5200/uImage\0"				\
+-	"fdt_file=/tftpboot/tqm5200/tqm5200.dtb\0"			\
++	"fdtfile=/tftpboot/tqm5200/tqm5200.dtb\0"			\
+ 	"u-boot=/tftpboot/tqm5200/u-boot.bin\0"
+ #elif defined(CONFIG_CAM5200)
+ #define CUSTOM_ENV_SETTINGS						\
+@@ -295,7 +295,7 @@
+ 	"net_nfs_old=tftp ${kernel_addr_r} ${bootfile};"		\
+ 		"sete console ttyS0; run nfsargs addip addcons;bootm\0"	\
+ 	"net_nfs=tftp ${kernel_addr_r} ${bootfile}; "			\
+-		"tftp ${fdt_addr_r} ${fdt_file}; "			\
++		"tftp ${fdt_addr_r} ${fdtfile}; "			\
+ 		"run nfsargs addip addcons addmtd; "			\
+ 		"bootm ${kernel_addr_r} - ${fdt_addr_r}\0"		\
+ 	CUSTOM_ENV_SETTINGS						\
+diff --git a/include/configs/TQM834x.h b/include/configs/TQM834x.h
+index 6762e3a..1e23d95 100644
+--- a/include/configs/TQM834x.h
++++ b/include/configs/TQM834x.h
+@@ -535,7 +535,7 @@
+ 	"net_nfs_old=tftp 400000 ${bootfile};"				\
+ 		"run nfsargs addip addcons;bootm\0"			\
+ 	"net_nfs=tftp ${kernel_addr_r} ${bootfile}; "			\
+-		"tftp ${fdt_addr_r} ${fdt_file}; "			\
++		"tftp ${fdt_addr_r} ${fdtfile}; "			\
+ 		"run nfsargs addip addcons; "				\
+ 		"bootm ${kernel_addr_r} - ${fdt_addr_r}\0"		\
+ 	"rootpath=/opt/eldk/ppc_6xx\0"					\
+diff --git a/include/configs/alpr.h b/include/configs/alpr.h
+index 7849b22..af43e8e 100644
+--- a/include/configs/alpr.h
++++ b/include/configs/alpr.h
+@@ -132,7 +132,7 @@
+ #define	CONFIG_EXTRA_ENV_SETTINGS					\
+ 	"netdev=eth3\0"							\
+ 	"hostname=alpr\0"						\
+-	"fdt_file=alpr/alpr.dtb\0"					\
++	"fdtfile=alpr/alpr.dtb\0"					\
+ 	"fdt_addr=400000\0"						\
+ 	"nfsargs=setenv bootargs root=/dev/nfs rw "			\
+ 		"nfsroot=${serverip}:${rootpath} ${init}\0"		\
+@@ -149,7 +149,7 @@
+ 	"net_nfs=tftp 200000 ${bootfile};run nfsargs addip addtty;"     \
+ 		"bootm\0"						\
+ 	"net_nfs_fdt=tftp 200000 ${bootfile};"				\
+-		"tftp ${fdt_addr} ${fdt_file};"				\
++		"tftp ${fdt_addr} ${fdtfile};"				\
+ 		"run nfsargs addip addtty;"				\
+ 		"bootm 200000 - ${fdt_addr}\0"				\
+ 	"rootpath=/opt/projects/alpr/nfs_root\0"			\
+diff --git a/include/configs/amcc-common.h b/include/configs/amcc-common.h
+index 2aea899..95d42ac 100644
+--- a/include/configs/amcc-common.h
++++ b/include/configs/amcc-common.h
+@@ -208,16 +208,16 @@
+ 	"flash_nfs=run nfsargs addip addtty addmisc;"			\
+ 		"bootm ${kernel_addr} - ${fdt_addr}\0"			\
+ 	"net_nfs=tftp ${kernel_addr_r} ${bootfile}; "			\
+-		"tftp ${fdt_addr_r} ${fdt_file}; "			\
++		"tftp ${fdt_addr_r} ${fdtfile}; "			\
+ 		"run nfsargs addip addtty addmisc;"			\
+ 		"bootm ${kernel_addr_r} - ${fdt_addr_r}\0"		\
+ 	"net_self_load=tftp ${kernel_addr_r} ${bootfile};"		\
+-		"tftp ${fdt_addr_r} ${fdt_file};"			\
++		"tftp ${fdt_addr_r} ${fdtfile};"			\
+ 		"tftp ${ramdisk_addr_r} ${ramdisk_file};\0"		\
+ 	"net_self=run net_self_load;"					\
+ 		"run ramargs addip addtty addmisc;"			\
+ 		"bootm ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}\0" \
+-	"fdt_file=" __stringify(CONFIG_HOSTNAME) "/" __stringify(CONFIG_HOSTNAME) ".dtb\0"
++	"fdtfile=" __stringify(CONFIG_HOSTNAME) "/" __stringify(CONFIG_HOSTNAME) ".dtb\0"
+ 
+ /*
+  * Default environment for arch/ppc booting,
+diff --git a/include/configs/cgtqmx6eval.h b/include/configs/cgtqmx6eval.h
+index b189bf1..dac7e65 100644
+--- a/include/configs/cgtqmx6eval.h
++++ b/include/configs/cgtqmx6eval.h
+@@ -76,7 +76,7 @@
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+ 	"script=boot.scr\0" \
+ 	"image=zImage\0" \
+-	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
++	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
+ 	"boot_dir=/boot\0" \
+ 	"console=ttymxc1\0" \
+ 	"fdt_high=0xffffffff\0" \
+@@ -95,7 +95,7 @@
+ 	"loadimage=ext2load mmc ${mmcdev}:${mmcpart} ${loadaddr} " \
+ 		"${boot_dir}/${image}\0" \
+ 	"loadfdt=ext2load mmc ${mmcdev}:${mmcpart} ${fdt_addr} " \
+-		"${boot_dir}/${fdt_file}\0" \
++		"${boot_dir}/${fdtfile}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+diff --git a/include/configs/charon.h b/include/configs/charon.h
+index 2f537e0..dfcc01e 100644
+--- a/include/configs/charon.h
++++ b/include/configs/charon.h
+@@ -29,7 +29,7 @@
+ #undef CUSTOM_ENV_SETTINGS
+ #define CUSTOM_ENV_SETTINGS					\
+ 	"bootfile=/tftpboot/charon/uImage\0"			\
+-	"fdt_file=/tftpboot/charon/charon.dtb\0"		\
++	"fdtfile=/tftpboot/charon/charon.dtb\0"		\
+ 	"u-boot=/tftpboot/charon/u-boot.bin\0"			\
+ 	"mtdparts=" MTDPARTS_DEFAULT "\0"			\
+ 	"addmtd=setenv bootargs ${bootargs} ${mtdparts}\0"
+diff --git a/include/configs/cm5200.h b/include/configs/cm5200.h
+index 7c693d6..8c41892 100644
+--- a/include/configs/cm5200.h
++++ b/include/configs/cm5200.h
+@@ -98,7 +98,7 @@
+ 	"rootpath=/opt/eldk-4.1/ppc_6xx\0"				\
+ 	"u-boot=/tftpboot/cm5200/u-boot.bin\0"				\
+ 	"bootfile_fdt=/tftpboot/cm5200/uImage\0"			\
+-	"fdt_file=/tftpboot/cm5200/cm5200.dtb\0"			\
++	"fdtfile=/tftpboot/cm5200/cm5200.dtb\0"			\
+ 	"load=tftp ${u-boot_addr} ${u-boot}\0"				\
+ 	"update=prot off fc000000 +${filesize}; "			\
+ 		"era fc000000 +${filesize}; "				\
+@@ -117,7 +117,7 @@
+ 	"flash_flash=run flashargs addinit addip addcons;"		\
+ 		"bootm ${kernel_addr_flash} - ${fdt_addr_flash}\0"	\
+ 	"net_nfs_fdt=tftp ${kernel_addr} ${bootfile_fdt}; "		\
+-		"tftp ${fdt_addr} ${fdt_file}; run nfsargs addip "	\
++		"tftp ${fdt_addr} ${fdtfile}; run nfsargs addip "	\
+ 		"addcons; bootm ${kernel_addr} - ${fdt_addr}\0"		\
+ 	""
+ #define CONFIG_BOOTCOMMAND	"run flash_flash"
+diff --git a/include/configs/digsy_mtc.h b/include/configs/digsy_mtc.h
+index 2a8cb39..b012539 100644
+--- a/include/configs/digsy_mtc.h
++++ b/include/configs/digsy_mtc.h
+@@ -223,7 +223,7 @@
+ 	"addcons=setenv bootargs ${bootargs} console=${console},${baudrate}\0"\
+ 	"rootpath=/opt/eldk/ppc_6xx\0"					\
+ 	"net_nfs=tftp ${kernel_addr_r} ${bootfile};"			\
+-		"tftp ${fdt_addr_r} ${fdt_file};"			\
++		"tftp ${fdt_addr_r} ${fdtfile};"			\
+ 		"run nfsargs addip addcons;"				\
+ 		"bootm ${kernel_addr_r} - ${fdt_addr_r}\0"		\
+ 	"load=tftp 200000 ${u-boot}\0"					\
+diff --git a/include/configs/enbw_cmc.h b/include/configs/enbw_cmc.h
+index 03b74a2..97fd539 100644
+--- a/include/configs/enbw_cmc.h
++++ b/include/configs/enbw_cmc.h
+@@ -188,14 +188,14 @@
+ 	"kernel_addr_r=c0700000\0"					\
+ 	"fdt_addr_r=c0600000\0"						\
+ 	"ramdisk_addr_r=c0b00000\0"					\
+-	"fdt_file=" __stringify(CONFIG_HOSTNAME) "/"			\
++	"fdtfile=" __stringify(CONFIG_HOSTNAME) "/"			\
+ 		__stringify(CONFIG_HOSTNAME) ".dtb\0"			\
+ 	"kernel_file=" __stringify(CONFIG_HOSTNAME) "/uImage \0"	\
+ 	"nand_ld_ramdsk=nand read ${ramdisk_addr_r} 320000 400000\0"	\
+ 	"nand_ld_kernel=nand read ${kernel_addr_r} 20000 300000\0"	\
+ 	"nand_ld_fdt=nand read ${fdt_addr_r} 0 2000\0"			\
+ 	"load_kernel=tftp ${kernel_addr_r} ${kernel_file}\0"		\
+-	"load_fdt=tftp ${fdt_addr_r} ${fdt_file}\0"			\
++	"load_fdt=tftp ${fdt_addr_r} ${fdtfile}\0"			\
+ 	"load_nand=run nand_ld_ramdsk nand_ld_kernel nand_ld_fdt\0"	\
+ 	"addcon=setenv bootargs ${bootargs} console=ttyS2,"		\
+ 		"${baudrate}n8\0"					\
+diff --git a/include/configs/hummingboard.h b/include/configs/hummingboard.h
+index 2895523..0fd8f1d 100644
+--- a/include/configs/hummingboard.h
++++ b/include/configs/hummingboard.h
+@@ -97,7 +97,7 @@
+ 	"splashpos=m,m\0" \
+ 	"fdt_high=0xffffffff\0" \
+ 	"initrd_high=0xffffffff\0" \
+-	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
++	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
+ 	"fdt_addr=0x18000000\0" \
+ 	"boot_fdt=try\0" \
+ 	"ip_dyn=yes\0" \
+@@ -125,7 +125,7 @@
+ 	"bootscript=echo Running bootscript from mmc ...; " \
+ 		"source\0" \
+ 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
++	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+@@ -153,7 +153,7 @@
+ 		"fi; " \
+ 		"${get_cmd} ${image}; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
++			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
+ 				"bootz ${loadaddr} - ${fdt_addr}; " \
+ 			"else " \
+ 				"if test ${boot_fdt} = try; then " \
+diff --git a/include/configs/manroland/common.h b/include/configs/manroland/common.h
+index ab4a471..2295530 100644
+--- a/include/configs/manroland/common.h
++++ b/include/configs/manroland/common.h
+@@ -72,10 +72,10 @@
+ 	"rootpath=/opt/eldk/ppc_82xx\0"					\
+ 	"kernel_addr_r=300000\0"					\
+ 	"fdt_addr_r=200000\0"						\
+-	"fdt_file=" __stringify(CONFIG_HOSTNAME) "/" 			\
++	"fdtfile=" __stringify(CONFIG_HOSTNAME) "/" 			\
+ 		__stringify(CONFIG_HOSTNAME) ".dtb\0"			\
+ 	"kernel_file=" __stringify(CONFIG_HOSTNAME) "/uImage \0" 	\
+-	"load_fdt=tftp ${fdt_addr_r} ${fdt_file};\0"			\
++	"load_fdt=tftp ${fdt_addr_r} ${fdtfile};\0"			\
+ 	"load_kernel=tftp ${kernel_addr_r} ${kernel_file};\0" 		\
+ 	"addcon=setenv bootargs ${bootargs} console=ttyPSC0,${baudrate}\0"\
+ 	"net_nfs=run load_fdt load_kernel; "				\
+diff --git a/include/configs/motionpro.h b/include/configs/motionpro.h
+index e8b0593..0b52580 100644
+--- a/include/configs/motionpro.h
++++ b/include/configs/motionpro.h
+@@ -108,7 +108,7 @@
+ 	"rootpath=/opt/eldk-4.2/ppc_6xx\0"				\
+ 	"u-boot=/tftpboot/motionpro/u-boot.bin\0"			\
+ 	"bootfile=/tftpboot/motionpro/uImage\0"				\
+-	"fdt_file=/tftpboot/motionpro/motionpro.dtb\0"			\
++	"fdtfile=/tftpboot/motionpro/motionpro.dtb\0"			\
+ 	"ramdisk_file=/tftpboot/motionpro/uRamdisk\0"			\
+ 	"multi_image_file=kernel+initrd+dtb.img\0"			\
+ 	"load=tftp ${u-boot_addr} ${u-boot}\0"				\
+@@ -131,11 +131,11 @@
+ 		"${netmask}:${hostname}:${netdev}:off panic=1 "		\
+ 		"console=${console}\0"					\
+ 	"net_nfs=tftp ${kernel_addr} ${bootfile}; "			\
+-		"tftp ${fdt_addr} ${fdt_file}; "			\
++		"tftp ${fdt_addr} ${fdtfile}; "			\
+ 		"run nfsargs addip addmtd; "				\
+ 		"bootm ${kernel_addr} - ${fdt_addr}\0"			\
+ 	"net_self=tftp ${kernel_addr} ${bootfile}; "			\
+-		"tftp ${fdt_addr} ${fdt_file}; "			\
++		"tftp ${fdt_addr} ${fdtfile}; "			\
+ 		"tftp ${ramdisk_addr} ${ramdisk_file}; "		\
+ 		"nfs ${ramdisk_addr} ${serverip}:${rootpath}/images/uRamdisk; "	\
+ 		"run ramargs addip addcons addmtd; "			\
+diff --git a/include/configs/muas3001.h b/include/configs/muas3001.h
+index 7343c94..2142140 100644
+--- a/include/configs/muas3001.h
++++ b/include/configs/muas3001.h
+@@ -134,7 +134,7 @@
+ 	"rootpath=/opt/eldk/ppc_6xx\0"						\
+ 	"u-boot=muas3001/u-boot.bin\0"						\
+ 	"bootfile=muas3001/uImage\0"						\
+-	"fdt_file=muas3001/muas3001.dtb\0"					\
++	"fdtfile=muas3001/muas3001.dtb\0"					\
+ 	"ramdisk_file=uRamdisk\0"						\
+ 	"load=tftp ${u-boot_addr_r} ${u-boot}\0"				\
+ 	"update=prot off ff000000 ff03ffff; era ff000000 ff03ffff; "		\
+@@ -149,10 +149,10 @@
+ 		"ip=${ipaddr}:${serverip}:${gatewayip}:"			\
+ 		"${netmask}:${hostname}:${netdev}:off panic=1\0"		\
+ 	"net_nfs=tftp ${kernel_addr_r} ${bootfile}; "				\
+-		"tftp ${fdt_addr_r} ${fdt_file}; run nfsargs addip addcons;"	\
++		"tftp ${fdt_addr_r} ${fdtfile}; run nfsargs addip addcons;"	\
+ 		"bootm ${kernel_addr_r} - ${fdt_addr_r}\0"			\
+ 	"net_self=tftp ${kernel_addr_r} ${bootfile}; "				\
+-		"tftp ${fdt_addr_r} ${fdt_file}; "				\
++		"tftp ${fdt_addr_r} ${fdtfile}; "				\
+ 		"tftp ${ramdisk_addr} ${ramdisk_file}; "			\
+ 		"run ramargs addip; "						\
+ 		"bootm ${kernel_addr_r} ${ramdisk_addr} ${fdt_addr_r}\0"	\
+@@ -167,7 +167,7 @@
+ 	"updatekernel=era ${kernel_addr} +1b0000;tftpb ${kernel_addr_r}"	\
+ 	" ${bootfile};"								\
+ 	"cp.b ${kernel_addr_r} ${kernel_addr} ${filesize}\0"			\
+-	"updatefdt=era ${fdt_addr} +10000;tftpb ${fdt_addr_r} ${fdt_file};"	\
++	"updatefdt=era ${fdt_addr} +10000;tftpb ${fdt_addr_r} ${fdtfile};"	\
+ 	"cp.b ${fdt_addr_r} ${fdt_addr} ${filesize}\0"				\
+ 	""
+ 
+diff --git a/include/configs/mx23_olinuxino.h b/include/configs/mx23_olinuxino.h
+index e377fea..881d5d4 100644
+--- a/include/configs/mx23_olinuxino.h
++++ b/include/configs/mx23_olinuxino.h
+@@ -85,7 +85,7 @@
+ 	"script=boot.scr\0"	\
+ 	"uimage=uImage\0" \
+ 	"console=ttyAMA0\0" \
+-	"fdt_file=imx23-olinuxino.dtb\0" \
++	"fdtfile=imx23-olinuxino.dtb\0" \
+ 	"fdt_addr=0x41000000\0" \
+ 	"boot_fdt=try\0" \
+ 	"ip_dyn=yes\0" \
+@@ -99,7 +99,7 @@
+ 	"bootscript=echo Running bootscript from mmc ...; "	\
+ 		"source\0" \
+ 	"loaduimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${uimage}\0" \
+-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
++	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+@@ -128,7 +128,7 @@
+ 		"fi; " \
+ 		"${get_cmd} ${uimage}; " \
+ 		"if test ${boot_fdt} = yes; then " \
+-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
++			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
+ 				"bootm ${loadaddr} - ${fdt_addr}; " \
+ 			"else " \
+ 				"if test ${boot_fdt} = try; then " \
+diff --git a/include/configs/mx23evk.h b/include/configs/mx23evk.h
+index b496892..b7cba30 100644
+--- a/include/configs/mx23evk.h
++++ b/include/configs/mx23evk.h
+@@ -86,7 +86,7 @@
+ 	"script=boot.scr\0"	\
+ 	"image=zImage\0" \
+ 	"console=ttyAMA0\0" \
+-	"fdt_file=imx23-evk.dtb\0" \
++	"fdtfile=imx23-evk.dtb\0" \
+ 	"fdt_addr=0x41000000\0" \
+ 	"boot_fdt=try\0" \
+ 	"mmcdev=0\0" \
+@@ -99,7 +99,7 @@
+ 	"bootscript=echo Running bootscript from mmc ...; "	\
+ 		"source\0" \
+ 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
++	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+diff --git a/include/configs/mx28evk.h b/include/configs/mx28evk.h
+index 9b9124a..071e510 100644
+--- a/include/configs/mx28evk.h
++++ b/include/configs/mx28evk.h
+@@ -208,7 +208,7 @@
+ 		"else " \
+ 			"setenv get_cmd tftp; " \
+ 		"fi; " \
+-		"${get_cmd} ${fdt_file}; " \
++		"${get_cmd} ${fdtfile}; " \
+ 		"nand write ${loadaddr} fdt ${filesize}\0" \
+ 	"update_nand_filesystem="		/* Update filesystem */ \
+ 		"mtdparts default; " \
+@@ -251,7 +251,7 @@
+ 	"image=zImage\0" \
+ 	"console_fsl=ttyAM0\0" \
+ 	"console_mainline=ttyAMA0\0" \
+-	"fdt_file=imx28-evk.dtb\0" \
++	"fdtfile=imx28-evk.dtb\0" \
+ 	"fdt_addr=0x41000000\0" \
+ 	"boot_fdt=try\0" \
+ 	"ip_dyn=yes\0" \
+@@ -265,7 +265,7 @@
+ 	"bootscript=echo Running bootscript from mmc ...; "	\
+ 		"source\0" \
+ 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
++	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+@@ -293,7 +293,7 @@
+ 		"fi; " \
+ 		"${get_cmd} ${image}; " \
+ 		"if test ${boot_fdt} = yes; then " \
+-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
++			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
+ 				"bootz ${loadaddr} - ${fdt_addr}; " \
+ 			"else " \
+ 				"if test ${boot_fdt} = try; then " \
+diff --git a/include/configs/mx51evk.h b/include/configs/mx51evk.h
+index b389475..f573434 100644
+--- a/include/configs/mx51evk.h
++++ b/include/configs/mx51evk.h
+@@ -144,7 +144,7 @@
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+ 	"script=boot.scr\0" \
+ 	"image=zImage\0" \
+-	"fdt_file=imx51-babbage.dtb\0" \
++	"fdtfile=imx51-babbage.dtb\0" \
+ 	"fdt_addr=0x91000000\0" \
+ 	"boot_fdt=try\0" \
+ 	"ip_dyn=yes\0" \
+@@ -158,7 +158,7 @@
+ 	"bootscript=echo Running bootscript from mmc ...; " \
+ 		"source\0" \
+ 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
++	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+@@ -186,7 +186,7 @@
+ 		"fi; " \
+ 		"${get_cmd} ${image}; " \
+ 		"if test ${boot_fdt} = yes ||  test ${boot_fdt} = try; then " \
+-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
++			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
+ 				"bootz ${loadaddr} - ${fdt_addr}; " \
+ 			"else " \
+ 				"if test ${boot_fdt} = try; then " \
+diff --git a/include/configs/mx53ard.h b/include/configs/mx53ard.h
+index 797a637..d4e4161 100644
+--- a/include/configs/mx53ard.h
++++ b/include/configs/mx53ard.h
+@@ -98,7 +98,7 @@
+ 	"console=ttymxc0\0" \
+ 	"fdt_high=0xffffffff\0" \
+ 	"initrd_high=0xffffffff\0" \
+-	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
++	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
+ 	"fdt_addr=0x71000000\0" \
+ 	"boot_fdt=try\0" \
+ 	"ip_dyn=yes\0" \
+@@ -126,7 +126,7 @@
+ 	"bootscript=echo Running bootscript from mmc ...; " \
+ 		"source\0" \
+ 	"loaduimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${uimage}\0" \
+-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
++	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+@@ -154,7 +154,7 @@
+ 		"fi; " \
+ 		"${get_cmd} ${uimage}; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
++			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
+ 				"bootm ${loadaddr} - ${fdt_addr}; " \
+ 			"else " \
+ 				"if test ${boot_fdt} = try; then " \
+diff --git a/include/configs/mx53loco.h b/include/configs/mx53loco.h
+index 1415584..cfc8f1e 100644
+--- a/include/configs/mx53loco.h
++++ b/include/configs/mx53loco.h
+@@ -105,7 +105,7 @@
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+ 	"script=boot.scr\0" \
+ 	"image=zImage\0" \
+-	"fdt_file=imx53-qsb.dtb\0" \
++	"fdtfile=imx53-qsb.dtb\0" \
+ 	"fdt_addr=0x71000000\0" \
+ 	"boot_fdt=try\0" \
+ 	"ip_dyn=yes\0" \
+@@ -118,7 +118,7 @@
+ 	"bootscript=echo Running bootscript from mmc ...; " \
+ 		"source\0" \
+ 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
++	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+@@ -146,7 +146,7 @@
+ 		"fi; " \
+ 		"${get_cmd} ${image}; " \
+ 		"if test ${boot_fdt} = yes ||  test ${boot_fdt} = try; then " \
+-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
++			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
+ 				"bootz ${loadaddr} - ${fdt_addr}; " \
+ 			"else " \
+ 				"if test ${boot_fdt} = try; then " \
+diff --git a/include/configs/mx6sabre_common.h b/include/configs/mx6sabre_common.h
+index 7a2c172..df5060c 100644
+--- a/include/configs/mx6sabre_common.h
++++ b/include/configs/mx6sabre_common.h
+@@ -120,7 +120,7 @@
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+ 	"script=boot.scr\0" \
+ 	"image=zImage\0" \
+-	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
++	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
+ 	"fdt_addr=0x18000000\0" \
+ 	"boot_fdt=try\0" \
+ 	"ip_dyn=yes\0" \
+@@ -151,7 +151,7 @@
+ 	"bootscript=echo Running bootscript from mmc ...; " \
+ 		"source\0" \
+ 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
++	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+@@ -179,7 +179,7 @@
+ 		"fi; " \
+ 		"${get_cmd} ${image}; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
++			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
+ 				"bootz ${loadaddr} - ${fdt_addr}; " \
+ 			"else " \
+ 				"if test ${boot_fdt} = try; then " \
+diff --git a/include/configs/mx6slevk.h b/include/configs/mx6slevk.h
+index 1876dbf..74e411e 100644
+--- a/include/configs/mx6slevk.h
++++ b/include/configs/mx6slevk.h
+@@ -80,7 +80,7 @@
+ 	"console=ttymxc0\0" \
+ 	"fdt_high=0xffffffff\0" \
+ 	"initrd_high=0xffffffff\0" \
+-	"fdt_file=imx6sl-evk.dtb\0" \
++	"fdtfile=imx6sl-evk.dtb\0" \
+ 	"fdt_addr=0x88000000\0" \
+ 	"boot_fdt=try\0" \
+ 	"ip_dyn=yes\0" \
+@@ -94,7 +94,7 @@
+ 	"bootscript=echo Running bootscript from mmc ...; " \
+ 		"source\0" \
+ 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
++	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+@@ -122,7 +122,7 @@
+ 		"fi; " \
+ 		"${get_cmd} ${image}; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
++			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
+ 				"bootz ${loadaddr} - ${fdt_addr}; " \
+ 			"else " \
+ 				"if test ${boot_fdt} = try; then " \
+diff --git a/include/configs/nitrogen6x.h b/include/configs/nitrogen6x.h
+index f2db8c5..a8a477e 100644
+--- a/include/configs/nitrogen6x.h
++++ b/include/configs/nitrogen6x.h
+@@ -180,7 +180,7 @@
+ 	"console=ttymxc1\0" \
+ 	"fdt_high=0xffffffff\0" \
+ 	"initrd_high=0xffffffff\0" \
+-	"fdt_file=imx6q-sabrelite.dtb\0" \
++	"fdtfile=imx6q-sabrelite.dtb\0" \
+ 	"fdt_addr=0x18000000\0" \
+ 	"boot_fdt=try\0" \
+ 	"ip_dyn=yes\0" \
+@@ -194,7 +194,7 @@
+ 	"bootscript=echo Running bootscript from mmc ...; " \
+ 		"source\0" \
+ 	"loaduimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${uimage}\0" \
+-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
++	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+@@ -222,7 +222,7 @@
+ 		"fi; " \
+ 		"${get_cmd} ${uimage}; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
++			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
+ 				"bootm ${loadaddr} - ${fdt_addr}; " \
+ 			"else " \
+ 				"if test ${boot_fdt} = try; then " \
+diff --git a/include/configs/o2dnt-common.h b/include/configs/o2dnt-common.h
+index 133dc6f..83f9d50 100644
+--- a/include/configs/o2dnt-common.h
++++ b/include/configs/o2dnt-common.h
+@@ -135,13 +135,13 @@
+ 
+ #define CONFIG_IFM_DEFAULT_ENV_NEW					\
+ 	"fdt_addr_r=900000\0"						\
+-	"fdt_file="CONFIG_BOARD_NAME"/"CONFIG_BOARD_NAME".dtb\0"	\
++	"fdtfile="CONFIG_BOARD_NAME"/"CONFIG_BOARD_NAME".dtb\0"	\
+ 	"flash_self=run ramargs addip addtty addmisc;"			\
+ 		"bootm ${kernel_addr} ${ramdisk_addr} ${fdt_addr}\0"	\
+ 	"flash_nfs=run nfsargs addip addtty addmisc;"			\
+ 		"bootm ${kernel_addr} - ${fdt_addr}\0"			\
+ 	"net_nfs=tftp ${kernel_addr_r} ${bootfile}; "			\
+-		"tftp ${fdt_addr_r} ${fdt_file}; "			\
++		"tftp ${fdt_addr_r} ${fdtfile}; "			\
+ 		"run nfsargs addip addtty addmisc;"			\
+ 		"bootm ${kernel_addr_r} - ${fdt_addr_r}\0"		\
+ 
+diff --git a/include/configs/socrates.h b/include/configs/socrates.h
+index c654a0e..27bc358 100644
+--- a/include/configs/socrates.h
++++ b/include/configs/socrates.h
+@@ -380,7 +380,7 @@
+ 	"consdev=ttyS0\0"						\
+ 	"uboot_file=/home/tftp/syscon3/u-boot.bin\0"			\
+ 	"bootfile=/home/tftp/syscon3/uImage\0"				\
+-	"fdt_file=/home/tftp/syscon3/socrates.dtb\0"			\
++	"fdtfile=/home/tftp/syscon3/socrates.dtb\0"			\
+ 	"initrd_file=/home/tftp/syscon3/uinitrd.gz\0"			\
+ 	"uboot_addr=FFFA0000\0"						\
+ 	"kernel_addr=FE000000\0"					\
+@@ -401,7 +401,7 @@
+ 	"boot_nor=run ramargs addcons;"					\
+ 		"bootm ${kernel_addr} ${ramdisk_addr} ${fdt_addr}\0"	\
+ 	"net_nfs=tftp ${kernel_addr_r} ${bootfile}; "			\
+-		"tftp ${fdt_addr_r} ${fdt_file}; "			\
++		"tftp ${fdt_addr_r} ${fdtfile}; "			\
+ 		"run nfsargs addip addcons;"				\
+ 		"bootm ${kernel_addr_r} - ${fdt_addr_r}\0"		\
+ 	"update_uboot=tftp 100000 ${uboot_file};"			\
+@@ -413,7 +413,7 @@
+ 		"era fe000000 fe1dffff;"				\
+ 		"cp.b 100000 fe000000 ${filesize};"			\
+ 		"setenv filesize;saveenv\0"				\
+-	"update_fdt=tftp 100000 ${fdt_file};" 				\
++	"update_fdt=tftp 100000 ${fdtfile};" 				\
+ 		"era fe1e0000 fe1fffff;"				\
+ 		"cp.b 100000 fe1e0000 ${filesize};"			\
+ 		"setenv filesize;saveenv\0"				\
+diff --git a/include/configs/udoo.h b/include/configs/udoo.h
+index a0306de..88e503b 100644
+--- a/include/configs/udoo.h
++++ b/include/configs/udoo.h
+@@ -105,7 +105,7 @@
+ 	"splashpos=m,m\0" \
+ 	"fdt_high=0xffffffff\0" \
+ 	"initrd_high=0xffffffff\0" \
+-	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
++	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
+ 	"fdt_addr=0x18000000\0" \
+ 	"boot_fdt=try\0" \
+ 	"ip_dyn=yes\0" \
+@@ -133,7 +133,7 @@
+ 	"bootscript=echo Running bootscript from mmc ...; " \
+ 		"source\0" \
+ 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
++	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+@@ -161,7 +161,7 @@
+ 		"fi; " \
+ 		"${get_cmd} ${image}; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
++			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
+ 				"bootz ${loadaddr} - ${fdt_addr}; " \
+ 			"else " \
+ 				"if test ${boot_fdt} = try; then " \
+diff --git a/include/configs/vf610twr.h b/include/configs/vf610twr.h
+index 500fd2f..208c2cc 100644
+--- a/include/configs/vf610twr.h
++++ b/include/configs/vf610twr.h
+@@ -85,7 +85,7 @@
+ 	"console=ttyLP1\0" \
+ 	"fdt_high=0xffffffff\0" \
+ 	"initrd_high=0xffffffff\0" \
+-	"fdt_file=vf610-twr.dtb\0" \
++	"fdtfile=vf610-twr.dtb\0" \
+ 	"fdt_addr=0x81000000\0" \
+ 	"boot_fdt=try\0" \
+ 	"ip_dyn=yes\0" \
+@@ -113,7 +113,7 @@
+ 	"bootscript=echo Running bootscript from mmc ...; " \
+ 		"source\0" \
+ 	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
+-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
++	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+ 	"mmcboot=echo Booting from mmc ...; " \
+ 		"run mmcargs; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+@@ -141,7 +141,7 @@
+ 		"fi; " \
+ 		"${get_cmd} ${image}; " \
+ 		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
+-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
++			"if ${get_cmd} ${fdt_addr} ${fdtfile}; then " \
+ 				"bootz ${loadaddr} - ${fdt_addr}; " \
+ 			"else " \
+ 				"if test ${boot_fdt} = try; then " \
+-- 
+1.9.0
+
