@@ -43,7 +43,7 @@ index 0000000..f0620ff
 +			"run scan_boot; " \
 +		"fi\0" \
 +	"bootcmd_mmc0=setenv devnum 0; run mmc_boot;\0" \
-+	"bootcmd_mmc1=setenv devnum 1; run mmc_boot;\0"
++	"bootcmd_mmc1=setenv devnum 1; run mmc_boot;\0" \
 +	"bootcmd_mmc2=setenv devnum 2; run mmc_boot;\0"
 +#define BOOT_TARGETS_MMC "mmc2 mmc1 mmc0"
 +#else
