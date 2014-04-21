@@ -26,6 +26,7 @@ Patch20:        0011-add-README.distro-file.patch
 Patch21:        0012-cleanup-duplicate-options-in-paz00-config.patch
 Patch22:        0013-add-hackish-utilite-build-based-on-wandboard.patch
 Patch23:        0014-add-to-ti_armv7_common.h-generic-distro-environment-.patch
+Patch24:        0015-omap4-buildfixes.patch
 
 %ifnarch %{arm}
 BuildRequires:  gcc-arm-linux-gnu
@@ -106,6 +107,7 @@ u-boot bootloader binaries for armv7 boards
 %patch21 -p1
 %patch22 -p1
 %patch23 -p1
+%patch24 -p1
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
