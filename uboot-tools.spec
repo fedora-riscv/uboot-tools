@@ -1,8 +1,8 @@
-%global candidate rc2
+#global candidate
 
 Name:           uboot-tools
 Version:        2014.04
-Release:        0.4%{?candidate:.%{candidate}}%{?dist}
+Release:        1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -15,16 +15,17 @@ Patch1:         u-boot-fat.patch
 Patch10:        0001-TI-Add-use-a-DEFAULT_LINUX_BOOT_ENV-environment-stri.patch
 Patch11:        0002-am335x_evm-Update-the-ramdisk-args-we-pass-things-in.patch
 Patch12:        0003-am43xx_evm-Update-the-ramdisk-args-we-pass-things-in.patch
-Patch13:        0004-add-README.distro.patch
-Patch14:        0005-add-generic-bootcmd-header.patch
-Patch15:        0006-convert-wandboard-to-use-generic-boot-commands.patch
-Patch16:        0007-convert-beaglebone-to-use-generic-boot-commands.patch
-Patch17:        0008-convert-pandaboard-to-use-generic-boot-commands.patch
-Patch18:        0009-fix-up-some-sillies.patch
-Patch19:        0010-fixups-for-wandboard-to-ensure-the-environment-is-co.patch
-Patch20:        0011-convert-fdt_file-to-fdtfile-globally.patch
-Patch21:        0012-check-for-fdtfile-and-fdt_file-to-find-the-devicetre.patch
-Patch22:        0013-cleanups-to-make-panda-and-beaglebone-work.patch
+Patch13:        0004-pxe-additionaly-check-for-fdt_file-env-variable.patch
+Patch14:        0005-convert-snowball-to-distro-generic-config.patch
+Patch15:        0006-move-wandboard-over-to-use-the-generic-distro-config.patch
+Patch16:        0007-move-udoo-over-to-use-the-generic-distro-configuatio.patch
+Patch17:        0008-move-pandaboard-over-to-use-the-generic-distro-confi.patch
+Patch18:        0009-move-beaglebone-over-to-use-the-generic-distro-confi.patch
+Patch19:        0010-add-header-with-a-generic-set-of-boot-commands-defin.patch
+Patch20:        0011-add-README.distro-file.patch
+Patch21:        0012-cleanup-duplicate-options-in-paz00-config.patch
+Patch22:        0013-add-hackish-utilite-build-based-on-wandboard.patch
+Patch23:        0014-add-to-ti_armv7_common.h-generic-distro-environment-.patch
 
 %ifnarch %{arm}
 BuildRequires:  gcc-arm-linux-gnu
@@ -47,111 +48,43 @@ u-boot bootloader binaries for the aarch64 vexpress_aemv8a
 %endif
 
 %ifarch %{arm}
-%package     -n uboot-arndale
-Summary:     u-boot bootloader binaries for arndale board
+%package     -n uboot-images-armv7
+Summary:     u-boot bootloader binaries for armv7 boards
 Requires:    uboot-tools
 
-%description -n uboot-arndale
-u-boot bootloader binaries for arndale board
+Obsoletes: uboot-arndale < %{version}-%{release}
+Provides:  uboot-arndale = %{version}-%{release}
+Obsoletes: uboot-beagle < %{version}-%{release}
+Provides:  uboot-beagle = %{version}-%{release}
+Obsoletes: uboot-beaglebone < %{version}-%{release}
+Provides:  uboot-beaglebone = %{version}-%{release}
+Obsoletes: uboot-highbank < %{version}-%{release}
+Provides:  uboot-highbank = %{version}-%{release}
+Obsoletes: uboot-panda < %{version}-%{release}
+Provides:  uboot-panda = %{version}-%{release}
+Obsoletes: uboot-origen < %{version}-%{release}
+Provides:  uboot-origen = %{version}-%{release}
+Obsoletes: uboot-paz00 < %{version}-%{release}
+Provides:  uboot-paz00 = %{version}-%{release}
+Obsoletes: uboot-smdkv310 < %{version}-%{release}
+Provides:  uboot-smdkv310 = %{version}-%{release}
+Obsoletes: uboot-snow < %{version}-%{release}
+Provides:  uboot-snow = %{version}-%{release}
+Obsoletes: uboot-snowball < %{version}-%{release}
+Provides:  uboot-snowball = %{version}-%{release}
+Obsoletes: uboot-trimslice < %{version}-%{release}
+Provides:  uboot-trimslice = %{version}-%{release}
+Obsoletes: uboot-uevm < %{version}-%{release}
+Provides:  uboot-uevm = %{version}-%{release}
+Obsoletes: uboot-wandboard_dl < %{version}-%{release}
+Provides:  uboot-wandboard_dl = %{version}-%{release}
+Obsoletes: uboot-wandboard_quad < %{version}-%{release}
+Provides:  uboot-wandboard_quad = %{version}-%{release}
+Obsoletes: uboot-wandboard_solo < %{version}-%{release}
+Provides:  uboot-wandboard_solo = %{version}-%{release}
 
-%package     -n uboot-beagle
-Summary:     u-boot bootloader binaries for beagleboard
-Requires:    uboot-tools
-
-%description -n uboot-beagle
-u-boot bootloader binaries for beagleboard
-
-%package     -n uboot-beaglebone
-Summary:     u-boot bootloader binaries for beaglebone
-Requires:    uboot-tools
-
-%description -n uboot-beaglebone
-u-boot bootloader binaries for beaglebone
-
-%package     -n uboot-highbank
-Summary:     u-boot bootloader binaries for calxeda highbank
-Requires:    uboot-tools
-BuildArch:   noarch
-
-%description -n uboot-highbank
-u-boot bootloader binaries for calxeda highbank
-
-%package     -n uboot-panda
-Summary:     u-boot bootloader binaries for pandaboard
-Requires:    uboot-tools
-
-%description -n uboot-panda
-u-boot bootloader binaries for pandaboard
-
-%package     -n uboot-origen
-Summary:     u-boot bootloader binaries for origenboard
-Requires:    uboot-tools
-
-%description -n uboot-origen
-u-boot bootloader binaries for origenboard
-
-%package     -n uboot-paz00
-Summary:     u-boot bootloader binaries for the paz00 board aka ac100
-Requires:    uboot-tools
-
-%description -n uboot-paz00
-u-boot bootloader binaries for paz00 board
-
-%package     -n uboot-smdkv310
-Summary:     u-boot bootloader binaries for smdk310 board
-Requires:    uboot-tools
-
-%description -n uboot-smdkv310
-u-boot bootloader binaries for smdk310 board
-
-%package     -n uboot-snow
-Summary:     u-boot bootloader binaries for snow board aka chromebook
-Requires:    uboot-tools
-
-%description -n uboot-snow
-u-boot bootloader binaries for snow board
-
-%package     -n uboot-snowball
-Summary:     u-boot bootloader binaries for snowball board
-Requires:    uboot-tools
-
-%description -n uboot-snowball
-u-boot bootloader binaries for snowball board
-
-%package     -n uboot-trimslice
-Summary:     u-boot bootloader binaries for trimslice board
-Requires:    uboot-tools
-
-%description -n uboot-trimslice
-u-boot bootloader binaries for trimslice board
-
-%package     -n uboot-uevm
-Summary:     u-boot bootloader binaries for uevm, omap5 pandaboard
-Requires:    uboot-tools
-
-%description -n uboot-uevm
-u-boot bootloader binaries for uevm, omap5 pandaboard
-
-%package     -n uboot-wandboard_dl
-Summary:     u-boot bootloader binaries for Wandboard i.MX6 Dual Lite
-Requires:    uboot-tools
-
-%description -n uboot-wandboard_dl
-u-boot bootloader binaries for Wandboard i.MX6 Dual Lite
-
-%package     -n uboot-wandboard_quad
-Summary:     u-boot bootloader binaries for Wandboard i.MX6 Quad
-Requires:    uboot-tools
-
-%description -n uboot-wandboard_quad
-u-boot bootloader binaries for Wandboard i.MX6 Quad
-
-%package     -n uboot-wandboard_solo
-Summary:     u-boot bootloader binaries for Wandboard i.MX6 Solo
-Requires:    uboot-tools
-
-%description -n uboot-wandboard_solo
-u-boot bootloader binaries for Wandboard i.MX6 Solo
+%description -n uboot-images-armv7
+u-boot bootloader binaries for armv7 boards
 
 %endif
 
@@ -172,6 +105,7 @@ u-boot bootloader binaries for Wandboard i.MX6 Solo
 %patch20 -p1
 %patch21 -p1
 %patch22 -p1
+%patch23 -p1
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
@@ -188,7 +122,7 @@ done
 make vexpress_aemv8a_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.bin builds/u-boot.bin.vexpress_aemv8a
-make distclean
+make mrproper
 
 %endif
 
@@ -197,87 +131,94 @@ make am335x_evm_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p MLO builds/MLO.beaglebone
 cp -p u-boot.img builds/u-boot.img.beaglebone
-make distclean
+make mrproper
 
 make omap3_beagle_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p MLO builds/MLO.beagle
 cp -p u-boot.img builds/u-boot.img.beagle
-make distclean
+make mrproper
 
 make arndale_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p spl/arndale-spl.bin builds/arndale-spl.bin.arndale
 cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.arndale
-make distclean
+make mrproper
 
 make highbank_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.bin builds/u-boot.bin.highbank
-make distclean
+make mrproper
 
 make omap4_panda_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p MLO builds/MLO.panda
 cp -p u-boot.img builds/u-boot.img.panda
-make distclean
+make mrproper
 
 make origen_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p spl/origen-spl.bin builds/origen-spl.bin.origen
 cp -p u-boot.bin builds/u-boot.bin.origen
-make distclean
+make mrproper
 
 make paz00_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot-dtb-tegra.bin builds/u-boot-dtb-tegra.bin.paz00
 cp -p u-boot-nodtb-tegra.bin builds/u-boot-nodtb-tegra.bin.paz00
 cp -p u-boot.map builds/u-boot.map.paz00
-make distclean
+cp -p u-boot.dtb builds/u-boot.dtb.paz00
+make mrproper
 
 make smdkv310_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p spl/smdkv310-spl.bin builds/smdkv310-spl.bin.smdkv310
 cp -p u-boot.bin builds/u-boot.bin.smdkv310
-make distclean
+make mrproper
 
 make snow_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.snow
-make distclean
+make mrproper
 
 make snowball_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.bin builds/u-boot.bin.snowball
-make distclean
+make mrproper
 
 make trimslice_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot-dtb-tegra.bin builds/u-boot-dtb-tegra.bin.trimslice
 cp -p u-boot-nodtb-tegra.bin builds/u-boot-nodtb-tegra.bin.trimslice
 cp -p u-boot.map builds/u-boot.map.trimslice
-make distclean
+cp -p u-boot.dtb builds/u-boot.dtb.trimslice
+make mrproper
 
 make wandboard_dl_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.imx builds/u-boot.imx.wbdl
-make distclean
+make mrproper
 
 make wandboard_quad_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.imx builds/u-boot.imx.wbquad
-make distclean
+make mrproper
+
+make udoo_quad_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
+cp -p u-boot.imx builds/u-boot.imx.udoo_quad
+make mrproper
 
 make wandboard_solo_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.imx builds/u-boot.imx.wbsolo
-make distclean
+make mrproper
 
 make omap5_uevm_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p MLO builds/MLO.uevm
 cp -p u-boot.img builds/u-boot.img.uevm
-make distclean
+make mrproper
 
 %endif
 %ifnarch %{arm}
@@ -306,8 +247,6 @@ install -p -m 0644 builds/u-boot.bin.vexpress_aemv8a $RPM_BUILD_ROOT%{_datadir}/
 
 %ifarch %{arm}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
-install -p -m 0644 %{SOURCE1}  $RPM_BUILD_ROOT%{_datadir}/uboot/uEnv.txt
-
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beagle/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beaglebone/
@@ -322,6 +261,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/trimslice/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_dl/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_quad/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_solo/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/udoo_quad/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/uevm/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/vexpress/
 
@@ -336,6 +276,7 @@ do
 install -p -m 0644 builds/u-boot-nodtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-nodtb-tegra.bin
 install -p -m 0644 builds/u-boot-dtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-dtb-tegra.bin
 install -p -m 0644 builds/u-boot.map.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.map
+install -p -m 0644 builds/u-boot.dtb.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.dtb
 done
 
 install -p -m 0644 builds/arndale-spl.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/arndale-spl.bin
@@ -351,6 +292,8 @@ install -p -m 0644 builds/u-boot.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot/s
 
 install -p -m 0644 builds/u-boot-dtb.bin.snow $RPM_BUILD_ROOT%{_datadir}/uboot/snow/u-boot-dtb.bin
 install -p -m 0644 builds/u-boot.bin.snowball $RPM_BUILD_ROOT%{_datadir}/uboot/snowball/u-boot.bin
+
+install -p -m 0644 builds/u-boot.imx.udoo_quad $RPM_BUILD_ROOT%{_datadir}/uboot/udoo_quad/u-boot.imx
 
 install -p -m 0644 builds/u-boot.imx.wbdl $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_dl/u-boot.imx
 install -p -m 0644 builds/u-boot.imx.wbquad $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_quad/u-boot.imx
@@ -377,81 +320,44 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/mkimage.1*
 %ifarch %{arm}
 %dir %{_datadir}/uboot/
-%{_datadir}/uboot/uEnv.txt
 %{_bindir}/fw_printenv
 %{_bindir}/fw_setenv
 %config(noreplace) %{_sysconfdir}/fw_env.config
 %endif
 
 %ifarch aarch64
-%files -n uboot-vexpress_aemv8a
+%files -n uboot-images-armv8
 %defattr(-,root,root,-)
 %{_datadir}/uboot/vexpress_aemv8a/
 %endif
 
 %ifarch %{arm}
-%files -n uboot-arndale
+%files -n uboot-images-armv7
 %defattr(-,root,root,-)
 %{_datadir}/uboot/arndale/
-
-%files -n uboot-beaglebone
-%defattr(-,root,root,-)
 %{_datadir}/uboot/beaglebone/
-
-%files -n uboot-beagle
-%defattr(-,root,root,-)
 %{_datadir}/uboot/beagle/
-
-%files -n uboot-highbank
-%defattr(-,root,root,-)
 %{_datadir}/uboot/highbank/
-
-%files -n uboot-panda
-%defattr(-,root,root,-)
 %{_datadir}/uboot/panda/
-
-%files -n uboot-paz00
-%defattr(-,root,root,-)
 %{_datadir}/uboot/paz00/
-
-%files -n uboot-origen
-%defattr(-,root,root,-)
 %{_datadir}/uboot/origen/
-
-%files -n uboot-snow
-%defattr(-,root,root,-)
 %{_datadir}/uboot/snow/
-
-%files -n uboot-snowball
-%defattr(-,root,root,-)
 %{_datadir}/uboot/snowball/
-
-%files -n uboot-smdkv310
-%defattr(-,root,root,-)
 %{_datadir}/uboot/smdkv310/
-
-%files -n uboot-trimslice
-%defattr(-,root,root,-)
 %{_datadir}/uboot/trimslice/
-
-%files -n uboot-wandboard_dl
-%defattr(-,root,root,-)
 %{_datadir}/uboot/wandboard_dl/
-
-%files -n uboot-wandboard_quad
-%defattr(-,root,root,-)
 %{_datadir}/uboot/wandboard_quad/
-
-%files -n uboot-wandboard_solo
-%defattr(-,root,root,-)
 %{_datadir}/uboot/wandboard_solo/
-
-%files -n uboot-uevm
-%defattr(-,root,root,-)
+%{_datadir}/uboot/udoo_quad/
 %{_datadir}/uboot/uevm/
 %endif
 
 %changelog
+* Mon Apr 21 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-1
+- update to final 2014.04
+- put all images into a single rpm
+- add udoo image
+
 * Wed Mar 19 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-0.4.rc2
 - apply fixes for panda and beaglebone
 

@@ -1,7 +1,7 @@
-From 05e9d82d71560140a58c3e430b788b3058129fe7 Mon Sep 17 00:00:00 2001
+From 9c80863e93e251b7068a7a9945694a72a300f505 Mon Sep 17 00:00:00 2001
 From: Tom Rini <trini@ti.com>
 Date: Tue, 11 Mar 2014 15:42:02 -0400
-Subject: [PATCH 02/13] am335x_evm: Update the ramdisk args, we pass things in
+Subject: [PATCH 02/14] am335x_evm: Update the ramdisk args, we pass things in
  just fine via DT
 
 Signed-off-by: Tom Rini <trini@ti.com>
@@ -10,7 +10,7 @@ Signed-off-by: Tom Rini <trini@ti.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/include/configs/am335x_evm.h b/include/configs/am335x_evm.h
-index 6bd8aec..11088b3 100644
+index 4148517..ebe2ab3 100644
 --- a/include/configs/am335x_evm.h
 +++ b/include/configs/am335x_evm.h
 @@ -79,7 +79,7 @@

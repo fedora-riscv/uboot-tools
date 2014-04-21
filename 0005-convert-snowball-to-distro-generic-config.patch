@@ -1,0 +1,131 @@
+From 77d98dff1c43a7d87c3a1d4c55f4abea47d4d6f9 Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Mon, 21 Apr 2014 12:15:35 -0500
+Subject: [PATCH 05/14] convert snowball to distro generic config
+
+---
+ include/configs/snowball.h | 78 +++++++++-------------------------------------
+ 1 file changed, 15 insertions(+), 63 deletions(-)
+
+diff --git a/include/configs/snowball.h b/include/configs/snowball.h
+index dacb560..e53b467 100644
+--- a/include/configs/snowball.h
++++ b/include/configs/snowball.h
+@@ -74,7 +74,6 @@
+  */
+ #define CONFIG_MMC
+ #define CONFIG_GENERIC_MMC
+-#define CONFIG_DOS_PARTITION
+ 
+ /*
+  * Commands
+@@ -90,82 +89,37 @@
+ #define CONFIG_CMD_LOADS
+ #define CONFIG_CMD_LOADB
+ #define CONFIG_CMD_MMC
+-#define CONFIG_CMD_FAT
+-#define CONFIG_CMD_EXT2
+ #define CONFIG_CMD_SOURCE
+ 
+-#ifndef CONFIG_BOOTDELAY
+-#define CONFIG_BOOTDELAY	1
+-#endif
++#ifndef CONFIG_SPL_BUILD
++#include <config_distro_defaults.h>
++#include <config_distro_bootcmd.h>
++
+ #define CONFIG_ZERO_BOOTDELAY_CHECK	/* check for keypress on bootdelay==0 */
+ 
+-#undef CONFIG_BOOTARGS
+ #define CONFIG_BOOTCOMMAND \
+-"mmc dev 1; "								\
+-	"if run loadbootscript; "					\
+-		"then run bootscript; "					\
+-	"else "								\
+-		"if run mmcload; "					\
+-			"then run mmcboot; "				\
+-		"else "							\
+-			"mmc dev 0; "					\
+-			"if run emmcloadbootscript; "			\
+-				"then run bootscript; "			\
+-			"else "						\
+-				"if run emmcload; "			\
+-					"then run emmcboot; "		\
+-				"else "					\
+-					"echo No media to boot from; "	\
+-				"fi; "					\
+-			"fi; "						\
+-		"fi; "							\
+-	"fi; "
++	"for target in ${boot_targets}; do run bootcmd_${target}; done "
+ 
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+-	"verify=n\0"							\
+ 	"loadaddr=0x00100000\0"						\
+ 	"console=ttyAMA2,115200n8\0"					\
+-	"loadbootscript=fatload mmc 1:1 ${loadaddr} boot.scr\0"		\
+-	"emmcloadbootscript=fatload mmc 0:2 ${loadaddr} boot.scr\0"	\
+-	"bootscript=echo Running bootscript "				\
+-		"from mmc ...; source ${loadaddr}\0"			\
+-	"memargs256=mem=96M@0 mem_modem=32M@96M mem=32M@128M "		\
+-		"hwmem=22M@160M pmem_hwb=42M@182M mem_mali=32@224M\0"	\
+-	"memargs512=mem=96M@0 mem_modem=32M@96M hwmem=32M@128M "	\
+-		"mem=64M@160M mem_mali=32M@224M "			\
+-		"pmem_hwb=128M@256M mem=128M@384M\0"			\
+-	"memargs1024=mem=128M@0 mali.mali_mem=32M@128M "		\
+-		"hwmem=168M@M160M mem=48M@328M "			\
+-		"mem_issw=1M@383M mem=640M@384M\0"			\
+-	"memargs=setenv bootargs ${bootargs} ${memargs1024}\0"		\
+-	"emmcload=fatload mmc 0:2 ${loadaddr} uImage\0"			\
+-	"mmcload=fatload mmc 1:1 ${loadaddr} uImage\0"			\
+-	"commonargs=setenv bootargs console=${console} "		\
+-	"vmalloc=300M\0"						\
+-	"emmcargs=setenv bootargs ${bootargs} "				\
+-		"root=/dev/mmcblk0p3 "					\
+-		"rootwait\0"						\
+-	"addcons=setenv bootargs ${bootargs} "				\
+-		"console=${console}\0"					\
+-	"emmcboot=echo Booting from eMMC ...; "				\
+-		"run commonargs emmcargs memargs; "			\
+-		"bootm ${loadaddr}\0"					\
+-	"mmcargs=setenv bootargs ${bootargs} "				\
+-		"root=/dev/mmcblk1p2 "					\
+-		"rootwait earlyprintk\0"				\
+-	"mmcboot=echo Booting from external MMC ...; "			\
+-		"run commonargs mmcargs memargs; "			\
+-		"bootm ${loadaddr}\0"					\
+-	"fdt_high=0x2BC00000\0"						\
++	"kernel_addr_r=0x01100000\0"					\
++	"scriptaddr=0x07F00000\0"					\
++	"pxefile_addr_r=0x08000000\0"					\
++	"fdt_addr_r=0x08100000\0"					\
++	"ramdisk_addr_r=0x08200000\0"					\
+ 	"stdout=serial,usbtty\0"					\
+ 	"stdin=serial,usbtty\0"						\
+-	"stderr=serial,usbtty\0"
++	"stderr=serial,usbtty\0"					\
++	"fdtfile=ste-snowball.dtb\0"					\
++	"bootm_size=0x20000000\0"					\
++	BOOTCMDS_COMMON
+ 
++#endif
+ /*-----------------------------------------------------------------------
+  * Miscellaneous configurable options
+  */
+ 
+-#define CONFIG_SYS_LONGHELP			/* undef to save memory     */
+ #define CONFIG_SYS_PROMPT	"U8500 $ "	/* Monitor Command Prompt   */
+ #define CONFIG_SYS_CBSIZE	1024		/* Console I/O Buffer Size  */
+ 
+@@ -179,8 +133,6 @@
+ #define CONFIG_SYS_LOAD_ADDR		0x00100000 /* default load address */
+ #define CONFIG_SYS_LOADS_BAUD_CHANGE	1
+ 
+-#define CONFIG_SYS_HUSH_PARSER		1
+-#define CONFIG_CMDLINE_EDITING
+ 
+ #define CONFIG_SETUP_MEMORY_TAGS	2
+ #define CONFIG_INITRD_TAG		1
+-- 
+1.9.0
+

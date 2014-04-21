@@ -1,7 +1,7 @@
-From 45742e6678a80a8503c58c06c7c81e144ef370eb Mon Sep 17 00:00:00 2001
+From 797867f56b9e3e2307fc2537b062b8a482d4b472 Mon Sep 17 00:00:00 2001
 From: Tom Rini <trini@ti.com>
 Date: Tue, 11 Mar 2014 15:42:01 -0400
-Subject: [PATCH 01/13] TI: Add, use a DEFAULT_LINUX_BOOT_ENV environment
+Subject: [PATCH 01/14] TI: Add, use a DEFAULT_LINUX_BOOT_ENV environment
  string
 
 To deal with a reoccurring problem properly we need to specify addresses
@@ -23,7 +23,7 @@ Signed-off-by: Tom Rini <trini@ti.com>
  5 files changed, 25 insertions(+), 16 deletions(-)
 
 diff --git a/include/configs/am335x_evm.h b/include/configs/am335x_evm.h
-index 2020e7f..6bd8aec 100644
+index ea9e758..4148517 100644
 --- a/include/configs/am335x_evm.h
 +++ b/include/configs/am335x_evm.h
 @@ -61,11 +61,8 @@

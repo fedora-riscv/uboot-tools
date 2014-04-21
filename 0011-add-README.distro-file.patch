@@ -1,10 +1,11 @@
-From 2e52b4b057bf022f00da378186ae9a5a0b6dba13 Mon Sep 17 00:00:00 2001
+From 92e9920fc35a3e53ab1fdf3ad934e951c597e7c2 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
-Date: Sat, 8 Mar 2014 10:42:34 -0600
-Subject: [PATCH 04/13] add README.distro
+Date: Mon, 21 Apr 2014 12:29:49 -0500
+Subject: [PATCH 11/14] add README.distro file
 
-Add instructions on how to setup a system to boot using the generic boot
-framework.
+Add documentation on how to setup a system to use the generic distro
+configs and boot commands. This spells out what is needed to make a
+system conformant, but does not limit the board to only the defaults.
 ---
  doc/README.distro | 76 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
  1 file changed, 76 insertions(+)
@@ -12,7 +13,7 @@ framework.
 
 diff --git a/doc/README.distro b/doc/README.distro
 new file mode 100644
-index 0000000..a4b50b5
+index 0000000..435c578
 --- /dev/null
 +++ b/doc/README.distro
 @@ -0,0 +1,76 @@
@@ -88,7 +89,7 @@ index 0000000..a4b50b5
 +-------------------
 +in the most simplest form CONFIG_BOOTCOMMAND just needs one line
 +
-+"for target in ${boot_targets}; do run bootcmd_${target}; done"
++"for target in ${boot_targets}; do run bootcmd_${target}; done "
 +
 +you can run any setup before going through the targets for example run a
 +command to set "fdtfile" variable for the dtb for your board.

@@ -1,0 +1,601 @@
+From f57beade9b49254f82f2e817e727161c08f0c38a Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Mon, 21 Apr 2014 12:33:43 -0500
+Subject: [PATCH 13/14] add hackish utilite build based on wandboard
+
+---
+ board/compulab/utilite/Makefile  |   7 +
+ board/compulab/utilite/README    |  45 ++++++
+ board/compulab/utilite/utilite.c | 316 +++++++++++++++++++++++++++++++++++++++
+ boards.cfg                       |   1 +
+ include/configs/utilite.h        | 177 ++++++++++++++++++++++
+ 5 files changed, 546 insertions(+)
+ create mode 100644 board/compulab/utilite/Makefile
+ create mode 100644 board/compulab/utilite/README
+ create mode 100644 board/compulab/utilite/utilite.c
+ create mode 100644 include/configs/utilite.h
+
+diff --git a/board/compulab/utilite/Makefile b/board/compulab/utilite/Makefile
+new file mode 100644
+index 0000000..f0d8f12
+--- /dev/null
++++ b/board/compulab/utilite/Makefile
+@@ -0,0 +1,7 @@
++#
++# (C) Copyright 2013 Freescale Semiconductor, Inc.
++#
++# SPDX-License-Identifier:	GPL-2.0+
++#
++
++obj-y  := utilite.o
+diff --git a/board/compulab/utilite/README b/board/compulab/utilite/README
+new file mode 100644
+index 0000000..8ebb650
+--- /dev/null
++++ b/board/compulab/utilite/README
+@@ -0,0 +1,45 @@
++U-Boot for Utilite
++--------------------
++
++This file contains information for the port of U-Boot to the Utilite.
++
++Utilite is a development board that has three variants based on the following
++SoCs: mx6 quad, mx6 dual lite and mx6 solo.
++
++For more details about Utilite, please refer to:
++http://www.utilite.org/
++
++Building U-boot for Utilite
++-----------------------------
++
++To build U-Boot for the Utilite Dual Lite version:
++
++$ make utilite_dl_config
++$ make
++
++To build U-Boot for the Utilite Solo version:
++
++$ make utilite_solo_config
++$ make
++
++To build U-Boot for the Utilite Quad version:
++
++$ make utilite_quad_config
++$ make
++
++Flashing U-boot into the SD card
++--------------------------------
++
++- After the 'make' command completes, the generated 'u-boot.imx' binary must be
++flashed into the SD card;
++
++$ sudo dd if=u-boot.imx of=/dev/mmcblk0 bs=512 seek=2; sync
++
++(Note - the SD card node may vary, so adjust this as needed).
++
++- Insert the SD card into the slot located in the bottom of the board (same side
++as the mx6 processor)
++
++- Connect the serial cable to the host PC
++
++- Power up the board and U-boot messages will appear in the serial console.
+diff --git a/board/compulab/utilite/utilite.c b/board/compulab/utilite/utilite.c
+new file mode 100644
+index 0000000..55490ee
+--- /dev/null
++++ b/board/compulab/utilite/utilite.c
+@@ -0,0 +1,316 @@
++/*
++ * Copyright (C) 2013 Freescale Semiconductor, Inc.
++ *
++ * Author: Fabio Estevam <fabio.estevam@freescale.com>
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include <asm/arch/clock.h>
++#include <asm/arch/crm_regs.h>
++#include <asm/arch/iomux.h>
++#include <asm/arch/imx-regs.h>
++#include <asm/arch/mx6-pins.h>
++#include <asm/arch/mxc_hdmi.h>
++#include <asm/arch/sys_proto.h>
++#include <asm/gpio.h>
++#include <asm/imx-common/iomux-v3.h>
++#include <asm/imx-common/boot_mode.h>
++#include <asm/io.h>
++#include <linux/sizes.h>
++#include <common.h>
++#include <fsl_esdhc.h>
++#include <ipu_pixfmt.h>
++#include <mmc.h>
++#include <miiphy.h>
++#include <netdev.h>
++#include <linux/fb.h>
++#include <phy.h>
++#include <input.h>
++
++DECLARE_GLOBAL_DATA_PTR;
++
++#define UART_PAD_CTRL  (PAD_CTL_PUS_100K_UP |			\
++	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
++	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
++
++#define USDHC_PAD_CTRL (PAD_CTL_PUS_47K_UP |			\
++	PAD_CTL_SPEED_LOW | PAD_CTL_DSE_80ohm |			\
++	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
++
++#define ENET_PAD_CTRL  (PAD_CTL_PUS_100K_UP |			\
++	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS)
++
++#define USDHC1_CD_GPIO		IMX_GPIO_NR(1, 2)
++#define USDHC3_CD_GPIO		IMX_GPIO_NR(3, 9)
++#define ETH_PHY_RESET		IMX_GPIO_NR(3, 29)
++
++int dram_init(void)
++{
++	gd->ram_size = (phys_size_t)CONFIG_DDR_MB * 1024 * 1024;
++
++	return 0;
++}
++
++static iomux_v3_cfg_t const uart1_pads[] = {
++	MX6_PAD_CSI0_DAT10__UART1_TX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
++	MX6_PAD_CSI0_DAT11__UART1_RX_DATA | MUX_PAD_CTRL(UART_PAD_CTRL),
++};
++
++static iomux_v3_cfg_t const usdhc1_pads[] = {
++	MX6_PAD_SD1_CLK__SD1_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
++	MX6_PAD_SD1_CMD__SD1_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
++	MX6_PAD_SD1_DAT0__SD1_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
++	MX6_PAD_SD1_DAT1__SD1_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
++	MX6_PAD_SD1_DAT2__SD1_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
++	MX6_PAD_SD1_DAT3__SD1_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
++	/* Carrier MicroSD Card Detect */
++	MX6_PAD_GPIO_2__GPIO1_IO02      | MUX_PAD_CTRL(NO_PAD_CTRL),
++};
++
++static iomux_v3_cfg_t const usdhc3_pads[] = {
++	MX6_PAD_SD3_CLK__SD3_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
++	MX6_PAD_SD3_CMD__SD3_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
++	MX6_PAD_SD3_DAT0__SD3_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
++	MX6_PAD_SD3_DAT1__SD3_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
++	MX6_PAD_SD3_DAT2__SD3_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
++	MX6_PAD_SD3_DAT3__SD3_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
++	/* SOM MicroSD Card Detect */
++	MX6_PAD_EIM_DA9__GPIO3_IO09     | MUX_PAD_CTRL(NO_PAD_CTRL),
++};
++
++static iomux_v3_cfg_t const enet_pads[] = {
++	MX6_PAD_ENET_MDIO__ENET_MDIO		| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	MX6_PAD_ENET_MDC__ENET_MDC		| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	MX6_PAD_RGMII_TXC__RGMII_TXC	| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	MX6_PAD_RGMII_TD0__RGMII_TD0	| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	MX6_PAD_RGMII_TD1__RGMII_TD1	| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	MX6_PAD_RGMII_TD2__RGMII_TD2	| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	MX6_PAD_RGMII_TD3__RGMII_TD3	| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	MX6_PAD_RGMII_TX_CTL__RGMII_TX_CTL	| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	MX6_PAD_ENET_REF_CLK__ENET_TX_CLK	| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	MX6_PAD_RGMII_RXC__RGMII_RXC	| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	MX6_PAD_RGMII_RD0__RGMII_RD0	| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	MX6_PAD_RGMII_RD1__RGMII_RD1	| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	MX6_PAD_RGMII_RD2__RGMII_RD2	| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	MX6_PAD_RGMII_RD3__RGMII_RD3	| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	MX6_PAD_RGMII_RX_CTL__RGMII_RX_CTL	| MUX_PAD_CTRL(ENET_PAD_CTRL),
++	/* AR8031 PHY Reset */
++	MX6_PAD_EIM_D29__GPIO3_IO29		| MUX_PAD_CTRL(NO_PAD_CTRL),
++};
++
++static void setup_iomux_uart(void)
++{
++	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
++}
++
++static void setup_iomux_enet(void)
++{
++	imx_iomux_v3_setup_multiple_pads(enet_pads, ARRAY_SIZE(enet_pads));
++
++	/* Reset AR8031 PHY */
++	gpio_direction_output(ETH_PHY_RESET, 0);
++	udelay(500);
++	gpio_set_value(ETH_PHY_RESET, 1);
++}
++
++static struct fsl_esdhc_cfg usdhc_cfg[2] = {
++	{USDHC3_BASE_ADDR},
++	{USDHC1_BASE_ADDR},
++};
++
++int board_mmc_getcd(struct mmc *mmc)
++{
++	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
++	int ret = 0;
++
++	switch (cfg->esdhc_base) {
++	case USDHC1_BASE_ADDR:
++		ret = !gpio_get_value(USDHC1_CD_GPIO);
++		break;
++	case USDHC3_BASE_ADDR:
++		ret = !gpio_get_value(USDHC3_CD_GPIO);
++		break;
++	}
++
++	return ret;
++}
++
++int board_mmc_init(bd_t *bis)
++{
++	s32 status = 0;
++	u32 index = 0;
++
++	/*
++	 * Following map is done:
++	 * (U-boot device node)    (Physical Port)
++	 * mmc0                    SOM MicroSD
++	 * mmc1                    Carrier board MicroSD
++	 */
++	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM; ++index) {
++		switch (index) {
++		case 0:
++			imx_iomux_v3_setup_multiple_pads(
++				usdhc3_pads, ARRAY_SIZE(usdhc3_pads));
++			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
++			usdhc_cfg[0].max_bus_width = 4;
++			gpio_direction_input(USDHC3_CD_GPIO);
++			break;
++		case 1:
++			imx_iomux_v3_setup_multiple_pads(
++				usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
++			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
++			usdhc_cfg[1].max_bus_width = 4;
++			gpio_direction_input(USDHC1_CD_GPIO);
++			break;
++		default:
++			printf("Warning: you configured more USDHC controllers"
++			       "(%d) then supported by the board (%d)\n",
++			       index + 1, CONFIG_SYS_FSL_USDHC_NUM);
++			return status;
++		}
++
++		status |= fsl_esdhc_initialize(bis, &usdhc_cfg[index]);
++	}
++
++	return status;
++}
++
++static int mx6_rgmii_rework(struct phy_device *phydev)
++{
++	unsigned short val;
++
++	/* To enable AR8031 ouput a 125MHz clk from CLK_25M */
++	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x7);
++	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, 0x8016);
++	phy_write(phydev, MDIO_DEVAD_NONE, 0xd, 0x4007);
++
++	val = phy_read(phydev, MDIO_DEVAD_NONE, 0xe);
++	val &= 0xffe3;
++	val |= 0x18;
++	phy_write(phydev, MDIO_DEVAD_NONE, 0xe, val);
++
++	/* introduce tx clock delay */
++	phy_write(phydev, MDIO_DEVAD_NONE, 0x1d, 0x5);
++	val = phy_read(phydev, MDIO_DEVAD_NONE, 0x1e);
++	val |= 0x0100;
++	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, val);
++
++	return 0;
++}
++
++int board_phy_config(struct phy_device *phydev)
++{
++	mx6_rgmii_rework(phydev);
++
++	if (phydev->drv->config)
++		phydev->drv->config(phydev);
++
++	return 0;
++}
++
++#if defined(CONFIG_VIDEO_IPUV3)
++static struct fb_videomode const hdmi = {
++	.name           = "HDMI",
++	.refresh        = 60,
++	.xres           = 1024,
++	.yres           = 768,
++	.pixclock       = 15385,
++	.left_margin    = 220,
++	.right_margin   = 40,
++	.upper_margin   = 21,
++	.lower_margin   = 7,
++	.hsync_len      = 60,
++	.vsync_len      = 10,
++	.sync           = FB_SYNC_EXT,
++	.vmode          = FB_VMODE_NONINTERLACED
++};
++
++int board_video_skip(void)
++{
++	int ret;
++
++	ret = ipuv3_fb_init(&hdmi, 0, IPU_PIX_FMT_RGB24);
++
++	if (ret) {
++		printf("HDMI cannot be configured: %d\n", ret);
++		return ret;
++	}
++
++	imx_enable_hdmi_phy();
++
++	return ret;
++}
++
++static void setup_display(void)
++{
++	struct mxc_ccm_reg *mxc_ccm = (struct mxc_ccm_reg *)CCM_BASE_ADDR;
++	int reg;
++
++	enable_ipu_clock();
++	imx_setup_hdmi();
++
++	reg = readl(&mxc_ccm->chsccdr);
++	reg |= (CHSCCDR_CLK_SEL_LDB_DI0
++		<< MXC_CCM_CHSCCDR_IPU1_DI0_CLK_SEL_OFFSET);
++	writel(reg, &mxc_ccm->chsccdr);
++}
++#endif /* CONFIG_VIDEO_IPUV3 */
++
++int board_eth_init(bd_t *bis)
++{
++	setup_iomux_enet();
++
++	return cpu_eth_init(bis);
++}
++
++int board_early_init_f(void)
++{
++	setup_iomux_uart();
++#if defined(CONFIG_VIDEO_IPUV3)
++	setup_display();
++#endif
++	return 0;
++}
++
++/*
++ * Do not overwrite the console
++ * Use always serial for U-Boot console
++ */
++int overwrite_console(void)
++{
++	return 1;
++}
++
++#ifdef CONFIG_CMD_BMODE
++static const struct boot_mode board_boot_modes[] = {
++	/* 4 bit bus width */
++	{"mmc0",	  MAKE_CFGVAL(0x40, 0x30, 0x00, 0x00)},
++	{"mmc1",	  MAKE_CFGVAL(0x40, 0x20, 0x00, 0x00)},
++	{NULL,	 0},
++};
++#endif
++
++int board_late_init(void)
++{
++#ifdef CONFIG_CMD_BMODE
++	add_board_boot_modes(board_boot_modes);
++#endif
++
++	return 0;
++}
++
++int board_init(void)
++{
++	/* address of boot parameters */
++	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
++
++	return 0;
++}
++
++int checkboard(void)
++{
++	puts("Board: Utilite\n");
++
++	return 0;
++}
+diff --git a/boards.cfg b/boards.cfg
+index b4203f1..49ea4ab 100644
+--- a/boards.cfg
++++ b/boards.cfg
+@@ -316,6 +316,7 @@ Active  arm         armv7          mx6         boundary        nitrogen6x
+ Active  arm         armv7          mx6         boundary        nitrogen6x          nitrogen6q2g                         nitrogen6x:IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6q2g.cfg,MX6Q,DDR_MB=2048                                                 Eric Nelson <eric.nelson@boundarydevices.com>
+ Active  arm         armv7          mx6         boundary        nitrogen6x          nitrogen6s                           nitrogen6x:IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6s.cfg,MX6S,DDR_MB=512                                                    Eric Nelson <eric.nelson@boundarydevices.com>
+ Active  arm         armv7          mx6         boundary        nitrogen6x          nitrogen6s1g                         nitrogen6x:IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6s1g.cfg,MX6S,DDR_MB=1024                                                 Eric Nelson <eric.nelson@boundarydevices.com>
++Active  arm         armv7          mx6         compulab        utilite             utilite_quad                         utilite:IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6q2g.cfg,MX6Q,DDR_MB=2048                                                  Fabio Estevam <fabio.estevam@freescale.com>
+ Active  arm         armv7          mx6         congatec        cgtqmx6eval         cgtqmx6qeval                         cgtqmx6eval:IMX_CONFIG=board/freescale/imx/ddr/mx6q_4x_mt41j128.cfg,MX6Q                                                          Leo Sartre <lsartre@adeneo-embedded.com>
+ Active  arm         armv7          mx6         freescale       mx6qarm2            mx6qarm2                             mx6qarm2:IMX_CONFIG=board/freescale/mx6qarm2/imximage.cfg                                                                         Jason Liu <r64343@freescale.com>
+ Active  arm         armv7          mx6         freescale       mx6qsabreauto       mx6qsabreauto                        mx6qsabreauto:IMX_CONFIG=board/freescale/mx6qsabreauto/imximage.cfg,MX6Q                                                          Fabio Estevam <fabio.estevam@freescale.com>
+diff --git a/include/configs/utilite.h b/include/configs/utilite.h
+new file mode 100644
+index 0000000..fb382f9
+--- /dev/null
++++ b/include/configs/utilite.h
+@@ -0,0 +1,177 @@
++/*
++ * Copyright (C) 2013 Freescale Semiconductor, Inc.
++ *
++ * Configuration settings for the Wandboard.
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#ifndef __CONFIG_H
++#define __CONFIG_H
++
++#include "mx6_common.h"
++#include <asm/arch/imx-regs.h>
++#include <asm/imx-common/gpio.h>
++#include <linux/sizes.h>
++
++#define CONFIG_MX6
++#define CONFIG_DISPLAY_CPUINFO
++#define CONFIG_DISPLAY_BOARDINFO
++
++#define MACH_TYPE_UTILITE		4412
++#define CONFIG_MACH_TYPE		MACH_TYPE_UTILITE
++
++#define CONFIG_CMDLINE_TAG
++#define CONFIG_SETUP_MEMORY_TAGS
++#define CONFIG_INITRD_TAG
++#define CONFIG_REVISION_TAG
++
++/* Size of malloc() pool */
++#define CONFIG_SYS_MALLOC_LEN		(10 * SZ_1M)
++
++#define CONFIG_BOARD_EARLY_INIT_F
++#define CONFIG_BOARD_LATE_INIT
++#define CONFIG_MXC_GPIO
++
++#define CONFIG_MXC_UART
++#define CONFIG_MXC_UART_BASE		UART1_BASE
++
++/* allow to overwrite serial and ethaddr */
++#define CONFIG_ENV_OVERWRITE
++#define CONFIG_CONS_INDEX		1
++#define CONFIG_BAUDRATE			115200
++
++/* Command definition */
++#include <config_cmd_default.h>
++
++#undef CONFIG_CMD_IMLS
++
++#define CONFIG_CMD_BMODE
++#define CONFIG_CMD_SETEXPR
++
++#define CONFIG_SYS_MEMTEST_START	0x10000000
++#define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + 500 * SZ_1M)
++#define CONFIG_LOADADDR			0x12000000
++#define CONFIG_SYS_TEXT_BASE		0x17800000
++
++/* MMC Configuration */
++#define CONFIG_FSL_ESDHC
++#define CONFIG_FSL_USDHC
++#define CONFIG_SYS_FSL_USDHC_NUM	2
++#define CONFIG_SYS_FSL_ESDHC_ADDR	0
++
++#define CONFIG_MMC
++#define CONFIG_CMD_MMC
++#define CONFIG_GENERIC_MMC
++#define CONFIG_BOUNCE_BUFFER
++
++/* Ethernet Configuration */
++#define CONFIG_FEC_MXC
++#define CONFIG_MII
++#define IMX_FEC_BASE			ENET_BASE_ADDR
++#define CONFIG_FEC_XCV_TYPE		RGMII
++#define CONFIG_ETHPRIME			"FEC"
++#define CONFIG_FEC_MXC_PHYADDR		1
++#define CONFIG_PHYLIB
++#define CONFIG_PHY_ATHEROS
++
++/* Framebuffer */
++#define CONFIG_VIDEO
++#define CONFIG_VIDEO_IPUV3
++#define CONFIG_CFB_CONSOLE
++#define CONFIG_VGA_AS_SINGLE_DEVICE
++#define CONFIG_SYS_CONSOLE_IS_IN_ENV
++#define CONFIG_SYS_CONSOLE_OVERWRITE_ROUTINE
++#define CONFIG_VIDEO_BMP_RLE8
++#define CONFIG_SPLASH_SCREEN
++#define CONFIG_SPLASH_SCREEN_ALIGN
++#define CONFIG_BMP_16BPP
++#define CONFIG_VIDEO_LOGO
++#define CONFIG_VIDEO_BMP_LOGO
++#define CONFIG_IPUV3_CLK 260000000
++#define CONFIG_IMX_HDMI
++
++#ifndef CONFIG_SPL_BUILD
++#include <config_distro_defaults.h>
++#include <config_distro_bootcmd.h>
++#endif
++
++#if defined(CONFIG_MX6DL) || defined(CONFIG_MX6S)
++#define CONFIG_DEFAULT_FDT_FILE		"imx6dl-cm-fx6.dtb"
++#elif defined(CONFIG_MX6Q)
++#define CONFIG_DEFAULT_FDT_FILE		"imx6q-cm-fx6.dtb"
++#endif
++
++#define CONFIG_EXTRA_ENV_SETTINGS \
++	"script=boot.scr\0" \
++	"image=zImage\0" \
++	"console=ttymxc3,115200\0" \
++	"splashpos=m,m\0" \
++	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
++	"fdt_addr_r=0x18000000\0" \
++	"boot_fdt=try\0" \
++	"pxefile_addr_r=0x17f00000\0" \
++	"scriptaddr=0x17e00000\0" \
++	"kernel_addr_r=0x11000000\0" \
++	"ramdisk_addr_r=0x18100000\0" \
++	"bootm_size=0x20000000\0" \
++	"ip_dyn=yes\0" \
++	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
++	"mmcpart=1\0" \
++	"mmcroot=/dev/mmcblk0p2 rootwait rw\0" \
++	"update_sd_firmware_filename=u-boot.imx\0" \
++	"update_sd_firmware=" \
++		"if test ${ip_dyn} = yes; then " \
++			"setenv get_cmd dhcp; " \
++		"else " \
++			"setenv get_cmd tftp; " \
++		"fi; " \
++		"if mmc dev ${mmcdev}; then "	\
++			"if ${get_cmd} ${update_sd_firmware_filename}; then " \
++				"setexpr fw_sz ${filesize} / 0x200; " \
++				"setexpr fw_sz ${fw_sz} + 1; "	\
++				"mmc write ${loadaddr} 0x2 ${fw_sz}; " \
++			"fi; "	\
++		"fi\0" \
++	BOOTCMDS_COMMON
++
++#define CONFIG_BOOTCOMMAND \
++	"for target in ${boot_targets}; do run bootcmd_${target}; done"
++
++/* Miscellaneous configurable options */
++#define CONFIG_SYS_CBSIZE		256
++
++/* Print Buffer Size */
++#define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
++#define CONFIG_SYS_MAXARGS	       16
++#define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE
++
++#define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
++
++/* Physical Memory Map */
++#define CONFIG_NR_DRAM_BANKS		1
++#define PHYS_SDRAM			MMDC0_ARB_BASE_ADDR
++
++#define CONFIG_SYS_SDRAM_BASE		PHYS_SDRAM
++#define CONFIG_SYS_INIT_RAM_ADDR	IRAM_BASE_ADDR
++#define CONFIG_SYS_INIT_RAM_SIZE	IRAM_SIZE
++
++#define CONFIG_SYS_INIT_SP_OFFSET \
++	(CONFIG_SYS_INIT_RAM_SIZE - GENERATED_GBL_DATA_SIZE)
++#define CONFIG_SYS_INIT_SP_ADDR \
++	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
++
++/* FLASH and environment organization */
++#define CONFIG_SYS_NO_FLASH
++
++#define CONFIG_ENV_SIZE			(8 * 1024)
++
++#define CONFIG_ENV_IS_IN_MMC
++#define CONFIG_ENV_OFFSET		(6 * 64 * 1024)
++#define CONFIG_SYS_MMC_ENV_DEV		0
++
++#ifndef CONFIG_SYS_DCACHE_OFF
++#define CONFIG_CMD_CACHE
++#endif
++
++#endif			       /* __CONFIG_H * */
+-- 
+1.9.0
+

@@ -1,0 +1,29 @@
+From f972c558cbf06331f0738946304a0cca3e163d85 Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Mon, 21 Apr 2014 12:35:27 -0500
+Subject: [PATCH 14/14] add to ti_armv7_common.h generic distro environment
+ variables
+
+there are two new environment variables and addresses that need
+to be set for generic distro support, add them into the common ti
+environment.
+---
+ include/configs/ti_armv7_common.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/configs/ti_armv7_common.h b/include/configs/ti_armv7_common.h
+index fda99fb..656d939 100644
+--- a/include/configs/ti_armv7_common.h
++++ b/include/configs/ti_armv7_common.h
+@@ -53,6 +53,8 @@
+ #define DEFAULT_LINUX_BOOT_ENV \
+ 	"loadaddr=0x82000000\0" \
+ 	"kernel_addr_r=0x82000000\0" \
++	"pxe_addr_r=0x87F00000\0" \
++	"scriptaddr=0x87E00000\0" \
+ 	"fdtaddr=0x88000000\0" \
+ 	"fdt_addr_r=0x88000000\0" \
+ 	"rdaddr=0x88080000\0" \
+-- 
+1.9.0
+
