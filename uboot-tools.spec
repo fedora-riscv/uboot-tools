@@ -28,7 +28,7 @@ Patch22:        0013-add-hackish-utilite-build-based-on-wandboard.patch
 Patch23:        0014-add-to-ti_armv7_common.h-generic-distro-environment-.patch
 Patch24:        0015-omap4-buildfixes.patch
 Patch25:        0016-automatically-add-console-to-bootline-when-not-exist.patch
-Patch26         0017-make-bootdelay-match-the-generic-distro-default.patch
+Patch26:        0017-make-bootdelay-match-the-generic-distro-default.patch
 
 %ifnarch %{arm}
 BuildRequires:  gcc-arm-linux-gnu
