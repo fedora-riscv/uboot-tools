@@ -1,0 +1,25 @@
+From 84f7df44e38f8d721e17a585b95dce4027062ada Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Wed, 23 Apr 2014 15:58:49 -0500
+Subject: [PATCH 17/17] make bootdelay match the generic distro default
+
+---
+ include/configs/ti_armv7_common.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/ti_armv7_common.h b/include/configs/ti_armv7_common.h
+index 656d939..679b278 100644
+--- a/include/configs/ti_armv7_common.h
++++ b/include/configs/ti_armv7_common.h
+@@ -64,7 +64,7 @@
+ /*
+  * Default to a quick boot delay.
+  */
+-#define CONFIG_BOOTDELAY		1
++#define CONFIG_BOOTDELAY		2
+ 
+ /*
+  * DDR information.  If the CONFIG_NR_DRAM_BANKS is not defined,
+-- 
+1.9.0
+

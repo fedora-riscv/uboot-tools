@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.04
-Release:        1%{?candidate:.%{candidate}}%{?dist}
+Release:        2%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -27,6 +27,8 @@ Patch21:        0012-cleanup-duplicate-options-in-paz00-config.patch
 Patch22:        0013-add-hackish-utilite-build-based-on-wandboard.patch
 Patch23:        0014-add-to-ti_armv7_common.h-generic-distro-environment-.patch
 Patch24:        0015-omap4-buildfixes.patch
+Patch25:        0016-automatically-add-console-to-bootline-when-not-exist.patch
+Patch26         0017-make-bootdelay-match-the-generic-distro-default.patch
 
 %ifnarch %{arm}
 BuildRequires:  gcc-arm-linux-gnu
@@ -108,6 +110,8 @@ u-boot bootloader binaries for armv7 boards
 %patch22 -p1
 %patch23 -p1
 %patch24 -p1
+%patch25 -p1
+%patch26 -p1
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
@@ -355,6 +359,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Apr 23 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-2
+- automatically add console line from u-boot environment to bootargs
+- when there is no console argument in the extlinux.conf file
+
 * Mon Apr 21 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-1
 - update to final 2014.04
 - put all images into a single rpm
