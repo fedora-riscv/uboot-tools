@@ -1,7 +1,7 @@
-From c541b9036bccc359f13c73924e6ee2f837daaa55 Mon Sep 17 00:00:00 2001
+From 2d29a19e398f752ce7398d184051d12a191ccbb1 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 21 Apr 2014 12:27:22 -0500
-Subject: [PATCH 09/14] move beaglebone over to use the generic distro
+Subject: [PATCH 09/36] move beaglebone over to use the generic distro
  configuation and environment
 
 port beaglebone to use the generic distro configuation.

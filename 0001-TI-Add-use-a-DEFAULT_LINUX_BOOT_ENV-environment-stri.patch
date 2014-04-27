@@ -1,7 +1,7 @@
-From 797867f56b9e3e2307fc2537b062b8a482d4b472 Mon Sep 17 00:00:00 2001
+From 8e9b2c56256a14264fb52b2ea6d9a862948a53e8 Mon Sep 17 00:00:00 2001
 From: Tom Rini <trini@ti.com>
 Date: Tue, 11 Mar 2014 15:42:01 -0400
-Subject: [PATCH 01/14] TI: Add, use a DEFAULT_LINUX_BOOT_ENV environment
+Subject: [PATCH 01/36] TI: Add, use a DEFAULT_LINUX_BOOT_ENV environment
  string
 
 To deal with a reoccurring problem properly we need to specify addresses

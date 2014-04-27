@@ -1,7 +1,7 @@
-From 838ea5b6076ba27c6d20c6370ff0a996acaa5eec Mon Sep 17 00:00:00 2001
+From 7dace4fe678448c98ebb7beaa01ca64788ab02b4 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Wed, 23 Apr 2014 15:54:57 -0500
-Subject: [PATCH 16/17] automatically add console= to bootline when not
+Subject: [PATCH 16/36] automatically add console= to bootline when not
  existing
 
 if there is a console variable in the u-boot environment and not one on

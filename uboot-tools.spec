@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.04
-Release:        2%{?candidate:.%{candidate}}%{?dist}
+Release:        3%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -29,6 +29,27 @@ Patch23:        0014-add-to-ti_armv7_common.h-generic-distro-environment-.patch
 Patch24:        0015-omap4-buildfixes.patch
 Patch25:        0016-automatically-add-console-to-bootline-when-not-exist.patch
 Patch26:        0017-make-bootdelay-match-the-generic-distro-default.patch
+Patch27:        0018-sunxi-add-sun7i-clocks-and-timer-support.patch
+Patch28:        0019-sunxi-add-sun7i-pinmux-and-gpio-support.patch
+Patch29:        0020-sunxi-add-sun7i-dram-setup-support.patch
+Patch30:        0021-sunxi-add-sun7i-cpu-board-and-start-of-day-support.patch
+Patch31:        0022-sunxi-add-support-for-Cubietruck-booting-in-FEL-mode.patch
+Patch32:        0023-sunxi-add-gmac-Ethernet-support.patch
+Patch33:        0024-sunxi-mmc-support.patch
+Patch34:        0025-sunxi-non-FEL-SPL-boot-support-for-sun7i.patch
+Patch35:        0026-port-over-to-generic-bootcommands.patch
+Patch36:        0027-ARM-HYP-non-sec-move-switch-to-non-sec-to-the-last-b.patch
+Patch37:        0028-ARM-HYP-non-sec-add-a-barrier-after-setting-SCR.NS-1.patch
+Patch38:        0029-ARM-non-sec-reset-CNTVOFF-to-zero.patch
+Patch39:        0030-ARM-add-missing-HYP-mode-constant.patch
+Patch40:        0031-ARM-HYP-non-sec-add-separate-section-for-secure-code.patch
+Patch41:        0032-ARM-HYP-non-sec-allow-relocation-to-secure-RAM.patch
+Patch42:        0033-ARM-HYP-non-sec-add-generic-ARMv7-PSCI-code.patch
+Patch43:        0034-ARM-HYP-non-sec-add-the-option-for-a-second-stage-mo.patch
+Patch44:        0035-ARM-convert-arch_fixup_memory_node-to-a-generic-FDT-.patch
+Patch45:        0036-ARM-HYP-non-sec-PSCI-emit-DT-nodes.patch
+Patch46:        0037-PXE-syslinux-implenets-some-keywords-found-in-config.patch
+Patch47:        0038-PXE-distros-implementing-syslinux-will-be-using-raw-.patch
 
 %ifnarch %{arm}
 BuildRequires:  gcc-arm-linux-gnu
@@ -112,6 +133,27 @@ u-boot bootloader binaries for armv7 boards
 %patch24 -p1
 %patch25 -p1
 %patch26 -p1
+%patch27 -p1
+%patch28 -p1
+%patch29 -p1
+%patch30 -p1
+%patch31 -p1
+%patch32 -p1
+%patch33 -p1
+%patch34 -p1
+%patch35 -p1
+%patch36 -p1
+%patch37 -p1
+%patch38 -p1
+%patch39 -p1
+%patch40 -p1
+%patch41 -p1
+%patch42 -p1
+%patch43 -p1
+%patch44 -p1
+%patch45 -p1
+%patch46 -p1
+%patch47 -p1
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
@@ -149,6 +191,11 @@ make arndale_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p spl/arndale-spl.bin builds/arndale-spl.bin.arndale
 cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.arndale
+make mrproper
+
+make Cubietruck_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Cubietruck
 make mrproper
 
 make highbank_config
@@ -256,6 +303,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beagle/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beaglebone/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Cubietruck/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/highbank/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/origen/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/panda/
@@ -287,6 +335,8 @@ done
 
 install -p -m 0644 builds/arndale-spl.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/arndale-spl.bin
 install -p -m 0644 builds/u-boot-dtb.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/u-boot-dtb.bin
+
+install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.Cubietruck $RPM_BUILD_ROOT%{_datadir}/uboot/Cubietruck/u-boot-sunxi-with-spl.bin
 
 install -p -m 0644 builds/u-boot.bin.highbank $RPM_BUILD_ROOT%{_datadir}/uboot/highbank/u-boot.bin
 
@@ -343,6 +393,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/uboot/arndale/
 %{_datadir}/uboot/beaglebone/
 %{_datadir}/uboot/beagle/
+%{_datadir}/uboot/Cubietruck/
 %{_datadir}/uboot/highbank/
 %{_datadir}/uboot/panda/
 %{_datadir}/uboot/paz00/
@@ -359,6 +410,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Apr 24 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-3
+- add cubietruck u-boot image
+
 * Wed Apr 23 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-2
 - automatically add console line from u-boot environment to bootargs
 - when there is no console argument in the extlinux.conf file

@@ -1,7 +1,7 @@
-From 93d278a447956d0ec62c23215d1998cadd4c5f09 Mon Sep 17 00:00:00 2001
+From d96ac74e4d59c4dfbd70420b22d47dd6927a585e Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 21 Apr 2014 12:07:23 -0500
-Subject: [PATCH 04/14] pxe: additionaly check for fdt_file env variable
+Subject: [PATCH 04/36] pxe: additionaly check for fdt_file env variable
 
 some boards have used fdt_file while others have used fdtfile to
 define the name of the fdt file. If we do notget a fdtfile environment

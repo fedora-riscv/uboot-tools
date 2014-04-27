@@ -1,7 +1,7 @@
-From b46336f269ee46536322315706b27c00f02e06c5 Mon Sep 17 00:00:00 2001
+From 25f764594b2f826b1cd90119e6d58c4e4b6f097a Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 21 Apr 2014 12:23:10 -0500
-Subject: [PATCH 08/14] move pandaboard over to use the generic distro
+Subject: [PATCH 08/36] move pandaboard over to use the generic distro
  configuation and environment
 
 port pandaboard to use the generic distro configuation.

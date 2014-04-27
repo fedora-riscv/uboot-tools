@@ -1,7 +1,7 @@
-From 77d98dff1c43a7d87c3a1d4c55f4abea47d4d6f9 Mon Sep 17 00:00:00 2001
+From db17b881ade00837d1f6a8d979c05eccf98bda6c Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 21 Apr 2014 12:15:35 -0500
-Subject: [PATCH 05/14] convert snowball to distro generic config
+Subject: [PATCH 05/36] convert snowball to distro generic config
 
 ---
  include/configs/snowball.h | 78 +++++++++-------------------------------------

@@ -1,7 +1,7 @@
-From 84f7df44e38f8d721e17a585b95dce4027062ada Mon Sep 17 00:00:00 2001
+From 9296c4b08240aecda4abb4ff405ab48a26cf444d Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Wed, 23 Apr 2014 15:58:49 -0500
-Subject: [PATCH 17/17] make bootdelay match the generic distro default
+Subject: [PATCH 17/36] make bootdelay match the generic distro default
 
 ---
  include/configs/ti_armv7_common.h | 2 +-

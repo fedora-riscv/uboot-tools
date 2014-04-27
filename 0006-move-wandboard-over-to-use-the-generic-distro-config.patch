@@ -1,7 +1,7 @@
-From fa49dd96a3b4e9ca66480d4b729f6ae543b82e17 Mon Sep 17 00:00:00 2001
+From 990f5975ff3cd68db9d47a8c00769342dc72a647 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 21 Apr 2014 12:17:14 -0500
-Subject: [PATCH 06/14] move wandboard over to use the generic distro
+Subject: [PATCH 06/36] move wandboard over to use the generic distro
  configuation and environment
 
 port wandboard to use the generic distro configuation.

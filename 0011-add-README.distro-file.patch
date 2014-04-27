@@ -1,7 +1,7 @@
-From 92e9920fc35a3e53ab1fdf3ad934e951c597e7c2 Mon Sep 17 00:00:00 2001
+From f7806a439761d63332b35d20275f08bacf5ac32a Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 21 Apr 2014 12:29:49 -0500
-Subject: [PATCH 11/14] add README.distro file
+Subject: [PATCH 11/36] add README.distro file
 
 Add documentation on how to setup a system to use the generic distro
 configs and boot commands. This spells out what is needed to make a

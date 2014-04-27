@@ -1,0 +1,97 @@
+From 7b63229b282e0be1e1e81da79ad4ee10ab4e1c19 Mon Sep 17 00:00:00 2001
+From: Ma Haijun <mahaijuns@gmail.com>
+Date: Sat, 26 Apr 2014 13:17:10 +0100
+Subject: [PATCH 35/36] ARM: convert arch_fixup_memory_node to a generic FDT
+ fixup function
+
+Some architecture needs extra device tree setup. Instead of adding
+yet another hook, convert arch_fixup_memory_node to be a generic
+FDT fixup function.
+
+[maz: collapsed 3 patches into one, rewrote commit message]
+
+Signed-off-by: Ma Haijun <mahaijuns@gmail.com>
+Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
+---
+ arch/arm/lib/bootm-fdt.c | 2 +-
+ arch/arm/lib/bootm.c     | 2 +-
+ common/image-fdt.c       | 7 +++++--
+ include/common.h         | 6 +++---
+ 4 files changed, 10 insertions(+), 7 deletions(-)
+
+diff --git a/arch/arm/lib/bootm-fdt.c b/arch/arm/lib/bootm-fdt.c
+index e40691d..8394e15 100644
+--- a/arch/arm/lib/bootm-fdt.c
++++ b/arch/arm/lib/bootm-fdt.c
+@@ -20,7 +20,7 @@
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+-int arch_fixup_memory_node(void *blob)
++int arch_fixup_fdt(void *blob)
+ {
+ 	bd_t *bd = gd->bd;
+ 	int bank;
+diff --git a/arch/arm/lib/bootm.c b/arch/arm/lib/bootm.c
+index 61aa14e..4cff6b0 100644
+--- a/arch/arm/lib/bootm.c
++++ b/arch/arm/lib/bootm.c
+@@ -357,7 +357,7 @@ void boot_prep_vxworks(bootm_headers_t *images)
+ 	if (images->ft_addr) {
+ 		off = fdt_path_offset(images->ft_addr, "/memory");
+ 		if (off < 0) {
+-			if (arch_fixup_memory_node(images->ft_addr))
++			if (arch_fixup_fdt(images->ft_addr))
+ 				puts("## WARNING: fixup memory failed!\n");
+ 		}
+ 	}
+diff --git a/common/image-fdt.c b/common/image-fdt.c
+index a54a919..6f074de 100644
+--- a/common/image-fdt.c
++++ b/common/image-fdt.c
+@@ -445,7 +445,7 @@ __weak int ft_verify_fdt(void *fdt)
+ 	return 1;
+ }
+ 
+-__weak int arch_fixup_memory_node(void *blob)
++__weak int arch_fixup_fdt(void *blob)
+ {
+ 	return 0;
+ }
+@@ -462,7 +462,10 @@ int image_setup_libfdt(bootm_headers_t *images, void *blob,
+ 		puts(" - must RESET the board to recover.\n");
+ 		return -1;
+ 	}
+-	arch_fixup_memory_node(blob);
++	if (arch_fixup_fdt(blob) < 0) {
++		puts("ERROR: arch specific fdt fixup failed");
++		return -1;
++	}
+ 	if (IMAGE_OF_BOARD_SETUP)
+ 		ft_board_setup(blob, gd->bd);
+ 	fdt_fixup_ethernet(blob);
+diff --git a/include/common.h b/include/common.h
+index cbd3c9e..700b015 100644
+--- a/include/common.h
++++ b/include/common.h
+@@ -326,14 +326,14 @@ int arch_early_init_r(void);
+ void board_show_dram(ulong size);
+ 
+ /**
+- * arch_fixup_memory_node() - Write arch-specific memory information to fdt
++ * arch_fixup_fdt() - Write arch-specific information to fdt
+  *
+- * Defined in arch/$(ARCH)/lib/bootm.c
++ * Defined in arch/$(ARCH)/lib/bootm-fdt.c
+  *
+  * @blob:	FDT blob to write to
+  * @return 0 if ok, or -ve FDT_ERR_... on failure
+  */
+-int arch_fixup_memory_node(void *blob);
++int arch_fixup_fdt(void *blob);
+ 
+ /* common/flash.c */
+ void flash_perror (int);
+-- 
+1.9.0
+

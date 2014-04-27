@@ -1,0 +1,77 @@
+From b2c413d8119dbbef34189e9beb84a0b2a00fa86d Mon Sep 17 00:00:00 2001
+From: Ian Campbell <ijc@hellion.org.uk>
+Date: Fri, 18 Apr 2014 19:05:46 +0100
+Subject: [PATCH 22/36] sunxi: add support for Cubietruck booting in FEL mode
+
+Signed-off-by: Oliver Schinagl <oliver@schinagl.nl>
+Signed-off-by: Jens Kuske <jenskuske@gmail.com>
+Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
+Reviewed-by: Tom Rini <trini@ti.com>
+---
+ board/sunxi/Makefile          |  1 +
+ board/sunxi/dram_cubietruck.c | 31 +++++++++++++++++++++++++++++++
+ boards.cfg                    |  1 +
+ 3 files changed, 33 insertions(+)
+ create mode 100644 board/sunxi/dram_cubietruck.c
+
+diff --git a/board/sunxi/Makefile b/board/sunxi/Makefile
+index 559112e..18b1e11 100644
+--- a/board/sunxi/Makefile
++++ b/board/sunxi/Makefile
+@@ -9,3 +9,4 @@
+ # SPDX-License-Identifier:	GPL-2.0+
+ #
+ obj-y	+= board.o
++obj-$(CONFIG_CUBIETRUCK)	+= dram_cubietruck.o
+diff --git a/board/sunxi/dram_cubietruck.c b/board/sunxi/dram_cubietruck.c
+new file mode 100644
+index 0000000..fbcd687
+--- /dev/null
++++ b/board/sunxi/dram_cubietruck.c
+@@ -0,0 +1,31 @@
++/* this file is generated, don't edit it yourself */
++
++#include <common.h>
++#include <asm/arch/dram.h>
++
++static struct dram_para dram_para = {
++	.clock = 432,
++	.type = 3,
++	.rank_num = 1,
++	.density = 4096,
++	.io_width = 8,
++	.bus_width = 32,
++	.cas = 9,
++	.zq = 0x7f,
++	.odt_en = 0,
++	.size = 2048,
++	.tpr0 = 0x42d899b7,
++	.tpr1 = 0xa090,
++	.tpr2 = 0x22a00,
++	.tpr3 = 0x0,
++	.tpr4 = 0x1,
++	.tpr5 = 0x0,
++	.emr1 = 0x4,
++	.emr2 = 0x10,
++	.emr3 = 0x0,
++};
++
++unsigned long sunxi_dram_init(void)
++{
++	return dramc_init(&dram_para);
++}
+diff --git a/boards.cfg b/boards.cfg
+index 49ea4ab..306f891 100644
+--- a/boards.cfg
++++ b/boards.cfg
+@@ -372,6 +372,7 @@ Active  arm         armv7          rmobile     renesas         lager
+ Active  arm         armv7          s5pc1xx     samsung         goni                s5p_goni                             -                                                                                                                                 Mateusz Zalega <m.zalega@samsung.com>
+ Active  arm         armv7          s5pc1xx     samsung         smdkc100            smdkc100                             -                                                                                                                                 Minkyu Kang <mk7.kang@samsung.com>
+ Active  arm         armv7          socfpga     altera          socfpga             socfpga_cyclone5                     -                                                                                                                                 -
++Active  arm         armv7          sunxi       -               sunxi               Cubietruck_FEL                       sun7i:CUBIETRUCK,SPL_FEL                                                                                                          -
+ Active  arm         armv7          u8500       st-ericsson     snowball            snowball                             -                                                                                                                                 Mathieu Poirier <mathieu.poirier@linaro.org>
+ Active  arm         armv7          u8500       st-ericsson     u8500               u8500_href                           -                                                                                                                                 -
+ Active  arm         armv7          vf610       freescale       vf610twr            vf610twr                             vf610twr:IMX_CONFIG=board/freescale/vf610twr/imximage.cfg                                                                         Alison Wang <b18965@freescale.com>
+-- 
+1.9.0
+

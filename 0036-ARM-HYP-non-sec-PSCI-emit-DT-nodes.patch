@@ -1,0 +1,187 @@
+From 010232aa443377cc848cd60fc55cf53d2db4b286 Mon Sep 17 00:00:00 2001
+From: Marc Zyngier <marc.zyngier@arm.com>
+Date: Sat, 26 Apr 2014 13:17:11 +0100
+Subject: [PATCH 36/36] ARM: HYP/non-sec/PSCI: emit DT nodes
+
+Generate the PSCI node in the device tree.
+
+Also add a reserve section for the "secure" code that lives in
+in normal RAM, so that the kernel knows it'd better not trip on
+it.
+
+Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
+---
+ arch/arm/cpu/armv7/Makefile  |   1 +
+ arch/arm/cpu/armv7/virt-dt.c | 100 +++++++++++++++++++++++++++++++++++++++++++
+ arch/arm/include/asm/armv7.h |   1 +
+ arch/arm/lib/bootm-fdt.c     |  12 +++++-
+ 4 files changed, 112 insertions(+), 2 deletions(-)
+ create mode 100644 arch/arm/cpu/armv7/virt-dt.c
+
+diff --git a/arch/arm/cpu/armv7/Makefile b/arch/arm/cpu/armv7/Makefile
+index da5ce22..ea7b9a5 100644
+--- a/arch/arm/cpu/armv7/Makefile
++++ b/arch/arm/cpu/armv7/Makefile
+@@ -21,6 +21,7 @@ endif
+ ifneq ($(CONFIG_ARMV7_NONSEC)$(CONFIG_ARMV7_VIRT),)
+ obj-y	+= nonsec_virt.o
+ obj-y	+= virt-v7.o
++obj-y	+= virt-dt.o
+ endif
+ 
+ ifneq ($(CONFIG_ARMV7_PSCI),)
+diff --git a/arch/arm/cpu/armv7/virt-dt.c b/arch/arm/cpu/armv7/virt-dt.c
+new file mode 100644
+index 0000000..0b0d6a7
+--- /dev/null
++++ b/arch/arm/cpu/armv7/virt-dt.c
+@@ -0,0 +1,100 @@
++/*
++ * Copyright (C) 2013 - ARM Ltd
++ * Author: Marc Zyngier <marc.zyngier@arm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include <common.h>
++#include <stdio_dev.h>
++#include <linux/ctype.h>
++#include <linux/types.h>
++#include <asm/global_data.h>
++#include <libfdt.h>
++#include <fdt_support.h>
++#include <asm/armv7.h>
++#include <asm/psci.h>
++
++static int fdt_psci(void *fdt)
++{
++#ifdef CONFIG_ARMV7_PSCI
++	int nodeoff;
++	int tmp;
++
++	nodeoff = fdt_path_offset(fdt, "/cpus");
++	if (nodeoff < 0) {
++		printf("couldn't find /cpus\n");
++		return nodeoff;
++	}
++
++	/* add 'enable-method = "psci"' to each cpu node */
++	for (tmp = fdt_first_subnode(fdt, nodeoff);
++	     tmp >= 0;
++	     tmp = fdt_next_subnode(fdt, tmp)) {
++		const struct fdt_property *prop;
++		int len;
++
++		prop = fdt_get_property(fdt, tmp, "device_type", &len);
++		if (!prop)
++			continue;
++		if (len < 4)
++			continue;
++		if (strcmp(prop->data, "cpu"))
++			continue;
++
++		fdt_setprop_string(fdt, tmp, "enable-method", "psci");
++	}
++
++	nodeoff = fdt_path_offset(fdt, "/psci");
++	if (nodeoff < 0) {
++		nodeoff = fdt_path_offset(fdt, "/");
++		if (nodeoff < 0)
++			return nodeoff;
++
++		nodeoff = fdt_add_subnode(fdt, nodeoff, "psci");
++		if (nodeoff < 0)
++			return nodeoff;
++	}
++
++	tmp = fdt_setprop_string(fdt, nodeoff, "compatible", "arm,psci");
++	if (tmp)
++		return tmp;
++	tmp = fdt_setprop_string(fdt, nodeoff, "method", "smc");
++	if (tmp)
++		return tmp;
++	tmp = fdt_setprop_u32(fdt, nodeoff, "cpu_suspend", ARM_PSCI_FN_CPU_SUSPEND);
++	if (tmp)
++		return tmp;
++	tmp = fdt_setprop_u32(fdt, nodeoff, "cpu_off", ARM_PSCI_FN_CPU_OFF);
++	if (tmp)
++		return tmp;
++	tmp = fdt_setprop_u32(fdt, nodeoff, "cpu_on", ARM_PSCI_FN_CPU_ON);
++	if (tmp)
++		return tmp;
++	tmp = fdt_setprop_u32(fdt, nodeoff, "migrate", ARM_PSCI_FN_MIGRATE);
++	if (tmp)
++		return tmp;
++#endif
++	return 0;
++}
++
++int armv7_update_dt(void *fdt)
++{
++#ifndef CONFIG_ARMV7_SECURE_BASE
++	/* secure code lives in RAM, keep it alive */
++	fdt_add_mem_rsv(fdt, (unsigned long)__secure_start,
++			__secure_end - __secure_start);
++#endif
++
++	return fdt_psci(fdt);
++}
+diff --git a/arch/arm/include/asm/armv7.h b/arch/arm/include/asm/armv7.h
+index 11476dd..323f282 100644
+--- a/arch/arm/include/asm/armv7.h
++++ b/arch/arm/include/asm/armv7.h
+@@ -79,6 +79,7 @@ void v7_outer_cache_inval_range(u32 start, u32 end);
+ #if defined(CONFIG_ARMV7_NONSEC) || defined(CONFIG_ARMV7_VIRT)
+ 
+ int armv7_init_nonsec(void);
++int armv7_update_dt(void *fdt);
+ 
+ /* defined in assembly file */
+ unsigned int _nonsec_init(void);
+diff --git a/arch/arm/lib/bootm-fdt.c b/arch/arm/lib/bootm-fdt.c
+index 8394e15..d4f1578 100644
+--- a/arch/arm/lib/bootm-fdt.c
++++ b/arch/arm/lib/bootm-fdt.c
+@@ -17,13 +17,14 @@
+ 
+ #include <common.h>
+ #include <fdt_support.h>
++#include <asm/armv7.h>
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+ int arch_fixup_fdt(void *blob)
+ {
+ 	bd_t *bd = gd->bd;
+-	int bank;
++	int bank, ret;
+ 	u64 start[CONFIG_NR_DRAM_BANKS];
+ 	u64 size[CONFIG_NR_DRAM_BANKS];
+ 
+@@ -32,5 +33,12 @@ int arch_fixup_fdt(void *blob)
+ 		size[bank] = bd->bi_dram[bank].size;
+ 	}
+ 
+-	return fdt_fixup_memory_banks(blob, start, size, CONFIG_NR_DRAM_BANKS);
++	ret = fdt_fixup_memory_banks(blob, start, size, CONFIG_NR_DRAM_BANKS);
++#if defined(CONFIG_ARMV7_NONSEC) || defined(CONFIG_ARMV7_VIRT)
++	if (ret)
++		return ret;
++
++	ret = armv7_update_dt(blob);
++#endif
++	return ret;
+ }
+-- 
+1.9.0
+

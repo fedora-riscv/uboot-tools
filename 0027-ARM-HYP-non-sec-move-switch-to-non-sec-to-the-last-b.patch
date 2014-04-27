@@ -1,0 +1,44 @@
+From f2c485bd04fe493ff06255a8be2bd754f6f0f766 Mon Sep 17 00:00:00 2001
+From: Marc Zyngier <marc.zyngier@arm.com>
+Date: Sat, 26 Apr 2014 13:17:02 +0100
+Subject: [PATCH 27/36] ARM: HYP/non-sec: move switch to non-sec to the last
+ boot phase
+
+Having the switch to non-secure in the "prep" phase is causing
+all kind of troubles, as that stage can be called multiple times.
+
+Instead, move the switch to non-secure to the last possible phase,
+when there is no turning back anymore.
+
+Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
+---
+ arch/arm/lib/bootm.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/lib/bootm.c b/arch/arm/lib/bootm.c
+index 47ee070..10634a4 100644
+--- a/arch/arm/lib/bootm.c
++++ b/arch/arm/lib/bootm.c
+@@ -242,7 +242,6 @@ static void boot_prep_linux(bootm_headers_t *images)
+ 		printf("FDT and ATAGS support not compiled in - hanging\n");
+ 		hang();
+ 	}
+-	do_nonsec_virt_switch();
+ }
+ 
+ /* Subcommand: GO */
+@@ -287,8 +286,10 @@ static void boot_jump_linux(bootm_headers_t *images, int flag)
+ 	else
+ 		r2 = gd->bd->bi_boot_params;
+ 
+-	if (!fake)
++	if (!fake) {
++		do_nonsec_virt_switch();
+ 		kernel_entry(0, machid, r2);
++	}
+ #endif
+ }
+ 
+-- 
+1.9.0
+

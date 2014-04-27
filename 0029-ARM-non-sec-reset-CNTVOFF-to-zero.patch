@@ -1,0 +1,50 @@
+From 2e19eb7de158a26c335d8820becaf859602dd401 Mon Sep 17 00:00:00 2001
+From: Marc Zyngier <marc.zyngier@arm.com>
+Date: Sat, 26 Apr 2014 13:17:04 +0100
+Subject: [PATCH 29/36] ARM: non-sec: reset CNTVOFF to zero
+
+Before switching to non-secure, make sure that CNTVOFF is set
+to zero on all CPUs. Otherwise, kernel running in non-secure
+without HYP enabled (hence using virtual timers) may observe
+timers that are not synchronized, effectively seeing time
+going backward...
+
+Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
+---
+ arch/arm/cpu/armv7/nonsec_virt.S | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/cpu/armv7/nonsec_virt.S b/arch/arm/cpu/armv7/nonsec_virt.S
+index 12de5c2..b5c946f 100644
+--- a/arch/arm/cpu/armv7/nonsec_virt.S
++++ b/arch/arm/cpu/armv7/nonsec_virt.S
+@@ -38,10 +38,10 @@ _secure_monitor:
+ 	bic	r1, r1, #0x4e			@ clear IRQ, FIQ, EA, nET bits
+ 	orr	r1, r1, #0x31			@ enable NS, AW, FW bits
+ 
+-#ifdef CONFIG_ARMV7_VIRT
+ 	mrc	p15, 0, r0, c0, c1, 1		@ read ID_PFR1
+ 	and	r0, r0, #CPUID_ARM_VIRT_MASK	@ mask virtualization bits
+ 	cmp	r0, #(1 << CPUID_ARM_VIRT_SHIFT)
++#ifdef CONFIG_ARMV7_VIRT
+ 	orreq	r1, r1, #0x100			@ allow HVC instruction
+ #endif
+ 
+@@ -52,7 +52,14 @@ _secure_monitor:
+ 	mrceq	p15, 0, r0, c12, c0, 1		@ get MVBAR value
+ 	mcreq	p15, 4, r0, c12, c0, 0		@ write HVBAR
+ #endif
++	bne	1f
+ 
++	@ Reset CNTVOFF to 0 before leaving monitor mode
++	mrc	p15, 0, r0, c0, c1, 1		@ read ID_PFR1
++	ands	r0, r0, #CPUID_ARM_GENTIMER_MASK	@ test arch timer bits
++	movne	r0, #0
++	mcrrne	p15, 4, r0, r0, c14		@ Reset CNTVOFF to zero
++1:
+ 	movs	pc, lr				@ return to non-secure SVC
+ 
+ _hyp_trap:
+-- 
+1.9.0
+

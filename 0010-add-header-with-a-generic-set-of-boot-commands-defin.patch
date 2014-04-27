@@ -1,7 +1,7 @@
-From 99b529d14da75487600043d3f0c209d1c54d14e9 Mon Sep 17 00:00:00 2001
+From b8dfe74309a4f61fa0078ad04fd4bb4141b13a51 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 21 Apr 2014 12:29:04 -0500
-Subject: [PATCH 10/14] add header with a generic set of boot commands defined.
+Subject: [PATCH 10/36] add header with a generic set of boot commands defined.
 
 As the next step in a generic config we are introducing a set of generic boot
 paramaters. Depending on the hardwares configuration, booting from supported
@@ -18,7 +18,7 @@ boots. for example simply be able to pxe boot to reinstall
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
 new file mode 100644
-index 0000000..f0620ff
+index 0000000..025c4d4
 --- /dev/null
 +++ b/include/config_distro_bootcmd.h
 @@ -0,0 +1,209 @@

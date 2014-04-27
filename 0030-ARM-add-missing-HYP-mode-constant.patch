@@ -1,0 +1,53 @@
+From eed1c957b6294e0205cc8521516c51dce7bb72c1 Mon Sep 17 00:00:00 2001
+From: Marc Zyngier <marc.zyngier@arm.com>
+Date: Sat, 26 Apr 2014 13:17:05 +0100
+Subject: [PATCH 30/36] ARM: add missing HYP mode constant
+
+In order to be able to use the various mode constants (far more
+readable than random hex values), add the missing HYP and A
+values.
+
+Also update arm/lib/interrupts.c to display HYP instead of an
+unknown value.
+
+Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
+---
+ arch/arm/include/asm/proc-armv/ptrace.h | 2 ++
+ arch/arm/lib/interrupts.c               | 2 +-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/include/asm/proc-armv/ptrace.h b/arch/arm/include/asm/proc-armv/ptrace.h
+index 21aef58..71df5a9 100644
+--- a/arch/arm/include/asm/proc-armv/ptrace.h
++++ b/arch/arm/include/asm/proc-armv/ptrace.h
+@@ -38,12 +38,14 @@ struct pt_regs {
+ #define IRQ_MODE	0x12
+ #define SVC_MODE	0x13
+ #define ABT_MODE	0x17
++#define HYP_MODE	0x1a
+ #define UND_MODE	0x1b
+ #define SYSTEM_MODE	0x1f
+ #define MODE_MASK	0x1f
+ #define T_BIT		0x20
+ #define F_BIT		0x40
+ #define I_BIT		0x80
++#define A_BIT		0x100
+ #define CC_V_BIT	(1 << 28)
+ #define CC_C_BIT	(1 << 29)
+ #define CC_Z_BIT	(1 << 30)
+diff --git a/arch/arm/lib/interrupts.c b/arch/arm/lib/interrupts.c
+index 758b013..f6b7c03 100644
+--- a/arch/arm/lib/interrupts.c
++++ b/arch/arm/lib/interrupts.c
+@@ -103,7 +103,7 @@ void show_regs (struct pt_regs *regs)
+ 	"UK12_26",	"UK13_26",	"UK14_26",	"UK15_26",
+ 	"USER_32",	"FIQ_32",	"IRQ_32",	"SVC_32",
+ 	"UK4_32",	"UK5_32",	"UK6_32",	"ABT_32",
+-	"UK8_32",	"UK9_32",	"UK10_32",	"UND_32",
++	"UK8_32",	"UK9_32",	"HYP_32",	"UND_32",
+ 	"UK12_32",	"UK13_32",	"UK14_32",	"SYS_32",
+ 	};
+ 
+-- 
+1.9.0
+

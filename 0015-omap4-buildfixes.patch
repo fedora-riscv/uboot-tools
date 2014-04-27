@@ -1,7 +1,7 @@
-From 250fb75f8233cd3502736b474618e6c5d7f13aae Mon Sep 17 00:00:00 2001
+From 8ef41c6750f256383ea38ee7aa6d03924cdeeeb4 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 21 Apr 2014 14:44:07 -0500
-Subject: [PATCH 15/15] omap4 buildfixes
+Subject: [PATCH 15/36] omap4 buildfixes
 
 ---
  include/configs/ti_omap4_common.h | 4 ----

@@ -1,7 +1,7 @@
-From f57beade9b49254f82f2e817e727161c08f0c38a Mon Sep 17 00:00:00 2001
+From 9c3e5ff69a47086bb7428043ed91261a6b6b9d18 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 21 Apr 2014 12:33:43 -0500
-Subject: [PATCH 13/14] add hackish utilite build based on wandboard
+Subject: [PATCH 13/36] add hackish utilite build based on wandboard
 
 ---
  board/compulab/utilite/Makefile  |   7 +

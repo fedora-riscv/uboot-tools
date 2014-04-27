@@ -1,7 +1,7 @@
-From 48eb6e1d1daf48f333dbb3210dc9866afecf9c38 Mon Sep 17 00:00:00 2001
+From 925dbd3bdb96e13449577b1386bf76c2e9f970a3 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 21 Apr 2014 12:18:26 -0500
-Subject: [PATCH 07/14] move udoo over to use the generic distro configuation
+Subject: [PATCH 07/36] move udoo over to use the generic distro configuation
  and environment
 
 port udoo to use the generic distro configuation.

@@ -1,7 +1,7 @@
-From f972c558cbf06331f0738946304a0cca3e163d85 Mon Sep 17 00:00:00 2001
+From 619b07ef07df8f06039a5502df8408ad9abed960 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 21 Apr 2014 12:35:27 -0500
-Subject: [PATCH 14/14] add to ti_armv7_common.h generic distro environment
+Subject: [PATCH 14/36] add to ti_armv7_common.h generic distro environment
  variables
 
 there are two new environment variables and addresses that need
