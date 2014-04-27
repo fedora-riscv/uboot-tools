@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.04
-Release:        3%{?candidate:.%{candidate}}%{?dist}
+Release:        4%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -50,6 +50,8 @@ Patch44:        0035-ARM-convert-arch_fixup_memory_node-to-a-generic-FDT-.patch
 Patch45:        0036-ARM-HYP-non-sec-PSCI-emit-DT-nodes.patch
 Patch46:        0037-PXE-syslinux-implenets-some-keywords-found-in-config.patch
 Patch47:        0038-PXE-distros-implementing-syslinux-will-be-using-raw-.patch
+Patch48:        0039-sunxi-fix-SRAM_B-SRAM_D-memory-map.patch
+Patch49:        0040-sunxi-add-hyp-support-on-sun7i.patch
 
 %ifnarch %{arm}
 BuildRequires:  gcc-arm-linux-gnu
@@ -154,6 +156,8 @@ u-boot bootloader binaries for armv7 boards
 %patch45 -p1
 %patch46 -p1
 %patch47 -p1
+%patch48 -p1
+%patch49 -p1
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
@@ -410,6 +414,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sat Apr 26 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-4
+- add hyp support to cubietruck image
+- enables kvm support
+
 * Thu Apr 24 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-3
 - add cubietruck u-boot image
 
