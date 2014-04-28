@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.04
-Release:        4%{?candidate:.%{candidate}}%{?dist}
+Release:        5%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -53,9 +53,6 @@ Patch47:        0038-PXE-distros-implementing-syslinux-will-be-using-raw-.patch
 Patch48:        0039-sunxi-fix-SRAM_B-SRAM_D-memory-map.patch
 Patch49:        0040-sunxi-add-hyp-support-on-sun7i.patch
 
-%ifnarch %{arm}
-BuildRequires:  gcc-arm-linux-gnu
-%endif
 BuildRequires:  dtc
 BuildRequires:  fedora-logos, netpbm-progs
 Requires:       dtc
@@ -65,17 +62,17 @@ This package contains a few U-Boot utilities - mkimage for creating boot images
 and fw_printenv/fw_setenv for manipulating the boot environment variables.
 
 %ifarch aarch64
-%package     -n uboot-vexpress_aemv8a
-Summary:     u-boot bootloader binaries for the aarch64 vexpress_aemv8a
+%package     -n uboot-images-armv8
+Summary:     u-boot bootloader images for armv8 boards
 Requires:    uboot-tools
 
-%description -n uboot-vexpress_aemv8a
+%description -n uboot-images-armv8
 u-boot bootloader binaries for the aarch64 vexpress_aemv8a
 %endif
 
 %ifarch %{arm}
 %package     -n uboot-images-armv7
-Summary:     u-boot bootloader binaries for armv7 boards
+Summary:     u-boot bootloader images for armv7 boards
 Requires:    uboot-tools
 
 Obsoletes: uboot-arndale < %{version}-%{release}
@@ -278,14 +275,10 @@ cp -p u-boot.img builds/u-boot.img.uevm
 make mrproper
 
 %endif
-%ifnarch %{arm}
-make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE=arm-linux-gnu- sheevaplug_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE=arm-linux-gnu- tools
-%endif
+make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" tools-only
 
 %ifarch %{arm}
 make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" sheevaplug_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" tools
 make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" env
 %endif
 
@@ -362,6 +355,8 @@ install -p -m 0644 builds/u-boot.imx.wbsolo $RPM_BUILD_ROOT%{_datadir}/uboot/wan
 
 install -p -m 0755 tools/mkimage $RPM_BUILD_ROOT%{_bindir}
 install -p -m 0644 doc/mkimage.1 $RPM_BUILD_ROOT%{_mandir}/man1
+install -p -m 0755 tools/mkenvimage $RPM_BUILD_ROOT%{_bindir}
+install -p -m 0755 tools/dumpimage $RPM_BUILD_ROOT%{_bindir}
 
 %ifarch %{arm}
 install -p -m 0755 tools/env/fw_printenv $RPM_BUILD_ROOT%{_bindir}
@@ -377,9 +372,13 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %doc README doc/README.imximage doc/README.kwbimage doc/uImage.FIT
 %{_bindir}/mkimage
+%{_bindir}/mkenvimage
+%{_bindir}/dumpimage
 %{_mandir}/man1/mkimage.1*
-%ifarch %{arm}
+%ifarch %{arm} aarch64
 %dir %{_datadir}/uboot/
+%endif
+%ifarch %{arm}
 %{_bindir}/fw_printenv
 %{_bindir}/fw_setenv
 %config(noreplace) %{_sysconfdir}/fw_env.config
@@ -414,6 +413,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sun Apr 27 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-5
+- fix up aarch64 image package naming
+- drop need for cross compiler to build tools
+
 * Sat Apr 26 2014 Dennis Gilmore <dennis@ausil.us> - 2014.04-4
 - add hyp support to cubietruck image
 - enables kvm support
