@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.04
-Release:        6%{?candidate:.%{candidate}}%{?dist}
+Release:        7%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -413,6 +413,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Aug 18 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2014.04-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
 * Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2014.04-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 
