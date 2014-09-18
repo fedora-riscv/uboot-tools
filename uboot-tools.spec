@@ -1,8 +1,8 @@
-#global candidate
+%global candidate rc2
 
 Name:           uboot-tools
-Version:        2014.04
-Release:        7%{?candidate:.%{candidate}}%{?dist}
+Version:        2014.10
+Release:        0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -12,46 +12,7 @@ Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{ca
 Source1:        uEnv.txt
 Patch1:         u-boot-fat.patch
 
-Patch10:        0001-TI-Add-use-a-DEFAULT_LINUX_BOOT_ENV-environment-stri.patch
-Patch11:        0002-am335x_evm-Update-the-ramdisk-args-we-pass-things-in.patch
-Patch12:        0003-am43xx_evm-Update-the-ramdisk-args-we-pass-things-in.patch
-Patch13:        0004-pxe-additionaly-check-for-fdt_file-env-variable.patch
-Patch14:        0005-convert-snowball-to-distro-generic-config.patch
-Patch15:        0006-move-wandboard-over-to-use-the-generic-distro-config.patch
-Patch16:        0007-move-udoo-over-to-use-the-generic-distro-configuatio.patch
-Patch17:        0008-move-pandaboard-over-to-use-the-generic-distro-confi.patch
-Patch18:        0009-move-beaglebone-over-to-use-the-generic-distro-confi.patch
-Patch19:        0010-add-header-with-a-generic-set-of-boot-commands-defin.patch
-Patch20:        0011-add-README.distro-file.patch
-Patch21:        0012-cleanup-duplicate-options-in-paz00-config.patch
-Patch22:        0013-add-hackish-utilite-build-based-on-wandboard.patch
-Patch23:        0014-add-to-ti_armv7_common.h-generic-distro-environment-.patch
-Patch24:        0015-omap4-buildfixes.patch
-Patch25:        0016-automatically-add-console-to-bootline-when-not-exist.patch
-Patch26:        0017-make-bootdelay-match-the-generic-distro-default.patch
-Patch27:        0018-sunxi-add-sun7i-clocks-and-timer-support.patch
-Patch28:        0019-sunxi-add-sun7i-pinmux-and-gpio-support.patch
-Patch29:        0020-sunxi-add-sun7i-dram-setup-support.patch
-Patch30:        0021-sunxi-add-sun7i-cpu-board-and-start-of-day-support.patch
-Patch31:        0022-sunxi-add-support-for-Cubietruck-booting-in-FEL-mode.patch
-Patch32:        0023-sunxi-add-gmac-Ethernet-support.patch
-Patch33:        0024-sunxi-mmc-support.patch
-Patch34:        0025-sunxi-non-FEL-SPL-boot-support-for-sun7i.patch
-Patch35:        0026-port-over-to-generic-bootcommands.patch
-Patch36:        0027-ARM-HYP-non-sec-move-switch-to-non-sec-to-the-last-b.patch
-Patch37:        0028-ARM-HYP-non-sec-add-a-barrier-after-setting-SCR.NS-1.patch
-Patch38:        0029-ARM-non-sec-reset-CNTVOFF-to-zero.patch
-Patch39:        0030-ARM-add-missing-HYP-mode-constant.patch
-Patch40:        0031-ARM-HYP-non-sec-add-separate-section-for-secure-code.patch
-Patch41:        0032-ARM-HYP-non-sec-allow-relocation-to-secure-RAM.patch
-Patch42:        0033-ARM-HYP-non-sec-add-generic-ARMv7-PSCI-code.patch
-Patch43:        0034-ARM-HYP-non-sec-add-the-option-for-a-second-stage-mo.patch
-Patch44:        0035-ARM-convert-arch_fixup_memory_node-to-a-generic-FDT-.patch
-Patch45:        0036-ARM-HYP-non-sec-PSCI-emit-DT-nodes.patch
-Patch46:        0037-PXE-syslinux-implenets-some-keywords-found-in-config.patch
-Patch47:        0038-PXE-distros-implementing-syslinux-will-be-using-raw-.patch
-Patch48:        0039-sunxi-fix-SRAM_B-SRAM_D-memory-map.patch
-Patch49:        0040-sunxi-add-hyp-support-on-sun7i.patch
+Patch10:        0001-wandboard-port-to-generic-distro-booting.patch
 
 BuildRequires:  dtc
 BuildRequires:  fedora-logos, netpbm-progs
@@ -116,45 +77,6 @@ u-boot bootloader binaries for armv7 boards
 %patch1 -p1
 
 %patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
-%patch14 -p1
-%patch15 -p1
-%patch16 -p1
-%patch17 -p1
-%patch18 -p1
-%patch19 -p1
-%patch20 -p1
-%patch21 -p1
-%patch22 -p1
-%patch23 -p1
-%patch24 -p1
-%patch25 -p1
-%patch26 -p1
-%patch27 -p1
-%patch28 -p1
-%patch29 -p1
-%patch30 -p1
-%patch31 -p1
-%patch32 -p1
-%patch33 -p1
-%patch34 -p1
-%patch35 -p1
-%patch36 -p1
-%patch37 -p1
-%patch38 -p1
-%patch39 -p1
-%patch40 -p1
-%patch41 -p1
-%patch42 -p1
-%patch43 -p1
-%patch44 -p1
-%patch45 -p1
-%patch46 -p1
-%patch47 -p1
-%patch48 -p1
-%patch49 -p1
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
