@@ -14,7 +14,7 @@ Patch1:         u-boot-fat.patch
 
 Patch10:        0001-wandboard-port-to-generic-distro-booting.patch
 
-BuildRequires:  dtc
+BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
 Requires:       dtc
 
