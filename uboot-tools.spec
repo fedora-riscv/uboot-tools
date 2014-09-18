@@ -199,6 +199,7 @@ make mrproper
 %endif
 
 make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" silentoldconfig
 make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" tools-only
 
 %ifarch %{arm}
@@ -281,6 +282,8 @@ install -p -m 0755 tools/mkimage $RPM_BUILD_ROOT%{_bindir}
 install -p -m 0644 doc/mkimage.1 $RPM_BUILD_ROOT%{_mandir}/man1
 install -p -m 0755 tools/mkenvimage $RPM_BUILD_ROOT%{_bindir}
 install -p -m 0755 tools/dumpimage $RPM_BUILD_ROOT%{_bindir}
+install -p -m 0755 tools/fit_info $RPM_BUILD_ROOT%{_bindir}
+install -p -m 0755 tools/fit_check_sign $RPM_BUILD_ROOT%{_bindir}
 
 %ifarch %{arm}
 install -p -m 0755 tools/env/fw_printenv $RPM_BUILD_ROOT%{_bindir}
@@ -295,6 +298,8 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %doc README doc/README.imximage doc/README.kwbimage doc/uImage.FIT
+%{_bindir}/fit_check_sign
+%{_bindir}/fit_info
 %{_bindir}/mkimage
 %{_bindir}/mkenvimage
 %{_bindir}/dumpimage
