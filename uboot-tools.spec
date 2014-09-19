@@ -358,10 +358,15 @@ rm -rf $RPM_BUILD_ROOT
 %files -n uboot-images-armv7
 %defattr(-,root,root,-)
 %{_datadir}/uboot/arndale/
+%{_datadir}/uboot/Bananapi/
 %{_datadir}/uboot/beaglebone/
 %{_datadir}/uboot/beagle/
 %{_datadir}/uboot/Cubietruck/
+%{_datadir}/uboot/Cubieboard/
+%{_datadir}/uboot/Cubieboard2/
 %{_datadir}/uboot/highbank/
+%{_datadir}/uboot/Mele_A1000/
+%{_datadir}/uboot/Mele_A1000G/
 %{_datadir}/uboot/panda/
 %{_datadir}/uboot/paz00/
 %{_datadir}/uboot/origen/
