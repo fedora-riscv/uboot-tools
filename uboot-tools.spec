@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.10
-Release:        0.1%{?candidate:.%{candidate}}%{?dist}
+Release:        0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -121,6 +121,16 @@ make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Cubietruck
 make mrproper
 
+make Cubieboard_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Cubieboard
+make mrproper
+
+make Cubieboard2_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Cubieboard2
+make mrproper
+
 make highbank_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
 cp -p u-boot.bin builds/u-boot.bin.highbank
@@ -196,6 +206,21 @@ cp -p MLO builds/MLO.uevm
 cp -p u-boot.img builds/u-boot.img.uevm
 make mrproper
 
+make Bananapi_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Bananapi
+make mrproper
+
+make Mele_A1000G_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Mele_A1000G
+make mrproper
+
+make Mele_A1000_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags}
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Mele_A1000
+make mrproper
+
 %endif
 
 make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" defconfig
@@ -223,10 +248,15 @@ install -p -m 0644 builds/u-boot.bin.vexpress_aemv8a $RPM_BUILD_ROOT%{_datadir}/
 %ifarch %{arm}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Bananapi/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beagle/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beaglebone/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Cubietruck/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Cubieboard/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Cubieboard2/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/highbank/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Mele_A1000/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Mele_A1000G/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/origen/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/panda/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/paz00/
@@ -259,6 +289,11 @@ install -p -m 0644 builds/arndale-spl.bin.arndale $RPM_BUILD_ROOT%{_datadir}/ubo
 install -p -m 0644 builds/u-boot-dtb.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/u-boot-dtb.bin
 
 install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.Cubietruck $RPM_BUILD_ROOT%{_datadir}/uboot/Cubietruck/u-boot-sunxi-with-spl.bin
+install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.Cubieboard $RPM_BUILD_ROOT%{_datadir}/uboot/Cubieboard/u-boot-sunxi-with-spl.bin
+install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.Cubieboard2 $RPM_BUILD_ROOT%{_datadir}/uboot/Cubieboard2/u-boot-sunxi-with-spl.bin
+install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.Bananapi $RPM_BUILD_ROOT%{_datadir}/uboot/Bananapi/u-boot-sunxi-with-spl.bin
+install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.Mele_A1000 $RPM_BUILD_ROOT%{_datadir}/uboot/Mele_A1000/u-boot-sunxi-with-spl.bin
+install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.Mele_A1000G $RPM_BUILD_ROOT%{_datadir}/uboot/Mele_A1000G/u-boot-sunxi-with-spl.bin
 
 install -p -m 0644 builds/u-boot.bin.highbank $RPM_BUILD_ROOT%{_datadir}/uboot/highbank/u-boot.bin
 
@@ -342,6 +377,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Sep 18 2014 Dennis Gilmore <dennis@ausil.us> - 2014.10-0.2.rc2
+- add Cubieboard, Cubieboard2, Bananapi, Mele_A1000 and Mele_A1000G images
+
 * Thu Sep 18 2014 Dennis Gilmore <dennis@ausil.us> - 2014.10-0.1.rc2
 - update to 2014.10-rc2
 
