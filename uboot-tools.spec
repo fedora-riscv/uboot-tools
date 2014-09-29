@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.10
-Release:        0.3%{?candidate:.%{candidate}}%{?dist}
+Release:        0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -13,6 +13,9 @@ Source1:        uEnv.txt
 Patch1:         u-boot-fat.patch
 
 Patch10:        0001-wandboard-port-to-generic-distro-booting.patch
+Patch11:        riotboard-port-to-generic-distro-booting.patch
+# http://lists.denx.de/pipermail/u-boot/2014-September/190052.html
+Patch12:        sun7i-bananapi-fixGmac.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -76,7 +79,9 @@ u-boot bootloader binaries for armv7 boards
 %setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
 %patch1 -p1
 
-%patch10 -p1
+%patch10 -p1 -b .wand
+%patch11 -p1 -b .riot
+%patch12 -p1 -b .BPgmac
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
@@ -98,27 +103,10 @@ make mrproper
 %endif
 
 %ifarch %{arm}
-make am335x_evm_config
+# AllWinner devices
+make Bananapi_defconfig
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p MLO builds/MLO.beaglebone
-cp -p u-boot.img builds/u-boot.img.beaglebone
-make mrproper
-
-make omap3_beagle_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p MLO builds/MLO.beagle
-cp -p u-boot.img builds/u-boot.img.beagle
-make mrproper
-
-make arndale_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p spl/arndale-spl.bin builds/arndale-spl.bin.arndale
-cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.arndale
-make mrproper
-
-make Cubietruck_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Cubietruck
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Bananapi
 make mrproper
 
 make Cubieboard_defconfig
@@ -131,21 +119,60 @@ make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Cubieboard2
 make mrproper
 
+make Cubietruck_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Cubietruck
+make mrproper
+
+make Mele_A1000G_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Mele_A1000G
+make mrproper
+
+make Mele_A1000_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Mele_A1000
+make mrproper
+
+# Calxeda
 make highbank_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p u-boot.bin builds/u-boot.bin.highbank
 make mrproper
 
-make omap4_panda_config
+# Freescale i.MX6
+make riotboard_defconfig
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p MLO builds/MLO.panda
-cp -p u-boot.img builds/u-boot.img.panda
+cp -p u-boot.imx builds/u-boot.imx.riotboard
 make mrproper
 
-make origen_config
+make udoo_quad_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p spl/origen-spl.bin builds/origen-spl.bin.origen
-cp -p u-boot.bin builds/u-boot.bin.origen
+cp -p u-boot.imx builds/u-boot.imx.udoo_quad
+make mrproper
+
+make wandboard_dl_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot.imx builds/u-boot.imx.wandboard_dl
+make mrproper
+
+make wandboard_quad_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot.imx builds/u-boot.imx.wandboard_quad
+make mrproper
+
+make wandboard_solo_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot.imx builds/u-boot.imx.wandboard_solo
+make mrproper
+
+# NVidia Tegra devices
+make jetson-tk1_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-dtb-tegra.bin builds/u-boot-dtb-tegra.bin.jetson-tk1
+cp -p u-boot-nodtb-tegra.bin builds/u-boot-nodtb-tegra.bin.jetson-tk1
+cp -p u-boot.map builds/u-boot.map.jetson-tk1
+cp -p u-boot.dtb builds/u-boot.dtb.jetson-tk1
 make mrproper
 
 make paz00_config
@@ -154,6 +181,27 @@ cp -p u-boot-dtb-tegra.bin builds/u-boot-dtb-tegra.bin.paz00
 cp -p u-boot-nodtb-tegra.bin builds/u-boot-nodtb-tegra.bin.paz00
 cp -p u-boot.map builds/u-boot.map.paz00
 cp -p u-boot.dtb builds/u-boot.dtb.paz00
+make mrproper
+
+make trimslice_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-dtb-tegra.bin builds/u-boot-dtb-tegra.bin.trimslice
+cp -p u-boot-nodtb-tegra.bin builds/u-boot-nodtb-tegra.bin.trimslice
+cp -p u-boot.map builds/u-boot.map.trimslice
+cp -p u-boot.dtb builds/u-boot.dtb.trimslice
+make mrproper
+
+# Samsung Exynos devices
+make arndale_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p spl/arndale-spl.bin builds/arndale-spl.bin.arndale
+cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.arndale
+make mrproper
+
+make origen_config
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p spl/origen-spl.bin builds/origen-spl.bin.origen
+cp -p u-boot.bin builds/u-boot.bin.origen
 make mrproper
 
 make smdkv310_config
@@ -167,71 +215,35 @@ make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.snow
 make mrproper
 
+# ST Erikson
 make snowball_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p u-boot.bin builds/u-boot.bin.snowball
 make mrproper
 
-make jetson-tk1_defconfig
+# TI devices
+make am335x_evm_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot-dtb-tegra.bin builds/u-boot-dtb-tegra.bin.jetson-tk1
-cp -p u-boot-nodtb-tegra.bin builds/u-boot-nodtb-tegra.bin.jetson-tk1
-cp -p u-boot.map builds/u-boot.map.jetson-tk1
-cp -p u-boot.dtb builds/u-boot.dtb.jetson-tk1
+cp -p MLO builds/MLO.beaglebone
+cp -p u-boot.img builds/u-boot.img.beaglebone
 make mrproper
 
-make trimslice_config
+make omap3_beagle_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot-dtb-tegra.bin builds/u-boot-dtb-tegra.bin.trimslice
-cp -p u-boot-nodtb-tegra.bin builds/u-boot-nodtb-tegra.bin.trimslice
-cp -p u-boot.map builds/u-boot.map.trimslice
-cp -p u-boot.dtb builds/u-boot.dtb.trimslice
+cp -p MLO builds/MLO.beagle
+cp -p u-boot.img builds/u-boot.img.beagle
 make mrproper
 
-make wandboard_dl_config
+make omap4_panda_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot.imx builds/u-boot.imx.wbdl
-make mrproper
-
-make wandboard_quad_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot.imx builds/u-boot.imx.wbquad
-make mrproper
-
-make udoo_quad_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot.imx builds/u-boot.imx.udoo_quad
-make mrproper
-
-make wandboard_solo_config
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot.imx builds/u-boot.imx.wbsolo
-make mrproper
-
-make riotboard_defconfig
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot.imx builds/u-boot.imx.riotboard
+cp -p MLO builds/MLO.panda
+cp -p u-boot.img builds/u-boot.img.panda
 make mrproper
 
 make omap5_uevm_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p MLO builds/MLO.uevm
 cp -p u-boot.img builds/u-boot.img.uevm
-make mrproper
-
-make Bananapi_defconfig
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Bananapi
-make mrproper
-
-make Mele_A1000G_defconfig
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Mele_A1000G
-make mrproper
-
-make Mele_A1000_defconfig
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Mele_A1000
 make mrproper
 
 %endif
@@ -258,38 +270,57 @@ install -p -m 0644 builds/u-boot.bin.vexpress_aemv8a $RPM_BUILD_ROOT%{_datadir}/
 
 %ifarch %{arm}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/
+# ARM Vexpress
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/vexpress/
+
+# AllWinner
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Bananapi/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beagle/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beaglebone/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Cubietruck/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Cubieboard/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Cubieboard2/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/highbank/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/jetson-tk1/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Cubietruck/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Mele_A1000/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Mele_A1000G/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/origen/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/panda/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/paz00/
+# Calxeda
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/highbank/
+# FreeScale
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/riotboard/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/snow/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/snowball/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/smdkv310/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/trimslice/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/udoo_quad/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_dl/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_quad/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_solo/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/udoo_quad/
+# NVidia
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/jetson-tk1/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/paz00/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/trimslice/
+# Samsung
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/origen/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/smdkv310/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/snow/
+# STE
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/snowball/
+# TI
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beagle/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beaglebone/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/panda/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/uevm/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/vexpress/
 
-for board in beaglebone beagle panda uevm
+# AllWinner
+for board in Bananapi Cubieboard Cubieboard2 Cubietruck Mele_A1000 Mele_A1000G
 do
-install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.img
-install -p -m 0644 builds/MLO.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/MLO
+install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-sunxi-with-spl.bin
 done
 
+# Calxeda
+install -p -m 0644 builds/u-boot.bin.highbank $RPM_BUILD_ROOT%{_datadir}/uboot/highbank/u-boot.bin
+
+# FreeScale
+for board in riotboard udoo_quad wandboard_dl wandboard_quad wandboard_solo
+do
+install -p -m 0644 builds/u-boot.imx.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.imx
+done
+
+# NVidia
 for board in paz00 trimslice jetson-tk1
 do
 install -p -m 0644 builds/u-boot-nodtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-nodtb-tegra.bin
@@ -298,17 +329,9 @@ install -p -m 0644 builds/u-boot.map.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/u
 install -p -m 0644 builds/u-boot.dtb.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.dtb
 done
 
+# Samsung
 install -p -m 0644 builds/arndale-spl.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/arndale-spl.bin
 install -p -m 0644 builds/u-boot-dtb.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/u-boot-dtb.bin
-
-install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.Bananapi $RPM_BUILD_ROOT%{_datadir}/uboot/Bananapi/u-boot-sunxi-with-spl.bin
-install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.Cubieboard $RPM_BUILD_ROOT%{_datadir}/uboot/Cubieboard/u-boot-sunxi-with-spl.bin
-install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.Cubieboard2 $RPM_BUILD_ROOT%{_datadir}/uboot/Cubieboard2/u-boot-sunxi-with-spl.bin
-install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.Cubietruck $RPM_BUILD_ROOT%{_datadir}/uboot/Cubietruck/u-boot-sunxi-with-spl.bin
-install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.Mele_A1000 $RPM_BUILD_ROOT%{_datadir}/uboot/Mele_A1000/u-boot-sunxi-with-spl.bin
-install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.Mele_A1000G $RPM_BUILD_ROOT%{_datadir}/uboot/Mele_A1000G/u-boot-sunxi-with-spl.bin
-
-install -p -m 0644 builds/u-boot.bin.highbank $RPM_BUILD_ROOT%{_datadir}/uboot/highbank/u-boot.bin
 
 install -p -m 0644 builds/origen-spl.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot/origen/origen-spl.bin
 install -p -m 0644 builds/u-boot.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot/origen/u-boot.bin
@@ -317,14 +340,17 @@ install -p -m 0644 builds/smdkv310-spl.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/u
 install -p -m 0644 builds/u-boot.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot/smdkv310/u-boot.bin
 
 install -p -m 0644 builds/u-boot-dtb.bin.snow $RPM_BUILD_ROOT%{_datadir}/uboot/snow/u-boot-dtb.bin
+
+# STE
 install -p -m 0644 builds/u-boot.bin.snowball $RPM_BUILD_ROOT%{_datadir}/uboot/snowball/u-boot.bin
 
-install -p -m 0644 builds/u-boot.imx.riotboard $RPM_BUILD_ROOT%{_datadir}/uboot/riotboard/u-boot.imx
-install -p -m 0644 builds/u-boot.imx.udoo_quad $RPM_BUILD_ROOT%{_datadir}/uboot/udoo_quad/u-boot.imx
+# TI
+for board in beaglebone beagle panda uevm
+do
+install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.img
+install -p -m 0644 builds/MLO.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/MLO
+done
 
-install -p -m 0644 builds/u-boot.imx.wbdl $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_dl/u-boot.imx
-install -p -m 0644 builds/u-boot.imx.wbquad $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_quad/u-boot.imx
-install -p -m 0644 builds/u-boot.imx.wbsolo $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_solo/u-boot.imx
 %endif
 
 install -p -m 0755 tools/mkimage $RPM_BUILD_ROOT%{_bindir}
@@ -341,8 +367,6 @@ install -p -m 0755 tools/env/fw_printenv $RPM_BUILD_ROOT%{_bindir}
 install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
-%clean
-rm -rf $RPM_BUILD_ROOT
 
 %files
 %doc README doc/README.imximage doc/README.kwbimage doc/uImage.FIT
@@ -368,33 +392,45 @@ rm -rf $RPM_BUILD_ROOT
 
 %ifarch %{arm}
 %files -n uboot-images-armv7
-%{_datadir}/uboot/arndale/
+# AllWinner
 %{_datadir}/uboot/Bananapi/
-%{_datadir}/uboot/beagle/
-%{_datadir}/uboot/beaglebone/
 %{_datadir}/uboot/Cubieboard/
 %{_datadir}/uboot/Cubieboard2/
 %{_datadir}/uboot/Cubietruck/
-%{_datadir}/uboot/highbank/
-%{_datadir}/uboot/jetson-tk1/
 %{_datadir}/uboot/Mele_A1000/
 %{_datadir}/uboot/Mele_A1000G/
-%{_datadir}/uboot/origen/
-%{_datadir}/uboot/panda/
-%{_datadir}/uboot/paz00/
+# Calxeda
+%{_datadir}/uboot/highbank/
+# FreeScale
 %{_datadir}/uboot/riotboard/
-%{_datadir}/uboot/snow/
-%{_datadir}/uboot/snowball/
-%{_datadir}/uboot/smdkv310/
-%{_datadir}/uboot/trimslice/
 %{_datadir}/uboot/wandboard_dl/
 %{_datadir}/uboot/wandboard_quad/
 %{_datadir}/uboot/wandboard_solo/
 %{_datadir}/uboot/udoo_quad/
+# NVidia
+%{_datadir}/uboot/jetson-tk1/
+%{_datadir}/uboot/paz00/
+%{_datadir}/uboot/trimslice/
+# Samsung
+%{_datadir}/uboot/arndale/
+%{_datadir}/uboot/smdkv310/
+%{_datadir}/uboot/snow/
+# STE
+%{_datadir}/uboot/snowball/
+# TI
+%{_datadir}/uboot/beagle/
+%{_datadir}/uboot/beaglebone/
+%{_datadir}/uboot/origen/
+%{_datadir}/uboot/panda/
 %{_datadir}/uboot/uevm/
 %endif
 
 %changelog
+* Mon Sep 29 2014 Peter Robinson <pbrobinson@fedoraproject.org> 2014.10-0.4.rc2
+- Add generic distro support to RIoT board
+- Add patch to stabilise BananaPi network
+- Spec cleanups
+
 * Fri Sep 19 2014 Peter Robinson <pbrobinson@fedoraproject.org> 2014.10-0.3.rc2
 - Add Jetson K1, RIoT Board
 - Minor spec cleanups
