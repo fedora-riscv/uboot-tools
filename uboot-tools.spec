@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.10
-Release:        0.4%{?candidate:.%{candidate}}%{?dist}
+Release:        0.5%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -132,6 +132,41 @@ make mrproper
 make Mele_A1000_defconfig
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Mele_A1000
+make mrproper
+
+make Mini-X_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Mini-X
+make mrproper
+
+make Mini-X-1Gb_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Mini-X-1Gb
+make mrproper
+
+make A10-OLinuXino-Lime_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.A10-OLinuXino-Lime
+make mrproper
+
+make A10s-OLinuXino-M_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.A10s-OLinuXino-M
+make mrproper
+
+make A13-OLinuXino_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.A13-OLinuXino
+make mrproper
+
+make A13-OLinuXinoM_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.A13-OLinuXinoM
+make mrproper
+
+make A20-OLinuXino_MICRO_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.A20-OLinuXino_MICRO
 make mrproper
 
 # Calxeda
@@ -280,6 +315,13 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Cubieboard2/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Cubietruck/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Mele_A1000/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Mele_A1000G/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Mini-X/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Mini-X-1Gb/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/A10-OLinuXino-Lime/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/A10s-OLinuXino-M/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/A13-OLinuXino/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/A13-OLinuXinoM/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/A20-OLinuXino_MICRO/
 # Calxeda
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/highbank/
 # FreeScale
@@ -306,7 +348,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/panda/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/uevm/
 
 # AllWinner
-for board in Bananapi Cubieboard Cubieboard2 Cubietruck Mele_A1000 Mele_A1000G
+for board in Bananapi Cubieboard Cubieboard2 Cubietruck Mele_A1000 Mele_A1000G Mini-X Mini-X-1Gb A10-OLinuXino-Lime A10s-OLinuXino-M A13-OLinuXino A13-OLinuXinoM A20-OLinuXino_MICRO
 do
 install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-sunxi-with-spl.bin
 done
@@ -399,6 +441,13 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %{_datadir}/uboot/Cubietruck/
 %{_datadir}/uboot/Mele_A1000/
 %{_datadir}/uboot/Mele_A1000G/
+%{_datadir}/uboot/Mini-X/
+%{_datadir}/uboot/Mini-X-1Gb/
+%{_datadir}/uboot/A10-OLinuXino-Lime/
+%{_datadir}/uboot/A10s-OLinuXino-M/
+%{_datadir}/uboot/A13-OLinuXino/
+%{_datadir}/uboot/A13-OLinuXinoM/
+%{_datadir}/uboot/A20-OLinuXino_MICRO/
 # Calxeda
 %{_datadir}/uboot/highbank/
 # FreeScale
@@ -426,6 +475,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Fri Oct  3 2014 Peter Robinson <pbrobinson@fedoraproject.org> 2014.10-0.5.rc2
+- Enable some more AllWinner devices
+
 * Mon Sep 29 2014 Peter Robinson <pbrobinson@fedoraproject.org> 2014.10-0.4.rc2
 - Add generic distro support to RIoT board
 - Add patch to stabilise BananaPi network
