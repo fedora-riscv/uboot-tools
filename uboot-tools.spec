@@ -1,4 +1,4 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:           uboot-tools
 Version:        2014.10
@@ -12,10 +12,21 @@ Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{ca
 Source1:        uEnv.txt
 Patch1:         u-boot-fat.patch
 
-Patch10:        0001-wandboard-port-to-generic-distro-booting.patch
-Patch11:        riotboard-port-to-generic-distro-booting.patch
+# Debian proposed improvements to distro defaults
+# http://lists.denx.de/pipermail/u-boot/2014-October/190627.html
+Patch11: 0001-Allow-checking-in-multiple-partitions-for-scan_dev_f.patch
+Patch12: 0002-Allow-overriding-boot_partitions-default-value-by-se.patch
+Patch13: 0003-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
+Patch14: 0004-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
+Patch15: 0005-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
+Patch16: 0006-Add-support-for-loading-environment-from-uEnv.txt-in.patch
+Patch17: 0007-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
+# Fedora patches for distro defaults support
+Patch20: 0001-wandboard-port-to-generic-distro-booting.patch
+Patch21: riotboard-port-to-generic-distro-booting.patch
+# Bug fixes
 # http://lists.denx.de/pipermail/u-boot/2014-September/190052.html
-Patch12:        sun7i-bananapi-fixGmac.patch
+Patch30: sun7i-bananapi-fixGmac.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -79,9 +90,18 @@ u-boot bootloader binaries for armv7 boards
 %setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
 %patch1 -p1
 
-%patch10 -p1 -b .wand
-%patch11 -p1 -b .riot
-%patch12 -p1 -b .BPgmac
+%patch11 -p1
+%patch12 -p1
+%patch13 -p1
+%patch14 -p1
+%patch15 -p1
+%patch16 -p1
+%patch17 -p1
+
+%patch20 -p1 -b .wand
+%patch21 -p1 -b .riot
+
+%patch30 -p1 -b .BPgmac
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
@@ -475,6 +495,11 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Wed Oct  8 2014 Peter Robinson <pbrobinson@fedoraproject.org> 2014.10-0.6.rc3
+- Update to 2014.10 rc3
+- Add proposed distro patches from Debian
+- Add BBone with distro support
+
 * Fri Oct  3 2014 Peter Robinson <pbrobinson@fedoraproject.org> 2014.10-0.5.rc2
 - Enable some more AllWinner devices
 

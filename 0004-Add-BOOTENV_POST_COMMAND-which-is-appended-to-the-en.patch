@@ -1,0 +1,38 @@
+From 310ce4053e0d32eb8b8d0ab6490c2c8924951884 Mon Sep 17 00:00:00 2001
+From: Vagrant Cascadian <vagrant@debian.org>
+Date: Wed, 1 Oct 2014 14:04:01 -0700
+Subject: [PATCH 4/7] Add BOOTENV_POST_COMMAND, which is appended to the end of
+ bootcmd.
+
+---
+ include/config_distro_bootcmd.h | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
+index 515a2f9..2503431 100644
+--- a/include/config_distro_bootcmd.h
++++ b/include/config_distro_bootcmd.h
+@@ -160,6 +160,10 @@
+ #define BOOTENV_INIT_COMMAND
+ #endif
+ 
++#ifndef BOOTENV_POST_COMMAND
++#define BOOTENV_POST_COMMAND
++#endif
++
+ #define BOOTENV_DEV(devtypeu, devtypel, instance) \
+ 	BOOTENV_DEV_##devtypeu(devtypeu, devtypel, instance)
+ #define BOOTENV \
+@@ -217,6 +221,8 @@
+ 		BOOTENV_SET_USB_NEED_INIT BOOTENV_SET_SCSI_NEED_INIT      \
+ 		"for target in ${boot_targets}; do "                      \
+ 			"run bootcmd_${target}; "                         \
+-		"done\0"
++		"done;"                                                   \
++		BOOTENV_POST_COMMAND                                      \
++		"\0"
+ 
+ #endif  /* _CONFIG_CMD_DISTRO_BOOTCMD_H */
+-- 
+2.1.0
+

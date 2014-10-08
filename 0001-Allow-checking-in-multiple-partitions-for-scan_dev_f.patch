@@ -1,0 +1,44 @@
+From a28aee469dd0c3efb5407295d8d7d792327236e4 Mon Sep 17 00:00:00 2001
+From: Vagrant Cascadian <vagrant@debian.org>
+Date: Wed, 1 Oct 2014 13:20:53 -0700
+Subject: [PATCH 1/7] Allow checking in multiple partitions for
+ scan_dev_for_boot.
+
+---
+ include/config_distro_bootcmd.h | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
+index be616e8..5e5e5e3 100644
+--- a/include/config_distro_bootcmd.h
++++ b/include/config_distro_bootcmd.h
+@@ -163,7 +163,7 @@
+ 	"boot_prefixes=/ /boot/\0" \
+ 	"boot_scripts=boot.scr.uimg boot.scr\0" \
+ 	BOOTENV_BOOT_TARGETS \
+-	"bootpart=1\0" \
++	"boot_partitions=1\0" \
+ 	\
+ 	"boot_extlinux="                                                  \
+ 		"sysboot ${devtype} ${devnum}:${bootpart} any "           \
+@@ -194,10 +194,13 @@
+ 		"done\0"                                                  \
+ 	\
+ 	"scan_dev_for_boot="                                              \
+-		"echo Scanning ${devtype} ${devnum}...; "                 \
+-		"for prefix in ${boot_prefixes}; do "                     \
+-			"run scan_dev_for_extlinux; "                     \
+-			"run scan_dev_for_scripts; "                      \
++		"for partition in ${boot_partitions}; do "                \
++			"echo Scanning ${devtype} ${devnum}:${partition}...; " \
++			"setenv bootpart ${partition};"                   \
++			"for prefix in ${boot_prefixes}; do "             \
++				"run scan_dev_for_extlinux; "             \
++				"run scan_dev_for_scripts; "              \
++			"done;"                                           \
+ 		"done\0"                                                  \
+ 	\
+ 	BOOT_TARGET_DEVICES(BOOTENV_DEV)                                  \
+-- 
+2.1.0
+

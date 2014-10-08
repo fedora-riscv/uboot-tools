@@ -1,0 +1,37 @@
+From 63067bd8536deefd1017992954538721c92ab794 Mon Sep 17 00:00:00 2001
+From: Vagrant Cascadian <vagrant@debian.org>
+Date: Wed, 1 Oct 2014 12:55:58 -0700
+Subject: [PATCH 2/7] Allow overriding boot_partitions default value by setting
+ BOOTENV_BOOT_PARTITIONS before including config_distro_bootcmd.
+
+---
+ include/config_distro_bootcmd.h | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
+index 5e5e5e3..a93354a 100644
+--- a/include/config_distro_bootcmd.h
++++ b/include/config_distro_bootcmd.h
+@@ -152,6 +152,10 @@
+ #define BOOTENV_BOOT_TARGETS \
+ 	"boot_targets=" BOOT_TARGET_DEVICES(BOOTENV_DEV_NAME) "\0"
+ 
++#ifndef BOOTENV_BOOT_PARTITIONS
++#define BOOTENV_BOOT_PARTITIONS "1"
++#endif
++
+ #define BOOTENV_DEV(devtypeu, devtypel, instance) \
+ 	BOOTENV_DEV_##devtypeu(devtypeu, devtypel, instance)
+ #define BOOTENV \
+@@ -163,7 +167,7 @@
+ 	"boot_prefixes=/ /boot/\0" \
+ 	"boot_scripts=boot.scr.uimg boot.scr\0" \
+ 	BOOTENV_BOOT_TARGETS \
+-	"boot_partitions=1\0" \
++	"boot_partitions="BOOTENV_BOOT_PARTITIONS"\0" \
+ 	\
+ 	"boot_extlinux="                                                  \
+ 		"sysboot ${devtype} ${devnum}:${bootpart} any "           \
+-- 
+2.1.0
+
