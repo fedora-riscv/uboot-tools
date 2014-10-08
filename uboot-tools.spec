@@ -27,6 +27,7 @@ Patch21: riotboard-port-to-generic-distro-booting.patch
 # Bug fixes
 # http://lists.denx.de/pipermail/u-boot/2014-September/190052.html
 Patch30: sun7i-bananapi-fixGmac.patch
+Patch31: trimslice-fixbuild.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -102,6 +103,7 @@ u-boot bootloader binaries for armv7 boards
 %patch21 -p1 -b .riot
 
 %patch30 -p1 -b .BPgmac
+%patch31 -p1 -b .ts
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
