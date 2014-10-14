@@ -10,20 +10,21 @@ License:        GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:            http://www.denx.de/wiki/U-Boot
 Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:        uEnv.txt
-Patch1:         u-boot-fat.patch
 
-Patch10: 0001-Allow-checking-in-multiple-partitions-for-scan_dev_f.patch
-Patch11: 0002-Allow-overriding-boot_partitions-default-value-by-se.patch
-Patch12: 0003-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-Patch13: 0004-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
-Patch14: 0005-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
-Patch15: 0006-Add-support-for-loading-environment-from-uEnv.txt-in.patch
-Patch16: 0007-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
-Patch17: 0008-wandboard-port-to-generic-distro-booting.patch
-Patch18: 0009-sunxi-Fix-gmac-not-working-reliable-on-the-Bananapi.patch
-Patch19: 0010-compulab-eeprom-add-default-eeprom-bus.patch
-Patch20: 0011-port-the-riotboard-to-distro-generic-configs-patch-b.patch
-Patch21: 0012-port-utilite-to-distro-generic-boot-commands.patch
+Patch1: 0001-make-sure-that-the-filesystem-is-a-type-of-fat.patch
+Patch2: 0002-Allow-checking-in-multiple-partitions-for-scan_dev_f.patch
+Patch3: 0003-Allow-overriding-boot_partitions-default-value-by-se.patch
+Patch4: 0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
+Patch5: 0005-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
+Patch6: 0006-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
+Patch7: 0007-Add-support-for-loading-environment-from-uEnv.txt-in.patch
+Patch8: 0008-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
+Patch9: 0009-wandboard-port-to-generic-distro-booting.patch
+Patch10: 0010-sunxi-Fix-gmac-not-working-reliable-on-the-Bananapi.patch
+Patch11: 0011-compulab-eeprom-add-default-eeprom-bus.patch
+Patch12: 0012-port-the-riotboard-to-distro-generic-configs-patch-b.patch
+Patch13: 0013-port-utilite-to-distro-generic-boot-commands.patch
+Patch14: 0009-sunxi-Fix-gmac-not-working-reliable-on-the-Bananapi.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -85,19 +86,16 @@ u-boot bootloader binaries for armv7 boards
 
 %prep
 %setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
-%patch1 -p1
 
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
-%patch14 -p1
-%patch15 -p1
-%patch16 -p1
-%patch17 -p1
-%patch18 -p1
-%patch19 -p1
-%patch20 -p1
-%patch21 -p1
+git init 
+git config user.email "noone@example.com" 
+git config user.name "no one" 
+git add . 
+git commit -a -q -m "%{version} baseline" 
+git am %{patches} </dev/null 
+git config --unset user.email 
+git config --unset user.name 
+
 
 
 mkdir builds
@@ -490,6 +488,7 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 * Fri Sep 19 2014 Peter Robinson <pbrobinson@fedoraproject.org> 2014.10-0.3.rc2
 - Add Jetson K1, RIoT Board
 - Minor spec cleanups
+- use git to apply patches
 
 * Thu Sep 18 2014 Dennis Gilmore <dennis@ausil.us> - 2014.10-0.2.rc2
 - Add Cubieboard, Cubieboard2, Banana Pi, Mele_A1000 and Mele_A1000G images
