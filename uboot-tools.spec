@@ -24,7 +24,6 @@ Patch10: 0010-sunxi-Fix-gmac-not-working-reliable-on-the-Bananapi.patch
 Patch11: 0011-compulab-eeprom-add-default-eeprom-bus.patch
 Patch12: 0012-port-the-riotboard-to-distro-generic-configs-patch-b.patch
 Patch13: 0013-port-utilite-to-distro-generic-boot-commands.patch
-Patch14: 0009-sunxi-Fix-gmac-not-working-reliable-on-the-Bananapi.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -95,8 +94,6 @@ git commit -a -q -m "%{version} baseline"
 git am %{patches} </dev/null 
 git config --unset user.email 
 git config --unset user.name 
-
-
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
