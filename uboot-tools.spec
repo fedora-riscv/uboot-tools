@@ -27,6 +27,7 @@ Patch13: 0013-port-utilite-to-distro-generic-boot-commands.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
+BuildRequires:  git
 Requires:       dtc
 
 %description
