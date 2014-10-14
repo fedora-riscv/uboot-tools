@@ -263,6 +263,7 @@ make smdkv310_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p spl/smdkv310-spl.bin builds/smdkv310-spl.bin.smdkv310
 cp -p u-boot.bin builds/u-boot.bin.smdkv310
+cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.smdkv310
 make mrproper
 
 make snow_config
