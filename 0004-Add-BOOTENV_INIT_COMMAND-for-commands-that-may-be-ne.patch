@@ -1,0 +1,39 @@
+From 77469eb5a83041a18d9c81ac659f420267be4e02 Mon Sep 17 00:00:00 2001
+From: Vagrant Cascadian <vagrant@debian.org>
+Date: Tue, 30 Sep 2014 20:02:26 -0700
+Subject: [PATCH 04/13] Add BOOTENV_INIT_COMMAND for commands that may be
+ needed to run before bootcmd, such as setting the fdt file variables for
+ platfroms that detect on boot.
+
+---
+ include/config_distro_bootcmd.h | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
+index a93354a..515a2f9 100644
+--- a/include/config_distro_bootcmd.h
++++ b/include/config_distro_bootcmd.h
+@@ -156,6 +156,10 @@
+ #define BOOTENV_BOOT_PARTITIONS "1"
+ #endif
+ 
++#ifndef BOOTENV_INIT_COMMAND
++#define BOOTENV_INIT_COMMAND
++#endif
++
+ #define BOOTENV_DEV(devtypeu, devtypel, instance) \
+ 	BOOTENV_DEV_##devtypeu(devtypeu, devtypel, instance)
+ #define BOOTENV \
+@@ -209,7 +213,8 @@
+ 	\
+ 	BOOT_TARGET_DEVICES(BOOTENV_DEV)                                  \
+ 	\
+-	"bootcmd=" BOOTENV_SET_USB_NEED_INIT BOOTENV_SET_SCSI_NEED_INIT   \
++	"bootcmd=" BOOTENV_INIT_COMMAND                                   \
++		BOOTENV_SET_USB_NEED_INIT BOOTENV_SET_SCSI_NEED_INIT      \
+ 		"for target in ${boot_targets}; do "                      \
+ 			"run bootcmd_${target}; "                         \
+ 		"done\0"
+-- 
+2.1.0
+
