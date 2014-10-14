@@ -1,5 +1,17 @@
---- u-boot-2014.10-rc2/include/configs/embestmx6boards.h.orig	2014-09-29 12:37:12.391839941 +0100
-+++ u-boot-2014.10-rc2/include/configs/embestmx6boards.h	2014-09-29 14:30:35.763497826 +0100
+From a0c28ea3f2518734be16022ad25920dcd66e102c Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Mon, 13 Oct 2014 23:17:32 -0500
+Subject: [PATCH 11/12] port the riotboard to distro generic configs, patch by
+ pbrobinson
+
+---
+ include/configs/embestmx6boards.h | 39 ++++++++++++++++++++++++---------------
+ 1 file changed, 24 insertions(+), 15 deletions(-)
+
+diff --git a/include/configs/embestmx6boards.h b/include/configs/embestmx6boards.h
+index 185edbe..e75ee89 100644
+--- a/include/configs/embestmx6boards.h
++++ b/include/configs/embestmx6boards.h
 @@ -22,7 +22,7 @@
  #define CONFIG_SYS_GENERIC_BOARD
  
@@ -85,3 +97,6 @@
  
 +
  #endif                         /* __RIOTBOARD_CONFIG_H */
+-- 
+2.1.0
+

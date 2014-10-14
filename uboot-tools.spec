@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.10
-Release:        0.5%{?candidate:.%{candidate}}%{?dist}
+Release:        0.7%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -12,22 +12,18 @@ Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{ca
 Source1:        uEnv.txt
 Patch1:         u-boot-fat.patch
 
-# Debian proposed improvements to distro defaults
-# http://lists.denx.de/pipermail/u-boot/2014-October/190627.html
-Patch11: 0001-Allow-checking-in-multiple-partitions-for-scan_dev_f.patch
-Patch12: 0002-Allow-overriding-boot_partitions-default-value-by-se.patch
-Patch13: 0003-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-Patch14: 0004-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
-Patch15: 0005-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
-Patch16: 0006-Add-support-for-loading-environment-from-uEnv.txt-in.patch
-Patch17: 0007-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
-# Fedora patches for distro defaults support
-Patch20: 0001-wandboard-port-to-generic-distro-booting.patch
-Patch21: riotboard-port-to-generic-distro-booting.patch
-# Bug fixes
-# http://lists.denx.de/pipermail/u-boot/2014-September/190052.html
-Patch30: sun7i-bananapi-fixGmac.patch
-Patch31: trimslice-fixbuild.patch
+Patch10: 0001-Allow-checking-in-multiple-partitions-for-scan_dev_f.patch
+Patch11: 0002-Allow-overriding-boot_partitions-default-value-by-se.patch
+Patch12: 0003-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
+Patch13: 0004-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
+Patch14: 0005-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
+Patch15: 0006-Add-support-for-loading-environment-from-uEnv.txt-in.patch
+Patch16: 0007-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
+Patch17: 0008-wandboard-port-to-generic-distro-booting.patch
+Patch18: 0009-sunxi-Fix-gmac-not-working-reliable-on-the-Bananapi.patch
+Patch19: 0010-compulab-eeprom-add-default-eeprom-bus.patch
+Patch20: 0011-port-the-riotboard-to-distro-generic-configs-patch-b.patch
+Patch21: 0012-port-utilite-to-distro-generic-boot-commands.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -98,12 +94,11 @@ u-boot bootloader binaries for armv7 boards
 %patch15 -p1
 %patch16 -p1
 %patch17 -p1
+%patch18 -p1
+%patch19 -p1
+%patch20 -p1
+%patch21 -p1
 
-%patch20 -p1 -b .wand
-%patch21 -p1 -b .riot
-
-%patch30 -p1 -b .BPgmac
-%patch31 -p1 -b .ts
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
@@ -198,6 +193,12 @@ cp -p u-boot.bin builds/u-boot.bin.highbank
 make mrproper
 
 # Freescale i.MX6
+make cm_fx6_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot.img builds/u-boot.img.cm_fx6
+cp -p SPL builds/SPL.cm_fx6
+make mrproper
+
 make riotboard_defconfig
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p u-boot.imx builds/u-boot.imx.riotboard
@@ -327,51 +328,15 @@ install -p -m 0644 builds/u-boot.bin.vexpress_aemv8a $RPM_BUILD_ROOT%{_datadir}/
 
 %ifarch %{arm}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
-# ARM Vexpress
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/vexpress/
-
-# AllWinner
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Bananapi/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Cubieboard/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Cubieboard2/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Cubietruck/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Mele_A1000/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Mele_A1000G/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Mini-X/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/Mini-X-1Gb/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/A10-OLinuXino-Lime/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/A10s-OLinuXino-M/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/A13-OLinuXino/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/A13-OLinuXinoM/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/A20-OLinuXino_MICRO/
-# Calxeda
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/highbank/
-# FreeScale
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/riotboard/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/udoo_quad/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_dl/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_quad/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/wandboard_solo/
-# NVidia
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/jetson-tk1/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/paz00/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/trimslice/
-# Samsung
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/origen/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/smdkv310/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/snow/
-# STE
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/snowball/
-# TI
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beagle/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/beaglebone/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/panda/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/uevm/
+for board in A10-OLinuXino-Lime A10s-OLinuXino-M A13-OLinuXino A13-OLinuXinoM A20-OLinuXino_MICRO arndale Bananapi beagle beaglebone cm_fx6 Cubieboard Cubieboard2 Cubietruck highbank jetson-tk1 Mele_A1000 Mele_A1000G Mini-X Mini-X-1Gb origen panda paz00 riotboard smdkv310 snow snowball trimslice udoo_quad uevm vexpress wandboard_dl wandboard_quad wandboard_solo
+do
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+done
 
 # AllWinner
 for board in Bananapi Cubieboard Cubieboard2 Cubietruck Mele_A1000 Mele_A1000G Mini-X Mini-X-1Gb A10-OLinuXino-Lime A10s-OLinuXino-M A13-OLinuXino A13-OLinuXinoM A20-OLinuXino_MICRO
 do
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-sunxi-with-spl.bin
 done
 
@@ -379,14 +344,22 @@ done
 install -p -m 0644 builds/u-boot.bin.highbank $RPM_BUILD_ROOT%{_datadir}/uboot/highbank/u-boot.bin
 
 # FreeScale
+for board in cm_fx6
+do
+install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.img
+install -p -m 0644 builds/SPL.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/SPL
+done
+
 for board in riotboard udoo_quad wandboard_dl wandboard_quad wandboard_solo
 do
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 install -p -m 0644 builds/u-boot.imx.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.imx
 done
 
 # NVidia
 for board in paz00 trimslice jetson-tk1
 do
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 install -p -m 0644 builds/u-boot-nodtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-nodtb-tegra.bin
 install -p -m 0644 builds/u-boot-dtb-tegra.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-dtb-tegra.bin
 install -p -m 0644 builds/u-boot.map.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.map
@@ -394,14 +367,12 @@ install -p -m 0644 builds/u-boot.dtb.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/u
 done
 
 # Samsung
-install -p -m 0644 builds/arndale-spl.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/arndale-spl.bin
-install -p -m 0644 builds/u-boot-dtb.bin.arndale $RPM_BUILD_ROOT%{_datadir}/uboot/arndale/u-boot-dtb.bin
-
-install -p -m 0644 builds/origen-spl.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot/origen/origen-spl.bin
-install -p -m 0644 builds/u-boot.bin.origen $RPM_BUILD_ROOT%{_datadir}/uboot/origen/u-boot.bin
-
-install -p -m 0644 builds/smdkv310-spl.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot/smdkv310/smdkv310-spl.bin
-install -p -m 0644 builds/u-boot.bin.smdkv310 $RPM_BUILD_ROOT%{_datadir}/uboot/smdkv310/u-boot.bin
+for board in arndale origen smdkv310
+do
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+install -p -m 0644 builds/$(echo $board)-spl.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/$(echo $board)-spl.bin
+install -p -m 0644 builds/u-boot-dtb.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-dtb.bin
+done
 
 install -p -m 0644 builds/u-boot-dtb.bin.snow $RPM_BUILD_ROOT%{_datadir}/uboot/snow/u-boot-dtb.bin
 
@@ -411,6 +382,7 @@ install -p -m 0644 builds/u-boot.bin.snowball $RPM_BUILD_ROOT%{_datadir}/uboot/s
 # TI
 for board in beaglebone beagle panda uevm
 do
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.img
 install -p -m 0644 builds/MLO.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/MLO
 done
@@ -473,6 +445,7 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 # Calxeda
 %{_datadir}/uboot/highbank/
 # FreeScale
+%{_datadir}/uboot/cm_fx6/
 %{_datadir}/uboot/riotboard/
 %{_datadir}/uboot/wandboard_dl/
 %{_datadir}/uboot/wandboard_quad/
@@ -497,6 +470,10 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Oct 14 2014 Dennis Gilmore <dennis@ausil.us> - 2014.10-0.7.rc3
+- refacter making directories for images
+- make cm_fx6 image for utilite
+
 * Wed Oct  8 2014 Peter Robinson <pbrobinson@fedoraproject.org> 2014.10-0.6.rc3
 - Update to 2014.10 rc3
 - Add proposed distro patches from Debian

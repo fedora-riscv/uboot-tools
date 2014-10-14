@@ -1,7 +1,7 @@
-From bbf39abc70115a2be94738b849920be095ae481c Mon Sep 17 00:00:00 2001
+From 69b8812eec97af45dbd54699988f30044e40869e Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Wed, 10 Sep 2014 10:57:16 -0500
-Subject: [PATCH] wandboard: port to generic distro booting
+Subject: [PATCH 08/12] wandboard: port to generic distro booting
 
 set the variables and functions needed for generic distro booting.
 ---

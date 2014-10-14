@@ -1,8 +1,8 @@
-From 63067bd8536deefd1017992954538721c92ab794 Mon Sep 17 00:00:00 2001
+From 2e18c03d8988e2873ff771675591905fdbdca6f9 Mon Sep 17 00:00:00 2001
 From: Vagrant Cascadian <vagrant@debian.org>
 Date: Wed, 1 Oct 2014 12:55:58 -0700
-Subject: [PATCH 2/7] Allow overriding boot_partitions default value by setting
- BOOTENV_BOOT_PARTITIONS before including config_distro_bootcmd.
+Subject: [PATCH 02/12] Allow overriding boot_partitions default value by
+ setting BOOTENV_BOOT_PARTITIONS before including config_distro_bootcmd.
 
 ---
  include/config_distro_bootcmd.h | 6 +++++-

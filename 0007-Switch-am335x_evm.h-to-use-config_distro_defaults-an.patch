@@ -1,7 +1,7 @@
-From 7ae64b5379a6fd1f3bf46df308c4b753c7357a6c Mon Sep 17 00:00:00 2001
+From 4326956e87cbfc913b19dd735b534610cd2b38e6 Mon Sep 17 00:00:00 2001
 From: Vagrant Cascadian <vagrant@debian.org>
 Date: Wed, 1 Oct 2014 13:28:18 -0700
-Subject: [PATCH 7/7] Switch am335x_evm.h to use config_distro_defaults and
+Subject: [PATCH 07/12] Switch am335x_evm.h to use config_distro_defaults and
  config_distro_bootcmd. Add scriptaddr to DEFAULT_LINUX_BOOT_ENV, as
  scriptaddr is used for boot scripts in config_distro_defaults.
 
