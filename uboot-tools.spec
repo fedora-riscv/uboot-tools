@@ -263,7 +263,6 @@ make smdkv310_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p spl/smdkv310-spl.bin builds/smdkv310-spl.bin.smdkv310
 cp -p u-boot.bin builds/u-boot.bin.smdkv310
-cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.smdkv310
 make mrproper
 
 make snow_config
@@ -365,7 +364,15 @@ install -p -m 0644 builds/u-boot.dtb.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/u
 done
 
 # Samsung
-for board in arndale origen smdkv310
+#without dtb
+for board in smdkv310
+do
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+install -p -m 0644 builds/$(echo $board)-spl.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/$(echo $board)-spl.bin
+install -p -m 0644 builds/u-boot.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.bin
+done
+#with dtb
+for board in arndale origen
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 install -p -m 0644 builds/$(echo $board)-spl.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/$(echo $board)-spl.bin
