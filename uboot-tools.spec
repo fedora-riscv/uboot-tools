@@ -256,6 +256,7 @@ make origen_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p spl/origen-spl.bin builds/origen-spl.bin.origen
 cp -p u-boot.bin builds/u-boot.bin.origen
+cp -p u-boot-dtb.bin builds/u-boot-dtb.bin.origen
 make mrproper
 
 make smdkv310_config
