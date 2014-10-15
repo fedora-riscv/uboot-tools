@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate
 
 Name:           uboot-tools
 Version:        2014.10
-Release:        0.7%{?candidate:.%{candidate}}%{?dist}
+Release:        1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -20,10 +20,8 @@ Patch6: 0006-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
 Patch7: 0007-Add-support-for-loading-environment-from-uEnv.txt-in.patch
 Patch8: 0008-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
 Patch9: 0009-wandboard-port-to-generic-distro-booting.patch
-Patch10: 0010-sunxi-Fix-gmac-not-working-reliable-on-the-Bananapi.patch
-Patch11: 0011-compulab-eeprom-add-default-eeprom-bus.patch
-Patch12: 0012-port-the-riotboard-to-distro-generic-configs-patch-b.patch
-Patch13: 0013-port-utilite-to-distro-generic-boot-commands.patch
+Patch12: 0010-port-the-riotboard-to-distro-generic-configs-patch-b.patch
+Patch13: 0011-port-utilite-to-distro-generic-boot-commands.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -475,6 +473,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Wed Oct 15 2014 Dennis Gilmore <dennis@ausil.us> - 2014.10-1
+- update to 2014.10 final release
+
 * Tue Oct 14 2014 Dennis Gilmore <dennis@ausil.us> - 2014.10-0.7.rc3
 - refacter making directories for images
 - make cm_fx6 image for utilite

@@ -1,14 +1,14 @@
-From 6ade0ead09904ad524964bf3735b64a2c24736f8 Mon Sep 17 00:00:00 2001
+From b51bfda152ff4f738a96a0864cac2b4b039500e8 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 13 Oct 2014 23:58:13 -0500
-Subject: [PATCH 13/13] port utilite to distro generic boot commands
+Subject: [PATCH 11/11] port utilite to distro generic boot commands
 
 ---
  include/configs/cm_fx6.h | 112 +++++++++++------------------------------------
  1 file changed, 26 insertions(+), 86 deletions(-)
 
 diff --git a/include/configs/cm_fx6.h b/include/configs/cm_fx6.h
-index 10d02b4..1f0179e 100644
+index 7cf241e..3c7615f 100644
 --- a/include/configs/cm_fx6.h
 +++ b/include/configs/cm_fx6.h
 @@ -12,7 +12,6 @@
