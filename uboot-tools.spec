@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.10
-Release:        1%{?candidate:.%{candidate}}%{?dist}
+Release:        2%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -22,6 +22,7 @@ Patch8: 0008-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
 Patch9: 0009-wandboard-port-to-generic-distro-booting.patch
 Patch12: 0010-port-the-riotboard-to-distro-generic-configs-patch-b.patch
 Patch13: 0011-port-utilite-to-distro-generic-boot-commands.patch
+Patch14: 0012-tegra-fix-jetson-pcie.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -473,6 +474,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Thu Oct 16 2014 Peter Robinson <pbrobinson@fedoraproject.org> 2014.10-2
+- Add upstream patch to fix Tegra Jetson K1 pci-e (for network)
+
 * Wed Oct 15 2014 Dennis Gilmore <dennis@ausil.us> - 2014.10-1
 - update to 2014.10 final release
 
