@@ -20,7 +20,7 @@ index 476430d..3452b61 100644
  
 +#include <config_distro_defaults.h>
 +
-+#define BOOTENV_BOOT_PARTITIONS "2"
++#define BOOTENV_BOOT_PARTITIONS "1 2"
 +
 +#define BOOTENV_INIT_COMMAND "run findfdt ;"
 +#ifdef CONFIG_NAND

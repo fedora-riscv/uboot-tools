@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.10
-Release:        2%{?candidate:.%{candidate}}%{?dist}
+Release:        3%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -474,6 +474,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Fri Oct 24 2014 Dennis Gilmore <dennis@ausil.us> - 2014.10-3
+- scan both the first and second partitions for boot configs on beaglebone
+
 * Thu Oct 16 2014 Peter Robinson <pbrobinson@fedoraproject.org> 2014.10-2
 - Add upstream patch to fix Tegra Jetson K1 pci-e (for network)
 
