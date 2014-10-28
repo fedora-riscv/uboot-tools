@@ -1,7 +1,7 @@
 From e35f16a3b1d651e2ce0b07ec67572f55fafff092 Mon Sep 17 00:00:00 2001
 From: Vagrant Cascadian <vagrant@debian.org>
 Date: Wed, 1 Oct 2014 10:29:36 -0700
-Subject: [PATCH 07/11] Add support for loading environment from uEnv.txt in
+Subject: [PATCH 07/13] Add support for loading environment from uEnv.txt in
  config_distro_bootcmd.
 
 ---

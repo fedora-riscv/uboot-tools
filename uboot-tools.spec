@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.10
-Release:        3%{?candidate:.%{candidate}}%{?dist}
+Release:        4%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -23,6 +23,8 @@ Patch9: 0009-wandboard-port-to-generic-distro-booting.patch
 Patch12: 0010-port-the-riotboard-to-distro-generic-configs-patch-b.patch
 Patch13: 0011-port-utilite-to-distro-generic-boot-commands.patch
 Patch14: 0012-tegra-fix-jetson-pcie.patch
+Patch15: 0012-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
+Patch16: 0013-add-back-adding-console-to-the-bootargs-if-not-prese.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -94,6 +96,8 @@ git commit -a -q -m "%{version} baseline"
 git am %{patches} </dev/null 
 git config --unset user.email 
 git config --unset user.name 
+
+rm -rf .git
 
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
@@ -474,6 +478,10 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Mon Oct 27 2014 Dennis Gilmore <dennis@ausil.us> - 2014.10-4
+- port panda board to upstreamed geneic boot commands
+- append the console line automatically again
+
 * Fri Oct 24 2014 Dennis Gilmore <dennis@ausil.us> - 2014.10-3
 - scan both the first and second partitions for boot configs on beaglebone
 

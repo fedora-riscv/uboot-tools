@@ -1,7 +1,7 @@
-From b51bfda152ff4f738a96a0864cac2b4b039500e8 Mon Sep 17 00:00:00 2001
+From fb3ce7db4e100e9a051aaa19b96d33d67f02d1f2 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 13 Oct 2014 23:58:13 -0500
-Subject: [PATCH 11/11] port utilite to distro generic boot commands
+Subject: [PATCH 11/13] port utilite to distro generic boot commands
 
 ---
  include/configs/cm_fx6.h | 112 +++++++++++------------------------------------
