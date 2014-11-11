@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2014.10
-Release:        4%{?candidate:.%{candidate}}%{?dist}
+Release:        5%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -280,7 +280,7 @@ cp -p u-boot.bin builds/u-boot.bin.snowball
 make mrproper
 
 # TI devices
-make am335x_evm_config
+make am335x_boneblack_config
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p MLO builds/MLO.beaglebone
 cp -p u-boot.img builds/u-boot.img.beaglebone
@@ -478,6 +478,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Nov 11 2014 Dennis Gilmore <dennis@ausil.us> - 2014.10-5
+- switch the target used for beaglebone rhbz#1161619
+
 * Mon Oct 27 2014 Dennis Gilmore <dennis@ausil.us> - 2014.10-4
 - port panda board to upstreamed geneic boot commands
 - append the console line automatically again
