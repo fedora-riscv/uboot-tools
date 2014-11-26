@@ -1,15 +1,14 @@
-#global candidate
+%global candidate rc2
 
 Name:           uboot-tools
-Version:        2014.10
-Release:        5%{?candidate:.%{candidate}}%{?dist}
+Version:        2015.01
+Release:        0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
 License:        GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:            http://www.denx.de/wiki/U-Boot
 Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
-Source1:        uEnv.txt
 
 Patch1: 0001-make-sure-that-the-filesystem-is-a-type-of-fat.patch
 Patch2: 0002-Allow-checking-in-multiple-partitions-for-scan_dev_f.patch
@@ -19,12 +18,11 @@ Patch5: 0005-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
 Patch6: 0006-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
 Patch7: 0007-Add-support-for-loading-environment-from-uEnv.txt-in.patch
 Patch8: 0008-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
-Patch9: 0009-wandboard-port-to-generic-distro-booting.patch
-Patch12: 0010-port-the-riotboard-to-distro-generic-configs-patch-b.patch
-Patch13: 0011-port-utilite-to-distro-generic-boot-commands.patch
-Patch14: 0012-tegra-fix-jetson-pcie.patch
-Patch15: 0012-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
-Patch16: 0013-add-back-adding-console-to-the-bootargs-if-not-prese.patch
+Patch9: 0009-port-the-riotboard-to-distro-generic-configs-patch-b.patch
+Patch10: 0010-port-utilite-to-distro-generic-boot-commands.patch
+Patch11: 0011-add-back-adding-console-to-the-bootargs-if-not-prese.patch
+Patch12: 0012-wandboard-port-to-generic-distro-booting.patch
+Patch13: 0013-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -478,6 +476,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Wed Nov 26 2014 Dennis Gilmore <dennis@ausil.us> - 2015.01-0.1.rc2
+- update to 2015.01 rc2
+
 * Tue Nov 11 2014 Dennis Gilmore <dennis@ausil.us> - 2014.10-5
 - switch the target used for beaglebone rhbz#1161619
 
