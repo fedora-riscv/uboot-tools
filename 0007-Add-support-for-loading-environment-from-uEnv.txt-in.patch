@@ -1,0 +1,59 @@
+From c33de75d88ff0e7e7da9e28576b8457ea125da42 Mon Sep 17 00:00:00 2001
+From: Vagrant Cascadian <vagrant@debian.org>
+Date: Wed, 1 Oct 2014 10:29:36 -0700
+Subject: [PATCH 07/13] Add support for loading environment from uEnv.txt in
+ config_distro_bootcmd.
+
+---
+ include/config_distro_bootcmd.h | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
+index 2503431..aaa010e 100644
+--- a/include/config_distro_bootcmd.h
++++ b/include/config_distro_bootcmd.h
+@@ -174,6 +174,7 @@
+ 	BOOTENV_SHARED_IDE \
+ 	"boot_prefixes=/ /boot/\0" \
+ 	"boot_scripts=boot.scr.uimg boot.scr\0" \
++	"boot_uenv_files=uEnv.txt\0" \
+ 	BOOTENV_BOOT_TARGETS \
+ 	"boot_partitions="BOOTENV_BOOT_PARTITIONS"\0" \
+ 	\
+@@ -205,6 +206,25 @@
+ 			"fi; "                                            \
+ 		"done\0"                                                  \
+ 	\
++	"import_uenv_file="                                               \
++		"load ${devtype} ${devnum}:${bootpart} "                  \
++			"${scriptaddr} ${prefix}${uenv_file}; "           \
++		"env import -t -r ${scriptaddr} ${filesize}\0; "          \
++		"if test -n $uenvcmd; then "                              \
++			"echo Running uenvcmd ...;"                       \
++			"run uenvcmd;"                                    \
++		"fi;\0"                                                   \
++	\
++	"scan_dev_for_uenv_files="                                        \
++		"for uenv_file in ${boot_uenv_files}; do "                \
++			"if test -e ${devtype} ${devnum}:${bootpart} "    \
++					"${prefix}${uenv_file}; then "    \
++				"echo Found U-boot env file"              \
++					"${prefix}${uenv_file}; "         \
++				"run import_uenv_file; "                  \
++			"fi; "                                            \
++		"done\0"                                                  \
++	\
+ 	"scan_dev_for_boot="                                              \
+ 		"for partition in ${boot_partitions}; do "                \
+ 			"echo Scanning ${devtype} ${devnum}:${partition}...; " \
+@@ -212,6 +232,7 @@
+ 			"for prefix in ${boot_prefixes}; do "             \
+ 				"run scan_dev_for_extlinux; "             \
+ 				"run scan_dev_for_scripts; "              \
++				"run scan_dev_for_uenv_files; "           \
+ 			"done;"                                           \
+ 		"done\0"                                                  \
+ 	\
+-- 
+2.1.0
+

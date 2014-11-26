@@ -1,0 +1,57 @@
+From 6376d21b8a647613789d5e5eac42d84d524c3c3d Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Mon, 27 Oct 2014 21:38:32 -0500
+Subject: [PATCH 11/13] add back adding console= to the bootargs if not
+ present.
+
+better soloution is needed
+
+not upstreamable
+---
+ common/cmd_pxe.c | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/common/cmd_pxe.c b/common/cmd_pxe.c
+index 7e32c95..4f3c15d 100644
+--- a/common/cmd_pxe.c
++++ b/common/cmd_pxe.c
+@@ -673,18 +673,34 @@ static int label_boot(cmd_tbl_t *cmdtp, struct pxe_label *label)
+ 	if ((label->ipappend & 0x3) || label->append) {
+ 		char bootargs[CONFIG_SYS_CBSIZE] = "";
+ 		char finalbootargs[CONFIG_SYS_CBSIZE];
++		char console[30] = "";
++		/* check for a console line in the boot args passed in from the
++		 * config file. If there is no console line and the enviornment
++		 * has a console variable add it to the bootargs
++		 */
++		if ( !strstr(label->append, "console=") ) {
++		      printf("no console= \n");
++		        if (getenv("console")) {
++		                sprintf(console, " console=%s",
++		                        getenv("console"));
++		        }
++		}
+ 
+ 		if (strlen(label->append ?: "") +
+-		    strlen(ip_str) + strlen(mac_str) + 1 > sizeof(bootargs)) {
+-			printf("bootarg overflow %zd+%zd+%zd+1 > %zd\n",
++		    strlen(ip_str) + strlen(mac_str) + strlen(console) +
++		    1 > sizeof(bootargs)) {
++			printf("bootarg overflow %zd+%zd+%zd+%zd+1 > %zd\n",
+ 			       strlen(label->append ?: ""),
+ 			       strlen(ip_str), strlen(mac_str),
++			       strlen(console),
+ 			       sizeof(bootargs));
+ 			return 1;
+ 		}
+ 
+ 		if (label->append)
+ 			strcpy(bootargs, label->append);
++		if (strlen(console) > 0)
++			strcat(bootargs, console);
+ 		strcat(bootargs, ip_str);
+ 		strcat(bootargs, mac_str);
+ 
+-- 
+2.1.0
+
