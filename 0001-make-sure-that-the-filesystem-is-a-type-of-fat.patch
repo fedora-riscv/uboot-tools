@@ -1,7 +1,7 @@
 From 28767d1753be5582e9e16fd5e253f7b9c8114221 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Tue, 14 Oct 2014 00:38:28 -0500
-Subject: [PATCH 01/13] make sure that the filesystem is a type of fat
+Subject: [PATCH 01/14] make sure that the filesystem is a type of fat
 
 parted marks the partition table as being fat32 though we may pyt a fat16
 filesystem on it.

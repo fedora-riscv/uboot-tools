@@ -1,7 +1,7 @@
 From b3b47482c9ebf2b9dd5a37f66b6a391c83d05d16 Mon Sep 17 00:00:00 2001
 From: Vagrant Cascadian <vagrant@debian.org>
 Date: Wed, 1 Oct 2014 14:04:01 -0700
-Subject: [PATCH 05/13] Add BOOTENV_POST_COMMAND, which is appended to the end
+Subject: [PATCH 05/14] Add BOOTENV_POST_COMMAND, which is appended to the end
  of bootcmd.
 
 ---

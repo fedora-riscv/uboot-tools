@@ -1,7 +1,7 @@
 From 276eaf9e665a1694eb59a0cd497748d0ba5e0213 Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 13 Oct 2014 23:17:32 -0500
-Subject: [PATCH 09/13] port the riotboard to distro generic configs, patch by
+Subject: [PATCH 09/14] port the riotboard to distro generic configs, patch by
  pbrobinson
 
 ---

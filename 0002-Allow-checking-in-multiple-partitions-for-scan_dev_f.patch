@@ -1,7 +1,7 @@
 From 65fd2f0d6bcec9fa83df22ba8f468cc166985256 Mon Sep 17 00:00:00 2001
 From: Vagrant Cascadian <vagrant@debian.org>
 Date: Wed, 1 Oct 2014 13:20:53 -0700
-Subject: [PATCH 02/13] Allow checking in multiple partitions for
+Subject: [PATCH 02/14] Allow checking in multiple partitions for
  scan_dev_for_boot.
 
 ---

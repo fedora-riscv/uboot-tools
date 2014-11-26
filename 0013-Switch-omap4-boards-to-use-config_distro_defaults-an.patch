@@ -1,7 +1,7 @@
 From aa26cb59a0bf02e45b81efefae404c7578261abd Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Tue, 25 Nov 2014 23:09:49 -0600
-Subject: [PATCH 13/13] Switch omap4 boards to use config_distro_defaults and 
+Subject: [PATCH 13/14] Switch omap4 boards to use config_distro_defaults and 
  config_distro_bootcmd.
 
 Add pxefile_addr_r to DEFAULT_LINUX_BOOT_ENV, as pxefile_addr_r  is used

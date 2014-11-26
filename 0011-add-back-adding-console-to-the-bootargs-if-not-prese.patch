@@ -1,7 +1,7 @@
 From 6376d21b8a647613789d5e5eac42d84d524c3c3d Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Mon, 27 Oct 2014 21:38:32 -0500
-Subject: [PATCH 11/13] add back adding console= to the bootargs if not
+Subject: [PATCH 11/14] add back adding console= to the bootargs if not
  present.
 
 better soloution is needed
