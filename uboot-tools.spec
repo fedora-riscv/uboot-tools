@@ -23,7 +23,7 @@ Patch10: 0010-port-utilite-to-distro-generic-boot-commands.patch
 Patch11: 0011-add-back-adding-console-to-the-bootargs-if-not-prese.patch
 Patch12: 0012-wandboard-port-to-generic-distro-booting.patch
 Patch13: 0013-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
-Patch14: 0014-do-no-ue-msoft-float-on-arm.patch
+Patch14: 0014-fs-ext4-ext4fs.c-fs-fs.c-fs-fat-fat_write.c-Adjust-6.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
