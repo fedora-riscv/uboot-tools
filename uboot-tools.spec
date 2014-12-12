@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:           uboot-tools
 Version:        2015.01
-Release:        0.1%{?candidate:.%{candidate}}%{?dist}
+Release:        0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -23,7 +23,6 @@ Patch10: 0010-port-utilite-to-distro-generic-boot-commands.patch
 Patch11: 0011-add-back-adding-console-to-the-bootargs-if-not-prese.patch
 Patch12: 0012-wandboard-port-to-generic-distro-booting.patch
 Patch13: 0013-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
-Patch14: 0014-fs-ext4-ext4fs.c-fs-fs.c-fs-fat-fat_write.c-Adjust-6.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -477,6 +476,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Wed Dec 12 2014 Dennis Gilmore <dennis@ausil.us> - 2015.01-0.2.rc3
+- update to 2015.01 rc3
+
 * Wed Nov 26 2014 Dennis Gilmore <dennis@ausil.us> - 2015.01-0.1.rc2
 - update to 2015.01 rc2
 
