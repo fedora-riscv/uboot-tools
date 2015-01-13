@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate rc1
 
 Name:           uboot-tools
 Version:        2015.01
-Release:        0.2%{?candidate:.%{candidate}}%{?dist}
+Release:        1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -18,7 +18,7 @@ Patch5: 0005-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
 Patch6: 0006-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
 Patch7: 0007-Add-support-for-loading-environment-from-uEnv.txt-in.patch
 Patch8: 0008-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
-Patch9: 0009-port-the-riotboard-to-distro-generic-configs-patch-b.patch
+#atch9: 0009-port-the-riotboard-to-distro-generic-configs-patch-b.patch
 Patch10: 0010-port-utilite-to-distro-generic-boot-commands.patch
 Patch11: 0011-add-back-adding-console-to-the-bootargs-if-not-prese.patch
 Patch12: 0012-wandboard-port-to-generic-distro-booting.patch
@@ -476,7 +476,10 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
-* Wed Dec 12 2014 Dennis Gilmore <dennis@ausil.us> - 2015.01-0.2.rc3
+* Tue Jan 13 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.01-1
+- update to 2015.01
+
+* Fri Dec 12 2014 Dennis Gilmore <dennis@ausil.us> - 2015.01-0.2.rc3
 - update to 2015.01 rc3
 
 * Wed Nov 26 2014 Dennis Gilmore <dennis@ausil.us> - 2015.01-0.1.rc2
