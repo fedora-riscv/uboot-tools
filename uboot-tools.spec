@@ -1,8 +1,8 @@
-#global candidate rc1
+#global candidate
 
 Name:           uboot-tools
 Version:        2015.01
-Release:        1%{?candidate:.%{candidate}}%{?dist}
+Release:        2%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -117,6 +117,11 @@ make mrproper
 %endif
 
 %ifarch %{arm}
+make db-mv784mp-gp_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot.kwb builds/u-boot.kwb.db-mv784mp-gp
+make mrproper
+
 # AllWinner devices
 make Bananapi_defconfig
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
@@ -326,7 +331,7 @@ install -p -m 0644 builds/u-boot.bin.vexpress_aemv8a $RPM_BUILD_ROOT%{_datadir}/
 
 %ifarch %{arm}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
-for board in A10-OLinuXino-Lime A10s-OLinuXino-M A13-OLinuXino A13-OLinuXinoM A20-OLinuXino_MICRO arndale Bananapi beagle beaglebone cm_fx6 Cubieboard Cubieboard2 Cubietruck highbank jetson-tk1 Mele_A1000 Mele_A1000G Mini-X Mini-X-1Gb origen panda paz00 riotboard smdkv310 snow snowball trimslice udoo_quad uevm vexpress wandboard_dl wandboard_quad wandboard_solo
+for board in A10-OLinuXino-Lime A10s-OLinuXino-M A13-OLinuXino A13-OLinuXinoM A20-OLinuXino_MICRO arndale Bananapi beagle beaglebone cm_fx6 Cubieboard Cubieboard2 Cubietruck highbank jetson-tk1 Mele_A1000 Mele_A1000G Mini-X Mini-X-1Gb origen panda paz00 riotboard smdkv310 snow snowball trimslice udoo_quad uevm vexpress wandboard_dl wandboard_quad wandboard_solo db-mv784mp-gp
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 done
@@ -391,6 +396,11 @@ do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.img
 install -p -m 0644 builds/MLO.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/MLO
+done
+
+for board in db-mv784mp-gp
+do
+install -p -m 0644 builds/u-boot.kwb.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.kwb
 done
 
 %endif
@@ -473,14 +483,20 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %{_datadir}/uboot/origen/
 %{_datadir}/uboot/panda/
 %{_datadir}/uboot/uevm/
+#Marvell
+%{_datadir}/uboot/db-mv784mp-gp/
 %endif
 
 %changelog
+* Mon Feb 02 2015 Dennis Gilmore <dennis@ausil.us> - 2015.01-2
+- enable db-mv784mp-gp
+
 * Tue Jan 13 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.01-1
 - update to 2015.01
 
 * Fri Dec 12 2014 Dennis Gilmore <dennis@ausil.us> - 2015.01-0.2.rc3
 - update to 2015.01 rc3
+
 
 * Wed Nov 26 2014 Dennis Gilmore <dennis@ausil.us> - 2015.01-0.1.rc2
 - update to 2015.01 rc2
