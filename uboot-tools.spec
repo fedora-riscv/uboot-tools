@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2015.01
-Release:        2%{?candidate:.%{candidate}}%{?dist}
+Release:        3%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -23,6 +23,7 @@ Patch10: 0010-port-utilite-to-distro-generic-boot-commands.patch
 Patch11: 0011-add-back-adding-console-to-the-bootargs-if-not-prese.patch
 Patch12: 0012-wandboard-port-to-generic-distro-booting.patch
 Patch13: 0013-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
+Patch14: 0014-Add-linux-compiler-gcc5.h-to-fix-builds-with-gcc5.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -488,6 +489,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Sat Feb 07 2015 Hans de Goede <hdegoede@redhat.com> - 2015.01-3
+- fix build with gcc5
+
 * Mon Feb 02 2015 Dennis Gilmore <dennis@ausil.us> - 2015.01-2
 - enable db-mv784mp-gp
 
