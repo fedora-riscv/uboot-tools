@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2015.01
-Release:        3%{?candidate:.%{candidate}}%{?dist}
+Release:        4%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -489,6 +489,10 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Sat Feb 21 2015 Till Maas <opensource@till.name> - 2015.01-4
+- Rebuilt for Fedora 23 Change
+  https://fedoraproject.org/wiki/Changes/Harden_all_packages_with_position-independent_code
+
 * Sat Feb 07 2015 Hans de Goede <hdegoede@redhat.com> - 2015.01-3
 - fix build with gcc5
 
