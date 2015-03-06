@@ -1,12 +1,10 @@
-From 6376d21b8a647613789d5e5eac42d84d524c3c3d Mon Sep 17 00:00:00 2001
-From: Dennis Gilmore <dennis@ausil.us>
-Date: Mon, 27 Oct 2014 21:38:32 -0500
-Subject: [PATCH 11/14] add back adding console= to the bootargs if not
+From dddde5d4c96f1f64b066e77ad774a7dda863904d Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Fri, 6 Mar 2015 10:32:40 +0000
+Subject: [PATCH 05/11] add back adding console= to the bootargs if not
  present.
 
-better soloution is needed
-
-not upstreamable
+A better soloution is needed, not upstreamable
 ---
  common/cmd_pxe.c | 20 ++++++++++++++++++--
  1 file changed, 18 insertions(+), 2 deletions(-)
@@ -53,5 +51,5 @@ index 7e32c95..4f3c15d 100644
  		strcat(bootargs, mac_str);
  
 -- 
-2.1.0
+2.3.1
 

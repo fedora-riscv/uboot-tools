@@ -1,7 +1,7 @@
-From 1926334c8e35b650931aa1a758e3d2a8ad9f5761 Mon Sep 17 00:00:00 2001
-From: Vagrant Cascadian <vagrant@debian.org>
-Date: Tue, 30 Sep 2014 20:34:19 -0700
-Subject: [PATCH 06/14] Only set CONFIG_BOOTDELAY if not already set.
+From 006758f3cd6d24d7390133a52134b2e78b9c781f Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Fri, 6 Mar 2015 10:30:06 +0000
+Subject: [PATCH 03/11] Only set CONFIG_BOOTDELAY if not already set.
 
 ---
  include/config_distro_defaults.h | 2 ++
@@ -22,5 +22,5 @@ index 1ecc0bb..b23eb04 100644
  #define CONFIG_MENU
  #define CONFIG_DOS_PARTITION
 -- 
-2.1.0
+2.3.1
 

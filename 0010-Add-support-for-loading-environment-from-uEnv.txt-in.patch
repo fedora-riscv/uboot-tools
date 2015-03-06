@@ -1,7 +1,7 @@
-From c33de75d88ff0e7e7da9e28576b8457ea125da42 Mon Sep 17 00:00:00 2001
-From: Vagrant Cascadian <vagrant@debian.org>
-Date: Wed, 1 Oct 2014 10:29:36 -0700
-Subject: [PATCH 07/14] Add support for loading environment from uEnv.txt in
+From f113d6b6c7077fbf807e18f569d302ea2223c5ad Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Fri, 6 Mar 2015 10:52:53 +0000
+Subject: [PATCH 10/11] Add support for loading environment from uEnv.txt in
  config_distro_bootcmd.
 
 ---
@@ -9,18 +9,18 @@ Subject: [PATCH 07/14] Add support for loading environment from uEnv.txt in
  1 file changed, 21 insertions(+)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index 2503431..aaa010e 100644
+index 3292375..5c6cec1 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
-@@ -174,6 +174,7 @@
- 	BOOTENV_SHARED_IDE \
+@@ -163,6 +163,7 @@
  	"boot_prefixes=/ /boot/\0" \
  	"boot_scripts=boot.scr.uimg boot.scr\0" \
+ 	"boot_script_dhcp=boot.scr.uimg\0" \
 +	"boot_uenv_files=uEnv.txt\0" \
  	BOOTENV_BOOT_TARGETS \
- 	"boot_partitions="BOOTENV_BOOT_PARTITIONS"\0" \
  	\
-@@ -205,6 +206,25 @@
+ 	"boot_extlinux="                                                  \
+@@ -193,11 +194,31 @@
  			"fi; "                                            \
  		"done\0"                                                  \
  	\
@@ -44,16 +44,14 @@ index 2503431..aaa010e 100644
 +		"done\0"                                                  \
 +	\
  	"scan_dev_for_boot="                                              \
- 		"for partition in ${boot_partitions}; do "                \
- 			"echo Scanning ${devtype} ${devnum}:${partition}...; " \
-@@ -212,6 +232,7 @@
- 			"for prefix in ${boot_prefixes}; do "             \
- 				"run scan_dev_for_extlinux; "             \
- 				"run scan_dev_for_scripts; "              \
-+				"run scan_dev_for_uenv_files; "           \
- 			"done;"                                           \
+ 		"echo Scanning ${devtype} ${devnum}:${bootpart}...; "     \
+ 		"for prefix in ${boot_prefixes}; do "                     \
+ 			"run scan_dev_for_extlinux; "                     \
+ 			"run scan_dev_for_scripts; "                      \
++			"run scan_dev_for_uenv_files; "                   \
  		"done\0"                                                  \
  	\
+ 	"scan_dev_for_boot_part="                                         \
 -- 
-2.1.0
+2.3.1
 

@@ -1,8 +1,8 @@
-#global candidate
+%global candidate rc3
 
 Name:           uboot-tools
-Version:        2015.01
-Release:        4%{?candidate:.%{candidate}}%{?dist}
+Version:        2015.04
+Release:        0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -10,20 +10,17 @@ License:        GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:            http://www.denx.de/wiki/U-Boot
 Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 
-Patch1: 0001-make-sure-that-the-filesystem-is-a-type-of-fat.patch
-Patch2: 0002-Allow-checking-in-multiple-partitions-for-scan_dev_f.patch
-Patch3: 0003-Allow-overriding-boot_partitions-default-value-by-se.patch
-Patch4: 0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-Patch5: 0005-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
-Patch6: 0006-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
-Patch7: 0007-Add-support-for-loading-environment-from-uEnv.txt-in.patch
-Patch8: 0008-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
-#atch9: 0009-port-the-riotboard-to-distro-generic-configs-patch-b.patch
-Patch10: 0010-port-utilite-to-distro-generic-boot-commands.patch
-Patch11: 0011-add-back-adding-console-to-the-bootargs-if-not-prese.patch
-Patch12: 0012-wandboard-port-to-generic-distro-booting.patch
-Patch13: 0013-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
-Patch14: 0014-Add-linux-compiler-gcc5.h-to-fix-builds-with-gcc5.patch
+Patch1:   0001-make-sure-that-the-filesystem-is-a-type-of-fat.patch
+Patch2:   0002-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
+Patch3:   0003-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
+Patch4:   0004-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
+Patch5:   0005-add-back-adding-console-to-the-bootargs-if-not-prese.patch
+Patch6:   0006-wandboard-port-to-generic-distro-booting.patch
+Patch7:   0007-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
+Patch8:   0008-port-utilite-to-distro-generic-boot-commands.patch
+Patch9:   0009-RiOT-board-set-console-speed.patch
+Patch10:  0010-Add-support-for-loading-environment-from-uEnv.txt-in.patch
+Patch11:  0011-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -144,14 +141,14 @@ make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Cubietruck
 make mrproper
 
-make Mele_A1000G_defconfig
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Mele_A1000G
-make mrproper
-
 make Mele_A1000_defconfig
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Mele_A1000
+make mrproper
+
+make Mele_M3_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Mele_M3
 make mrproper
 
 make Mini-X_defconfig
@@ -159,14 +156,14 @@ make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Mini-X
 make mrproper
 
-make Mini-X-1Gb_defconfig
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Mini-X-1Gb
-make mrproper
-
 make A10-OLinuXino-Lime_defconfig
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.A10-OLinuXino-Lime
+make mrproper
+
+make A20-OLinuXino-Lime2_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.A10-OLinuXino-Lime2
 make mrproper
 
 make A10s-OLinuXino-M_defconfig
@@ -200,6 +197,16 @@ make cm_fx6_defconfig
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p u-boot.img builds/u-boot.img.cm_fx6
 cp -p SPL builds/SPL.cm_fx6
+make mrproper
+
+make hummingboard_solo_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot.imx builds/u-boot.imx.hummingboard
+make mrproper
+
+make novena_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot.imx builds/u-boot.imx.novena
 make mrproper
 
 make riotboard_defconfig
@@ -308,6 +315,12 @@ cp -p MLO builds/MLO.uevm
 cp -p u-boot.img builds/u-boot.img.uevm
 make mrproper
 
+make beagle_x15_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p MLO builds/MLO.beagle-x15
+cp -p u-boot.img builds/u-boot.img.beagle-x15
+make mrproper
+
 %endif
 
 make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" defconfig V=1
@@ -332,13 +345,13 @@ install -p -m 0644 builds/u-boot.bin.vexpress_aemv8a $RPM_BUILD_ROOT%{_datadir}/
 
 %ifarch %{arm}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
-for board in A10-OLinuXino-Lime A10s-OLinuXino-M A13-OLinuXino A13-OLinuXinoM A20-OLinuXino_MICRO arndale Bananapi beagle beaglebone cm_fx6 Cubieboard Cubieboard2 Cubietruck highbank jetson-tk1 Mele_A1000 Mele_A1000G Mini-X Mini-X-1Gb origen panda paz00 riotboard smdkv310 snow snowball trimslice udoo_quad uevm vexpress wandboard_dl wandboard_quad wandboard_solo db-mv784mp-gp
+for board in A10-OLinuXino-Lime A10s-OLinuXino-M A13-OLinuXino A13-OLinuXinoM A20-OLinuXino_MICRO arndale Bananapi beagle beaglebone cm_fx6 Cubieboard Cubieboard2 Cubietruck highbank jetson-tk1 Mele_A1000 Mini-X origen panda paz00 riotboard smdkv310 snow snowball trimslice udoo_quad uevm vexpress wandboard_dl wandboard_quad wandboard_solo db-mv784mp-gp
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 done
 
 # AllWinner
-for board in Bananapi Cubieboard Cubieboard2 Cubietruck Mele_A1000 Mele_A1000G Mini-X Mini-X-1Gb A10-OLinuXino-Lime A10s-OLinuXino-M A13-OLinuXino A13-OLinuXinoM A20-OLinuXino_MICRO
+for board in Bananapi Cubieboard Cubieboard2 Cubietruck Mele_A1000 Mini-X A10-OLinuXino-Lime A10s-OLinuXino-M A13-OLinuXino A13-OLinuXinoM A20-OLinuXino_MICRO
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-sunxi-with-spl.bin
@@ -354,7 +367,7 @@ install -p -m 0644 builds/u-boot.img.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/u
 install -p -m 0644 builds/SPL.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/SPL
 done
 
-for board in riotboard udoo_quad wandboard_dl wandboard_quad wandboard_solo
+for board in hummingboard novena riotboard udoo_quad wandboard_dl wandboard_quad wandboard_solo
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 install -p -m 0644 builds/u-boot.imx.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.imx
@@ -451,10 +464,10 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %{_datadir}/uboot/Cubieboard2/
 %{_datadir}/uboot/Cubietruck/
 %{_datadir}/uboot/Mele_A1000/
-%{_datadir}/uboot/Mele_A1000G/
+%{_datadir}/uboot/Mele_M3/
 %{_datadir}/uboot/Mini-X/
-%{_datadir}/uboot/Mini-X-1Gb/
 %{_datadir}/uboot/A10-OLinuXino-Lime/
+%{_datadir}/uboot/A10-OLinuXino-Lime2/
 %{_datadir}/uboot/A10s-OLinuXino-M/
 %{_datadir}/uboot/A13-OLinuXino/
 %{_datadir}/uboot/A13-OLinuXinoM/
@@ -463,6 +476,8 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %{_datadir}/uboot/highbank/
 # FreeScale
 %{_datadir}/uboot/cm_fx6/
+%{_datadir}/uboot/hummingboard/
+%{_datadir}/uboot/novena/
 %{_datadir}/uboot/riotboard/
 %{_datadir}/uboot/wandboard_dl/
 %{_datadir}/uboot/wandboard_quad/
@@ -480,6 +495,7 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %{_datadir}/uboot/snowball/
 # TI
 %{_datadir}/uboot/beagle/
+%{_datadir}/uboot/beagle-x15/
 %{_datadir}/uboot/beaglebone/
 %{_datadir}/uboot/origen/
 %{_datadir}/uboot/panda/
@@ -489,6 +505,12 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Fri Mar  6 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.04-0.1.rc3
+- Update to 2015.04 rc3
+- Enable AllWinner: OLinuXino-Lime2 Mele_M3
+- Enable i.MX6: novena hummingboard
+- Enable TI: Beagle-X15
+
 * Sat Feb 21 2015 Till Maas <opensource@till.name> - 2015.01-4
 - Rebuilt for Fedora 23 Change
   https://fedoraproject.org/wiki/Changes/Harden_all_packages_with_position-independent_code
