@@ -118,7 +118,8 @@ make mrproper
 %ifarch %{arm}
 make db-mv784mp-gp_defconfig
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot.kwb builds/u-boot.kwb.db-mv784mp-gp
+cp -p u-boot.bin builds/u-boot.bin.db-mv784mp-gp
+cp -p u-boot-spl.kwb builds/u-boot-spl.kwb.db-mv784mp-gp
 make mrproper
 
 # AllWinner devices
@@ -419,7 +420,8 @@ done
 
 for board in db-mv784mp-gp
 do
-install -p -m 0644 builds/u-boot.kwb.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.kwb
+install -p -m 0644 builds/u-boot.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.bin
+install -p -m 0644 builds/u-boot-spl.kwb.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.kwb
 done
 
 %endif
