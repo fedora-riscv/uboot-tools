@@ -21,6 +21,7 @@ Patch8:   0008-port-utilite-to-distro-generic-boot-commands.patch
 Patch9:   0009-RiOT-board-set-console-speed.patch
 Patch10:  0010-Add-support-for-loading-environment-from-uEnv.txt-in.patch
 Patch11:  0011-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
+Patch12:  0012-beagle-board-use-ext-support-in-the-SPL.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -206,7 +207,7 @@ make mrproper
 
 make novena_defconfig
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot.imx builds/u-boot.imx.novena
+cp -p u-boot.img builds/u-boot.imx.novena
 make mrproper
 
 make riotboard_defconfig
@@ -510,6 +511,7 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 - Enable AllWinner: OLinuXino-Lime2 Mele_M3
 - Enable i.MX6: novena hummingboard
 - Enable TI: Beagle-X15
+- Build ext support into omap3 SPL
 
 * Sat Feb 21 2015 Till Maas <opensource@till.name> - 2015.01-4
 - Rebuilt for Fedora 23 Change

@@ -1,0 +1,26 @@
+From 0d4a05fb5f42a7a4f9689336872762070c45c9be Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Fri, 6 Mar 2015 14:05:39 +0000
+Subject: [PATCH 12/12] beagle board: use ext support in the SPL
+
+---
+ include/configs/omap3_beagle.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/include/configs/omap3_beagle.h b/include/configs/omap3_beagle.h
+index f25a940..eb782d8 100644
+--- a/include/configs/omap3_beagle.h
++++ b/include/configs/omap3_beagle.h
+@@ -297,6 +297,9 @@
+ /* Defines for SPL */
+ #define CONFIG_SPL_OMAP3_ID_NAND
+ 
++#define CONFIG_SPL_EXT_SUPPORT
++#undef  CONFIG_SPL_FAT_SUPPORT
++
+ /* NAND boot config */
+ #define CONFIG_SYS_NAND_BUSWIDTH_16BIT	16
+ #define CONFIG_SYS_NAND_5_ADDR_CYCLE
+-- 
+2.3.1
+
