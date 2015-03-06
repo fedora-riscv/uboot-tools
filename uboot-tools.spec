@@ -127,6 +127,11 @@ make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Bananapi
 make mrproper
 
+make Bananapro_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Bananapro
+make mrproper
+
 make Cubieboard_defconfig
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.Cubieboard
@@ -162,9 +167,14 @@ make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
 cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.A10-OLinuXino-Lime
 make mrproper
 
+make A20-OLinuXino-Lime_defconfig
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.A20-OLinuXino-Lime
+make mrproper
+
 make A20-OLinuXino-Lime2_defconfig
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.A10-OLinuXino-Lime2
+cp -p u-boot-sunxi-with-spl.bin builds/u-boot-sunxi-with-spl.bin.A20-OLinuXino-Lime2
 make mrproper
 
 make A10s-OLinuXino-M_defconfig
@@ -340,13 +350,13 @@ install -p -m 0644 builds/u-boot.bin.vexpress_aemv8a $RPM_BUILD_ROOT%{_datadir}/
 
 %ifarch %{arm}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
-for board in A10-OLinuXino-Lime A10s-OLinuXino-M A13-OLinuXino A13-OLinuXinoM A20-OLinuXino_MICRO arndale Bananapi beagle beaglebone cm_fx6 Cubieboard Cubieboard2 Cubietruck highbank jetson-tk1 Mele_A1000 Mini-X origen panda paz00 riotboard smdkv310 snow snowball trimslice udoo_quad uevm vexpress wandboard_dl wandboard_quad wandboard_solo db-mv784mp-gp
+for board in A10-OLinuXino-Lime A10s-OLinuXino-M A13-OLinuXino A13-OLinuXinoM A20-OLinuXino_MICRO A20-OLinuXino-Lime A20-OLinuXino-Lime2 arndale Bananapi Bananapro beagle beaglebone cm_fx6 Cubieboard Cubieboard2 Cubietruck highbank jetson-tk1 Mele_A1000 Mele_M3 Mini-X origen panda paz00 riotboard smdkv310 snow snowball trimslice udoo_quad uevm vexpress wandboard_dl wandboard_quad wandboard_solo db-mv784mp-gp
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 done
 
 # AllWinner
-for board in Bananapi Cubieboard Cubieboard2 Cubietruck Mele_A1000 Mini-X A10-OLinuXino-Lime A10s-OLinuXino-M A13-OLinuXino A13-OLinuXinoM A20-OLinuXino_MICRO
+for board in Bananapi Bananapro Cubieboard Cubieboard2 Cubietruck Mele_A1000 Mele_M3 Mini-X A10-OLinuXino-Lime A10s-OLinuXino-M A13-OLinuXino A13-OLinuXinoM A20-OLinuXino_MICRO A20-OLinuXino-Lime A20-OLinuXino-Lime2
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 install -p -m 0644 builds/u-boot-sunxi-with-spl.bin.$(echo $board) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-sunxi-with-spl.bin
@@ -455,6 +465,7 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %files -n uboot-images-armv7
 # AllWinner
 %{_datadir}/uboot/Bananapi/
+%{_datadir}/uboot/Bananapro/
 %{_datadir}/uboot/Cubieboard/
 %{_datadir}/uboot/Cubieboard2/
 %{_datadir}/uboot/Cubietruck/
@@ -462,11 +473,12 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %{_datadir}/uboot/Mele_M3/
 %{_datadir}/uboot/Mini-X/
 %{_datadir}/uboot/A10-OLinuXino-Lime/
-%{_datadir}/uboot/A10-OLinuXino-Lime2/
 %{_datadir}/uboot/A10s-OLinuXino-M/
 %{_datadir}/uboot/A13-OLinuXino/
 %{_datadir}/uboot/A13-OLinuXinoM/
 %{_datadir}/uboot/A20-OLinuXino_MICRO/
+%{_datadir}/uboot/A20-OLinuXino-Lime/
+%{_datadir}/uboot/A20-OLinuXino-Lime2/
 # Calxeda
 %{_datadir}/uboot/highbank/
 # FreeScale
@@ -501,7 +513,7 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %changelog
 * Fri Mar  6 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.04-0.1.rc3
 - Update to 2015.04 rc3
-- Enable AllWinner: OLinuXino-Lime2 Mele_M3
+- Enable AllWinner: OLinuXino-Lime2 Mele_M3 Bananapro
 - Enable i.MX6: novena hummingboard
 - Build ext support into omap3 SPL
 
