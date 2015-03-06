@@ -316,12 +316,6 @@ cp -p MLO builds/MLO.uevm
 cp -p u-boot.img builds/u-boot.img.uevm
 make mrproper
 
-make beagle_x15_defconfig
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1
-cp -p MLO builds/MLO.beagle-x15
-cp -p u-boot.img builds/u-boot.img.beagle-x15
-make mrproper
-
 %endif
 
 make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" defconfig V=1
@@ -496,7 +490,6 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %{_datadir}/uboot/snowball/
 # TI
 %{_datadir}/uboot/beagle/
-%{_datadir}/uboot/beagle-x15/
 %{_datadir}/uboot/beaglebone/
 %{_datadir}/uboot/origen/
 %{_datadir}/uboot/panda/
@@ -510,7 +503,6 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 - Update to 2015.04 rc3
 - Enable AllWinner: OLinuXino-Lime2 Mele_M3
 - Enable i.MX6: novena hummingboard
-- Enable TI: Beagle-X15
 - Build ext support into omap3 SPL
 
 * Sat Feb 21 2015 Till Maas <opensource@till.name> - 2015.01-4
