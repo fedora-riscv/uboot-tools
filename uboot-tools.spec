@@ -1,8 +1,8 @@
-%global candidate rc3
+%global candidate rc4
 
 Name:           uboot-tools
 Version:        2015.04
-Release:        0.1%{?candidate:.%{candidate}}%{?dist}
+Release:        0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -513,6 +513,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Fri Mar 20 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.04-0.2.rc4
+- Update to 2015.04 rc3
+
 * Fri Mar  6 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.04-0.1.rc3
 - Update to 2015.04 rc3
 - Enable AllWinner: OLinuXino-Lime2 Mele_M3 Bananapro
