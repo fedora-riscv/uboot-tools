@@ -1,7 +1,7 @@
-From 07a6e8cf586b2cf541edabb5d11d0789833a4d99 Mon Sep 17 00:00:00 2001
+From 2080f6a04c624b414b8934c7717b40836ed4dbcd Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Fri, 6 Mar 2015 10:38:05 +0000
-Subject: [PATCH 07/11] Switch omap4 boards to use config_distro_defaults and 
+Subject: [PATCH 07/14] Switch omap4 boards to use config_distro_defaults and
  config_distro_bootcmd.
 
  Add pxefile_addr_r to DEFAULT_LINUX_BOOT_ENV, as pxefile_addr_r  is used
@@ -13,7 +13,7 @@ Subject: [PATCH 07/11] Switch omap4 boards to use config_distro_defaults and
  2 files changed, 18 insertions(+), 24 deletions(-)
 
 diff --git a/include/configs/ti_armv7_common.h b/include/configs/ti_armv7_common.h
-index e409c7f..f280534 100644
+index b6e37b3..d1e259e 100644
 --- a/include/configs/ti_armv7_common.h
 +++ b/include/configs/ti_armv7_common.h
 @@ -54,7 +54,8 @@
@@ -85,5 +85,5 @@ index 1c93aab..5402793 100644
  /*
   * Defines for SPL
 -- 
-2.3.1
+2.3.2
 

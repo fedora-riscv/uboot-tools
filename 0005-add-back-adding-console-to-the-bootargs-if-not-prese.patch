@@ -1,7 +1,7 @@
-From dddde5d4c96f1f64b066e77ad774a7dda863904d Mon Sep 17 00:00:00 2001
+From 8c3c5af7d22366bcebd48817190b22ddbb119f9d Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Fri, 6 Mar 2015 10:32:40 +0000
-Subject: [PATCH 05/11] add back adding console= to the bootargs if not
+Subject: [PATCH 05/14] add back adding console= to the bootargs if not
  present.
 
 A better soloution is needed, not upstreamable
@@ -51,5 +51,5 @@ index 7e32c95..4f3c15d 100644
  		strcat(bootargs, mac_str);
  
 -- 
-2.3.1
+2.3.2
 

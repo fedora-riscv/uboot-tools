@@ -1,7 +1,7 @@
-From 0ddef6baeedc39a496858b4c01903df078af1a7d Mon Sep 17 00:00:00 2001
+From dd24ce0e4a2614848431d3734669741f524f010e Mon Sep 17 00:00:00 2001
 From: Dennis Gilmore <dennis@ausil.us>
 Date: Tue, 14 Oct 2014 00:38:28 -0500
-Subject: [PATCH 01/11] make sure that the filesystem is a type of fat
+Subject: [PATCH 01/14] make sure that the filesystem is a type of fat
 
 parted marks the partition table as being fat32 though we may pyt a fat16
 filesystem on it.
@@ -23,5 +23,5 @@ index bccc3e3..15f84ad 100644
  
  	cur_dev = NULL;
 -- 
-2.3.1
+2.3.2
 

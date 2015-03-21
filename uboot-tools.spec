@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2015.04
-Release:        0.2%{?candidate:.%{candidate}}%{?dist}
+Release:        0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -22,6 +22,8 @@ Patch9:   0009-RiOT-board-set-console-speed.patch
 Patch10:  0010-Add-support-for-loading-environment-from-uEnv.txt-in.patch
 Patch11:  0011-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch12:  0012-beagle-board-use-ext-support-in-the-SPL.patch
+Patch13:  0013-WANDBOARD-run-the-dsitro-bootcmd-first-before-fallin.patch
+Patch14:  0014-BBB-tell-u-boot-to-look-in-the-first-partition-to-lo.patch
 
 BuildRequires:  dtc, openssl-devel
 BuildRequires:  fedora-logos, netpbm-progs
@@ -513,8 +515,11 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Sat Mar 21 2015 Dennis Gilmore <dennis@ausil.us> - 2015.04-0.3.rc4
+- fix up bbb and wandboard to autoboot again
+
 * Fri Mar 20 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.04-0.2.rc4
-- Update to 2015.04 rc3
+- Update to 2015.04 rc4
 
 * Fri Mar  6 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.04-0.1.rc3
 - Update to 2015.04 rc3

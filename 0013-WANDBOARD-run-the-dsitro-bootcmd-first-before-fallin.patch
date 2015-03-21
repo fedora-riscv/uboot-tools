@@ -1,0 +1,25 @@
+From c1b63c708f15f8840307507b649c36abb529c08f Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Sat, 21 Mar 2015 12:17:08 -0500
+Subject: [PATCH 13/14] WANDBOARD: run the dsitro bootcmd first before falling
+ back to old settings
+
+---
+ include/configs/wandboard.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/configs/wandboard.h b/include/configs/wandboard.h
+index 1d8459c..07c3d63 100644
+--- a/include/configs/wandboard.h
++++ b/include/configs/wandboard.h
+@@ -238,6 +238,7 @@
+ 	BOOTENV
+ 
+ #define CONFIG_BOOTCOMMAND \
++	   "run distro_bootcmd;" \
+ 	   "mmc dev ${mmcdev}; if mmc rescan; then " \
+ 		   "if run loadbootscript; then " \
+ 			   "run bootscript; " \
+-- 
+2.3.2
+

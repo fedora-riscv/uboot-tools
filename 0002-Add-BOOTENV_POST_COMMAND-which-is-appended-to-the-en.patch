@@ -1,7 +1,7 @@
-From 14598c51bc66832804633984539f335ef199932c Mon Sep 17 00:00:00 2001
+From 5ba14a142d5d3083f694dadbb1997f23fa171f0b Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Fri, 6 Mar 2015 10:29:28 +0000
-Subject: [PATCH 02/11] Add BOOTENV_POST_COMMAND, which is appended to the end
+Subject: [PATCH 02/14] Add BOOTENV_POST_COMMAND, which is appended to the end
  of bootcmd
 
 ---
@@ -9,10 +9,10 @@ Subject: [PATCH 02/11] Add BOOTENV_POST_COMMAND, which is appended to the end
  1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index 07a0b3b..3292375 100644
+index 73f093f..7f8b393 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
-@@ -148,6 +148,10 @@
+@@ -164,6 +164,10 @@
  #define BOOTENV_BOOT_TARGETS \
  	"boot_targets=" BOOT_TARGET_DEVICES(BOOTENV_DEV_NAME) "\0"
  
@@ -23,7 +23,7 @@ index 07a0b3b..3292375 100644
  #define BOOTENV_DEV(devtypeu, devtypel, instance) \
  	BOOTENV_DEV_##devtypeu(devtypeu, devtypel, instance)
  #define BOOTENV \
-@@ -210,7 +214,9 @@
+@@ -226,7 +230,9 @@
  	"distro_bootcmd=" BOOTENV_SET_SCSI_NEED_INIT                      \
  		"for target in ${boot_targets}; do "                      \
  			"run bootcmd_${target}; "                         \
@@ -35,5 +35,5 @@ index 07a0b3b..3292375 100644
  #ifndef CONFIG_BOOTCOMMAND
  #define CONFIG_BOOTCOMMAND "run distro_bootcmd"
 -- 
-2.3.1
+2.3.2
 

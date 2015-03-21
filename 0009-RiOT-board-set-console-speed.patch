@@ -1,7 +1,7 @@
-From 222035e0351121f9feb92daa782756f73c4927d9 Mon Sep 17 00:00:00 2001
+From bd6c9bae1941c74cb9c963a702ff491a57d61ab3 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Fri, 6 Mar 2015 10:49:53 +0000
-Subject: [PATCH 09/11] RiOT board: set console speed
+Subject: [PATCH 09/14] RiOT board: set console speed
 
 ---
  include/configs/embestmx6boards.h | 2 +-
@@ -21,5 +21,5 @@ index b4b3ae8..b8696a3 100644
  
  #define PHYS_SDRAM_SIZE		(1u * 1024 * 1024 * 1024)
 -- 
-2.3.1
+2.3.2
 

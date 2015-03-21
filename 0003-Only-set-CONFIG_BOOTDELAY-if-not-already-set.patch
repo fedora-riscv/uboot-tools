@@ -1,7 +1,7 @@
-From 006758f3cd6d24d7390133a52134b2e78b9c781f Mon Sep 17 00:00:00 2001
+From 707026f080b057cf553b67cd23b3e81cd90c6efe Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Fri, 6 Mar 2015 10:30:06 +0000
-Subject: [PATCH 03/11] Only set CONFIG_BOOTDELAY if not already set.
+Subject: [PATCH 03/14] Only set CONFIG_BOOTDELAY if not already set.
 
 ---
  include/config_distro_defaults.h | 2 ++
@@ -22,5 +22,5 @@ index 1ecc0bb..b23eb04 100644
  #define CONFIG_MENU
  #define CONFIG_DOS_PARTITION
 -- 
-2.3.1
+2.3.2
 

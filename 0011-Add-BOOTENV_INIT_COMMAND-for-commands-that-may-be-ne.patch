@@ -1,8 +1,8 @@
-From 330ef191351986782a12d2e9f695715ffda3508f Mon Sep 17 00:00:00 2001
+From 3391ec0e884965315e6b18f87d3713db4fd461e2 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Fri, 6 Mar 2015 11:11:51 +0000
-Subject: [PATCH 11/11] Add BOOTENV_INIT_COMMAND for commands that may be
- needed to run before bootcmd, such as setting the fdt file variables for 
+Subject: [PATCH 11/14] Add BOOTENV_INIT_COMMAND for commands that may be
+ needed to run before bootcmd, such as setting the fdt file variables for
  platfroms that detect on boot.
 
 ---
@@ -10,10 +10,10 @@ Subject: [PATCH 11/11] Add BOOTENV_INIT_COMMAND for commands that may be
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index 5c6cec1..608b65f 100644
+index 8614cc4..1461eaf 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
-@@ -148,6 +148,10 @@
+@@ -164,6 +164,10 @@
  #define BOOTENV_BOOT_TARGETS \
  	"boot_targets=" BOOT_TARGET_DEVICES(BOOTENV_DEV_NAME) "\0"
  
@@ -24,7 +24,7 @@ index 5c6cec1..608b65f 100644
  #ifndef BOOTENV_POST_COMMAND
  #define BOOTENV_POST_COMMAND
  #endif
-@@ -232,7 +236,7 @@
+@@ -248,7 +252,7 @@
  	\
  	BOOT_TARGET_DEVICES(BOOTENV_DEV)                                  \
  	\
@@ -34,5 +34,5 @@ index 5c6cec1..608b65f 100644
  			"run bootcmd_${target}; "                         \
  		"done;"                                                   \
 -- 
-2.3.1
+2.3.2
 

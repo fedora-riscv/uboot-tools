@@ -1,7 +1,7 @@
-From f113d6b6c7077fbf807e18f569d302ea2223c5ad Mon Sep 17 00:00:00 2001
+From cfee6c407f7ed0ab2ed0f98645c10b2d34497f46 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Fri, 6 Mar 2015 10:52:53 +0000
-Subject: [PATCH 10/11] Add support for loading environment from uEnv.txt in
+Subject: [PATCH 10/14] Add support for loading environment from uEnv.txt in
  config_distro_bootcmd.
 
 ---
@@ -9,10 +9,10 @@ Subject: [PATCH 10/11] Add support for loading environment from uEnv.txt in
  1 file changed, 21 insertions(+)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index 3292375..5c6cec1 100644
+index 7f8b393..8614cc4 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
-@@ -163,6 +163,7 @@
+@@ -179,6 +179,7 @@
  	"boot_prefixes=/ /boot/\0" \
  	"boot_scripts=boot.scr.uimg boot.scr\0" \
  	"boot_script_dhcp=boot.scr.uimg\0" \
@@ -20,7 +20,7 @@ index 3292375..5c6cec1 100644
  	BOOTENV_BOOT_TARGETS \
  	\
  	"boot_extlinux="                                                  \
-@@ -193,11 +194,31 @@
+@@ -209,11 +210,31 @@
  			"fi; "                                            \
  		"done\0"                                                  \
  	\
@@ -53,5 +53,5 @@ index 3292375..5c6cec1 100644
  	\
  	"scan_dev_for_boot_part="                                         \
 -- 
-2.3.1
+2.3.2
 

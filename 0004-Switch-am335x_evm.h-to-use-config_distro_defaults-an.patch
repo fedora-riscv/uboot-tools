@@ -1,7 +1,7 @@
-From bfba958bb582b73ea1c6bcdf8ccfca1a39511a9d Mon Sep 17 00:00:00 2001
+From ecb7a2bbcf68921cdca7aed2740561b6bb14970b Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Fri, 6 Mar 2015 10:31:19 +0000
-Subject: [PATCH 04/11] Switch am335x_evm.h to use config_distro_defaults and
+Subject: [PATCH 04/14] Switch am335x_evm.h to use config_distro_defaults and
  config_distro_bootcmd. Add scriptaddr to DEFAULT_LINUX_BOOT_ENV, as
  scriptaddr is used for boot scripts in config_distro_defaults.
 
@@ -11,7 +11,7 @@ Subject: [PATCH 04/11] Switch am335x_evm.h to use config_distro_defaults and
  2 files changed, 18 insertions(+), 9 deletions(-)
 
 diff --git a/include/configs/am335x_evm.h b/include/configs/am335x_evm.h
-index f1c270c..c702d8b 100644
+index a87059c..3fb175e 100644
 --- a/include/configs/am335x_evm.h
 +++ b/include/configs/am335x_evm.h
 @@ -18,6 +18,21 @@
@@ -57,7 +57,7 @@ index f1c270c..c702d8b 100644
  #define CONFIG_SYS_NS16550_COM1		0x44e09000	/* Base EVM has UART0 */
  #define CONFIG_SYS_NS16550_COM2		0x48022000	/* UART1 */
 diff --git a/include/configs/ti_armv7_common.h b/include/configs/ti_armv7_common.h
-index 2bd1164..e409c7f 100644
+index 110a4f8..b6e37b3 100644
 --- a/include/configs/ti_armv7_common.h
 +++ b/include/configs/ti_armv7_common.h
 @@ -54,6 +54,7 @@
@@ -69,5 +69,5 @@ index 2bd1164..e409c7f 100644
  	"fdt_addr_r=0x88000000\0" \
  	"rdaddr=0x88080000\0" \
 -- 
-2.3.1
+2.3.2
 
