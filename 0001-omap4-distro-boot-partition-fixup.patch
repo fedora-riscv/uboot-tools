@@ -1,0 +1,25 @@
+From eb905357f4cbe0d6bf8346a20d5b3bb36a8887c6 Mon Sep 17 00:00:00 2001
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Sun, 29 Mar 2015 12:56:03 -0500
+Subject: [PATCH] omap4 distro boot partition fixup
+
+---
+ include/configs/ti_omap4_common.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/ti_omap4_common.h b/include/configs/ti_omap4_common.h
+index 5402793..31dd1f0 100644
+--- a/include/configs/ti_omap4_common.h
++++ b/include/configs/ti_omap4_common.h
+@@ -101,7 +101,7 @@
+ 	DEFAULT_LINUX_BOOT_ENV \
+ 	"console=ttyO2,115200n8\0" \
+ 	"fdtfile=undefined\0" \
+-	"bootpart=0:2\0" \
++	"bootpart=1\0" \
+ 	"bootdir=/boot\0" \
+ 	"bootfile=zImage\0" \
+ 	"usbtty=cdc_acm\0" \
+-- 
+2.3.2
+
