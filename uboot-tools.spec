@@ -1,8 +1,8 @@
-%global candidate rc4
+%global candidate rc5
 
 Name:           uboot-tools
 Version:        2015.04
-Release:        0.4%{?candidate:.%{candidate}}%{?dist}
+Release:        0.5%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -186,6 +186,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Thu Apr  2 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.04-0.5.rc5
+- Update to 2015.04 rc5
+
 * Mon Mar 30 2015 Dennis Gilmore <dennis@ausil.us> - 2015.04-0.4.rc4
 - add patch to fix booting on omap4 devices
 - refeactor spec file
