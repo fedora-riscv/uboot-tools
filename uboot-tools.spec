@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2015.04
-Release:        0.5%{?candidate:.%{candidate}}%{?dist}
+Release:        0.6%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -114,7 +114,7 @@ done
 
 %build
 %ifarch aarch64
-make vexpress_aemv8a_config O=builds/vexpress_aemv8a/
+make vexpress_aemv8a_juno_config vexpress_aemv8a_semi_config O=builds/vexpress_aemv8a/
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/vexpress_aemv8a/
 %endif
 
@@ -186,6 +186,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Apr 07 2015 Marcin Juszkiewicz <mjuszkiewicz@redhat.com> - 2015.04-0.6.rc5
+- Build U-Boot for Juno and Foundation model instead of removed board
+
 * Thu Apr  2 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.04-0.5.rc5
 - Update to 2015.04 rc5
 
