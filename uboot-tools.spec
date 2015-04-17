@@ -1,8 +1,8 @@
-%global candidate rc5
+#global candidate rc1
 
 Name:           uboot-tools
 Version:        2015.04
-Release:        0.6%{?candidate:.%{candidate}}%{?dist}
+Release:        1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -186,6 +186,10 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Fri Apr 17 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.04-1
+- Update to 2015.04 GA
+- Build Raspberry Pi 2 config
+
 * Tue Apr 07 2015 Marcin Juszkiewicz <mjuszkiewicz@redhat.com> - 2015.04-0.6.rc5
 - Build U-Boot for Juno and Foundation model instead of removed board
 
