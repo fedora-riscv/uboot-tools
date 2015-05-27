@@ -2,7 +2,7 @@
 
 Name:           uboot-tools
 Version:        2015.04
-Release:        2%{?candidate:.%{candidate}}%{?dist}
+Release:        3%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -186,6 +186,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Wed May 27 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.04-3
+- Enable Zynq microzed, zed and zybo
+
 * Sun May 10 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.04-2
 - Build nyan-big
 
