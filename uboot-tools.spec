@@ -1,8 +1,8 @@
-#global candidate rc1
+%global candidate rc2
 
 Name:           uboot-tools
-Version:        2015.04
-Release:        3%{?candidate:.%{candidate}}%{?dist}
+Version:        2015.07
+Release:        0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:        U-Boot utilities
 
 Group:          Development/Tools
@@ -11,25 +11,30 @@ URL:            http://www.denx.de/wiki/U-Boot
 Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:        armv7-boards
 
-Patch1:   0001-make-sure-that-the-filesystem-is-a-type-of-fat.patch
-Patch2:   0002-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
-Patch3:   0003-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
-Patch4:   0004-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
-Patch5:   0005-add-back-adding-console-to-the-bootargs-if-not-prese.patch
-Patch6:   0006-wandboard-port-to-generic-distro-booting.patch
-Patch7:   0007-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
-Patch8:   0008-port-utilite-to-distro-generic-boot-commands.patch
-Patch9:   0009-RiOT-board-set-console-speed.patch
-Patch10:  0010-Add-support-for-loading-environment-from-uEnv.txt-in.patch
-Patch11:  0011-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-Patch12:  0012-beagle-board-use-ext-support-in-the-SPL.patch
-Patch13:  0013-WANDBOARD-run-the-dsitro-bootcmd-first-before-fallin.patch
-Patch14:  0014-BBB-tell-u-boot-to-look-in-the-first-partition-to-lo.patch
-Patch15:  0001-omap4-distro-boot-partition-fixup.patch
+Patch0:    0001-If-CONFIG_SANDBOX-isn-t-defined-the-build-fails-in-f.patch
+#Patch1:   0001-make-sure-that-the-filesystem-is-a-type-of-fat.patch
+#Patch2:   0002-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
+#Patch3:   0003-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
+#Patch4:   0004-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
+#Patch5:   0005-add-back-adding-console-to-the-bootargs-if-not-prese.patch
+#Patch6:   0006-wandboard-port-to-generic-distro-booting.patch
+#Patch7:   0007-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
+#Patch8:   0008-port-utilite-to-distro-generic-boot-commands.patch
+#Patch9:   0009-RiOT-board-set-console-speed.patch
+#Patch10:  0010-Add-support-for-loading-environment-from-uEnv.txt-in.patch
+#Patch11:  0011-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
+#Patch12:  0012-beagle-board-use-ext-support-in-the-SPL.patch
+#Patch13:  0013-WANDBOARD-run-the-dsitro-bootcmd-first-before-fallin.patch
+#Patch14:  0014-BBB-tell-u-boot-to-look-in-the-first-partition-to-lo.patch
+#Patch15:  0001-omap4-distro-boot-partition-fixup.patch
 
-BuildRequires:  dtc, openssl-devel
-BuildRequires:  fedora-logos, netpbm-progs
-BuildRequires:  git, bc
+BuildRequires:  bc
+BuildRequires:  dtc
+BuildRequires:  fedora-logos
+BuildRequires:  git
+BuildRequires:  netpbm-progs
+BuildRequires:  openssl-devel
+BuildRequires:  SDL-devel
 Requires:       dtc
 
 %description
@@ -186,6 +191,11 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Jun  9 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-0.1rc2
+- Initial rebase to 2015.07rc2
+- Enable mx6cuboxi, 32 bit vexpress
+- Update builds for name changes, merges etc
+
 * Wed May 27 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.04-3
 - Enable Zynq microzed, zed and zybo
 

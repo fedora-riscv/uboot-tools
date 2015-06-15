@@ -1,0 +1,34 @@
+From 4ff418fa70e038b1ce17545294d7638cb0e12390 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Mon, 15 Jun 2015 15:52:09 +0100
+Subject: [PATCH] If CONFIG_SANDBOX isn't defined the build fails in fw_env.c
+ due to a with with the following error:
+
+error: expected '}' before 'BOOT_TARGET_DEVICES_references_HOST_without_CONFIG_SANDBOX'
+  CONFIG_EXTRA_ENV_SETTINGS
+
+A check to see if it's defined fixes this issue.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ include/configs/sandbox.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/include/configs/sandbox.h b/include/configs/sandbox.h
+index 3caa83c..f72675b 100644
+--- a/include/configs/sandbox.h
++++ b/include/configs/sandbox.h
+@@ -6,6 +6,10 @@
+ #ifndef __CONFIG_H
+ #define __CONFIG_H
+ 
++#ifndef CONFIG_SANDBOX
++#define CONFIG_SANDBOX
++#endif
++
+ #ifdef FTRACE
+ #define CONFIG_TRACE
+ #define CONFIG_CMD_TRACE
+-- 
+2.4.3
+
