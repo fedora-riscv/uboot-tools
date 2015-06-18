@@ -11,7 +11,8 @@ URL:            http://www.denx.de/wiki/U-Boot
 Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:        armv7-boards
 
-Patch0:    0001-If-CONFIG_SANDBOX-isn-t-defined-the-build-fails-in-f.patch
+Patch0:    0001-Fix-default-env-includes-to-fix-sandbox-build.patch
+Patch1:    0002-raspberry-pi-fix-timer.patch
 #Patch1:   0001-make-sure-that-the-filesystem-is-a-type-of-fat.patch
 #Patch2:   0002-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
 #Patch3:   0003-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
@@ -191,6 +192,11 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Jun 16 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-0.2rc2
+- Enable i.MX6 marsboard and warp
+- Use upstream build fix
+- Add patch to fix Raspberry Pi timer speed
+
 * Tue Jun  9 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-0.1rc2
 - Initial rebase to 2015.07rc2
 - Enable mx6cuboxi, 32 bit vexpress

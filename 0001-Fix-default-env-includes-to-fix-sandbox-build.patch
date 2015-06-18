@@ -1,0 +1,45 @@
+From e87d8250dad301122a43e697cf44627c98f5dc57 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Wed, 17 Jun 2015 16:30:28 +0100
+Subject: [PATCH 1/2] Fix default env includes to fix sandbox build
+
+defconfig and sandbox fails to build due to a with with the following error:
+
+error: expected '}' before 'BOOT_TARGET_DEVICES_references_HOST_without_CONFIG_SANDBOX'
+  CONFIG_EXTRA_ENV_SETTINGS
+
+Based on the responaes below to the thread add linux/kconfig.h higher in th includes
+and drop the now unneeded autoconf.h lower down to ensure the default environment is
+included correctly
+
+http://lists.denx.de/pipermail/u-boot/2015-June/216849.html
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ tools/env/fw_env.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/tools/env/fw_env.h b/tools/env/fw_env.h
+index d6faf34..60c0517 100644
+--- a/tools/env/fw_env.h
++++ b/tools/env/fw_env.h
+@@ -6,6 +6,8 @@
+  */
+ 
+ /* Pull in the current config to define the default environment */
++#include <linux/kconfig.h>
++
+ #ifndef __ASSEMBLY__
+ #define __ASSEMBLY__ /* get only #defines from config.h */
+ #include <config.h>
+@@ -13,7 +15,6 @@
+ #else
+ #include <config.h>
+ #endif
+-#include <generated/autoconf.h>
+ 
+ /*
+  * To build the utility with the static configuration
+-- 
+2.4.3
+

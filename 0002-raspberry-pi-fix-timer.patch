@@ -1,0 +1,30 @@
+From f5f57faaf4049dedb70a027544dec15b320dd29f Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Thu, 18 Jun 2015 21:00:03 +0100
+Subject: [PATCH 2/2] raspberry pi fix timer
+
+---
+ drivers/mmc/bcm2835_sdhci.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mmc/bcm2835_sdhci.c b/drivers/mmc/bcm2835_sdhci.c
+index 078ef05..74b497e 100644
+--- a/drivers/mmc/bcm2835_sdhci.c
++++ b/drivers/mmc/bcm2835_sdhci.c
+@@ -69,11 +69,11 @@ static inline void bcm2835_sdhci_raw_writel(struct sdhci_host *host, u32 val,
+ 	 * (Which is just as well - otherwise we'd have to nobble the DMA engine
+ 	 * too)
+ 	 */
+-	while (get_timer(bcm_host->last_write) < bcm_host->twoticks_delay)
++	while (timer_get_us() < bcm_host->last_write + bcm_host->twoticks_delay)
+ 		;
+ 
+ 	writel(val, host->ioaddr + reg);
+-	bcm_host->last_write = get_timer(0);
++	bcm_host->last_write = timer_get_us();
+ }
+ 
+ static inline u32 bcm2835_sdhci_raw_readl(struct sdhci_host *host, int reg)
+-- 
+2.4.3
+
