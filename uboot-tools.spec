@@ -1,18 +1,26 @@
 %global candidate rc2
 
-Name:           uboot-tools
-Version:        2015.07
-Release:        0.2%{?candidate:.%{candidate}}%{?dist}
-Summary:        U-Boot utilities
+Name:      uboot-tools
+Version:   2015.07
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
+Summary:   U-Boot utilities
 
-Group:          Development/Tools
-License:        GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
-URL:            http://www.denx.de/wiki/U-Boot
-Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
-Source1:        armv7-boards
+Group:     Development/Tools
+License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
+URL:       http://www.denx.de/wiki/U-Boot
+Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
+Source1:   armv7-boards
 
 Patch0:    0001-Fix-default-env-includes-to-fix-sandbox-build.patch
 Patch1:    0002-raspberry-pi-fix-timer.patch
+Patch2:    0001-Drop-duplicate-CONFIG_SYS_NO_FLASH-from-mx6_common.patch
+Patch3:    0002-mx6cuboxi-drop-options-that-are-duplicated-in-mx6_co.patch
+Patch4:    0003-imx6-standardise-OCOTP-and-fuse-config-to-mx6_common.patch
+Patch5:    0004-imx6-define-CONFIG_IMX6_THERMAL-as-a-default-option.patch
+Patch6:    0001-wandboard-add-support-for-generic-distro-boot.patch
+Patch7:    0002-am33xx-add-support-for-generic-distro-boot.patch
+Patch8:    0003-omap4-add-support-for-generic-distro-boot.patch
+
 #Patch1:   0001-make-sure-that-the-filesystem-is-a-type-of-fat.patch
 #Patch2:   0002-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
 #Patch3:   0003-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
@@ -192,6 +200,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Mon Jun 22 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-0.3rc2
+- Initial rebase of BBB/panda/wandboard generic distro boot support
+
 * Tue Jun 16 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-0.2rc2
 - Enable i.MX6 marsboard and warp
 - Use upstream build fix

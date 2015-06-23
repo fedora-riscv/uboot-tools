@@ -1,0 +1,35 @@
+From d908d1ed652b82c89101dfa5c814a0146a81a7bd Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Mon, 22 Jun 2015 23:00:13 +0100
+Subject: [PATCH 2/4] mx6cuboxi: drop options that are duplicated in mx6_common
+
+These options were merged into mx6_common and were seemingly missed
+in mx6cuboxi so drop the duplicates
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ include/configs/mx6cuboxi.h | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/include/configs/mx6cuboxi.h b/include/configs/mx6cuboxi.h
+index 3f99512..3d5bba7 100644
+--- a/include/configs/mx6cuboxi.h
++++ b/include/configs/mx6cuboxi.h
+@@ -186,14 +186,6 @@
+ 		"fi; " \
+ 	"else run netboot; fi"
+ 
+-/* Miscellaneous configurable options */
+-#define CONFIG_SYS_LONGHELP
+-#define CONFIG_SYS_HUSH_PARSER
+-#define CONFIG_AUTO_COMPLETE
+-#define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE
+-
+-#define CONFIG_CMDLINE_EDITING
+-
+ /* Physical Memory Map */
+ #define CONFIG_NR_DRAM_BANKS           1
+ #define CONFIG_SYS_SDRAM_BASE          MMDC0_ARB_BASE_ADDR
+-- 
+2.4.3
+

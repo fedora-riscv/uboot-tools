@@ -1,0 +1,290 @@
+From 438fae6b3144c81ecbffc2f3236da57536e8404e Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Mon, 22 Jun 2015 23:01:05 +0100
+Subject: [PATCH 3/4] imx6: standardise OCOTP and fuse config to mx6_common
+
+According to README.mxc_ocotp the OCOTP is a stanard i.MX6 SoC feature
+so centralise the config in mx6_common.h so functionality is standard
+across all boards
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ include/configs/aristainetos-common.h | 3 ---
+ include/configs/embestmx6boards.h     | 5 -----
+ include/configs/gw_ventana.h          | 5 -----
+ include/configs/mx6_common.h          | 4 ++++
+ include/configs/mx6cuboxi.h           | 2 --
+ include/configs/mx6sabre_common.h     | 5 -----
+ include/configs/mx6slevk.h            | 5 -----
+ include/configs/mx6sxsabresd.h        | 5 -----
+ include/configs/nitrogen6x.h          | 5 -----
+ include/configs/novena.h              | 6 ------
+ include/configs/ot1200.h              | 4 ----
+ include/configs/platinum.h            | 4 ----
+ include/configs/tbs2910.h             | 6 ------
+ include/configs/tqma6.h               | 4 ----
+ include/configs/wandboard.h           | 5 -----
+ include/configs/warp.h                | 4 ----
+ 16 files changed, 4 insertions(+), 68 deletions(-)
+
+diff --git a/include/configs/aristainetos-common.h b/include/configs/aristainetos-common.h
+index eb50639..575f22d 100644
+--- a/include/configs/aristainetos-common.h
++++ b/include/configs/aristainetos-common.h
+@@ -26,9 +26,6 @@
+ 
+ #define CONFIG_MXC_UART
+ 
+-#define CONFIG_CMD_FUSE
+-#define CONFIG_MXC_OCOTP
+-
+ /* MMC Configs */
+ #define CONFIG_SYS_FSL_ESDHC_ADDR      0
+ 
+diff --git a/include/configs/embestmx6boards.h b/include/configs/embestmx6boards.h
+index 5dfd56c..85155f1 100644
+--- a/include/configs/embestmx6boards.h
++++ b/include/configs/embestmx6boards.h
+@@ -29,11 +29,6 @@
+ 
+ #define CONFIG_MXC_UART
+ 
+-#define CONFIG_CMD_FUSE
+-#ifdef CONFIG_CMD_FUSE
+-#define CONFIG_MXC_OCOTP
+-#endif
+-
+ /* I2C Configs */
+ #define CONFIG_CMD_I2C
+ #define CONFIG_SYS_I2C
+diff --git a/include/configs/gw_ventana.h b/include/configs/gw_ventana.h
+index 6b8c82d..3d72832 100644
+--- a/include/configs/gw_ventana.h
++++ b/include/configs/gw_ventana.h
+@@ -168,11 +168,6 @@
+ #define CONFIG_CMD_EECONFIG      /* Gateworks EEPROM config cmd */
+ #define CONFIG_CMD_UBI
+ #define CONFIG_RBTREE
+-#define CONFIG_CMD_FUSE          /* eFUSE read/write support */
+-#ifdef CONFIG_CMD_FUSE
+-#define CONFIG_MXC_OCOTP
+-#endif
+-
+ 
+ /* Ethernet support */
+ #define CONFIG_FEC_MXC
+diff --git a/include/configs/mx6_common.h b/include/configs/mx6_common.h
+index b37477a..2a0eb2a 100644
+--- a/include/configs/mx6_common.h
++++ b/include/configs/mx6_common.h
+@@ -112,4 +112,8 @@
+ #define CONFIG_FSL_ESDHC
+ #define CONFIG_FSL_USDHC
+ 
++/* Fuses */
++#define CONFIG_CMD_FUSE
++#define CONFIG_MXC_OCOTP
++
+ #endif
+diff --git a/include/configs/mx6cuboxi.h b/include/configs/mx6cuboxi.h
+index 3d5bba7..634a09f 100644
+--- a/include/configs/mx6cuboxi.h
++++ b/include/configs/mx6cuboxi.h
+@@ -20,8 +20,6 @@
+ #define CONFIG_BOARD_EARLY_INIT_F
+ #define CONFIG_BOARD_LATE_INIT
+ #define CONFIG_MXC_UART
+-#define CONFIG_CMD_FUSE
+-#define CONFIG_MXC_OCOTP
+ 
+ /* MMC Configs */
+ #define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC2_BASE_ADDR
+diff --git a/include/configs/mx6sabre_common.h b/include/configs/mx6sabre_common.h
+index c8c9f81..3ed4d23 100644
+--- a/include/configs/mx6sabre_common.h
++++ b/include/configs/mx6sabre_common.h
+@@ -21,11 +21,6 @@
+ 
+ #define CONFIG_MXC_UART
+ 
+-#define CONFIG_CMD_FUSE
+-#if defined(CONFIG_CMD_FUSE) || defined(CONFIG_IMX6_THERMAL)
+-#define CONFIG_MXC_OCOTP
+-#endif
+-
+ /* MMC Configs */
+ #define CONFIG_SYS_FSL_ESDHC_ADDR      0
+ 
+diff --git a/include/configs/mx6slevk.h b/include/configs/mx6slevk.h
+index 4b5c637..8cc9b5e 100644
+--- a/include/configs/mx6slevk.h
++++ b/include/configs/mx6slevk.h
+@@ -193,9 +193,4 @@
+ 
+ #define CONFIG_IMX6_THERMAL
+ 
+-#define CONFIG_CMD_FUSE
+-#if defined(CONFIG_CMD_FUSE) || defined(CONFIG_IMX6_THERMAL)
+-#define CONFIG_MXC_OCOTP
+-#endif
+-
+ #endif				/* __CONFIG_H */
+diff --git a/include/configs/mx6sxsabresd.h b/include/configs/mx6sxsabresd.h
+index 63ec7c6..6d5d244 100644
+--- a/include/configs/mx6sxsabresd.h
++++ b/include/configs/mx6sxsabresd.h
+@@ -178,11 +178,6 @@
+ 
+ #define CONFIG_IMX6_THERMAL
+ 
+-#define CONFIG_CMD_FUSE
+-#if defined(CONFIG_CMD_FUSE) || defined(CONFIG_IMX6_THERMAL)
+-#define CONFIG_MXC_OCOTP
+-#endif
+-
+ #define CONFIG_CMD_TIME
+ 
+ #define CONFIG_FSL_QSPI
+diff --git a/include/configs/nitrogen6x.h b/include/configs/nitrogen6x.h
+index beaa119..b038dfe 100644
+--- a/include/configs/nitrogen6x.h
++++ b/include/configs/nitrogen6x.h
+@@ -26,11 +26,6 @@
+ #define CONFIG_USB_ETH_CDC
+ #define CONFIG_NETCONSOLE
+ 
+-#define CONFIG_CMD_FUSE
+-#ifdef CONFIG_CMD_FUSE
+-#define CONFIG_MXC_OCOTP
+-#endif
+-
+ #define CONFIG_MXC_UART
+ #define CONFIG_MXC_UART_BASE	       UART2_BASE
+ 
+diff --git a/include/configs/novena.h b/include/configs/novena.h
+index 1dc9d83..eb7ebd1 100644
+--- a/include/configs/novena.h
++++ b/include/configs/novena.h
+@@ -24,7 +24,6 @@
+ #define CONFIG_CMD_DHCP
+ #define CONFIG_CMD_EEPROM
+ #define CONFIG_CMD_I2C
+-#define CONFIG_CMD_FUSE
+ #define CONFIG_CMD_MII
+ #define CONFIG_CMD_PCI
+ #define CONFIG_CMD_PING
+@@ -117,11 +116,6 @@
+ #define CONFIG_SYS_FSL_ESDHC_ADDR	0
+ #define CONFIG_SYS_FSL_USDHC_NUM	2
+ 
+-/* OCOTP Configs */
+-#ifdef CONFIG_CMD_FUSE
+-#define CONFIG_MXC_OCOTP
+-#endif
+-
+ /* PCI express */
+ #ifdef CONFIG_CMD_PCI
+ #define CONFIG_PCI
+diff --git a/include/configs/ot1200.h b/include/configs/ot1200.h
+index 2bbf2b9..b2eb6f5 100644
+--- a/include/configs/ot1200.h
++++ b/include/configs/ot1200.h
+@@ -16,10 +16,6 @@
+ #define CONFIG_BOARD_EARLY_INIT_F
+ #define CONFIG_MISC_INIT_R
+ 
+-/* FUSE Configs */
+-#define CONFIG_CMD_FUSE
+-#define CONFIG_MXC_OCOTP
+-
+ /* UART Configs */
+ #define CONFIG_MXC_UART
+ #define CONFIG_MXC_UART_BASE           UART1_BASE
+diff --git a/include/configs/platinum.h b/include/configs/platinum.h
+index fd19461..d651432 100644
+--- a/include/configs/platinum.h
++++ b/include/configs/platinum.h
+@@ -23,7 +23,6 @@
+ 
+ #define CONFIG_CMD_BMODE
+ #define CONFIG_CMD_DHCP
+-#define CONFIG_CMD_FUSE
+ #define CONFIG_CMD_I2C
+ #define CONFIG_CMD_MII
+ #define CONFIG_CMD_MTDPARTS
+@@ -103,9 +102,6 @@
+ #define CONFIG_APBH_DMA_BURST
+ #define CONFIG_APBH_DMA_BURST8
+ 
+-/* Fuse support */
+-#define CONFIG_MXC_OCOTP
+-
+ /* Environment in NAND */
+ #define CONFIG_ENV_IS_IN_NAND
+ #define CONFIG_ENV_OFFSET		(16 << 20)
+diff --git a/include/configs/tbs2910.h b/include/configs/tbs2910.h
+index e1c9937..d97cba7 100644
+--- a/include/configs/tbs2910.h
++++ b/include/configs/tbs2910.h
+@@ -167,12 +167,6 @@
+ #define CONFIG_I2C_EDID
+ #endif
+ 
+-/* Fuses */
+-#define CONFIG_CMD_FUSE
+-#ifdef CONFIG_CMD_FUSE
+-#define CONFIG_MXC_OCOTP
+-#endif
+-
+ /* Environment organization */
+ #define CONFIG_ENV_IS_IN_MMC
+ #define CONFIG_SYS_MMC_ENV_DEV		2
+diff --git a/include/configs/tqma6.h b/include/configs/tqma6.h
+index 00294f6..37794fc 100644
+--- a/include/configs/tqma6.h
++++ b/include/configs/tqma6.h
+@@ -100,10 +100,6 @@
+ #define CONFIG_USB_MAX_CONTROLLER_COUNT	2
+ #define CONFIG_EHCI_HCD_INIT_AFTER_RESET	/* For OTG port */
+ 
+-/* Fuses */
+-#define CONFIG_MXC_OCOTP
+-#define CONFIG_CMD_FUSE
+-
+ #define CONFIG_CMD_PING
+ #define CONFIG_CMD_DHCP
+ #define CONFIG_CMD_MII
+diff --git a/include/configs/wandboard.h b/include/configs/wandboard.h
+index f05b55a..f4e9cf2 100644
+--- a/include/configs/wandboard.h
++++ b/include/configs/wandboard.h
+@@ -84,11 +84,6 @@
+ #define CONFIG_IMX_HDMI
+ #define CONFIG_IMX_VIDEO_SKIP
+ 
+-#define CONFIG_CMD_FUSE
+-#ifdef CONFIG_CMD_FUSE
+-#define CONFIG_MXC_OCOTP
+-#endif
+-
+ #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+ 	"script=boot.scr\0" \
+diff --git a/include/configs/warp.h b/include/configs/warp.h
+index 39b4919..2592ddb 100644
+--- a/include/configs/warp.h
++++ b/include/configs/warp.h
+@@ -97,10 +97,6 @@
+ #define CONFIG_SYS_DFU_DATA_BUF_SIZE SZ_16M
+ #define DFU_DEFAULT_POLL_TIMEOUT 300
+ 
+-/* Fuses */
+-#define CONFIG_CMD_FUSE
+-#define CONFIG_MXC_OCOTP
+-
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+ 	"script=boot.scr\0" \
+ 	"image=zImage\0" \
+-- 
+2.4.3
+
