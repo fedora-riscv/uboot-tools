@@ -1,7 +1,7 @@
-From 438fae6b3144c81ecbffc2f3236da57536e8404e Mon Sep 17 00:00:00 2001
+From 8cbd2ed9b11d4fec40a072628c7c74bc86530a53 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Mon, 22 Jun 2015 23:01:05 +0100
-Subject: [PATCH 3/4] imx6: standardise OCOTP and fuse config to mx6_common
+Subject: [PATCH 3/9] imx6: standardise OCOTP and fuse config to mx6_common
 
 According to README.mxc_ocotp the OCOTP is a stanard i.MX6 SoC feature
 so centralise the config in mx6_common.h so functionality is standard
@@ -28,7 +28,7 @@ Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
  16 files changed, 4 insertions(+), 68 deletions(-)
 
 diff --git a/include/configs/aristainetos-common.h b/include/configs/aristainetos-common.h
-index eb50639..575f22d 100644
+index dd012f1..4a5d4fb 100644
 --- a/include/configs/aristainetos-common.h
 +++ b/include/configs/aristainetos-common.h
 @@ -26,9 +26,6 @@
@@ -42,7 +42,7 @@ index eb50639..575f22d 100644
  #define CONFIG_SYS_FSL_ESDHC_ADDR      0
  
 diff --git a/include/configs/embestmx6boards.h b/include/configs/embestmx6boards.h
-index 5dfd56c..85155f1 100644
+index cba58aa..12744a6 100644
 --- a/include/configs/embestmx6boards.h
 +++ b/include/configs/embestmx6boards.h
 @@ -29,11 +29,6 @@
@@ -58,10 +58,10 @@ index 5dfd56c..85155f1 100644
  #define CONFIG_CMD_I2C
  #define CONFIG_SYS_I2C
 diff --git a/include/configs/gw_ventana.h b/include/configs/gw_ventana.h
-index 6b8c82d..3d72832 100644
+index 902ec2c..df1ff43 100644
 --- a/include/configs/gw_ventana.h
 +++ b/include/configs/gw_ventana.h
-@@ -168,11 +168,6 @@
+@@ -165,11 +165,6 @@
  #define CONFIG_CMD_EECONFIG      /* Gateworks EEPROM config cmd */
  #define CONFIG_CMD_UBI
  #define CONFIG_RBTREE
@@ -74,10 +74,10 @@ index 6b8c82d..3d72832 100644
  /* Ethernet support */
  #define CONFIG_FEC_MXC
 diff --git a/include/configs/mx6_common.h b/include/configs/mx6_common.h
-index b37477a..2a0eb2a 100644
+index 4c66491..568bbf4 100644
 --- a/include/configs/mx6_common.h
 +++ b/include/configs/mx6_common.h
-@@ -112,4 +112,8 @@
+@@ -110,4 +110,8 @@
  #define CONFIG_FSL_ESDHC
  #define CONFIG_FSL_USDHC
  
@@ -100,7 +100,7 @@ index 3d5bba7..634a09f 100644
  /* MMC Configs */
  #define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC2_BASE_ADDR
 diff --git a/include/configs/mx6sabre_common.h b/include/configs/mx6sabre_common.h
-index c8c9f81..3ed4d23 100644
+index 6c3c52e..e42dfc9 100644
 --- a/include/configs/mx6sabre_common.h
 +++ b/include/configs/mx6sabre_common.h
 @@ -21,11 +21,6 @@
@@ -116,10 +116,10 @@ index c8c9f81..3ed4d23 100644
  #define CONFIG_SYS_FSL_ESDHC_ADDR      0
  
 diff --git a/include/configs/mx6slevk.h b/include/configs/mx6slevk.h
-index 4b5c637..8cc9b5e 100644
+index a7da111..3cecd94 100644
 --- a/include/configs/mx6slevk.h
 +++ b/include/configs/mx6slevk.h
-@@ -193,9 +193,4 @@
+@@ -192,9 +192,4 @@
  
  #define CONFIG_IMX6_THERMAL
  
@@ -130,7 +130,7 @@ index 4b5c637..8cc9b5e 100644
 -
  #endif				/* __CONFIG_H */
 diff --git a/include/configs/mx6sxsabresd.h b/include/configs/mx6sxsabresd.h
-index 63ec7c6..6d5d244 100644
+index 2b278a8..848bdcd 100644
 --- a/include/configs/mx6sxsabresd.h
 +++ b/include/configs/mx6sxsabresd.h
 @@ -178,11 +178,6 @@
@@ -146,7 +146,7 @@ index 63ec7c6..6d5d244 100644
  
  #define CONFIG_FSL_QSPI
 diff --git a/include/configs/nitrogen6x.h b/include/configs/nitrogen6x.h
-index beaa119..b038dfe 100644
+index 67a3c97..2e81ad4 100644
 --- a/include/configs/nitrogen6x.h
 +++ b/include/configs/nitrogen6x.h
 @@ -26,11 +26,6 @@
@@ -186,7 +186,7 @@ index 1dc9d83..eb7ebd1 100644
  #ifdef CONFIG_CMD_PCI
  #define CONFIG_PCI
 diff --git a/include/configs/ot1200.h b/include/configs/ot1200.h
-index 2bbf2b9..b2eb6f5 100644
+index fb58acf..0d06fce 100644
 --- a/include/configs/ot1200.h
 +++ b/include/configs/ot1200.h
 @@ -16,10 +16,6 @@
@@ -240,10 +240,10 @@ index e1c9937..d97cba7 100644
  #define CONFIG_ENV_IS_IN_MMC
  #define CONFIG_SYS_MMC_ENV_DEV		2
 diff --git a/include/configs/tqma6.h b/include/configs/tqma6.h
-index 00294f6..37794fc 100644
+index 78a8e39..0993d6d 100644
 --- a/include/configs/tqma6.h
 +++ b/include/configs/tqma6.h
-@@ -100,10 +100,6 @@
+@@ -99,10 +99,6 @@
  #define CONFIG_USB_MAX_CONTROLLER_COUNT	2
  #define CONFIG_EHCI_HCD_INIT_AFTER_RESET	/* For OTG port */
  
@@ -271,10 +271,10 @@ index f05b55a..f4e9cf2 100644
  #define CONFIG_EXTRA_ENV_SETTINGS \
  	"script=boot.scr\0" \
 diff --git a/include/configs/warp.h b/include/configs/warp.h
-index 39b4919..2592ddb 100644
+index 48e2058..2331767 100644
 --- a/include/configs/warp.h
 +++ b/include/configs/warp.h
-@@ -97,10 +97,6 @@
+@@ -94,10 +94,6 @@
  #define CONFIG_SYS_DFU_DATA_BUF_SIZE SZ_16M
  #define DFU_DEFAULT_POLL_TIMEOUT 300
  

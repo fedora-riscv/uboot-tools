@@ -1,19 +1,19 @@
-From 3391ec0e884965315e6b18f87d3713db4fd461e2 Mon Sep 17 00:00:00 2001
+From e3c92857da59b8c3fdc490515584bc394c10c544 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Fri, 6 Mar 2015 11:11:51 +0000
-Subject: [PATCH 11/14] Add BOOTENV_INIT_COMMAND for commands that may be
- needed to run before bootcmd, such as setting the fdt file variables for
- platfroms that detect on boot.
+Date: Thu, 2 Jul 2015 23:28:56 +0100
+Subject: [PATCH 8/9] Add BOOTENV_INIT_COMMAND for commands that may be needed
+ to run before bootcmd, such as setting the fdt file variables for platfroms
+ that detect on boot.
 
 ---
  include/config_distro_bootcmd.h | 6 +++++-
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index 8614cc4..1461eaf 100644
+index 3a360ca4..dcad4c8 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
-@@ -164,6 +164,10 @@
+@@ -176,6 +176,10 @@
  #define BOOTENV_BOOT_TARGETS \
  	"boot_targets=" BOOT_TARGET_DEVICES(BOOTENV_DEV_NAME) "\0"
  
@@ -21,10 +21,10 @@ index 8614cc4..1461eaf 100644
 +#define BOOTENV_INIT_COMMAND
 +#endif
 +
- #ifndef BOOTENV_POST_COMMAND
- #define BOOTENV_POST_COMMAND
- #endif
-@@ -248,7 +252,7 @@
+ #define BOOTENV_DEV(devtypeu, devtypel, instance) \
+ 	BOOTENV_DEV_##devtypeu(devtypeu, devtypel, instance)
+ #define BOOTENV \
+@@ -237,7 +241,7 @@
  	\
  	BOOT_TARGET_DEVICES(BOOTENV_DEV)                                  \
  	\
@@ -32,7 +32,7 @@ index 8614cc4..1461eaf 100644
 +	"distro_bootcmd=" BOOTENV_INIT_COMMAND BOOTENV_SET_SCSI_NEED_INIT                      \
  		"for target in ${boot_targets}; do "                      \
  			"run bootcmd_${target}; "                         \
- 		"done;"                                                   \
+ 		"done\0"
 -- 
-2.3.2
+2.4.3
 

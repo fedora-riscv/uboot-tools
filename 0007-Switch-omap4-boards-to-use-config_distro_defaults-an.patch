@@ -1,19 +1,19 @@
-From 2080f6a04c624b414b8934c7717b40836ed4dbcd Mon Sep 17 00:00:00 2001
+From 7a052aa7d5329d54f279b2b0aa967391a3d4363d Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Fri, 6 Mar 2015 10:38:05 +0000
-Subject: [PATCH 07/14] Switch omap4 boards to use config_distro_defaults and
+Date: Thu, 2 Jul 2015 23:26:44 +0100
+Subject: [PATCH 7/9] Switch omap4 boards to use config_distro_defaults and
  config_distro_bootcmd.
 
- Add pxefile_addr_r to DEFAULT_LINUX_BOOT_ENV, as pxefile_addr_r  is used
- to store the pxe boot configuation file in config_distro_defaults.
- adjust adress of scriptaddr to be unique
+Add pxefile_addr_r to DEFAULT_LINUX_BOOT_ENV, as pxefile_addr_r  is used
+to store the pxe boot configuation file in config_distro_defaults.
+adjust adress of scriptaddr to be unique
 ---
  include/configs/ti_armv7_common.h |  3 ++-
- include/configs/ti_omap4_common.h | 39 ++++++++++++++++-----------------------
- 2 files changed, 18 insertions(+), 24 deletions(-)
+ include/configs/ti_omap4_common.h | 41 ++++++++++++++++-----------------------
+ 2 files changed, 19 insertions(+), 25 deletions(-)
 
 diff --git a/include/configs/ti_armv7_common.h b/include/configs/ti_armv7_common.h
-index b6e37b3..d1e259e 100644
+index d6073b2..3523e67 100644
 --- a/include/configs/ti_armv7_common.h
 +++ b/include/configs/ti_armv7_common.h
 @@ -54,7 +54,8 @@
@@ -27,12 +27,12 @@ index b6e37b3..d1e259e 100644
  	"fdt_addr_r=0x88000000\0" \
  	"rdaddr=0x88080000\0" \
 diff --git a/include/configs/ti_omap4_common.h b/include/configs/ti_omap4_common.h
-index 1c93aab..5402793 100644
+index e966134..51b7265 100644
 --- a/include/configs/ti_omap4_common.h
 +++ b/include/configs/ti_omap4_common.h
-@@ -82,6 +82,18 @@
- #undef CONFIG_CMD_NET
- #undef CONFIG_CMD_NFS
+@@ -78,6 +78,18 @@
+ #define CONFIG_USB_TTY			1
+ #define CONFIG_SYS_CONSOLE_IS_IN_ENV	1
  
 +#ifndef CONFIG_SPL_BUILD
 +#include <config_distro_defaults.h>
@@ -49,7 +49,16 @@ index 1c93aab..5402793 100644
  /*
   * Environment setup
   */
-@@ -129,30 +141,11 @@
+@@ -85,7 +97,7 @@
+ 	DEFAULT_LINUX_BOOT_ENV \
+ 	"console=ttyO2,115200n8\0" \
+ 	"fdtfile=undefined\0" \
+-	"bootpart=0:2\0" \
++	"bootpart=1\0" \
+ 	"bootdir=/boot\0" \
+ 	"bootfile=zImage\0" \
+ 	"usbtty=cdc_acm\0" \
+@@ -125,30 +137,11 @@
  		"if test $fdtfile = undefined; then " \
  			"echo WARNING: Could not determine device tree to use; fi; \0" \
  	"loadfdt=load mmc ${bootpart} ${fdtaddr} ${bootdir}/${fdtfile}\0" \
@@ -85,5 +94,5 @@ index 1c93aab..5402793 100644
  /*
   * Defines for SPL
 -- 
-2.3.2
+2.4.3
 

@@ -1,7 +1,7 @@
-From 654bd00dfe3b1fa00715703b40ba4323ca0d894f Mon Sep 17 00:00:00 2001
+From 686081c703dbe09da79a355232e3a19a034b82e6 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Mon, 22 Jun 2015 23:01:37 +0100
-Subject: [PATCH 4/4] imx6: define CONFIG_IMX6_THERMAL as a default option
+Date: Thu, 2 Jul 2015 19:29:48 +0100
+Subject: [PATCH 4/9] imx6: define CONFIG_IMX6_THERMAL as a default option
 
 Update boards that already include it, add DM options for those
 that don't yet.
@@ -12,7 +12,7 @@ Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
  configs/aristainetos_defconfig      | 2 ++
  configs/cgtqmx6qeval_defconfig      | 2 ++
  configs/cm_fx6_defconfig            | 2 ++
- configs/gwventana_defconfig         | 2 ++
+ configs/gwventana_defconfig         | 1 +
  configs/mx6dlarm2_defconfig         | 2 ++
  configs/mx6dlarm2_lpddr2_defconfig  | 2 ++
  configs/mx6dlsabreauto_defconfig    | 2 ++
@@ -48,360 +48,359 @@ Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
  include/configs/mx6_common.h        | 2 ++
  include/configs/mx6cuboxi.h         | 2 --
  include/configs/mx6sabre_common.h   | 2 --
- 40 files changed, 72 insertions(+), 9 deletions(-)
+ 40 files changed, 71 insertions(+), 9 deletions(-)
 
 diff --git a/configs/aristainetos2_defconfig b/configs/aristainetos2_defconfig
-index af92f69..1e59619 100644
+index e676f0e..8b50539 100644
 --- a/configs/aristainetos2_defconfig
 +++ b/configs/aristainetos2_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_ARISTAINETOS2=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/aristainetos/aristainetos2.cfg,MX6DL"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/aristainetos/aristainetos2.cfg,MX6DL"
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/aristainetos_defconfig b/configs/aristainetos_defconfig
-index 306d4a8..f023aac 100644
+index f5b0b6b..0bac533 100644
 --- a/configs/aristainetos_defconfig
 +++ b/configs/aristainetos_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_ARISTAINETOS=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/aristainetos/aristainetos.cfg,MX6DL"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/aristainetos/aristainetos.cfg,MX6DL"
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/cgtqmx6qeval_defconfig b/configs/cgtqmx6qeval_defconfig
-index 58b98b7..7a3f75c 100644
+index e1eb871..b719cba 100644
 --- a/configs/cgtqmx6qeval_defconfig
 +++ b/configs/cgtqmx6qeval_defconfig
-@@ -2,3 +2,5 @@ CONFIG_ARM=y
- CONFIG_TARGET_CGTQMX6EVAL=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/congatec/cgtqmx6eval/imximage.cfg,MX6Q"
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/congatec/cgtqmx6eval/imximage.cfg,MX6
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ # CONFIG_CMD_SETEXPR is not set
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/cm_fx6_defconfig b/configs/cm_fx6_defconfig
-index 4db785d..f141167 100644
+index 6be5c17..7c117d9 100644
 --- a/configs/cm_fx6_defconfig
 +++ b/configs/cm_fx6_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_CM_FX6=y
- CONFIG_SPL=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,MX6QDL,SPL"
- CONFIG_CMD_NET=y
+@@ -10,3 +10,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,MX6QDL,SPL"
+ # CONFIG_CMD_FPGA is not set
+ # CONFIG_CMD_SETEXPR is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/gwventana_defconfig b/configs/gwventana_defconfig
-index 5cfe983..3779a1c 100644
+index 401f77e..adcbf78 100644
 --- a/configs/gwventana_defconfig
 +++ b/configs/gwventana_defconfig
-@@ -7,3 +7,5 @@ CONFIG_SPL_STACK_R_ADDR=0x18000000
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,MX6QDL"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
-+CONFIG_DM=y
+@@ -8,3 +8,4 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,MX6QDL"
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_DM=y
+ CONFIG_DM_SERIAL=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/mx6dlarm2_defconfig b/configs/mx6dlarm2_defconfig
-index 4324ccf..b81c9ab 100644
+index 6c1ba33..4237950 100644
 --- a/configs/mx6dlarm2_defconfig
 +++ b/configs/mx6dlarm2_defconfig
-@@ -2,3 +2,5 @@ CONFIG_ARM=y
- CONFIG_TARGET_MX6QARM2=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6qarm2/imximage_mx6dl.cfg,MX6DL,DDR_MB=2048"
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6qarm2/imximage_mx6dl.cfg
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ # CONFIG_CMD_SETEXPR is not set
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/mx6dlarm2_lpddr2_defconfig b/configs/mx6dlarm2_lpddr2_defconfig
-index 7681814..efbca94 100644
+index 4624a09..054e912 100644
 --- a/configs/mx6dlarm2_lpddr2_defconfig
 +++ b/configs/mx6dlarm2_lpddr2_defconfig
-@@ -2,3 +2,5 @@ CONFIG_ARM=y
- CONFIG_TARGET_MX6QARM2=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6qarm2/imximage_mx6dl.cfg,MX6DL,MX6DL_LPDDR2,DDR_MB=512"
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6qarm2/imximage_mx6dl.cfg
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ # CONFIG_CMD_SETEXPR is not set
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/mx6dlsabreauto_defconfig b/configs/mx6dlsabreauto_defconfig
-index 7578fc8..1052088 100644
+index 756e5db..99aaf92 100644
 --- a/configs/mx6dlsabreauto_defconfig
 +++ b/configs/mx6dlsabreauto_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_MX6QSABREAUTO=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6qsabreauto/mx6dl.cfg,MX6DL"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6qsabreauto/mx6dl.cfg,MX6
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/mx6dlsabresd_defconfig b/configs/mx6dlsabresd_defconfig
-index 92d77f9..becca3f 100644
+index de99998..791b565 100644
 --- a/configs/mx6dlsabresd_defconfig
 +++ b/configs/mx6dlsabresd_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_MX6SABRESD=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6sabresd/mx6dlsabresd.cfg,MX6DL"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6sabresd/mx6dlsabresd.cfg
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/mx6qarm2_defconfig b/configs/mx6qarm2_defconfig
-index 51ab7e3..2a3cab9 100644
+index 42dbded..97fd4e0 100644
 --- a/configs/mx6qarm2_defconfig
 +++ b/configs/mx6qarm2_defconfig
-@@ -2,3 +2,5 @@ CONFIG_ARM=y
- CONFIG_TARGET_MX6QARM2=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6qarm2/imximage.cfg,MX6Q,DDR_MB=2048"
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6qarm2/imximage.cfg,MX6Q,
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ # CONFIG_CMD_SETEXPR is not set
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/mx6qarm2_lpddr2_defconfig b/configs/mx6qarm2_lpddr2_defconfig
-index c590c39..b6db3ab 100644
+index 5f9105f..f18818d 100644
 --- a/configs/mx6qarm2_lpddr2_defconfig
 +++ b/configs/mx6qarm2_lpddr2_defconfig
-@@ -2,3 +2,5 @@ CONFIG_ARM=y
- CONFIG_TARGET_MX6QARM2=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6qarm2/imximage.cfg,MX6Q,MX6DQ_LPDDR2,DDR_MB=512"
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6qarm2/imximage.cfg,MX6Q,
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ # CONFIG_CMD_SETEXPR is not set
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/mx6qsabreauto_defconfig b/configs/mx6qsabreauto_defconfig
-index 3d584bd..5deb638 100644
+index 9343bcc..b8c7cc9 100644
 --- a/configs/mx6qsabreauto_defconfig
 +++ b/configs/mx6qsabreauto_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_MX6QSABREAUTO=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6qsabreauto/imximage.cfg,MX6Q"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6qsabreauto/imximage.cfg,
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/mx6qsabresd_defconfig b/configs/mx6qsabresd_defconfig
-index 887a509..8d40917 100644
+index 732c1dc..29efcdd 100644
 --- a/configs/mx6qsabresd_defconfig
 +++ b/configs/mx6qsabresd_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_MX6SABRESD=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6sabresd/mx6q_4x_mt41j128.cfg,MX6Q"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6sabresd/mx6q_4x_mt41j128
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/mx6sabresd_spl_defconfig b/configs/mx6sabresd_spl_defconfig
-index a9adcdb..70a06fb 100644
+index d93a40d..9a36678 100644
 --- a/configs/mx6sabresd_spl_defconfig
 +++ b/configs/mx6sabresd_spl_defconfig
-@@ -4,3 +4,5 @@ CONFIG_SPL=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,SPL,MX6Q"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -5,3 +5,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,SPL,MX6Q"
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/mx6sxsabresd_defconfig b/configs/mx6sxsabresd_defconfig
-index 058e3f8..b758e2b 100644
+index e6e4db5..af4fe4a 100644
 --- a/configs/mx6sxsabresd_defconfig
 +++ b/configs/mx6sxsabresd_defconfig
-@@ -2,3 +2,5 @@ CONFIG_ARM=y
- CONFIG_TARGET_MX6SXSABRESD=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6sxsabresd/imximage.cfg,MX6SX"
- CONFIG_CMD_NET=y
+@@ -6,3 +6,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6sxsabresd/imximage.cfg,M
+ # CONFIG_CMD_SETEXPR is not set
+ CONFIG_SPI_FLASH=y
+ CONFIG_SPI_FLASH_BAR=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/mx6sxsabresd_spl_defconfig b/configs/mx6sxsabresd_spl_defconfig
-index 0e3159e..cfd22e2 100644
+index df34894..8c87191 100644
 --- a/configs/mx6sxsabresd_spl_defconfig
 +++ b/configs/mx6sxsabresd_spl_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_MX6SXSABRESD=y
- CONFIG_SPL=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,MX6SX"
- CONFIG_CMD_NET=y
+@@ -6,3 +6,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,MX6SX"
+ # CONFIG_CMD_FLASH is not set
+ # CONFIG_CMD_SETEXPR is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/nitrogen6dl2g_defconfig b/configs/nitrogen6dl2g_defconfig
-index ec0e346..c777261 100644
+index 6cbc0e3..1561fc6 100644
 --- a/configs/nitrogen6dl2g_defconfig
 +++ b/configs/nitrogen6dl2g_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_NITROGEN6X=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6dl2g.cfg,MX6DL,DDR_MB=2048"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6dl2g.cfg
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/nitrogen6dl_defconfig b/configs/nitrogen6dl_defconfig
-index 838a43e..94058aa 100644
+index 055266c..ca30f94 100644
 --- a/configs/nitrogen6dl_defconfig
 +++ b/configs/nitrogen6dl_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_NITROGEN6X=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6dl.cfg,MX6DL,DDR_MB=1024"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6dl.cfg,M
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/nitrogen6q2g_defconfig b/configs/nitrogen6q2g_defconfig
-index a739e22..b6243d2 100644
+index 7b5ccc7..f9792b5 100644
 --- a/configs/nitrogen6q2g_defconfig
 +++ b/configs/nitrogen6q2g_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_NITROGEN6X=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6q2g.cfg,MX6Q,DDR_MB=2048"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6q2g.cfg,
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/nitrogen6q_defconfig b/configs/nitrogen6q_defconfig
-index b4b0524..827ae1c 100644
+index 5cc245e..74fc2a7 100644
 --- a/configs/nitrogen6q_defconfig
 +++ b/configs/nitrogen6q_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_NITROGEN6X=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6q.cfg,MX6Q,DDR_MB=1024"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6q.cfg,MX
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/nitrogen6s1g_defconfig b/configs/nitrogen6s1g_defconfig
-index 118f605..221d2cf 100644
+index b613a49..e4113af 100644
 --- a/configs/nitrogen6s1g_defconfig
 +++ b/configs/nitrogen6s1g_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_NITROGEN6X=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6s1g.cfg,MX6S,DDR_MB=1024"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6s1g.cfg,
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/nitrogen6s_defconfig b/configs/nitrogen6s_defconfig
-index 3e70de9..26339df 100644
+index b7cd09a..1ebdaf6 100644
 --- a/configs/nitrogen6s_defconfig
 +++ b/configs/nitrogen6s_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_NITROGEN6X=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6s.cfg,MX6S,DDR_MB=512"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6s.cfg,MX
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/novena_defconfig b/configs/novena_defconfig
-index ccc0055..2d8eaab 100644
+index aca98b7..49fabfc 100644
 --- a/configs/novena_defconfig
 +++ b/configs/novena_defconfig
 @@ -4,3 +4,5 @@ CONFIG_SPL=y
  CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,MX6Q"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/ot1200_defconfig b/configs/ot1200_defconfig
-index 20f64bb..693a7c2 100644
+index ea78934..52c88c8 100644
 --- a/configs/ot1200_defconfig
 +++ b/configs/ot1200_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_OT1200=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/bachmann/ot1200/mx6q_4x_mt41j128.cfg,MX6Q"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/bachmann/ot1200/mx6q_4x_mt41j128.cfg,
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/ot1200_spl_defconfig b/configs/ot1200_spl_defconfig
-index 810dff8..be12cba 100644
+index 3c7346b..30e9b79 100644
 --- a/configs/ot1200_spl_defconfig
 +++ b/configs/ot1200_spl_defconfig
-@@ -4,3 +4,5 @@ CONFIG_SPL=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,MX6Q"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -5,3 +5,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,MX6Q"
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/platinum_picon_defconfig b/configs/platinum_picon_defconfig
-index 672ea28..06ed0bb 100644
+index 3484c46..5d5dbe1 100644
 --- a/configs/platinum_picon_defconfig
 +++ b/configs/platinum_picon_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_PLATINUM_PICON=y
- CONFIG_SPL=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,MX6DL"
- CONFIG_CMD_NET=y
+@@ -5,3 +5,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,MX6DL"
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ # CONFIG_CMD_SETEXPR is not set
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/platinum_titanium_defconfig b/configs/platinum_titanium_defconfig
-index 39236f1..9fa33a2 100644
+index 6a2cacf..a8f49fa 100644
 --- a/configs/platinum_titanium_defconfig
 +++ b/configs/platinum_titanium_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_PLATINUM_TITANIUM=y
- CONFIG_SPL=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,MX6Q"
- CONFIG_CMD_NET=y
+@@ -5,3 +5,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg,MX6Q"
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ # CONFIG_CMD_SETEXPR is not set
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/secomx6quq7_defconfig b/configs/secomx6quq7_defconfig
-index f9d7ee9..c9bc064 100644
+index 0095ceb..1fa5f71 100644
 --- a/configs/secomx6quq7_defconfig
 +++ b/configs/secomx6quq7_defconfig
 @@ -7,3 +7,5 @@ CONFIG_SECOMX6_2GB=y
  CONFIG_SYS_EXTRA_OPTIONS="ENV_IS_IN_MMC"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/tbs2910_defconfig b/configs/tbs2910_defconfig
-index 3e720a7..ed9c70f 100644
+index bb14026..f0e5106 100644
 --- a/configs/tbs2910_defconfig
 +++ b/configs/tbs2910_defconfig
 @@ -3,3 +3,5 @@ CONFIG_TARGET_TBS2910=y
  CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/boundary/nitrogen6x/nitrogen6q2g.cfg,MX6Q"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/tqma6q_mba6_mmc_defconfig b/configs/tqma6q_mba6_mmc_defconfig
-index 01355b6..7d6348b 100644
+index ceb3386..148baed 100644
 --- a/configs/tqma6q_mba6_mmc_defconfig
 +++ b/configs/tqma6q_mba6_mmc_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_TQMA6=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/tqc/tqma6/tqma6q.cfg,MX6Q,MBA6,TQMA6X_MMC_BOOT"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/tqc/tqma6/tqma6q.cfg,MX6Q,MBA6,TQMA6X
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/tqma6q_mba6_spi_defconfig b/configs/tqma6q_mba6_spi_defconfig
-index ba24663..c08adb4 100644
+index e413ef4..e935360 100644
 --- a/configs/tqma6q_mba6_spi_defconfig
 +++ b/configs/tqma6q_mba6_spi_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_TQMA6=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/tqc/tqma6/tqma6q.cfg,MX6Q,MBA6,TQMA6X_SPI_BOOT"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/tqc/tqma6/tqma6q.cfg,MX6Q,MBA6,TQMA6X
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/tqma6s_mba6_mmc_defconfig b/configs/tqma6s_mba6_mmc_defconfig
-index cbb4500..b09c8c1 100644
+index 6c37b4f..3ccdab1 100644
 --- a/configs/tqma6s_mba6_mmc_defconfig
 +++ b/configs/tqma6s_mba6_mmc_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_TQMA6=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/tqc/tqma6/tqma6s.cfg,MX6S,MBA6,TQMA6X_MMC_BOOT"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/tqc/tqma6/tqma6s.cfg,MX6S,MBA6,TQMA6X
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/tqma6s_mba6_spi_defconfig b/configs/tqma6s_mba6_spi_defconfig
-index 805d8ab..50d9246 100644
+index af7853f..14cee61 100644
 --- a/configs/tqma6s_mba6_spi_defconfig
 +++ b/configs/tqma6s_mba6_spi_defconfig
-@@ -3,3 +3,5 @@ CONFIG_TARGET_TQMA6=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/tqc/tqma6/tqma6s.cfg,MX6S,MBA6,TQMA6X_SPI_BOOT"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+@@ -4,3 +4,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/tqc/tqma6/tqma6s.cfg,MX6S,MBA6,TQMA6X
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_SPI_FLASH=y
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/udoo_quad_defconfig b/configs/udoo_quad_defconfig
-index 17f48c8..ebf2d9e 100644
+index 42c21c6..5e28330 100644
 --- a/configs/udoo_quad_defconfig
 +++ b/configs/udoo_quad_defconfig
 @@ -3,3 +3,5 @@ CONFIG_TARGET_UDOO=y
  CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/udoo/udoo.cfg,MX6Q,DDR_MB=1024"
- CONFIG_CMD_SETEXPR=y
- CONFIG_CMD_NET=y
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/configs/warp_defconfig b/configs/warp_defconfig
-index 24e1b9f..f43c66b 100644
+index dacb432..0422a91 100644
 --- a/configs/warp_defconfig
 +++ b/configs/warp_defconfig
-@@ -1,3 +1,5 @@
- CONFIG_ARM=y
- CONFIG_TARGET_WARP=y
- CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6slevk/imximage.cfg,MX6SL"
+@@ -6,3 +6,5 @@ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=board/freescale/mx6slevk/imximage.cfg,MX6SL
+ # CONFIG_CMD_SETEXPR is not set
+ # CONFIG_CMD_NET is not set
+ # CONFIG_CMD_NFS is not set
 +CONFIG_DM=y
 +CONFIG_DM_THERMAL=y
 diff --git a/include/configs/embestmx6boards.h b/include/configs/embestmx6boards.h
-index 85155f1..7b53df4 100644
+index 12744a6..7efaa79 100644
 --- a/include/configs/embestmx6boards.h
 +++ b/include/configs/embestmx6boards.h
 @@ -19,8 +19,6 @@
@@ -414,10 +413,10 @@ index 85155f1..7b53df4 100644
  #define CONFIG_SYS_MALLOC_LEN		(10 * SZ_1M)
  
 diff --git a/include/configs/gw_ventana.h b/include/configs/gw_ventana.h
-index 3d72832..b49c153 100644
+index df1ff43..babc21c 100644
 --- a/include/configs/gw_ventana.h
 +++ b/include/configs/gw_ventana.h
-@@ -59,9 +59,6 @@
+@@ -56,9 +56,6 @@
  #define CONFIG_MXC_GPIO
  #define CONFIG_CMD_GPIO
  
@@ -428,10 +427,10 @@ index 3d72832..b49c153 100644
  #define CONFIG_MXC_UART
  #define CONFIG_MXC_UART_BASE	       UART2_BASE
 diff --git a/include/configs/mx6_common.h b/include/configs/mx6_common.h
-index 2a0eb2a..dec4299 100644
+index 568bbf4..2a8de1c 100644
 --- a/include/configs/mx6_common.h
 +++ b/include/configs/mx6_common.h
-@@ -116,4 +116,6 @@
+@@ -114,4 +114,6 @@
  #define CONFIG_CMD_FUSE
  #define CONFIG_MXC_OCOTP
  
@@ -452,7 +451,7 @@ index 634a09f..4eadfd8 100644
  #define CONFIG_BOARD_EARLY_INIT_F
  #define CONFIG_BOARD_LATE_INIT
 diff --git a/include/configs/mx6sabre_common.h b/include/configs/mx6sabre_common.h
-index 3ed4d23..ba95b08 100644
+index e42dfc9..66109bb 100644
 --- a/include/configs/mx6sabre_common.h
 +++ b/include/configs/mx6sabre_common.h
 @@ -11,8 +11,6 @@

@@ -1,25 +1,25 @@
-From b357a39500d81754e496f9e3f298a46cd92212b5 Mon Sep 17 00:00:00 2001
+From fdd3bd2875319bd9602a5b0621e07e7e6c7b51e4 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Fri, 6 Mar 2015 10:45:22 +0000
-Subject: [PATCH 08/14] port utilite to distro generic boot commands
+Date: Fri, 3 Jul 2015 00:08:05 +0100
+Subject: [PATCH 9/9] port utilite to distro generic boot commands
 
 ---
- include/configs/cm_fx6.h | 109 ++++++++++++-----------------------------------
- 1 file changed, 27 insertions(+), 82 deletions(-)
+ include/configs/cm_fx6.h | 107 ++++++++++++-----------------------------------
+ 1 file changed, 27 insertions(+), 80 deletions(-)
 
 diff --git a/include/configs/cm_fx6.h b/include/configs/cm_fx6.h
-index 4207504..58dd5e1 100644
+index 231f4ba..8a2e46c 100644
 --- a/include/configs/cm_fx6.h
 +++ b/include/configs/cm_fx6.h
-@@ -12,7 +12,6 @@
+@@ -11,6 +11,7 @@
+ #ifndef __CONFIG_CM_FX6_H
  #define __CONFIG_CM_FX6_H
  
- #include <asm/arch/imx-regs.h>
--#include <config_distro_defaults.h>
++#include <config_distro_defaults.h>
  #include "mx6_common.h"
  
  /* Machine config */
-@@ -95,97 +94,43 @@
+@@ -66,97 +67,43 @@
  #define CONFIG_ENV_SIZE			(8 * 1024)
  #define CONFIG_ENV_OFFSET		(768 * 1024)
  
@@ -117,7 +117,8 @@ index 4207504..58dd5e1 100644
 -		"run trybootk;" \
 -		"run setboottypez;" \
 -		"run trybootk;\0"
--
++	BOOTENV
+ 
 -#define CONFIG_BOOTCOMMAND \
 -	"run setupmmcboot;" \
 -	"mmc dev ${storagedev};" \
@@ -136,8 +137,6 @@ index 4207504..58dd5e1 100644
 -	"fi;" \
 -	"run setupnandboot;" \
 -	"run nandboot;"
-+	BOOTENV
-+
 +#else /* ifndef CONFIG_SPL_BUILD */
 +#define CONFIG_EXTRA_ENV_SETTINGS
 +#endif
@@ -145,5 +144,5 @@ index 4207504..58dd5e1 100644
  #define CONFIG_PREBOOT		"usb start"
  
 -- 
-2.3.2
+2.4.3
 

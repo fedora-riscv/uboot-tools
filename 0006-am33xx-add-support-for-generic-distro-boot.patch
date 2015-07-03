@@ -1,7 +1,7 @@
-From a3b2b54e1f38abd38121de203618867178462a3a Mon Sep 17 00:00:00 2001
+From 4a5e18997a61176a8a2678ec9405b62b14025fd3 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Tue, 23 Jun 2015 00:53:25 +0100
-Subject: [PATCH 2/3] am33xx: add support for generic distro boot
+Subject: [PATCH 6/9] am33xx: add support for generic distro boot
 
 ---
  include/configs/am335x_evm.h      | 28 ++++++++++++++++++----------
@@ -9,7 +9,7 @@ Subject: [PATCH 2/3] am33xx: add support for generic distro boot
  2 files changed, 19 insertions(+), 10 deletions(-)
 
 diff --git a/include/configs/am335x_evm.h b/include/configs/am335x_evm.h
-index a5f1f06..cb0022f 100644
+index 035c156..81f8331 100644
 --- a/include/configs/am335x_evm.h
 +++ b/include/configs/am335x_evm.h
 @@ -18,6 +18,21 @@
@@ -64,7 +64,7 @@ index a5f1f06..cb0022f 100644
  #define CONFIG_SYS_NS16550_COM1		0x44e09000	/* Base EVM has UART0 */
  #define CONFIG_SYS_NS16550_COM2		0x48022000	/* UART1 */
 diff --git a/include/configs/ti_armv7_common.h b/include/configs/ti_armv7_common.h
-index 7a95cb8..1194820 100644
+index 0aea7d1..d6073b2 100644
 --- a/include/configs/ti_armv7_common.h
 +++ b/include/configs/ti_armv7_common.h
 @@ -54,6 +54,7 @@

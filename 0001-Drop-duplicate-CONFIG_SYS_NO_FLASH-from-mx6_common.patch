@@ -1,7 +1,7 @@
-From 7a3df82d9424bd58ba1e52698ef46c7a32d61b15 Mon Sep 17 00:00:00 2001
+From d3fda4d6daaebfaca34f1d641bb8ad707f1b166b Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Mon, 22 Jun 2015 22:59:51 +0100
-Subject: [PATCH 1/4] Drop duplicate CONFIG_SYS_NO_FLASH from mx6_common
+Date: Thu, 2 Jul 2015 19:10:44 +0100
+Subject: [PATCH 1/9] Drop duplicate CONFIG_SYS_NO_FLASH from mx6_common
 
 It's defind earlier in the file
 
@@ -11,17 +11,17 @@ Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
  1 file changed, 1 deletion(-)
 
 diff --git a/include/configs/mx6_common.h b/include/configs/mx6_common.h
-index 50370e1..b37477a 100644
+index 2ef3201..4c66491 100644
 --- a/include/configs/mx6_common.h
 +++ b/include/configs/mx6_common.h
-@@ -87,7 +87,6 @@
+@@ -86,7 +86,6 @@
  #define CONFIG_CMD_FAT
  
  /* Miscellaneous configurable options */
 -#define CONFIG_SYS_NO_FLASH
- #undef CONFIG_CMD_IMLS
  #define CONFIG_SYS_LONGHELP
  #define CONFIG_SYS_HUSH_PARSER
+ #define CONFIG_CMDLINE_EDITING
 -- 
 2.4.3
 

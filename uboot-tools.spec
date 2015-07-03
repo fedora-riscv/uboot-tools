@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2015.07
-Release:   0.3%{?candidate:.%{candidate}}%{?dist}
+Release:   0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -11,31 +11,14 @@ URL:       http://www.denx.de/wiki/U-Boot
 Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:   armv7-boards
 
-Patch0:    0001-Fix-default-env-includes-to-fix-sandbox-build.patch
-Patch1:    0002-raspberry-pi-fix-timer.patch
-Patch2:    0001-Drop-duplicate-CONFIG_SYS_NO_FLASH-from-mx6_common.patch
-Patch3:    0002-mx6cuboxi-drop-options-that-are-duplicated-in-mx6_co.patch
-Patch4:    0003-imx6-standardise-OCOTP-and-fuse-config-to-mx6_common.patch
-Patch5:    0004-imx6-define-CONFIG_IMX6_THERMAL-as-a-default-option.patch
-Patch6:    0001-wandboard-add-support-for-generic-distro-boot.patch
-Patch7:    0002-am33xx-add-support-for-generic-distro-boot.patch
-Patch8:    0003-omap4-add-support-for-generic-distro-boot.patch
-
-#Patch1:   0001-make-sure-that-the-filesystem-is-a-type-of-fat.patch
-#Patch2:   0002-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
-#Patch3:   0003-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
-#Patch4:   0004-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
-#Patch5:   0005-add-back-adding-console-to-the-bootargs-if-not-prese.patch
-#Patch6:   0006-wandboard-port-to-generic-distro-booting.patch
-#Patch7:   0007-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
-#Patch8:   0008-port-utilite-to-distro-generic-boot-commands.patch
-#Patch9:   0009-RiOT-board-set-console-speed.patch
-#Patch10:  0010-Add-support-for-loading-environment-from-uEnv.txt-in.patch
-#Patch11:  0011-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-#Patch12:  0012-beagle-board-use-ext-support-in-the-SPL.patch
-#Patch13:  0013-WANDBOARD-run-the-dsitro-bootcmd-first-before-fallin.patch
-#Patch14:  0014-BBB-tell-u-boot-to-look-in-the-first-partition-to-lo.patch
-#Patch15:  0001-omap4-distro-boot-partition-fixup.patch
+Patch1:    0001-Drop-duplicate-CONFIG_SYS_NO_FLASH-from-mx6_common.patch
+Patch2:    0002-mx6cuboxi-drop-options-that-are-duplicated-in-mx6_co.patch
+Patch3:    0003-imx6-standardise-OCOTP-and-fuse-config-to-mx6_common.patch
+Patch4:    0005-wandboard-add-support-for-generic-distro-boot.patch
+Patch5:    0006-am33xx-add-support-for-generic-distro-boot.patch
+Patch6:    0007-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
+Patch7:    0008-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
+Patch8:    0009-port-utilite-to-distro-generic-boot-commands.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -200,6 +183,10 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Thu Jul  2 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-0.4rc3
+- Update to 2015.07rc3
+- Some fixes for omap4/am33xx/imx6 devices
+
 * Mon Jun 22 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-0.3rc2
 - Initial rebase of BBB/panda/wandboard generic distro boot support
 
