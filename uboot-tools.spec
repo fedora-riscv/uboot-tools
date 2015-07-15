@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate rc3
 
 Name:      uboot-tools
 Version:   2015.07
-Release:   0.4%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -11,14 +11,11 @@ URL:       http://www.denx.de/wiki/U-Boot
 Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:   armv7-boards
 
-Patch1:    0001-Drop-duplicate-CONFIG_SYS_NO_FLASH-from-mx6_common.patch
-Patch2:    0002-mx6cuboxi-drop-options-that-are-duplicated-in-mx6_co.patch
-Patch3:    0003-imx6-standardise-OCOTP-and-fuse-config-to-mx6_common.patch
-Patch4:    0005-wandboard-add-support-for-generic-distro-boot.patch
-Patch5:    0006-am33xx-add-support-for-generic-distro-boot.patch
-Patch6:    0007-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
-Patch7:    0008-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-Patch8:    0009-port-utilite-to-distro-generic-boot-commands.patch
+Patch1:    0001-wandboard-add-support-for-generic-distro-boot.patch
+Patch2:    0002-am33xx-add-support-for-generic-distro-boot.patch
+Patch3:    0003-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
+Patch4:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
+Patch5:    0005-port-utilite-to-distro-generic-boot-commands.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -99,6 +96,7 @@ git config --unset user.name
 
 rm -rf .git
 
+%build
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
 pngtopnm /usr/share/pixmaps/fedora-logo.png | ppmquant 256 | ppmtobmp -bpp 8 >fedora.bmp
@@ -109,7 +107,6 @@ do
 cp fedora.bmp $bmp
 done
 
-%build
 %ifarch aarch64
 make vexpress_aemv8a_juno_config vexpress_aemv8a_semi_config O=builds/vexpress_aemv8a/
 make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/vexpress_aemv8a/
@@ -183,6 +180,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Wed Jul 15 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-1
+- Update to 2015.07 GA
+
 * Thu Jul  2 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-0.4rc3
 - Update to 2015.07rc3
 - Some fixes for omap4/am33xx/imx6 devices
