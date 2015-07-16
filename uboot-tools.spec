@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2015.07
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -16,6 +16,7 @@ Patch2:    0002-am33xx-add-support-for-generic-distro-boot.patch
 Patch3:    0003-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
 Patch4:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch5:    0005-port-utilite-to-distro-generic-boot-commands.patch
+Patch6:    0006-mx6-utilite-disable-logos.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -180,6 +181,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Thu Jul 16 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-2
+- Disable boot splash on Utilite (cm_fx6)
+
 * Wed Jul 15 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-1
 - Update to 2015.07 GA
 
