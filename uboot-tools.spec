@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2015.07
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Release:   3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -46,37 +46,6 @@ u-boot bootloader binaries for the aarch64 vexpress_aemv8a
 Summary:     u-boot bootloader images for armv7 boards
 Requires:    uboot-tools
 BuildArch:   noarch
-
-Obsoletes: uboot-arndale < %{version}-%{release}
-Provides:  uboot-arndale = %{version}-%{release}
-Obsoletes: uboot-beagle < %{version}-%{release}
-Provides:  uboot-beagle = %{version}-%{release}
-Obsoletes: uboot-beaglebone < %{version}-%{release}
-Provides:  uboot-beaglebone = %{version}-%{release}
-Obsoletes: uboot-highbank < %{version}-%{release}
-Provides:  uboot-highbank = %{version}-%{release}
-Obsoletes: uboot-panda < %{version}-%{release}
-Provides:  uboot-panda = %{version}-%{release}
-Obsoletes: uboot-origen < %{version}-%{release}
-Provides:  uboot-origen = %{version}-%{release}
-Obsoletes: uboot-paz00 < %{version}-%{release}
-Provides:  uboot-paz00 = %{version}-%{release}
-Obsoletes: uboot-smdkv310 < %{version}-%{release}
-Provides:  uboot-smdkv310 = %{version}-%{release}
-Obsoletes: uboot-snow < %{version}-%{release}
-Provides:  uboot-snow = %{version}-%{release}
-Obsoletes: uboot-snowball < %{version}-%{release}
-Provides:  uboot-snowball = %{version}-%{release}
-Obsoletes: uboot-trimslice < %{version}-%{release}
-Provides:  uboot-trimslice = %{version}-%{release}
-Obsoletes: uboot-uevm < %{version}-%{release}
-Provides:  uboot-uevm = %{version}-%{release}
-Obsoletes: uboot-wandboard_dl < %{version}-%{release}
-Provides:  uboot-wandboard_dl = %{version}-%{release}
-Obsoletes: uboot-wandboard_quad < %{version}-%{release}
-Provides:  uboot-wandboard_quad = %{version}-%{release}
-Obsoletes: uboot-wandboard_solo < %{version}-%{release}
-Provides:  uboot-wandboard_solo = %{version}-%{release}
 
 %description -n uboot-images-armv7
 u-boot bootloader binaries for armv7 boards
@@ -149,6 +118,22 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
  done
 done
 
+# Bit of a hack to remove binaries we don't use as they're large
+for board in $(cat %SOURCE1)
+do
+  if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-sunxi-with-spl.bin ]; then
+    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.*
+  fi
+  if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/MLO ]; then
+    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.bin
+  fi
+  if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/SPL ]; then
+    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.bin
+  fi
+  if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.imx ]; then
+    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.bin
+  fi
+done
 %endif
 
 for tool in bmp_logo dumpimage easylogo/easylogo env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr img2srec mkenvimage mkimage ncb proftool ubsha1 xway-swap-bytes
@@ -181,6 +166,10 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Mon Aug  3 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-3
+- Drop some unused u-boot binaries
+- Minor cleanups
+
 * Thu Jul 16 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-2
 - Disable boot splash on Utilite (cm_fx6)
 
