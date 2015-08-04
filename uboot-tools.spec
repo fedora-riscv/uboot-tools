@@ -1,8 +1,8 @@
-#global candidate rc3
+%global candidate rc1
 
 Name:      uboot-tools
-Version:   2015.07
-Release:   3%{?candidate:.%{candidate}}%{?dist}
+Version:   2015.10
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -16,7 +16,6 @@ Patch2:    0002-am33xx-add-support-for-generic-distro-boot.patch
 Patch3:    0003-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
 Patch4:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch5:    0005-port-utilite-to-distro-generic-boot-commands.patch
-Patch6:    0006-mx6-utilite-disable-logos.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -166,6 +165,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Aug  4 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-0.1rc1
+- Update to 2015.10 RC1
+
 * Mon Aug  3 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-3
 - Drop some unused u-boot binaries
 - Minor cleanups

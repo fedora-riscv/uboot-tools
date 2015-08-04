@@ -1,6 +1,6 @@
-From 6084de3105dedfe50d8456cb4b6f3eaee362fa35 Mon Sep 17 00:00:00 2001
+From dec80e7e7b8ae019adf5fda70a5be838d11ae7ea Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Fri, 3 Jul 2015 00:08:05 +0100
+Date: Tue, 4 Aug 2015 09:37:38 +0100
 Subject: [PATCH 5/5] port utilite to distro generic boot commands
 
 ---
@@ -8,7 +8,7 @@ Subject: [PATCH 5/5] port utilite to distro generic boot commands
  1 file changed, 27 insertions(+), 80 deletions(-)
 
 diff --git a/include/configs/cm_fx6.h b/include/configs/cm_fx6.h
-index 231f4ba..8a2e46c 100644
+index bbd9f38..2fb8b7f 100644
 --- a/include/configs/cm_fx6.h
 +++ b/include/configs/cm_fx6.h
 @@ -11,6 +11,7 @@
@@ -19,7 +19,7 @@ index 231f4ba..8a2e46c 100644
  #include "mx6_common.h"
  
  /* Machine config */
-@@ -66,97 +67,43 @@
+@@ -65,97 +66,43 @@
  #define CONFIG_ENV_SIZE			(8 * 1024)
  #define CONFIG_ENV_OFFSET		(768 * 1024)
  
@@ -144,5 +144,5 @@ index 231f4ba..8a2e46c 100644
  #define CONFIG_PREBOOT		"usb start"
  
 -- 
-2.4.5
+2.5.0
 

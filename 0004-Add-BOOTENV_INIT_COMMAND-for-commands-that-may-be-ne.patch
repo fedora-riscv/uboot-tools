@@ -1,4 +1,4 @@
-From 63e521287c2ebbce0a1830dd66cdb5d29a5e9ae6 Mon Sep 17 00:00:00 2001
+From 0fbd61016856c536998ce3ef248079cbf4de0777 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Thu, 2 Jul 2015 23:28:56 +0100
 Subject: [PATCH 4/5] Add BOOTENV_INIT_COMMAND for commands that may be needed
@@ -34,5 +34,5 @@ index 3a360ca4..dcad4c8 100644
  			"run bootcmd_${target}; "                         \
  		"done\0"
 -- 
-2.4.5
+2.5.0
 
