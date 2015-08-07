@@ -1,0 +1,151 @@
+From patchwork Thu Jul  9 07:33:01 2015
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,2/2] ARM: tegra: enable GPU DT node when appropriate
+From: Alexandre Courbot <acourbot@nvidia.com>
+X-Patchwork-Id: 493288
+Message-Id: <1436427181-23904-3-git-send-email-acourbot@nvidia.com>
+To: Stephen Warren <swarren@nvidia.com>, Tom Warren <twarren@nvidia.com>,
+ u-boot@lists.denx.de
+Cc: linux-tegra@vger.kernel.org, gnurou@gmail.com
+Date: Thu, 9 Jul 2015 16:33:01 +0900
+
+T124 requires some specific configuration (VPR setup) to be performed by
+the bootloader before the GPU can be used. For this reason, the GPU node
+in the device tree is disabled by default. This patch enables the node
+if U-boot has performed VPR configuration.
+
+Boards enabled by this patch are T124's Jetson TK1 and Venice 2.
+
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+Cc: Stephen Warren <swarren@nvidia.com>
+Cc: Tom Warren <twarren@nvidia.com>
+---
+ arch/arm/include/asm/arch-tegra/gpu.h | 16 ++++++++++++++++
+ arch/arm/mach-tegra/gpu.c             | 19 +++++++++++++++++++
+ board/nvidia/jetson-tk1/jetson-tk1.c  |  8 ++++++++
+ board/nvidia/venice2/venice2.c        |  8 ++++++++
+ include/configs/jetson-tk1.h          |  2 ++
+ include/configs/venice2.h             |  2 ++
+ 6 files changed, 55 insertions(+)
+
+diff --git a/arch/arm/include/asm/arch-tegra/gpu.h b/arch/arm/include/asm/arch-tegra/gpu.h
+index b347a21835f5..eac73ed5fddf 100644
+--- a/arch/arm/include/asm/arch-tegra/gpu.h
++++ b/arch/arm/include/asm/arch-tegra/gpu.h
+@@ -25,3 +25,19 @@ static inline bool gpu_configured(void)
+ }
+ 
+ #endif /* CONFIG_TEGRA_GPU */
++
++
++#if defined(CONFIG_OF_LIBFDT)
++
++int gpu_enable_node(void *blob, const char *gpupath);
++
++#else /* CONFIG_OF_LIBFDT */
++
++static inline int gpu_enable_node(void *blob, const char *gpupath)
++{
++	return 0;
++}
++
++#endif /* CONFIG_OF_LIBFDT */
++
++#endif
+diff --git a/arch/arm/mach-tegra/gpu.c b/arch/arm/mach-tegra/gpu.c
+index b2fa50b5400e..4ea046d3e5b6 100644
+--- a/arch/arm/mach-tegra/gpu.c
++++ b/arch/arm/mach-tegra/gpu.c
+@@ -45,3 +45,22 @@ bool vpr_configured(void)
+ {
+ 	return _configured;
+ }
++
++#if defined(CONFIG_OF_LIBFDT)
++
++int gpu_enable_node(void *blob, const char *gpupath)
++{
++	int offset;
++
++	if (vpr_configured()) {
++		offset = fdt_path_offset(blob, gpupath);
++		if (offset > 0) {
++			fdt_status_okay(blob, offset);
++			debug("enabled GPU node %s\n", gpupath);
++		}
++	}
++
++	return 0;
++}
++
++#endif
+diff --git a/board/nvidia/jetson-tk1/jetson-tk1.c b/board/nvidia/jetson-tk1/jetson-tk1.c
+index 52425a8f6dea..3c21767ce4da 100644
+--- a/board/nvidia/jetson-tk1/jetson-tk1.c
++++ b/board/nvidia/jetson-tk1/jetson-tk1.c
+@@ -11,6 +11,7 @@
+ 
+ #include <asm/arch/gpio.h>
+ #include <asm/arch/pinmux.h>
++#include <asm/arch-tegra/gpu.h>
+ 
+ #include "pinmux-config-jetson-tk1.h"
+ 
+@@ -79,3 +80,10 @@ int board_eth_init(bd_t *bis)
+ 	return pci_eth_init(bis);
+ }
+ #endif /* PCI */
++
++int ft_board_setup(void *blob, bd_t *bd)
++{
++	gpu_enable_node(blob, "/gpu@0,57000000");
++
++	return 0;
++}
+diff --git a/board/nvidia/venice2/venice2.c b/board/nvidia/venice2/venice2.c
+index c56ef129d6c7..3e2b9a7745e9 100644
+--- a/board/nvidia/venice2/venice2.c
++++ b/board/nvidia/venice2/venice2.c
+@@ -8,6 +8,7 @@
+ #include <common.h>
+ #include <asm/arch/gpio.h>
+ #include <asm/arch/pinmux.h>
++#include <asm/arch-tegra/gpu.h>
+ #include "pinmux-config-venice2.h"
+ 
+ /*
+@@ -27,3 +28,10 @@ void pinmux_init(void)
+ 	pinmux_config_drvgrp_table(venice2_drvgrps,
+ 				   ARRAY_SIZE(venice2_drvgrps));
+ }
++
++int ft_board_setup(void *blob, bd_t *bd)
++{
++	gpu_enable_node(blob, "/gpu@0,57000000");
++
++	return 0;
++}
+diff --git a/include/configs/jetson-tk1.h b/include/configs/jetson-tk1.h
+index 3bbff282df27..b3e649664508 100644
+--- a/include/configs/jetson-tk1.h
++++ b/include/configs/jetson-tk1.h
+@@ -82,4 +82,6 @@
+ #define CONFIG_ARMV7_SECURE_BASE		0xfff00000
+ #define CONFIG_ARMV7_SECURE_RESERVE_SIZE	0x00100000
+ 
++#define CONFIG_OF_BOARD_SETUP
++
+ #endif /* __CONFIG_H */
+diff --git a/include/configs/venice2.h b/include/configs/venice2.h
+index 1d9d053b3566..bc5080aa27f0 100644
+--- a/include/configs/venice2.h
++++ b/include/configs/venice2.h
+@@ -64,4 +64,6 @@
+ #include "tegra-common-usb-gadget.h"
+ #include "tegra-common-post.h"
+ 
++#define CONFIG_OF_BOARD_SETUP
++
+ #endif /* __CONFIG_H */
