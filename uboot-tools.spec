@@ -1,8 +1,8 @@
-%global candidate rc1
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2015.10
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -165,6 +165,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Fri Sep 11 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-0.1rc3
+- Update to 2015.10 RC3
+
 * Tue Aug  4 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-0.1rc1
 - Update to 2015.10 RC1
 
