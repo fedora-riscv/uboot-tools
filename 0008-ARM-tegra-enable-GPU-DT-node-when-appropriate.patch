@@ -1,15 +1,7 @@
-From patchwork Thu Jul  9 07:33:01 2015
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,2/2] ARM: tegra: enable GPU DT node when appropriate
+From e512e16b155d9eba97764cb64cdcaa4e5b1953fc Mon Sep 17 00:00:00 2001
 From: Alexandre Courbot <acourbot@nvidia.com>
-X-Patchwork-Id: 493288
-Message-Id: <1436427181-23904-3-git-send-email-acourbot@nvidia.com>
-To: Stephen Warren <swarren@nvidia.com>, Tom Warren <twarren@nvidia.com>,
- u-boot@lists.denx.de
-Cc: linux-tegra@vger.kernel.org, gnurou@gmail.com
 Date: Thu, 9 Jul 2015 16:33:01 +0900
+Subject: [PATCH 8/9] ARM: tegra: enable GPU DT node when appropriate
 
 T124 requires some specific configuration (VPR setup) to be performed by
 the bootloader before the GPU can be used. For this reason, the GPU node
@@ -31,7 +23,7 @@ Cc: Tom Warren <twarren@nvidia.com>
  6 files changed, 55 insertions(+)
 
 diff --git a/arch/arm/include/asm/arch-tegra/gpu.h b/arch/arm/include/asm/arch-tegra/gpu.h
-index b347a21835f5..eac73ed5fddf 100644
+index b347a21..eac73ed 100644
 --- a/arch/arm/include/asm/arch-tegra/gpu.h
 +++ b/arch/arm/include/asm/arch-tegra/gpu.h
 @@ -25,3 +25,19 @@ static inline bool gpu_configured(void)
@@ -55,7 +47,7 @@ index b347a21835f5..eac73ed5fddf 100644
 +
 +#endif
 diff --git a/arch/arm/mach-tegra/gpu.c b/arch/arm/mach-tegra/gpu.c
-index b2fa50b5400e..4ea046d3e5b6 100644
+index b2fa50b..4ea046d 100644
 --- a/arch/arm/mach-tegra/gpu.c
 +++ b/arch/arm/mach-tegra/gpu.c
 @@ -45,3 +45,22 @@ bool vpr_configured(void)
@@ -82,7 +74,7 @@ index b2fa50b5400e..4ea046d3e5b6 100644
 +
 +#endif
 diff --git a/board/nvidia/jetson-tk1/jetson-tk1.c b/board/nvidia/jetson-tk1/jetson-tk1.c
-index 52425a8f6dea..3c21767ce4da 100644
+index 52425a8..3c21767 100644
 --- a/board/nvidia/jetson-tk1/jetson-tk1.c
 +++ b/board/nvidia/jetson-tk1/jetson-tk1.c
 @@ -11,6 +11,7 @@
@@ -105,7 +97,7 @@ index 52425a8f6dea..3c21767ce4da 100644
 +	return 0;
 +}
 diff --git a/board/nvidia/venice2/venice2.c b/board/nvidia/venice2/venice2.c
-index c56ef129d6c7..3e2b9a7745e9 100644
+index c56ef12..3e2b9a7 100644
 --- a/board/nvidia/venice2/venice2.c
 +++ b/board/nvidia/venice2/venice2.c
 @@ -8,6 +8,7 @@
@@ -128,7 +120,7 @@ index c56ef129d6c7..3e2b9a7745e9 100644
 +	return 0;
 +}
 diff --git a/include/configs/jetson-tk1.h b/include/configs/jetson-tk1.h
-index 3bbff282df27..b3e649664508 100644
+index 3bbff28..b3e6496 100644
 --- a/include/configs/jetson-tk1.h
 +++ b/include/configs/jetson-tk1.h
 @@ -82,4 +82,6 @@
@@ -139,7 +131,7 @@ index 3bbff282df27..b3e649664508 100644
 +
  #endif /* __CONFIG_H */
 diff --git a/include/configs/venice2.h b/include/configs/venice2.h
-index 1d9d053b3566..bc5080aa27f0 100644
+index 1d9d053..bc5080a 100644
 --- a/include/configs/venice2.h
 +++ b/include/configs/venice2.h
 @@ -64,4 +64,6 @@
@@ -149,3 +141,6 @@ index 1d9d053b3566..bc5080aa27f0 100644
 +#define CONFIG_OF_BOARD_SETUP
 +
  #endif /* __CONFIG_H */
+-- 
+2.5.0
+

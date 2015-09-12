@@ -1,7 +1,7 @@
-From 6084de3105dedfe50d8456cb4b6f3eaee362fa35 Mon Sep 17 00:00:00 2001
+From f09b9edc5269edfdf803b5cd10eb01a3ad3b779f Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Fri, 3 Jul 2015 00:08:05 +0100
-Subject: [PATCH 5/5] port utilite to distro generic boot commands
+Subject: [PATCH 5/9] port utilite to distro generic boot commands
 
 ---
  include/configs/cm_fx6.h | 107 ++++++++++++-----------------------------------
@@ -144,5 +144,5 @@ index 231f4ba..8a2e46c 100644
  #define CONFIG_PREBOOT		"usb start"
  
 -- 
-2.4.5
+2.5.0
 

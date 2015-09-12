@@ -1,7 +1,7 @@
-From afc8e9b8023aa2f7073c8a7fa7592be1debffa6c Mon Sep 17 00:00:00 2001
+From 0a50f653c44cef7685d8300ddccb2c7476cbed71 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Wed, 15 Jul 2015 12:37:44 +0100
-Subject: [PATCH 6/6] mx6: utilite: disable logos
+Subject: [PATCH 6/9] mx6: utilite: disable logos
 
 ---
  include/configs/cm_fx6.h | 8 --------
@@ -25,5 +25,5 @@ index 8a2e46c..713d90a 100644
 -
  #endif	/* __CONFIG_CM_FX6_H */
 -- 
-2.4.5
+2.5.0
 

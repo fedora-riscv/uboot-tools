@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2015.07
-Release:   4%{?candidate:.%{candidate}}%{?dist}
+Release:   5%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -18,9 +18,10 @@ Patch4:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch5:    0005-port-utilite-to-distro-generic-boot-commands.patch
 Patch6:    0006-mx6-utilite-disable-logos.patch
 # http://patchwork.ozlabs.org/patch/493287/
-Patch7:    ARM-tegra-move-VPR-configuration-to-a-later-stage.patch
+Patch7:    0007-ARM-tegra-move-VPR-configuration-to-a-later-stage.patch
 # http://patchwork.ozlabs.org/patch/493288/
-Patch8:    ARM-tegra-enable-GPU-DT-node-when-appropriate.patch
+Patch8:    0008-ARM-tegra-enable-GPU-DT-node-when-appropriate.patch
+Patch9:    0009-ARM-fix-pandaboard-es-and-a4-revision-ID.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -170,6 +171,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Sat Sep 12 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-5
+- Add patch to fix detection of Panda ES/A4
+
 * Fri Aug  7 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-4
 - Add tegra patches to enable GPU
 

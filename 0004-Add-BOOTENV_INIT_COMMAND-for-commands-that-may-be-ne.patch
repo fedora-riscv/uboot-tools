@@ -1,7 +1,7 @@
-From 63e521287c2ebbce0a1830dd66cdb5d29a5e9ae6 Mon Sep 17 00:00:00 2001
+From d61dda6e7dff4ae510699e72eca523d453efb082 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Thu, 2 Jul 2015 23:28:56 +0100
-Subject: [PATCH 4/5] Add BOOTENV_INIT_COMMAND for commands that may be needed
+Subject: [PATCH 4/9] Add BOOTENV_INIT_COMMAND for commands that may be needed
  to run before bootcmd, such as setting the fdt file variables for platfroms
  that detect on boot.
 
@@ -10,7 +10,7 @@ Subject: [PATCH 4/5] Add BOOTENV_INIT_COMMAND for commands that may be needed
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index 3a360ca4..dcad4c8 100644
+index 3a360ca..dcad4c8 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
 @@ -176,6 +176,10 @@
@@ -34,5 +34,5 @@ index 3a360ca4..dcad4c8 100644
  			"run bootcmd_${target}; "                         \
  		"done\0"
 -- 
-2.4.5
+2.5.0
 

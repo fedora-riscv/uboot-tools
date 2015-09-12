@@ -1,7 +1,7 @@
-From ee628ad871f52c14be04116280457fb0990cd143 Mon Sep 17 00:00:00 2001
+From f0b1a1a1a41a74ee64f2a68fc7348d9d9e33c84c Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Wed, 15 Jul 2015 11:30:24 +0100
-Subject: [PATCH 1/5] wandboard: add support for generic distro boot
+Subject: [PATCH 1/9] wandboard: add support for generic distro boot
 
 ---
  include/configs/wandboard.h | 33 ++++++++++++++++++++++++---------
@@ -97,5 +97,5 @@ index f05b55a..b3ad82a 100644
  #define CONFIG_NR_DRAM_BANKS		1
  #define PHYS_SDRAM			MMDC0_ARB_BASE_ADDR
 -- 
-2.4.5
+2.5.0
 
