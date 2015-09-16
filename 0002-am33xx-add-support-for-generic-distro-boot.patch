@@ -1,7 +1,7 @@
-From 18836113635324d0272ac06c761b3fb419a90676 Mon Sep 17 00:00:00 2001
+From c47ac887df62e802776f0d666e3626c852640a2d Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 4 Aug 2015 09:36:08 +0100
-Subject: [PATCH 2/5] am33xx: add support for generic distro boot
+Date: Tue, 23 Jun 2015 00:53:25 +0100
+Subject: [PATCH 2/9] am33xx: add support for generic distro boot
 
 ---
  include/configs/am335x_evm.h      | 28 ++++++++++++++++++----------
@@ -9,7 +9,7 @@ Subject: [PATCH 2/5] am33xx: add support for generic distro boot
  2 files changed, 19 insertions(+), 10 deletions(-)
 
 diff --git a/include/configs/am335x_evm.h b/include/configs/am335x_evm.h
-index 633391b..f81e7a6 100644
+index 035c156..81f8331 100644
 --- a/include/configs/am335x_evm.h
 +++ b/include/configs/am335x_evm.h
 @@ -18,6 +18,21 @@
@@ -64,10 +64,10 @@ index 633391b..f81e7a6 100644
  #define CONFIG_SYS_NS16550_COM1		0x44e09000	/* Base EVM has UART0 */
  #define CONFIG_SYS_NS16550_COM2		0x48022000	/* UART1 */
 diff --git a/include/configs/ti_armv7_common.h b/include/configs/ti_armv7_common.h
-index 6dc5ebd..64949b8 100644
+index 0aea7d1..d6073b2 100644
 --- a/include/configs/ti_armv7_common.h
 +++ b/include/configs/ti_armv7_common.h
-@@ -52,6 +52,7 @@
+@@ -54,6 +54,7 @@
  #define DEFAULT_LINUX_BOOT_ENV \
  	"loadaddr=0x82000000\0" \
  	"kernel_addr_r=0x82000000\0" \

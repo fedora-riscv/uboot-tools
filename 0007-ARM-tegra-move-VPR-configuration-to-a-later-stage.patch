@@ -1,0 +1,239 @@
+From e20acc67fd6ddd5c359e2d93ca0894222fedd30b Mon Sep 17 00:00:00 2001
+From: Alexandre Courbot <acourbot@nvidia.com>
+Date: Thu, 9 Jul 2015 16:33:00 +0900
+Subject: [PATCH 7/9] ARM: tegra: move VPR configuration to a later stage
+
+U-boot is responsible for enabling the GPU DT node after all necessary
+configuration (VPR setup for T124) is performed. In order to be able to
+check whether this configuration has been performed right before booting
+the kernel, make it happen during board_init().
+
+Also move VPR configuration into the more generic gpu.c file, which will
+also host other GPU-related functions, and let boards specify
+individually whether they need VPR setup or not.
+
+Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
+Cc: Stephen Warren <swarren@nvidia.com>
+Cc: Tom Warren <twarren@nvidia.com>
+---
+ arch/arm/include/asm/arch-tegra/ap.h  |  9 -------
+ arch/arm/include/asm/arch-tegra/gpu.h | 27 ++++++++++++++++++++
+ arch/arm/mach-tegra/Makefile          |  2 +-
+ arch/arm/mach-tegra/ap.c              |  3 ---
+ arch/arm/mach-tegra/board2.c          |  3 +++
+ arch/arm/mach-tegra/gpu.c             | 47 +++++++++++++++++++++++++++++++++++
+ arch/arm/mach-tegra/vpr.c             | 35 --------------------------
+ include/configs/tegra124-common.h     |  3 +++
+ 8 files changed, 81 insertions(+), 48 deletions(-)
+ create mode 100644 arch/arm/include/asm/arch-tegra/gpu.h
+ create mode 100644 arch/arm/mach-tegra/gpu.c
+ delete mode 100644 arch/arm/mach-tegra/vpr.c
+
+diff --git a/arch/arm/include/asm/arch-tegra/ap.h b/arch/arm/include/asm/arch-tegra/ap.h
+index ca40e4e..2d58271 100644
+--- a/arch/arm/include/asm/arch-tegra/ap.h
++++ b/arch/arm/include/asm/arch-tegra/ap.h
+@@ -66,15 +66,6 @@ int tegra_get_sku_info(void);
+ /* Do any chip-specific cache config */
+ void config_cache(void);
+ 
+-#if defined(CONFIG_TEGRA124)
+-/* Do chip-specific vpr config */
+-void config_vpr(void);
+-#else
+-static inline void config_vpr(void)
+-{
+-}
+-#endif
+-
+ #if defined(CONFIG_TEGRA_SUPPORT_NON_SECURE)
+ bool tegra_cpu_is_non_secure(void);
+ #endif
+diff --git a/arch/arm/include/asm/arch-tegra/gpu.h b/arch/arm/include/asm/arch-tegra/gpu.h
+new file mode 100644
+index 0000000..b347a21
+--- /dev/null
++++ b/arch/arm/include/asm/arch-tegra/gpu.h
+@@ -0,0 +1,27 @@
++/*
++ *  (C) Copyright 2015
++ *  NVIDIA Corporation <www.nvidia.com>
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#ifndef __ASM_ARCH_TEGRA_GPU_H
++#define __ASM_ARCH_TEGRA_GPU_H
++
++#if defined(CONFIG_TEGRA_GPU)
++
++void config_gpu(void);
++bool gpu_configured(void);
++
++#else /* CONFIG_TEGRA_GPU */
++
++static inline void config_gpu(void)
++{
++}
++
++static inline bool gpu_configured(void)
++{
++	return false;
++}
++
++#endif /* CONFIG_TEGRA_GPU */
+diff --git a/arch/arm/mach-tegra/Makefile b/arch/arm/mach-tegra/Makefile
+index fefc180..f6f5583 100644
+--- a/arch/arm/mach-tegra/Makefile
++++ b/arch/arm/mach-tegra/Makefile
+@@ -24,7 +24,7 @@ obj-y += pinmux-common.o
+ obj-y += powergate.o
+ obj-y += xusb-padctl.o
+ obj-$(CONFIG_DISPLAY_CPUINFO) += sys_info.o
+-obj-$(CONFIG_TEGRA124) += vpr.o
++obj-$(CONFIG_TEGRA_GPU) += gpu.o
+ obj-$(CONFIG_TEGRA_CLOCK_SCALING) += emc.o
+ 
+ ifndef CONFIG_SPL_BUILD
+diff --git a/arch/arm/mach-tegra/ap.c b/arch/arm/mach-tegra/ap.c
+index 0b94e8a..70613f9 100644
+--- a/arch/arm/mach-tegra/ap.c
++++ b/arch/arm/mach-tegra/ap.c
+@@ -218,7 +218,4 @@ void s_init(void)
+ 
+ 	/* enable SMMU */
+ 	smmu_enable();
+-
+-	/* init vpr */
+-	config_vpr();
+ }
+diff --git a/arch/arm/mach-tegra/board2.c b/arch/arm/mach-tegra/board2.c
+index ce9b695..1d7c5ef 100644
+--- a/arch/arm/mach-tegra/board2.c
++++ b/arch/arm/mach-tegra/board2.c
+@@ -29,6 +29,7 @@
+ #include <asm/arch-tegra/sys_proto.h>
+ #include <asm/arch-tegra/uart.h>
+ #include <asm/arch-tegra/warmboot.h>
++#include <asm/arch-tegra/gpu.h>
+ #ifdef CONFIG_TEGRA_CLOCK_SCALING
+ #include <asm/arch/emc.h>
+ #endif
+@@ -125,6 +126,8 @@ int board_init(void)
+ 	clock_init();
+ 	clock_verify();
+ 
++	config_gpu();
++
+ #ifdef CONFIG_TEGRA_SPI
+ 	pin_mux_spi();
+ #endif
+diff --git a/arch/arm/mach-tegra/gpu.c b/arch/arm/mach-tegra/gpu.c
+new file mode 100644
+index 0000000..b2fa50b
+--- /dev/null
++++ b/arch/arm/mach-tegra/gpu.c
+@@ -0,0 +1,47 @@
++/*
++ * Copyright (c) 2014-2015, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++/* Tegra vpr routines */
++
++#include <common.h>
++#include <asm/io.h>
++#include <asm/arch/tegra.h>
++#include <asm/arch/mc.h>
++
++#include <fdt_support.h>
++
++static bool _configured;
++
++void config_gpu(void)
++{
++	struct mc_ctlr *mc = (struct mc_ctlr *)NV_PA_MC_BASE;
++
++	/* Turn VPR off */
++	writel(0, &mc->mc_video_protect_size_mb);
++	writel(TEGRA_MC_VIDEO_PROTECT_REG_WRITE_ACCESS_DISABLED,
++	       &mc->mc_video_protect_reg_ctrl);
++	/* read back to ensure the write went through */
++	readl(&mc->mc_video_protect_reg_ctrl);
++
++	debug("configured VPR\n");
++
++	_configured = true;
++}
++
++bool vpr_configured(void)
++{
++	return _configured;
++}
+diff --git a/arch/arm/mach-tegra/vpr.c b/arch/arm/mach-tegra/vpr.c
+deleted file mode 100644
+index f695811..0000000
+--- a/arch/arm/mach-tegra/vpr.c
++++ /dev/null
+@@ -1,35 +0,0 @@
+-/*
+- * Copyright (c) 2014, NVIDIA CORPORATION.  All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms and conditions of the GNU General Public License,
+- * version 2, as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+- */
+-
+-/* Tegra vpr routines */
+-
+-#include <common.h>
+-#include <asm/io.h>
+-#include <asm/arch/tegra.h>
+-#include <asm/arch/mc.h>
+-
+-/* Configures VPR.  Right now, all we do is turn it off. */
+-void config_vpr(void)
+-{
+-	struct mc_ctlr *mc = (struct mc_ctlr *)NV_PA_MC_BASE;
+-
+-	/* Turn VPR off */
+-	writel(0, &mc->mc_video_protect_size_mb);
+-	writel(TEGRA_MC_VIDEO_PROTECT_REG_WRITE_ACCESS_DISABLED,
+-	       &mc->mc_video_protect_reg_ctrl);
+-	/* read back to ensure the write went through */
+-	readl(&mc->mc_video_protect_reg_ctrl);
+-}
+diff --git a/include/configs/tegra124-common.h b/include/configs/tegra124-common.h
+index 1aee5c8..a05d2b5 100644
+--- a/include/configs/tegra124-common.h
++++ b/include/configs/tegra124-common.h
+@@ -70,4 +70,7 @@
+ #define CONFIG_USB_EHCI_TXFIFO_THRESH	0x10
+ #define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS 1
+ 
++/* GPU needs setup */
++#define CONFIG_TEGRA_GPU
++
+ #endif /* _TEGRA124_COMMON_H_ */
+-- 
+2.5.0
+

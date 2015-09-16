@@ -1,35 +1,35 @@
-#global candidate rc1
+#global candidate rc3
 
-Name:           uboot-tools
-Version:        2015.04
-Release:        3%{?candidate:.%{candidate}}%{?dist}
-Summary:        U-Boot utilities
+Name:      uboot-tools
+Version:   2015.07
+Release:   5%{?candidate:.%{candidate}}%{?dist}
+Summary:   U-Boot utilities
 
-Group:          Development/Tools
-License:        GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
-URL:            http://www.denx.de/wiki/U-Boot
-Source0:        ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
-Source1:        armv7-boards
+Group:     Development/Tools
+License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
+URL:       http://www.denx.de/wiki/U-Boot
+Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
+Source1:   armv7-boards
 
-Patch1:   0001-make-sure-that-the-filesystem-is-a-type-of-fat.patch
-Patch2:   0002-Add-BOOTENV_POST_COMMAND-which-is-appended-to-the-en.patch
-Patch3:   0003-Only-set-CONFIG_BOOTDELAY-if-not-already-set.patch
-Patch4:   0004-Switch-am335x_evm.h-to-use-config_distro_defaults-an.patch
-Patch5:   0005-add-back-adding-console-to-the-bootargs-if-not-prese.patch
-Patch6:   0006-wandboard-port-to-generic-distro-booting.patch
-Patch7:   0007-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
-Patch8:   0008-port-utilite-to-distro-generic-boot-commands.patch
-Patch9:   0009-RiOT-board-set-console-speed.patch
-Patch10:  0010-Add-support-for-loading-environment-from-uEnv.txt-in.patch
-Patch11:  0011-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-Patch12:  0012-beagle-board-use-ext-support-in-the-SPL.patch
-Patch13:  0013-WANDBOARD-run-the-dsitro-bootcmd-first-before-fallin.patch
-Patch14:  0014-BBB-tell-u-boot-to-look-in-the-first-partition-to-lo.patch
-Patch15:  0001-omap4-distro-boot-partition-fixup.patch
+Patch1:    0001-wandboard-add-support-for-generic-distro-boot.patch
+Patch2:    0002-am33xx-add-support-for-generic-distro-boot.patch
+Patch3:    0003-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
+Patch4:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
+Patch5:    0005-port-utilite-to-distro-generic-boot-commands.patch
+Patch6:    0006-mx6-utilite-disable-logos.patch
+# http://patchwork.ozlabs.org/patch/493287/
+Patch7:    0007-ARM-tegra-move-VPR-configuration-to-a-later-stage.patch
+# http://patchwork.ozlabs.org/patch/493288/
+Patch8:    0008-ARM-tegra-enable-GPU-DT-node-when-appropriate.patch
+Patch9:    0009-ARM-fix-pandaboard-es-and-a4-revision-ID.patch
 
-BuildRequires:  dtc, openssl-devel
-BuildRequires:  fedora-logos, netpbm-progs
-BuildRequires:  git, bc
+BuildRequires:  bc
+BuildRequires:  dtc
+BuildRequires:  fedora-logos
+BuildRequires:  git
+BuildRequires:  netpbm-progs
+BuildRequires:  openssl-devel
+BuildRequires:  SDL-devel
 Requires:       dtc
 
 %description
@@ -171,6 +171,39 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Sat Sep 12 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-5
+- Add patch to fix detection of Panda ES/A4
+
+* Fri Aug  7 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-4
+- Add tegra patches to enable GPU
+
+* Mon Aug  3 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-3
+- Drop some unused u-boot binaries
+- Minor cleanups
+
+* Thu Jul 16 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-2
+- Disable boot splash on Utilite (cm_fx6)
+
+* Wed Jul 15 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-1
+- Update to 2015.07 GA
+
+* Thu Jul  2 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-0.4rc3
+- Update to 2015.07rc3
+- Some fixes for omap4/am33xx/imx6 devices
+
+* Mon Jun 22 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-0.3rc2
+- Initial rebase of BBB/panda/wandboard generic distro boot support
+
+* Tue Jun 16 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-0.2rc2
+- Enable i.MX6 marsboard and warp
+- Use upstream build fix
+- Add patch to fix Raspberry Pi timer speed
+
+* Tue Jun  9 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-0.1rc2
+- Initial rebase to 2015.07rc2
+- Enable mx6cuboxi, 32 bit vexpress
+- Update builds for name changes, merges etc
+
 * Wed May 27 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.04-3
 - Enable Zynq microzed, zed and zybo
 

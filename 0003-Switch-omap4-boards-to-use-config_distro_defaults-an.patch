@@ -1,19 +1,22 @@
-From 50a199d4ea2f6901e572a803e1bb33d250cd2acd Mon Sep 17 00:00:00 2001
+From 304a082f0ac1cb2f1ad70c3be76568e2496d94af Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 4 Aug 2015 09:36:49 +0100
-Subject: [PATCH 3/5] Switch omap4 boards to use config_distro_defaults and
- config_distro_bootcmd
+Date: Thu, 2 Jul 2015 23:26:44 +0100
+Subject: [PATCH 3/9] Switch omap4 boards to use config_distro_defaults and
+ config_distro_bootcmd.
 
+Add pxefile_addr_r to DEFAULT_LINUX_BOOT_ENV, as pxefile_addr_r  is used
+to store the pxe boot configuation file in config_distro_defaults.
+adjust adress of scriptaddr to be unique
 ---
  include/configs/ti_armv7_common.h |  3 ++-
  include/configs/ti_omap4_common.h | 41 ++++++++++++++++-----------------------
  2 files changed, 19 insertions(+), 25 deletions(-)
 
 diff --git a/include/configs/ti_armv7_common.h b/include/configs/ti_armv7_common.h
-index 64949b8..523e2ec 100644
+index d6073b2..3523e67 100644
 --- a/include/configs/ti_armv7_common.h
 +++ b/include/configs/ti_armv7_common.h
-@@ -52,7 +52,8 @@
+@@ -54,7 +54,8 @@
  #define DEFAULT_LINUX_BOOT_ENV \
  	"loadaddr=0x82000000\0" \
  	"kernel_addr_r=0x82000000\0" \
@@ -24,7 +27,7 @@ index 64949b8..523e2ec 100644
  	"fdt_addr_r=0x88000000\0" \
  	"rdaddr=0x88080000\0" \
 diff --git a/include/configs/ti_omap4_common.h b/include/configs/ti_omap4_common.h
-index b299aed..e0f2035 100644
+index e966134..51b7265 100644
 --- a/include/configs/ti_omap4_common.h
 +++ b/include/configs/ti_omap4_common.h
 @@ -78,6 +78,18 @@
