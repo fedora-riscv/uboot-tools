@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 e7a72e070ca43b6b1979007d764e625e  u-boot-2015.10-rc3.tar.bz2
+=======
+570bdc2c47270c2a98ca60ff6c5c74cd  u-boot-2015.04.tar.bz2
+>>>>>>> parent of c5f597c... Initial rebase to 2015.07rc2, Enable mx6cuboxi, 32 bit vexpress, Update builds for name changes, merges etc
