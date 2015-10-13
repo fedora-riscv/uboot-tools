@@ -1,7 +1,7 @@
-From 50a199d4ea2f6901e572a803e1bb33d250cd2acd Mon Sep 17 00:00:00 2001
+From 0f2d7c287a2b2de862cb8dc091053a8bc01f7194 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 4 Aug 2015 09:36:49 +0100
-Subject: [PATCH 3/5] Switch omap4 boards to use config_distro_defaults and
+Date: Tue, 29 Sep 2015 09:46:26 +0100
+Subject: [PATCH 5/5] Switch omap4 boards to use config_distro_defaults and
  config_distro_bootcmd
 
 ---
@@ -10,7 +10,7 @@ Subject: [PATCH 3/5] Switch omap4 boards to use config_distro_defaults and
  2 files changed, 19 insertions(+), 25 deletions(-)
 
 diff --git a/include/configs/ti_armv7_common.h b/include/configs/ti_armv7_common.h
-index 64949b8..523e2ec 100644
+index 684d616..c29a157 100644
 --- a/include/configs/ti_armv7_common.h
 +++ b/include/configs/ti_armv7_common.h
 @@ -52,7 +52,8 @@
@@ -24,7 +24,7 @@ index 64949b8..523e2ec 100644
  	"fdt_addr_r=0x88000000\0" \
  	"rdaddr=0x88080000\0" \
 diff --git a/include/configs/ti_omap4_common.h b/include/configs/ti_omap4_common.h
-index b299aed..e0f2035 100644
+index 1cd7dae..0e210af 100644
 --- a/include/configs/ti_omap4_common.h
 +++ b/include/configs/ti_omap4_common.h
 @@ -78,6 +78,18 @@
@@ -46,8 +46,8 @@ index b299aed..e0f2035 100644
  /*
   * Environment setup
   */
-@@ -85,7 +97,7 @@
- 	DEFAULT_LINUX_BOOT_ENV \
+@@ -86,7 +98,7 @@
+ 	DEFAULT_MMC_TI_ARGS \
  	"console=ttyO2,115200n8\0" \
  	"fdtfile=undefined\0" \
 -	"bootpart=0:2\0" \
@@ -55,7 +55,7 @@ index b299aed..e0f2035 100644
  	"bootdir=/boot\0" \
  	"bootfile=zImage\0" \
  	"usbtty=cdc_acm\0" \
-@@ -125,30 +137,11 @@
+@@ -119,30 +131,11 @@
  		"if test $fdtfile = undefined; then " \
  			"echo WARNING: Could not determine device tree to use; fi; \0" \
  	"loadfdt=load mmc ${bootpart} ${fdtaddr} ${bootdir}/${fdtfile}\0" \

@@ -1,4 +1,4 @@
-From 5a8f9d701fd16b4e1821b6699e18df683dbe9d7d Mon Sep 17 00:00:00 2001
+From 4546255d8c19441cd1fb0724c94865c7549344bc Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Tue, 4 Aug 2015 09:35:43 +0100
 Subject: [PATCH 1/5] wandboard: add support for generic distro boot
