@@ -1,0 +1,36 @@
+From patchwork Thu Oct  1 19:22:17 2015
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Subject: [U-Boot,1/2] usb: host: xhci-omap: fix build break
+From: Felipe Balbi <balbi@ti.com>
+X-Patchwork-Id: 525276
+Message-Id: <1443727338-29320-1-git-send-email-balbi@ti.com>
+To: Tom Rini <trini@konsulko.com>
+Cc: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 1 Oct 2015 14:22:17 -0500
+
+Fix the following build break:
+
+drivers/usb/host/xhci-omap.c:35:5: error: ‘board_usb_init’ aliased to external symbol ‘__board_usb_init’
+ int board_usb_init(int index, enum usb_init_type init)
+      ^
+
+Signed-off-by: Felipe Balbi <balbi@ti.com>
+---
+ drivers/usb/host/xhci-omap.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/host/xhci-omap.c b/drivers/usb/host/xhci-omap.c
+index 104e7a7282cf..fd19f79f0fc5 100644
+--- a/drivers/usb/host/xhci-omap.c
++++ b/drivers/usb/host/xhci-omap.c
+@@ -27,7 +27,7 @@ DECLARE_GLOBAL_DATA_PTR;
+ 
+ static struct omap_xhci omap;
+ 
+-inline int __board_usb_init(int index, enum usb_init_type init)
++__weak int __board_usb_init(int index, enum usb_init_type init)
+ {
+ 	return 0;
+ }
