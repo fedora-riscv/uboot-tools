@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2015.10
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -17,6 +17,7 @@ Patch3:    0003-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
 Patch4:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch5:    0005-port-utilite-to-distro-generic-boot-commands.patch
 Patch6:    fix-beaglex15-usb-xhci.patch
+Patch7:    0001-image.c-Fix-non-Android-booting-with-ramdisk-and-or-.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -166,6 +167,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Nov  2 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-2
+- Fix boot on some devices
+
 * Tue Oct 20 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-1
 - Update to 2015.10 GA
 - Enable BeagleBoard X-15
