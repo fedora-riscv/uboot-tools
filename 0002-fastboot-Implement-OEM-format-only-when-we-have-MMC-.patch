@@ -1,0 +1,37 @@
+From 4adef27013f76c03596e4fd65193b936943aa50a Mon Sep 17 00:00:00 2001
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Thu, 15 Oct 2015 22:04:04 +0200
+Subject: [PATCH 002/600] fastboot: Implement OEM format only when we have MMC
+ support
+
+The current fastboot support assumes that CONFIG_FASTBOOT_FLASH implies
+that we have an MMC in our system, which might not be the case if we have
+some other storage device.
+
+Change the configuration option protecting that call to
+FASTBOOT_FLASH_MMC_DEV, that makes much more sense.
+
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Reviewed-by: Tom Rini <trini@konsulko.com>
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/usb/gadget/f_fastboot.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/gadget/f_fastboot.c b/drivers/usb/gadget/f_fastboot.c
+index ca01a01..ece48e6 100644
+--- a/drivers/usb/gadget/f_fastboot.c
++++ b/drivers/usb/gadget/f_fastboot.c
+@@ -554,7 +554,7 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req)
+ static void cb_oem(struct usb_ep *ep, struct usb_request *req)
+ {
+ 	char *cmd = req->buf;
+-#ifdef CONFIG_FASTBOOT_FLASH
++#ifdef CONFIG_FASTBOOT_FLASH_MMC_DEV
+ 	if (strncmp("format", cmd + 4, 6) == 0) {
+ 		char cmdbuf[32];
+                 sprintf(cmdbuf, "gpt write mmc %x $partitions",
+-- 
+2.5.0
+

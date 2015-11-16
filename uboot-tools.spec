@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2015.10
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Release:   3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -11,13 +11,23 @@ URL:       http://www.denx.de/wiki/U-Boot
 Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:   armv7-boards
 
-Patch1:    0001-wandboard-add-support-for-generic-distro-boot.patch
+Patch1:    0001-arm-imx-Switch-Wandboard-to-use-config_distro_bootcm.patch
 Patch2:    0002-am33xx-add-support-for-generic-distro-boot.patch
 Patch3:    0003-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
 Patch4:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch5:    0005-port-utilite-to-distro-generic-boot-commands.patch
 Patch6:    fix-beaglex15-usb-xhci.patch
 Patch7:    0001-image.c-Fix-non-Android-booting-with-ramdisk-and-or-.patch
+Patch8:    U-Boot-board-ti-am335x-add-support-for-BeagleBone-Green.patch
+
+Patch10:   0002-fastboot-Implement-OEM-format-only-when-we-have-MMC-.patch
+Patch11:   0003-mmc-Add-generic-Kconfig-option.patch
+Patch12:   0004-sunxi-board-Only-try-to-use-the-MMC-related-function.patch
+Patch13:   0005-sunxi-Use-Kconfig-CONFIG_MMC.patch
+Patch14:   0006-sun5i-Sync-the-DTSI-with-the-kernel.patch
+Patch15:   0007-axp209-Sync-the-DTSI-with-the-kernel.patch
+Patch16:   0008-sunxi-Add-CHIP-support.patch
+
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -167,7 +177,14 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
-* Tue Nov  2 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-2
+* Sat Nov 14 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-3
+- Use upstream Wanboard distro boot patch
+- Add support for BeagleBone Green
+- Add initial support for C.H.I.P.
+- Enable Rockchips: Firefly, Jerry devices
+- Enable Exynos: Peach Pit/Pi, Sprint devices
+
+* Tue Nov  3 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-2
 - Fix boot on some devices
 
 * Tue Oct 20 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-1

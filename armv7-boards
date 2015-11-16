@@ -15,6 +15,8 @@ ba10_tv_box
 Bananapi
 Bananapro
 beagle_x15
+CHIP
+chromebook_jerry
 Chuwi_V7_CW0825
 cm_fx6
 Colombus
@@ -23,6 +25,7 @@ Cubieboard
 Cubieboard2
 Cubietruck
 db-mv784mp-gp
+firefly-rk3288
 forfun_q88db
 highbank
 Hummingbird_A31
@@ -69,11 +72,14 @@ q8_a23_tablet_800x480
 q8_a33_tablet_1024x600
 q8_a33_tablet_800x480
 paz00
+peach-pi
+peach-pit
 r7-tv-dongle
 riotboard
 rpi_2
 smdkv310
 snow
+spring
 sunxi_Gemei_G9
 trimslice
 TZX-Q8-713B7
