@@ -19,6 +19,7 @@ Patch5:    0005-port-utilite-to-distro-generic-boot-commands.patch
 Patch6:    fix-beaglex15-usb-xhci.patch
 Patch7:    0001-image.c-Fix-non-Android-booting-with-ramdisk-and-or-.patch
 Patch8:    U-Boot-board-ti-am335x-add-support-for-BeagleBone-Green.patch
+Patch9:    0009-ARM-fix-pandaboard-es-and-a4-revision-ID.patch
 
 Patch10:   0002-fastboot-Implement-OEM-format-only-when-we-have-MMC-.patch
 Patch11:   0003-mmc-Add-generic-Kconfig-option.patch
