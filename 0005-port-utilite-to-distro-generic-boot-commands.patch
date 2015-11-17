@@ -1,14 +1,14 @@
-From f09b9edc5269edfdf803b5cd10eb01a3ad3b779f Mon Sep 17 00:00:00 2001
+From ad8f78f7df2cbfd271d73afc5296941972b38119 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Fri, 3 Jul 2015 00:08:05 +0100
-Subject: [PATCH 5/9] port utilite to distro generic boot commands
+Date: Tue, 4 Aug 2015 09:37:38 +0100
+Subject: [PATCH 3/5] port utilite to distro generic boot commands
 
 ---
  include/configs/cm_fx6.h | 107 ++++++++++++-----------------------------------
  1 file changed, 27 insertions(+), 80 deletions(-)
 
 diff --git a/include/configs/cm_fx6.h b/include/configs/cm_fx6.h
-index 231f4ba..8a2e46c 100644
+index 12734a1..602c178 100644
 --- a/include/configs/cm_fx6.h
 +++ b/include/configs/cm_fx6.h
 @@ -11,6 +11,7 @@
@@ -19,7 +19,7 @@ index 231f4ba..8a2e46c 100644
  #include "mx6_common.h"
  
  /* Machine config */
-@@ -66,97 +67,43 @@
+@@ -64,97 +65,43 @@
  #define CONFIG_ENV_SIZE			(8 * 1024)
  #define CONFIG_ENV_OFFSET		(768 * 1024)
  

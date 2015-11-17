@@ -1,22 +1,19 @@
-From 304a082f0ac1cb2f1ad70c3be76568e2496d94af Mon Sep 17 00:00:00 2001
+From 0f2d7c287a2b2de862cb8dc091053a8bc01f7194 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Thu, 2 Jul 2015 23:26:44 +0100
-Subject: [PATCH 3/9] Switch omap4 boards to use config_distro_defaults and
- config_distro_bootcmd.
+Date: Tue, 29 Sep 2015 09:46:26 +0100
+Subject: [PATCH 5/5] Switch omap4 boards to use config_distro_defaults and
+ config_distro_bootcmd
 
-Add pxefile_addr_r to DEFAULT_LINUX_BOOT_ENV, as pxefile_addr_r  is used
-to store the pxe boot configuation file in config_distro_defaults.
-adjust adress of scriptaddr to be unique
 ---
  include/configs/ti_armv7_common.h |  3 ++-
  include/configs/ti_omap4_common.h | 41 ++++++++++++++++-----------------------
  2 files changed, 19 insertions(+), 25 deletions(-)
 
 diff --git a/include/configs/ti_armv7_common.h b/include/configs/ti_armv7_common.h
-index d6073b2..3523e67 100644
+index 684d616..c29a157 100644
 --- a/include/configs/ti_armv7_common.h
 +++ b/include/configs/ti_armv7_common.h
-@@ -54,7 +54,8 @@
+@@ -52,7 +52,8 @@
  #define DEFAULT_LINUX_BOOT_ENV \
  	"loadaddr=0x82000000\0" \
  	"kernel_addr_r=0x82000000\0" \
@@ -27,7 +24,7 @@ index d6073b2..3523e67 100644
  	"fdt_addr_r=0x88000000\0" \
  	"rdaddr=0x88080000\0" \
 diff --git a/include/configs/ti_omap4_common.h b/include/configs/ti_omap4_common.h
-index e966134..51b7265 100644
+index 1cd7dae..0e210af 100644
 --- a/include/configs/ti_omap4_common.h
 +++ b/include/configs/ti_omap4_common.h
 @@ -78,6 +78,18 @@
@@ -49,8 +46,8 @@ index e966134..51b7265 100644
  /*
   * Environment setup
   */
-@@ -85,7 +97,7 @@
- 	DEFAULT_LINUX_BOOT_ENV \
+@@ -86,7 +98,7 @@
+ 	DEFAULT_MMC_TI_ARGS \
  	"console=ttyO2,115200n8\0" \
  	"fdtfile=undefined\0" \
 -	"bootpart=0:2\0" \
@@ -58,7 +55,7 @@ index e966134..51b7265 100644
  	"bootdir=/boot\0" \
  	"bootfile=zImage\0" \
  	"usbtty=cdc_acm\0" \
-@@ -125,30 +137,11 @@
+@@ -119,30 +131,11 @@
  		"if test $fdtfile = undefined; then " \
  			"echo WARNING: Could not determine device tree to use; fi; \0" \
  	"loadfdt=load mmc ${bootpart} ${fdtaddr} ${bootdir}/${fdtfile}\0" \

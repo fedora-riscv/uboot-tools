@@ -1,8 +1,8 @@
-#global candidate rc3
+#global candidate rc5
 
 Name:      uboot-tools
-Version:   2015.07
-Release:   5%{?candidate:.%{candidate}}%{?dist}
+Version:   2015.10
+Release:   3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -11,17 +11,22 @@ URL:       http://www.denx.de/wiki/U-Boot
 Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:   armv7-boards
 
-Patch1:    0001-wandboard-add-support-for-generic-distro-boot.patch
+Patch1:    0001-arm-imx-Switch-Wandboard-to-use-config_distro_bootcm.patch
 Patch2:    0002-am33xx-add-support-for-generic-distro-boot.patch
 Patch3:    0003-Switch-omap4-boards-to-use-config_distro_defaults-an.patch
 Patch4:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch5:    0005-port-utilite-to-distro-generic-boot-commands.patch
-Patch6:    0006-mx6-utilite-disable-logos.patch
-# http://patchwork.ozlabs.org/patch/493287/
-Patch7:    0007-ARM-tegra-move-VPR-configuration-to-a-later-stage.patch
-# http://patchwork.ozlabs.org/patch/493288/
-Patch8:    0008-ARM-tegra-enable-GPU-DT-node-when-appropriate.patch
-Patch9:    0009-ARM-fix-pandaboard-es-and-a4-revision-ID.patch
+Patch6:    fix-beaglex15-usb-xhci.patch
+Patch7:    0001-image.c-Fix-non-Android-booting-with-ramdisk-and-or-.patch
+Patch8:    U-Boot-board-ti-am335x-add-support-for-BeagleBone-Green.patch
+
+Patch10:   0002-fastboot-Implement-OEM-format-only-when-we-have-MMC-.patch
+Patch11:   0003-mmc-Add-generic-Kconfig-option.patch
+Patch12:   0004-sunxi-board-Only-try-to-use-the-MMC-related-function.patch
+Patch14:   0006-sun5i-Sync-the-DTSI-with-the-kernel.patch
+Patch15:   0007-axp209-Sync-the-DTSI-with-the-kernel.patch
+Patch13:   0005-sunxi-Use-Kconfig-CONFIG_MMC.patch
+Patch18:   0008-sunxi-Add-CHIP-support.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -171,11 +176,32 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
-* Sat Sep 12 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-5
-- Add patch to fix detection of Panda ES/A4
+* Sat Nov 14 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-3
+- Use upstream Wanboard distro boot patch
+- Add support for BeagleBone Green
+- Add initial support for C.H.I.P.
+- Enable Rockchips: Firefly, Jerry devices
+- Enable Exynos: Peach Pit/Pi, Sprint devices
 
-* Fri Aug  7 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-4
-- Add tegra patches to enable GPU
+* Tue Nov  3 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-2
+- Fix boot on some devices
+
+* Tue Oct 20 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-1
+- Update to 2015.10 GA
+- Enable BeagleBoard X-15
+- Enable new AllWinner devices
+
+* Mon Oct 12 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-0.4rc5
+- Update to 2015.10 RC5
+
+* Tue Sep 29 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-0.3rc4
+- Update to 2015.10 RC4
+
+* Fri Sep 11 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-0.2rc3
+- Update to 2015.10 RC3
+
+* Tue Aug  4 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.10-0.1rc1
+- Update to 2015.10 RC1
 
 * Mon Aug  3 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2015.07-3
 - Drop some unused u-boot binaries
