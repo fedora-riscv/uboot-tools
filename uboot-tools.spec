@@ -23,11 +23,10 @@ Patch8:    U-Boot-board-ti-am335x-add-support-for-BeagleBone-Green.patch
 Patch10:   0002-fastboot-Implement-OEM-format-only-when-we-have-MMC-.patch
 Patch11:   0003-mmc-Add-generic-Kconfig-option.patch
 Patch12:   0004-sunxi-board-Only-try-to-use-the-MMC-related-function.patch
-Patch13:   0005-sunxi-Use-Kconfig-CONFIG_MMC.patch
 Patch14:   0006-sun5i-Sync-the-DTSI-with-the-kernel.patch
 Patch15:   0007-axp209-Sync-the-DTSI-with-the-kernel.patch
-Patch16:   0008-sunxi-Add-CHIP-support.patch
-
+Patch13:   0005-sunxi-Use-Kconfig-CONFIG_MMC.patch
+Patch18:   0008-sunxi-Add-CHIP-support.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc

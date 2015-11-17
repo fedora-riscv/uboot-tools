@@ -1,14 +1,8 @@
-From 44c798799f667310ce29ce264be5c4bff7a21cf2 Mon Sep 17 00:00:00 2001
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Thu, 15 Oct 2015 22:04:07 +0200
-Subject: [PATCH 005/600] sunxi: Use Kconfig CONFIG_MMC
+From c8a8fe4701ba559f843a3af7ac7df44d967cdb0f Mon Sep 17 00:00:00 2001
+From: no one <noone@example.com>
+Date: Tue, 17 Nov 2015 11:58:14 +0000
+Subject: [PATCH 1/2] sunxi: Use Kconfig CONFIG_MMC
 
-Not all sunxi boards have an MMC embedded. Switching to the Kconfig option
-will allow to enable or disable the support in each boards' defconfig.
-
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
  board/sunxi/Kconfig            | 4 ++++
  drivers/mmc/Kconfig            | 2 +-
@@ -16,7 +10,7 @@ Signed-off-by: Hans de Goede <hdegoede@redhat.com>
  3 files changed, 10 insertions(+), 4 deletions(-)
 
 diff --git a/board/sunxi/Kconfig b/board/sunxi/Kconfig
-index b336777..f6f2a60 100644
+index 55906b5..8a727d6 100644
 --- a/board/sunxi/Kconfig
 +++ b/board/sunxi/Kconfig
 @@ -227,6 +227,10 @@ config OLD_SUNXI_KERNEL_COMPAT
@@ -44,10 +38,10 @@ index d3d7d91..ceae7bc 100644
  	  TODO: Move all architectures to use this option
  
 diff --git a/include/configs/sunxi-common.h b/include/configs/sunxi-common.h
-index 072934d..ddcfe94 100644
+index e1ba791..607fda2 100644
 --- a/include/configs/sunxi-common.h
 +++ b/include/configs/sunxi-common.h
-@@ -140,8 +140,7 @@
+@@ -135,8 +135,7 @@
  #endif
  
  /* mmc config */
@@ -57,7 +51,7 @@ index 072934d..ddcfe94 100644
  #define CONFIG_GENERIC_MMC
  #define CONFIG_CMD_MMC
  #define CONFIG_MMC_SUNXI
-@@ -197,7 +196,7 @@
+@@ -192,7 +191,7 @@
  
  #define CONFIG_SPL_LIBDISK_SUPPORT
  
@@ -66,8 +60,8 @@ index 072934d..ddcfe94 100644
  #define CONFIG_SPL_MMC_SUPPORT
  #endif
  
-@@ -355,9 +354,12 @@ extern int soft_i2c_gpio_scl;
- #define CONFIG_ANDROID_BOOT_IMAGE
+@@ -349,9 +348,12 @@ extern int soft_i2c_gpio_scl;
+ #define CONFIG_FASTBOOT_BUF_SIZE	0x2000000
  
  #define CONFIG_FASTBOOT_FLASH
 +

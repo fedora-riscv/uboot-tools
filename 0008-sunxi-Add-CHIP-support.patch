@@ -1,18 +1,8 @@
-From fd8133b725198978865ead730ff20d3991e05f20 Mon Sep 17 00:00:00 2001
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Date: Thu, 15 Oct 2015 22:04:10 +0200
-Subject: [PATCH 008/600] sunxi: Add CHIP support
+From 41a02f2dc4b10c0e1cf80b20d730f4c3e29c2b6f Mon Sep 17 00:00:00 2001
+From: no one <noone@example.com>
+Date: Tue, 17 Nov 2015 12:07:25 +0000
+Subject: [PATCH] sunxi: Add CHIP support
 
-The C.H.I.P. is a small SBC with an Allwinner R8, 8GB of NAND, 512MB of
-RAM, USB host and OTG, a wifi / bluetooth combo chip, an audio/video jack
-and two connectors to plug additional boards on top of it.
-
-The DT is identical to the DT submitted to the upstream kernel.
-
-Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Reviewed-by: Tom Rini <trini@konsulko.com>
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
  arch/arm/dts/Makefile          |   3 +-
  arch/arm/dts/sun5i-r8-chip.dts | 214 +++++++++++++++++++++++++++++++++++++++++
@@ -23,13 +13,13 @@ Signed-off-by: Hans de Goede <hdegoede@redhat.com>
  create mode 100644 configs/CHIP_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 8cd282b..8b656e9 100644
+index 65b4230..6a053cc 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -113,7 +113,8 @@ dtb-$(CONFIG_MACH_SUN5I) += \
- 	sun5i-a13-olinuxino.dtb \
+@@ -115,7 +115,8 @@ dtb-$(CONFIG_MACH_SUN5I) += \
  	sun5i-a13-olinuxino-micro.dtb \
  	sun5i-a13-q8-tablet.dtb \
+ 	sun5i-a13-tzx-q8-713b7.dtb \
 -	sun5i-a13-utoo-p66.dtb
 +	sun5i-a13-utoo-p66.dtb \
 +	sun5i-r8-chip.dtb
@@ -257,7 +247,7 @@ index 0000000..abf3ccb
 +	usb1_vbus-supply = <&reg_vcc5v0>;
 +};
 diff --git a/board/sunxi/MAINTAINERS b/board/sunxi/MAINTAINERS
-index 99f29d3..96c4f3a 100644
+index 67a9d29..7ccd7e1 100644
 --- a/board/sunxi/MAINTAINERS
 +++ b/board/sunxi/MAINTAINERS
 @@ -24,6 +24,7 @@ F:	configs/A13-OLinuXino_defconfig
