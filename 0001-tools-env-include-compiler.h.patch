@@ -1,0 +1,28 @@
+From 329a4c60af68861f40802076495f6892b5403933 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Wed, 9 Dec 2015 06:42:17 +0000
+Subject: [PATCH] tools: env: include compiler.h
+
+With gcc 5.2 and later we get a bunch of "error: unknown type name" for
+'uint8_t', 'uint32_t' and friends.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ tools/env/fw_env.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/tools/env/fw_env.c b/tools/env/fw_env.c
+index ba11f77..39f7333 100644
+--- a/tools/env/fw_env.c
++++ b/tools/env/fw_env.c
+@@ -10,6 +10,7 @@
+ 
+ #define _GNU_SOURCE
+ 
++#include <compiler.h>
+ #include <errno.h>
+ #include <env_flags.h>
+ #include <fcntl.h>
+-- 
+2.5.0
+

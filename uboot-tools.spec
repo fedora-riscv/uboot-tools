@@ -13,6 +13,7 @@ Source1:   armv7-boards
 
 Patch1:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch2:    0005-port-utilite-to-distro-generic-boot-commands.patch
+Patch3:    0001-tools-env-include-compiler.h.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
