@@ -163,6 +163,8 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+- Enable Lamobo_R1
+
 * Tue Dec  8 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2016.01-0.2rc2
 - Update to 2016.01 RC1
 - Enable Orange Pi (original, mini, PC, plus)
