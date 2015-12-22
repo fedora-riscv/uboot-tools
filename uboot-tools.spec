@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2016.01
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   032%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -163,10 +163,12 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Dec 22 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2016.01-0.3rc3
+- Update to 2016.01 RC3
 - Enable Lamobo_R1
 
 * Tue Dec  8 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2016.01-0.2rc2
-- Update to 2016.01 RC1
+- Update to 2016.01 RC2
 - Enable Orange Pi (original, mini, PC, plus)
 
 * Tue Nov 17 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2016.01-0.1rc1
