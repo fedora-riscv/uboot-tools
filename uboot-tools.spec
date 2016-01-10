@@ -1,8 +1,8 @@
-%global candidate rc3
+%global candidate rc4
 
 Name:      uboot-tools
 Version:   2016.01
-Release:   0.3%{?candidate:.%{candidate}}%{?dist}
+Release:   0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -162,6 +162,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Sun Jan 10 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.01-0.4rc4
+- Update to 2016.01 RC4
+
 * Tue Dec 22 2015 Peter Robinson <pbrobinson@fedoraproject.org> 2016.01-0.3rc3
 - Update to 2016.01 RC3
 - Enable Lamobo_R1
