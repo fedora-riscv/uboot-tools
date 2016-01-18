@@ -14,7 +14,6 @@ Source1:   armv7-boards
 Patch1:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch2:    0005-port-utilite-to-distro-generic-boot-commands.patch
 Patch3:    0001-am335x-BeagleBones-enable-CONFIG_AUTOBOOT_KEYED.patch
-Patch4:    0001-vsprintf.c-Always-enable-CONFIG_SYS_VSNPRINTF.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
