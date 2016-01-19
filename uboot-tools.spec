@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2016.01
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -14,6 +14,7 @@ Source1:   armv7-boards
 Patch1:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch2:    0005-port-utilite-to-distro-generic-boot-commands.patch
 Patch3:    0001-am335x-BeagleBones-enable-CONFIG_AUTOBOOT_KEYED.patch
+Patch4:    0001-ARM-tegra-rm-Jetson-TK1-PMIC-GPIO-programming.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -163,6 +164,10 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Jan 19 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.01-2
+- Add patch to fix PCI-e on Jetson TK1
+- Add patch fo serial junk on BeagleBone
+
 * Tue Jan 12 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.01-1
 - Update to 2016.01 GA
 
