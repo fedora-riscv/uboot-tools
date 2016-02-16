@@ -13,7 +13,7 @@ Source1:   armv7-boards
 
 Patch1:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch2:    0005-port-utilite-to-distro-generic-boot-commands.patch
-#Patch5:    0001-wandboard-fix-variable-name-so-PXE-boot-works.patch
+Patch3:    0001-Copy-gcc5-over-to-compiler-gcc6.h-as-a-beginning-of-.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -165,6 +165,7 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %changelog
 * Tue Feb 16 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-0.2rc2
 - Update to 2016.03 RC2
+- Enable SolidRun Clearfog
 
 * Wed Feb  3 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-0.1rc1
 - Update to 2016.03 RC1
