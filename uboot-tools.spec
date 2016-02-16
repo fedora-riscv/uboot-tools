@@ -14,6 +14,7 @@ Source1:   armv7-boards
 Patch1:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch2:    0005-port-utilite-to-distro-generic-boot-commands.patch
 Patch3:    0001-Copy-gcc5-over-to-compiler-gcc6.h-as-a-beginning-of-.patch
+Patch4:    mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
