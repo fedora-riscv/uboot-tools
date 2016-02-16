@@ -1,8 +1,8 @@
-%global candidate rc1
+%global candidate rc2
 
 Name:      uboot-tools
 Version:   2016.03
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -13,7 +13,7 @@ Source1:   armv7-boards
 
 Patch1:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch2:    0005-port-utilite-to-distro-generic-boot-commands.patch
-Patch5:    0001-wandboard-fix-variable-name-so-PXE-boot-works.patch
+#Patch5:    0001-wandboard-fix-variable-name-so-PXE-boot-works.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -163,6 +163,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Feb 16 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-0.2rc2
+- Update to 2016.03 RC2
+
 * Wed Feb  3 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-0.1rc1
 - Update to 2016.03 RC1
 
