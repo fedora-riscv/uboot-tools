@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2016.03
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -164,6 +164,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Mar  1 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-0.2rc3
+- Update to 2016.03 RC3
+
 * Tue Feb 16 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-0.2rc2
 - Update to 2016.03 RC2
 - Enable SolidRun Clearfog
