@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate rc3
 
 Name:      uboot-tools
 Version:   2016.03
-Release:   0.4%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -16,6 +16,8 @@ Patch2:    0005-port-utilite-to-distro-generic-boot-commands.patch
 Patch3:    0001-Copy-gcc5-over-to-compiler-gcc6.h-as-a-beginning-of-.patch
 Patch4:    mvebu-enable-generic-distro-boot-config.patch
 Patch5:    0001-WIP-RPi-3-32-bit-port.patch
+Patch6:    sunxi-chip-enable-composite-video-out.patch
+Patch7:    sunxi-fix-DCDC2-output-in-CHIP_defconfig.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -165,6 +167,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Mon Mar 14 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-1
+- Update to 2016.03 GA
+
 * Sun Mar  6 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-0.4rc3
 - Minor cleanups and new devices
 

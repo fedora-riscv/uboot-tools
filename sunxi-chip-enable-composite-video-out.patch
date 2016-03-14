@@ -1,0 +1,35 @@
+From patchwork Mon Mar  7 12:50:20 2016
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] sunxi: chip: enable composite video out
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+X-Patchwork-Id: 592941
+Message-Id: <1457355020-13676-1-git-send-email-maxime.ripard@free-electrons.com>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: u-boot@lists.denx.de, Alex Kaplan <kaplan2539@gmail.com>
+Date: Mon,  7 Mar 2016 13:50:20 +0100
+
+From: Alex Kaplan <kaplan2539@gmail.com>
+
+The CHIP has a composite video output in the mini-Jack connector, alongside
+with the 2 audio channels. Enable this output in U-Boot.
+
+Signed-off-by: Alex Kaplan <kaplan2539@gmail.com>
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ configs/CHIP_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/configs/CHIP_defconfig b/configs/CHIP_defconfig
+index 3135d1c88e79..4f99d1efdf9e 100644
+--- a/configs/CHIP_defconfig
++++ b/configs/CHIP_defconfig
+@@ -4,6 +4,7 @@ CONFIG_MACH_SUN5I=y
+ CONFIG_DRAM_TIMINGS_DDR3_800E_1066G_1333J=y
+ # CONFIG_MMC is not set
+ CONFIG_USB0_VBUS_PIN="PB10"
++CONFIG_VIDEO_COMPOSITE=y
+ CONFIG_DEFAULT_DEVICE_TREE="sun5i-r8-chip"
+ CONFIG_SPL=y
+ CONFIG_SYS_EXTRA_OPTIONS="CONS_INDEX=2"
