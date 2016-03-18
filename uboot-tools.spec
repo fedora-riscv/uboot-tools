@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2016.03
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -18,6 +18,8 @@ Patch4:    mvebu-enable-generic-distro-boot-config.patch
 Patch5:    0001-WIP-RPi-3-32-bit-port.patch
 Patch6:    sunxi-chip-enable-composite-video-out.patch
 Patch7:    sunxi-fix-DCDC2-output-in-CHIP_defconfig.patch
+Patch8:    0001-sunxi-A23-Fix-some-revisions-needing-a-different-mag.patch
+Patch9:    0002-sunxi-Fix-gmac-not-working-due-to-cpu_eth_init-no-lo.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -167,6 +169,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Fri Mar 18 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-2
+- Add upstream patches to fix some issues on some AllWinner devices
+
 * Mon Mar 14 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-1
 - Update to 2016.03 GA
 
