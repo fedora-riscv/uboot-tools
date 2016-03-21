@@ -1,0 +1,42 @@
+From patchwork Fri Mar 18 07:55:05 2016
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,2/3] sunxi: Specify USB vbus pins for orangepi boards
+From: Hans de Goede <hdegoede@redhat.com>
+X-Patchwork-Id: 599344
+Message-Id: <1458287706-6656-2-git-send-email-hdegoede@redhat.com>
+To: Ian Campbell <ijc+uboot@hellion.org.uk>
+Cc: u-boot@lists.denx.de
+Date: Fri, 18 Mar 2016 08:55:05 +0100
+
+This fixes the USB ports not working on the orangepi_plus and stops us
+from messing with gpio-s which we should not touch on the orangepi_pc.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ configs/orangepi_pc_defconfig   | 3 +++
+ configs/orangepi_plus_defconfig | 2 ++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/configs/orangepi_pc_defconfig b/configs/orangepi_pc_defconfig
+index aaf0f68..4e9051d 100644
+--- a/configs/orangepi_pc_defconfig
++++ b/configs/orangepi_pc_defconfig
+@@ -14,3 +14,6 @@ CONFIG_SPL=y
+ CONFIG_CMD_GPIO=y
+ CONFIG_SY8106A_POWER=y
+ CONFIG_USB_EHCI_HCD=y
++CONFIG_USB1_VBUS_PIN=""
++CONFIG_USB2_VBUS_PIN=""
++CONFIG_USB3_VBUS_PIN=""
+diff --git a/configs/orangepi_plus_defconfig b/configs/orangepi_plus_defconfig
+index e52dcfc..c4885f4 100644
+--- a/configs/orangepi_plus_defconfig
++++ b/configs/orangepi_plus_defconfig
+@@ -14,3 +14,5 @@ CONFIG_SPL=y
+ CONFIG_CMD_GPIO=y
+ CONFIG_SY8106A_POWER=y
+ CONFIG_USB_EHCI_HCD=y
++CONFIG_USB1_VBUS_PIN="PG13"
++CONFIG_USB3_VBUS_PIN="PG11"

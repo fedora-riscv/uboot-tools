@@ -1,0 +1,37 @@
+From patchwork Mon Mar 21 16:08:34 2016
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] ARMv7: Build cache_v7.c with -O1 to avoid gcc6 breakage
+From: Hans de Goede <hdegoede@redhat.com>
+X-Patchwork-Id: 600177
+Message-Id: <1458576514-9470-2-git-send-email-hdegoede@redhat.com>
+To: u-boot@lists.denx.de
+Date: Mon, 21 Mar 2016 17:08:34 +0100
+
+It seems that building cache_v7.c with gcc6 with -O2 or -Os results in
+an unreliable u-boot (only boots the kernel some of the time), at least
+on sunxi boards. For details see:
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1318788
+
+This commit adds -O1 at the end of the CFLAGS when building
+cache_v7.c working around this.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ arch/arm/cpu/armv7/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/cpu/armv7/Makefile b/arch/arm/cpu/armv7/Makefile
+index 45f346c..45a49fe 100644
+--- a/arch/arm/cpu/armv7/Makefile
++++ b/arch/arm/cpu/armv7/Makefile
+@@ -8,6 +8,7 @@
+ extra-y	:= start.o
+ 
+ obj-y	+= cache_v7.o
++CFLAGS_cache_v7.o := $(KBUILD_CFLAGS) -O1
+ 
+ obj-y	+= cpu.o cp15.o
+ obj-y	+= syslib.o

@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2016.03
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Release:   3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -11,15 +11,21 @@ URL:       http://www.denx.de/wiki/U-Boot
 Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:   armv7-boards
 
-Patch1:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-Patch2:    0005-port-utilite-to-distro-generic-boot-commands.patch
-Patch3:    0001-Copy-gcc5-over-to-compiler-gcc6.h-as-a-beginning-of-.patch
+Patch0:    ARMv7-Build-cache_v7.c-with--O1-to-avoid-gcc6-breakage.patch
+Patch1:    0001-Copy-gcc5-over-to-compiler-gcc6.h-as-a-beginning-of-.patch
+Patch2:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
+Patch3:    0005-port-utilite-to-distro-generic-boot-commands.patch
 Patch4:    mvebu-enable-generic-distro-boot-config.patch
 Patch5:    0001-WIP-RPi-3-32-bit-port.patch
 Patch6:    sunxi-chip-enable-composite-video-out.patch
 Patch7:    sunxi-fix-DCDC2-output-in-CHIP_defconfig.patch
 Patch8:    0001-sunxi-A23-Fix-some-revisions-needing-a-different-mag.patch
 Patch9:    0002-sunxi-Fix-gmac-not-working-due-to-cpu_eth_init-no-lo.patch
+Patch10:   sunxi-Fix-2nd-usb-controller-on-sun4i-sun7i-no-longer-working.patch
+Patch11:   sunxi-Enable-support-for-the-eMMC-found-on-the-orangepi-plus.patch
+Patch12:   sunxi-Add-support-for-USB-vbus-pin-for-USB3.patch
+Patch13:   sunxi-Specify-USB-vbus-pins-for-orangepi-boards.patch
+Patch14:   sunxi-Add-a-bunch-of-missing-compatible-strings-to-sunxi_gpio.c.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -169,6 +175,10 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Mon Mar 21 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-3
+- Add a work around for ggc6 issue on some ARMv7 devices
+- Add fixes for AllWinner USB and some fixes for OrangePi devices
+
 * Fri Mar 18 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-2
 - Add upstream patches to fix some issues on some AllWinner devices
 

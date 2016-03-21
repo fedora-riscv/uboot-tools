@@ -1,0 +1,62 @@
+From patchwork Fri Mar 18 07:55:06 2016
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,
+ 3/3] sunxi: Add a bunch of missing compatible strings to sunxi_gpio.c
+From: Hans de Goede <hdegoede@redhat.com>
+X-Patchwork-Id: 599343
+Message-Id: <1458287706-6656-3-git-send-email-hdegoede@redhat.com>
+To: Ian Campbell <ijc+uboot@hellion.org.uk>
+Cc: u-boot@lists.denx.de
+Date: Fri, 18 Mar 2016 08:55:06 +0100
+
+The kernel has different compatible strings for the pio block
+because the pin-muxing is different on all the different SoCs,
+but sunxi_gpio.c only support the basic gpio functionality, which
+is identical everywhere. Add the missing compatible strings for
+various SoC models.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/gpio/sunxi_gpio.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpio/sunxi_gpio.c b/drivers/gpio/sunxi_gpio.c
+index 9d8f11e..a7cec18 100644
+--- a/drivers/gpio/sunxi_gpio.c
++++ b/drivers/gpio/sunxi_gpio.c
+@@ -277,9 +277,17 @@ static int gpio_sunxi_bind(struct udevice *parent)
+ 		start = 'L' - 'A';
+ 		no_banks = 2; /* L & M */
+ 	} else if (fdt_node_check_compatible(gd->fdt_blob, parent->of_offset,
+-				"allwinner,sun8i-a23-r-pinctrl") == 0) {
++				"allwinner,sun8i-a23-r-pinctrl") == 0 ||
++		   fdt_node_check_compatible(gd->fdt_blob, parent->of_offset,
++				"allwinner,sun8i-a83t-r-pinctrl") == 0 ||
++		   fdt_node_check_compatible(gd->fdt_blob, parent->of_offset,
++				"allwinner,sun8i-h3-r-pinctrl") == 0) {
+ 		start = 'L' - 'A';
+ 		no_banks = 1; /* L only */
++	} else if (fdt_node_check_compatible(gd->fdt_blob, parent->of_offset,
++				"allwinner,sun9i-a80-r-pinctrl") == 0) {
++		start = 'L' - 'A';
++		no_banks = 3; /* L, M & N */
+ 	} else {
+ 		start = 0;
+ 		no_banks = SUNXI_GPIO_BANKS;
+@@ -316,9 +324,14 @@ static const struct udevice_id sunxi_gpio_ids[] = {
+ 	{ .compatible = "allwinner,sun7i-a20-pinctrl" },
+ 	{ .compatible = "allwinner,sun8i-a23-pinctrl" },
+ 	{ .compatible = "allwinner,sun8i-a33-pinctrl" },
++	{ .compatible = "allwinner,sun8i-a83t-pinctrl", },
++	{ .compatible = "allwinner,sun8i-h3-pinctrl" },
+ 	{ .compatible = "allwinner,sun9i-a80-pinctrl" },
+ 	{ .compatible = "allwinner,sun6i-a31-r-pinctrl" },
+ 	{ .compatible = "allwinner,sun8i-a23-r-pinctrl" },
++	{ .compatible = "allwinner,sun8i-a83t-r-pinctrl" },
++	{ .compatible = "allwinner,sun8i-h3-r-pinctrl", },
++	{ .compatible = "allwinner,sun9i-a80-r-pinctrl", },
+ 	{ }
+ };
+ 
