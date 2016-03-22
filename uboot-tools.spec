@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2016.03
-Release:   3%{?candidate:.%{candidate}}%{?dist}
+Release:   4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -20,7 +20,7 @@ Patch5:    0001-WIP-RPi-3-32-bit-port.patch
 Patch6:    sunxi-chip-enable-composite-video-out.patch
 Patch7:    sunxi-fix-DCDC2-output-in-CHIP_defconfig.patch
 Patch8:    0001-sunxi-A23-Fix-some-revisions-needing-a-different-mag.patch
-Patch9:    0002-sunxi-Fix-gmac-not-working-due-to-cpu_eth_init-no-lo.patch
+Patch9:    0001-sunxi-Fix-gmac-not-working-due-to-cpu_eth_init-no-lo.patch
 Patch10:   sunxi-Fix-2nd-usb-controller-on-sun4i-sun7i-no-longer-working.patch
 Patch11:   sunxi-Enable-support-for-the-eMMC-found-on-the-orangepi-plus.patch
 Patch12:   sunxi-Add-support-for-USB-vbus-pin-for-USB3.patch
@@ -175,6 +175,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Mar 22 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-4
+- Add a better fix for network issue which caused follow on issues
+
 * Mon Mar 21 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-3
 - Add a work around for ggc6 issue on some ARMv7 devices
 - Add fixes for AllWinner USB and some fixes for OrangePi devices

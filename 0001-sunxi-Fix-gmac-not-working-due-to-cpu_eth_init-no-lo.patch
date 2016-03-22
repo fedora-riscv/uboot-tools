@@ -1,41 +1,40 @@
-From befbbcca23f862a441d8a73f1a1fbe586185576d Mon Sep 17 00:00:00 2001
+From 2df313a8a25136cf5d55bc744a9df0d2dc7965f9 Mon Sep 17 00:00:00 2001
 From: Hans de Goede <hdegoede@redhat.com>
 Date: Thu, 17 Mar 2016 13:53:03 +0100
-Subject: [PATCH 2/2] sunxi: Fix gmac not working due to cpu_eth_init no longer
- being called
+Subject: [PATCH v2 1/3] sunxi: Fix gmac not working due to cpu_eth_init no
+ longer being called
 
 cpu_eth_init is no longer called for dm enabled eth drivers, this
 was causing the sunxi gmac eth controller to no longer work in u-boot.
 
-This commit fixes this by moving the gpio setup to gpio_init() and by
-calling the clock, reset and pinmux setup function from s_init().
+This commit fixes this by calling the clock, reset and pinmux setup
+function from s_init() and enabling the phy power pin (if any) from
+board_init().
+
+The enabling of phy power cannot be done from s_init because it uses dm
+and dm is not ready yet at this point.
 
 Note that the mdelay is dropped as the phy gets enabled much earlier
 now, so it is no longer needed.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Ian Campbell <ijc@hellion.org.uk>
+Tested-by: Karsten Merker <merker@debian.org>
 ---
- arch/arm/cpu/armv7/sunxi/board.c            | 32 +++++------------------------
+Changes in v2:
+-Move enabling of phy power to board_init()
+---
+ arch/arm/cpu/armv7/sunxi/board.c            | 28 +---------------------------
  arch/arm/include/asm/arch-sunxi/sys_proto.h |  6 +++++-
- board/sunxi/gmac.c                          | 14 +------------
- 3 files changed, 11 insertions(+), 41 deletions(-)
+ board/sunxi/board.c                         |  5 +++++
+ board/sunxi/gmac.c                          | 14 +-------------
+ 4 files changed, 12 insertions(+), 41 deletions(-)
 
 diff --git a/arch/arm/cpu/armv7/sunxi/board.c b/arch/arm/cpu/armv7/sunxi/board.c
-index e80785b..9a97049 100644
+index e80785b..7653148 100644
 --- a/arch/arm/cpu/armv7/sunxi/board.c
 +++ b/arch/arm/cpu/armv7/sunxi/board.c
-@@ -100,6 +100,10 @@ static int gpio_init(void)
- #error Unsupported console port number. Please fix pin mux settings in board.c
- #endif
- 
-+#ifdef CONFIG_MACPWR
-+	gpio_request(CONFIG_MACPWR, "macpwr");
-+	gpio_direction_output(CONFIG_MACPWR, 1);
-+#endif
- 	return 0;
- }
- 
-@@ -152,6 +156,7 @@ void s_init(void)
+@@ -152,6 +152,7 @@ void s_init(void)
  	timer_init();
  	gpio_init();
  	i2c_init_board();
@@ -43,7 +42,7 @@ index e80785b..9a97049 100644
  }
  
  #ifdef CONFIG_SPL_BUILD
-@@ -259,30 +264,3 @@ void enable_caches(void)
+@@ -259,30 +260,3 @@ void enable_caches(void)
  	dcache_enable();
  }
  #endif
@@ -90,6 +89,22 @@ index 9df3744..a373319 100644
 +#endif
  
  #endif
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index 80eae9c..e16718f 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -90,6 +90,11 @@ int board_init(void)
+ 	if (ret)
+ 		return ret;
+ 
++#ifdef CONFIG_MACPWR
++	gpio_request(CONFIG_MACPWR, "macpwr");
++	gpio_direction_output(CONFIG_MACPWR, 1);
++#endif
++
+ 	/* Uses dm gpio code so do this here and not in i2c_init_board() */
+ 	return soft_i2c_board_init();
+ }
 diff --git a/board/sunxi/gmac.c b/board/sunxi/gmac.c
 index 4e222d8..69eb8ff 100644
 --- a/board/sunxi/gmac.c
