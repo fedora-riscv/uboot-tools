@@ -1,0 +1,311 @@
+From patchwork Sat Apr  9 11:53:48 2016
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v2,
+ 1/2] arm: Replace v7_maint_dcache_all(ARMV7_DCACHE_CLEAN_INVAL_ALL)
+ with asm code
+From: Hans de Goede <hdegoede@redhat.com>
+X-Patchwork-Id: 608366
+Message-Id: <1460202829-27276-1-git-send-email-hdegoede@redhat.com>
+To: Albert ARIBAUD <albert.u.boot@aribaud.net>, Tom Rini <trini@konsulko.com>, 
+ Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Ian Campbell <ijc+uboot@hellion.org.uk>, u-boot@lists.denx.de
+Date: Sat,  9 Apr 2016 13:53:48 +0200
+
+v7_maint_dcache_all() does not work reliable when build with gcc6,
+see: https://bugzilla.redhat.com/show_bug.cgi?id=1318788
+
+While debugging this I learned that v7_maint_dcache_all() is unreliable
+when build with gcc5 too when it is marked as noinline.
+
+This commit fixes the reliability issues by replacing the C-code with
+the ready to use asm implementation from the kernel.
+
+Given that this code when written as C-code clearly is quite fragile
+(also see the existing comments about the C-code being the way it is
+ to get optimal assembly) and that we have a proven asm alternative,
+I believe that this is the best solution.
+
+Note that we actually already had a copy of the kernel's
+v7_flush_dcache_all() before this commit in
+arch/arm/mach-uniphier/arm32/lowlevel_init.S.
+
+This commit moves that code arch/arm/cpu/armv7/cache_v7_asm.S, renames
+it to __v7_flush_dcache_all(), and adds a v7_flush_dcache_all() wrapper
+which saves / restores the clobbered registers for use from C-code.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+Changes in v2:
+-Remove "Copyright (C) 2012-2015 Masahiro Yamada" from the header
+-Move the v7_flush_dcache_all asm code from
+ arch/arm/mach-uniphier/arm32/lowlevel_init.S to
+ arch/arm/cpu/armv7/cache_v7_asm.S instead of adding a second copy
+---
+ arch/arm/cpu/armv7/Makefile                  |  2 +-
+ arch/arm/cpu/armv7/cache_v7.c                | 41 ++------------
+ arch/arm/cpu/armv7/cache_v7_asm.S            | 84 ++++++++++++++++++++++++++++
+ arch/arm/mach-uniphier/arm32/lowlevel_init.S | 67 +---------------------
+ 4 files changed, 92 insertions(+), 102 deletions(-)
+ create mode 100644 arch/arm/cpu/armv7/cache_v7_asm.S
+
+diff --git a/arch/arm/cpu/armv7/Makefile b/arch/arm/cpu/armv7/Makefile
+index 45f346c..328c4b1 100644
+--- a/arch/arm/cpu/armv7/Makefile
++++ b/arch/arm/cpu/armv7/Makefile
+@@ -7,7 +7,7 @@
+ 
+ extra-y	:= start.o
+ 
+-obj-y	+= cache_v7.o
++obj-y	+= cache_v7.o cache_v7_asm.o
+ 
+ obj-y	+= cpu.o cp15.o
+ obj-y	+= syslib.o
+diff --git a/arch/arm/cpu/armv7/cache_v7.c b/arch/arm/cpu/armv7/cache_v7.c
+index 94ff488..dd07ba1 100644
+--- a/arch/arm/cpu/armv7/cache_v7.c
++++ b/arch/arm/cpu/armv7/cache_v7.c
+@@ -16,6 +16,10 @@
+ #define ARMV7_DCACHE_CLEAN_INVAL_RANGE	4
+ 
+ #ifndef CONFIG_SYS_DCACHE_OFF
++
++/* Asm functions from cache_v7_asm.S */
++void v7_flush_dcache_all(void);
++
+ static int check_cache_range(unsigned long start, unsigned long stop)
+ {
+ 	int ok = 1;
+@@ -88,34 +92,6 @@ static void v7_inval_dcache_level_setway(u32 level, u32 num_sets,
+ 	DSB;
+ }
+ 
+-static void v7_clean_inval_dcache_level_setway(u32 level, u32 num_sets,
+-					       u32 num_ways, u32 way_shift,
+-					       u32 log2_line_len)
+-{
+-	int way, set;
+-	u32 setway;
+-
+-	/*
+-	 * For optimal assembly code:
+-	 *	a. count down
+-	 *	b. have bigger loop inside
+-	 */
+-	for (way = num_ways - 1; way >= 0 ; way--) {
+-		for (set = num_sets - 1; set >= 0; set--) {
+-			setway = (level << 1) | (set << log2_line_len) |
+-				 (way << way_shift);
+-			/*
+-			 * Clean & Invalidate data/unified
+-			 * cache line by set/way
+-			 */
+-			asm volatile ("	mcr p15, 0, %0, c7, c14, 2"
+-					: : "r" (setway));
+-		}
+-	}
+-	/* DSB to make sure the operation is complete */
+-	DSB;
+-}
+-
+ static void v7_maint_dcache_level_setway(u32 level, u32 operation)
+ {
+ 	u32 ccsidr;
+@@ -142,13 +118,8 @@ static void v7_maint_dcache_level_setway(u32 level, u32 operation)
+ 	log2_num_ways = log_2_n_round_up(num_ways);
+ 
+ 	way_shift = (32 - log2_num_ways);
+-	if (operation == ARMV7_DCACHE_INVAL_ALL) {
+-		v7_inval_dcache_level_setway(level, num_sets, num_ways,
++	v7_inval_dcache_level_setway(level, num_sets, num_ways,
+ 				      way_shift, log2_line_len);
+-	} else if (operation == ARMV7_DCACHE_CLEAN_INVAL_ALL) {
+-		v7_clean_inval_dcache_level_setway(level, num_sets, num_ways,
+-						   way_shift, log2_line_len);
+-	}
+ }
+ 
+ static void v7_maint_dcache_all(u32 operation)
+@@ -263,7 +234,7 @@ void invalidate_dcache_all(void)
+  */
+ void flush_dcache_all(void)
+ {
+-	v7_maint_dcache_all(ARMV7_DCACHE_CLEAN_INVAL_ALL);
++	v7_flush_dcache_all();
+ 
+ 	v7_outer_cache_flush_all();
+ }
+diff --git a/arch/arm/cpu/armv7/cache_v7_asm.S b/arch/arm/cpu/armv7/cache_v7_asm.S
+new file mode 100644
+index 0000000..2e4629f
+--- /dev/null
++++ b/arch/arm/cpu/armv7/cache_v7_asm.S
+@@ -0,0 +1,84 @@
++/*
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include <config.h>
++#include <linux/linkage.h>
++#include <linux/sizes.h>
++#include <asm/system.h>
++
++#ifdef CONFIG_SYS_THUMB_BUILD
++#define ARM(x...)
++#define THUMB(x...)	x
++#else
++#define ARM(x...)	x
++#define THUMB(x...)
++#endif
++
++/*
++ *	v7_flush_dcache_all()
++ *
++ *	Flush the whole D-cache.
++ *
++ *	Corrupted registers: r0-r7, r9-r11 (r6 only in Thumb mode)
++ *
++ *	Note: copied from arch/arm/mm/cache-v7.S of Linux 4.4
++ */
++ENTRY(__v7_flush_dcache_all)
++	dmb					@ ensure ordering with previous memory accesses
++	mrc	p15, 1, r0, c0, c0, 1		@ read clidr
++	mov	r3, r0, lsr #23			@ move LoC into position
++	ands	r3, r3, #7 << 1			@ extract LoC*2 from clidr
++	beq	finished			@ if loc is 0, then no need to clean
++start_flush_levels:
++	mov	r10, #0				@ start clean at cache level 0
++flush_levels:
++	add	r2, r10, r10, lsr #1		@ work out 3x current cache level
++	mov	r1, r0, lsr r2			@ extract cache type bits from clidr
++	and	r1, r1, #7			@ mask of the bits for current cache only
++	cmp	r1, #2				@ see what cache we have at this level
++	blt	skip				@ skip if no cache, or just i-cache
++	mcr	p15, 2, r10, c0, c0, 0		@ select current cache level in cssr
++	isb					@ isb to sych the new cssr&csidr
++	mrc	p15, 1, r1, c0, c0, 0		@ read the new csidr
++	and	r2, r1, #7			@ extract the length of the cache lines
++	add	r2, r2, #4			@ add 4 (line length offset)
++	movw	r4, #0x3ff
++	ands	r4, r4, r1, lsr #3		@ find maximum number on the way size
++	clz	r5, r4				@ find bit position of way size increment
++	movw	r7, #0x7fff
++	ands	r7, r7, r1, lsr #13		@ extract max number of the index size
++loop1:
++	mov	r9, r7				@ create working copy of max index
++loop2:
++ ARM(	orr	r11, r10, r4, lsl r5	)	@ factor way and cache number into r11
++ THUMB(	lsl	r6, r4, r5		)
++ THUMB(	orr	r11, r10, r6		)	@ factor way and cache number into r11
++ ARM(	orr	r11, r11, r9, lsl r2	)	@ factor index number into r11
++ THUMB(	lsl	r6, r9, r2		)
++ THUMB(	orr	r11, r11, r6		)	@ factor index number into r11
++	mcr	p15, 0, r11, c7, c14, 2		@ clean & invalidate by set/way
++	subs	r9, r9, #1			@ decrement the index
++	bge	loop2
++	subs	r4, r4, #1			@ decrement the way
++	bge	loop1
++skip:
++	add	r10, r10, #2			@ increment cache number
++	cmp	r3, r10
++	bgt	flush_levels
++finished:
++	mov	r10, #0				@ swith back to cache level 0
++	mcr	p15, 2, r10, c0, c0, 0		@ select current cache level in cssr
++	dsb	st
++	isb
++	bx	lr
++ENDPROC(__v7_flush_dcache_all)
++
++ENTRY(v7_flush_dcache_all)
++ ARM(	stmfd	sp!, {r4-r5, r7, r9-r11, lr}	)
++ THUMB(	stmfd	sp!, {r4-r7, r9-r11, lr}	)
++	bl	__v7_flush_dcache_all
++ ARM(	ldmfd	sp!, {r4-r5, r7, r9-r11, lr}	)
++ THUMB(	ldmfd	sp!, {r4-r7, r9-r11, lr}	)
++	bx	lr
++ENDPROC(v7_flush_dcache_all)
+diff --git a/arch/arm/mach-uniphier/arm32/lowlevel_init.S b/arch/arm/mach-uniphier/arm32/lowlevel_init.S
+index dd03ad8..e2bb1fc 100644
+--- a/arch/arm/mach-uniphier/arm32/lowlevel_init.S
++++ b/arch/arm/mach-uniphier/arm32/lowlevel_init.S
+@@ -38,7 +38,7 @@ ENTRY(lowlevel_init)
+ 	 * to do next is to create a page table and switch over to it.
+ 	 */
+ 	bl	create_page_table
+-	bl	v7_flush_dcache_all
++	bl	__v7_flush_dcache_all
+ 
+ 	/* Disable MMU and Dcache before switching Page Table */
+ 	mrc	p15, 0, r0, c1, c0, 0	@ SCTLR (System Control Register)
+@@ -140,68 +140,3 @@ ENTRY(create_page_table)
+ 	str	r0, [r12, #4]		@ mark the second section as Normal
+ 	mov	pc, lr
+ ENDPROC(create_page_table)
+-
+-/* We don't use Thumb instructions for now */
+-#define ARM(x...)	x
+-#define THUMB(x...)
+-
+-/*
+- *	v7_flush_dcache_all()
+- *
+- *	Flush the whole D-cache.
+- *
+- *	Corrupted registers: r0-r7, r9-r11 (r6 only in Thumb mode)
+- *
+- *	- mm    - mm_struct describing address space
+- *
+- *	Note: copied from arch/arm/mm/cache-v7.S of Linux 4.4
+- */
+-ENTRY(v7_flush_dcache_all)
+-	dmb					@ ensure ordering with previous memory accesses
+-	mrc	p15, 1, r0, c0, c0, 1		@ read clidr
+-	mov	r3, r0, lsr #23			@ move LoC into position
+-	ands	r3, r3, #7 << 1			@ extract LoC*2 from clidr
+-	beq	finished			@ if loc is 0, then no need to clean
+-start_flush_levels:
+-	mov	r10, #0				@ start clean at cache level 0
+-flush_levels:
+-	add	r2, r10, r10, lsr #1		@ work out 3x current cache level
+-	mov	r1, r0, lsr r2			@ extract cache type bits from clidr
+-	and	r1, r1, #7			@ mask of the bits for current cache only
+-	cmp	r1, #2				@ see what cache we have at this level
+-	blt	skip				@ skip if no cache, or just i-cache
+-	mcr	p15, 2, r10, c0, c0, 0		@ select current cache level in cssr
+-	isb					@ isb to sych the new cssr&csidr
+-	mrc	p15, 1, r1, c0, c0, 0		@ read the new csidr
+-	and	r2, r1, #7			@ extract the length of the cache lines
+-	add	r2, r2, #4			@ add 4 (line length offset)
+-	movw	r4, #0x3ff
+-	ands	r4, r4, r1, lsr #3		@ find maximum number on the way size
+-	clz	r5, r4				@ find bit position of way size increment
+-	movw	r7, #0x7fff
+-	ands	r7, r7, r1, lsr #13		@ extract max number of the index size
+-loop1:
+-	mov	r9, r7				@ create working copy of max index
+-loop2:
+- ARM(	orr	r11, r10, r4, lsl r5	)	@ factor way and cache number into r11
+- THUMB(	lsl	r6, r4, r5		)
+- THUMB(	orr	r11, r10, r6		)	@ factor way and cache number into r11
+- ARM(	orr	r11, r11, r9, lsl r2	)	@ factor index number into r11
+- THUMB(	lsl	r6, r9, r2		)
+- THUMB(	orr	r11, r11, r6		)	@ factor index number into r11
+-	mcr	p15, 0, r11, c7, c14, 2		@ clean & invalidate by set/way
+-	subs	r9, r9, #1			@ decrement the index
+-	bge	loop2
+-	subs	r4, r4, #1			@ decrement the way
+-	bge	loop1
+-skip:
+-	add	r10, r10, #2			@ increment cache number
+-	cmp	r3, r10
+-	bgt	flush_levels
+-finished:
+-	mov	r10, #0				@ swith back to cache level 0
+-	mcr	p15, 2, r10, c0, c0, 0		@ select current cache level in cssr
+-	dsb	st
+-	isb
+-	mov	pc, lr
+-ENDPROC(v7_flush_dcache_all)

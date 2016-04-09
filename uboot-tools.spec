@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2016.03
-Release:   4%{?candidate:.%{candidate}}%{?dist}
+Release:   5%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -11,7 +11,6 @@ URL:       http://www.denx.de/wiki/U-Boot
 Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:   armv7-boards
 
-Patch0:    ARMv7-Build-cache_v7.c-with--O1-to-avoid-gcc6-breakage.patch
 Patch1:    0001-Copy-gcc5-over-to-compiler-gcc6.h-as-a-beginning-of-.patch
 Patch2:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch3:    0005-port-utilite-to-distro-generic-boot-commands.patch
@@ -26,6 +25,9 @@ Patch11:   sunxi-Enable-support-for-the-eMMC-found-on-the-orangepi-plus.patch
 Patch12:   sunxi-Add-support-for-USB-vbus-pin-for-USB3.patch
 Patch13:   sunxi-Specify-USB-vbus-pins-for-orangepi-boards.patch
 Patch14:   sunxi-Add-a-bunch-of-missing-compatible-strings-to-sunxi_gpio.c.patch
+Patch15:   U-Boot-v2-1-2-arm-Replace-v7_maint_dcache_all-ARMV7_DCACHE_CLEAN_INVAL_ALL-with-asm-code.patch
+Patch16:   U-Boot-v2-2-2-arm-Replace-v7_maint_dcache_all-ARMV7_DCACHE_INVAL_ALL-with-asm-code.patch
+
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -175,6 +177,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Sat Apr  9 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-5
+- Add upstream fix for ARMv7 cache issues preventing some devices from booting
+
 * Tue Mar 22 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-4
 - Add a better fix for network issue which caused follow on issues
 

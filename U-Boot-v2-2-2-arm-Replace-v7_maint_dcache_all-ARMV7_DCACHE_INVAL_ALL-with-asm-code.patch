@@ -1,0 +1,242 @@
+From patchwork Sat Apr  9 11:53:49 2016
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v2,
+ 2/2] arm: Replace v7_maint_dcache_all(ARMV7_DCACHE_INVAL_ALL) with
+ asm code
+From: Hans de Goede <hdegoede@redhat.com>
+X-Patchwork-Id: 608365
+Message-Id: <1460202829-27276-2-git-send-email-hdegoede@redhat.com>
+To: Albert ARIBAUD <albert.u.boot@aribaud.net>, Tom Rini <trini@konsulko.com>, 
+ Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Ian Campbell <ijc+uboot@hellion.org.uk>, u-boot@lists.denx.de
+Date: Sat,  9 Apr 2016 13:53:49 +0200
+
+Lets be consistent and also replace v7_maint_dcache_all()
+with asm code for the invalidate case.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+Changes in v2:
+-No changes
+---
+ arch/arm/cpu/armv7/cache_v7.c     | 100 ++------------------------------------
+ arch/arm/cpu/armv7/cache_v7_asm.S |  70 ++++++++++++++++++++++++++
+ 2 files changed, 74 insertions(+), 96 deletions(-)
+
+diff --git a/arch/arm/cpu/armv7/cache_v7.c b/arch/arm/cpu/armv7/cache_v7.c
+index dd07ba1..dc309da 100644
+--- a/arch/arm/cpu/armv7/cache_v7.c
++++ b/arch/arm/cpu/armv7/cache_v7.c
+@@ -10,15 +10,14 @@
+ #include <asm/armv7.h>
+ #include <asm/utils.h>
+ 
+-#define ARMV7_DCACHE_INVAL_ALL		1
+-#define ARMV7_DCACHE_CLEAN_INVAL_ALL	2
+-#define ARMV7_DCACHE_INVAL_RANGE	3
+-#define ARMV7_DCACHE_CLEAN_INVAL_RANGE	4
++#define ARMV7_DCACHE_INVAL_RANGE	1
++#define ARMV7_DCACHE_CLEAN_INVAL_RANGE	2
+ 
+ #ifndef CONFIG_SYS_DCACHE_OFF
+ 
+ /* Asm functions from cache_v7_asm.S */
+ void v7_flush_dcache_all(void);
++void v7_invalidate_dcache_all(void);
+ 
+ static int check_cache_range(unsigned long start, unsigned long stop)
+ {
+@@ -37,18 +36,6 @@ static int check_cache_range(unsigned long start, unsigned long stop)
+ 	return ok;
+ }
+ 
+-/*
+- * Write the level and type you want to Cache Size Selection Register(CSSELR)
+- * to get size details from Current Cache Size ID Register(CCSIDR)
+- */
+-static void set_csselr(u32 level, u32 type)
+-{
+-	u32 csselr = level << 1 | type;
+-
+-	/* Write to Cache Size Selection Register(CSSELR) */
+-	asm volatile ("mcr p15, 2, %0, c0, c0, 0" : : "r" (csselr));
+-}
+-
+ static u32 get_ccsidr(void)
+ {
+ 	u32 ccsidr;
+@@ -58,85 +45,6 @@ static u32 get_ccsidr(void)
+ 	return ccsidr;
+ }
+ 
+-static u32 get_clidr(void)
+-{
+-	u32 clidr;
+-
+-	/* Read current CP15 Cache Level ID Register */
+-	asm volatile ("mrc p15,1,%0,c0,c0,1" : "=r" (clidr));
+-	return clidr;
+-}
+-
+-static void v7_inval_dcache_level_setway(u32 level, u32 num_sets,
+-					 u32 num_ways, u32 way_shift,
+-					 u32 log2_line_len)
+-{
+-	int way, set;
+-	u32 setway;
+-
+-	/*
+-	 * For optimal assembly code:
+-	 *	a. count down
+-	 *	b. have bigger loop inside
+-	 */
+-	for (way = num_ways - 1; way >= 0 ; way--) {
+-		for (set = num_sets - 1; set >= 0; set--) {
+-			setway = (level << 1) | (set << log2_line_len) |
+-				 (way << way_shift);
+-			/* Invalidate data/unified cache line by set/way */
+-			asm volatile ("	mcr p15, 0, %0, c7, c6, 2"
+-					: : "r" (setway));
+-		}
+-	}
+-	/* DSB to make sure the operation is complete */
+-	DSB;
+-}
+-
+-static void v7_maint_dcache_level_setway(u32 level, u32 operation)
+-{
+-	u32 ccsidr;
+-	u32 num_sets, num_ways, log2_line_len, log2_num_ways;
+-	u32 way_shift;
+-
+-	set_csselr(level, ARMV7_CSSELR_IND_DATA_UNIFIED);
+-
+-	ccsidr = get_ccsidr();
+-
+-	log2_line_len = ((ccsidr & CCSIDR_LINE_SIZE_MASK) >>
+-				CCSIDR_LINE_SIZE_OFFSET) + 2;
+-	/* Converting from words to bytes */
+-	log2_line_len += 2;
+-
+-	num_ways  = ((ccsidr & CCSIDR_ASSOCIATIVITY_MASK) >>
+-			CCSIDR_ASSOCIATIVITY_OFFSET) + 1;
+-	num_sets  = ((ccsidr & CCSIDR_NUM_SETS_MASK) >>
+-			CCSIDR_NUM_SETS_OFFSET) + 1;
+-	/*
+-	 * According to ARMv7 ARM number of sets and number of ways need
+-	 * not be a power of 2
+-	 */
+-	log2_num_ways = log_2_n_round_up(num_ways);
+-
+-	way_shift = (32 - log2_num_ways);
+-	v7_inval_dcache_level_setway(level, num_sets, num_ways,
+-				      way_shift, log2_line_len);
+-}
+-
+-static void v7_maint_dcache_all(u32 operation)
+-{
+-	u32 level, cache_type, level_start_bit = 0;
+-	u32 clidr = get_clidr();
+-
+-	for (level = 0; level < 7; level++) {
+-		cache_type = (clidr >> level_start_bit) & 0x7;
+-		if ((cache_type == ARMV7_CLIDR_CTYPE_DATA_ONLY) ||
+-		    (cache_type == ARMV7_CLIDR_CTYPE_INSTRUCTION_DATA) ||
+-		    (cache_type == ARMV7_CLIDR_CTYPE_UNIFIED))
+-			v7_maint_dcache_level_setway(level, operation);
+-		level_start_bit += 3;
+-	}
+-}
+-
+ static void v7_dcache_clean_inval_range(u32 start, u32 stop, u32 line_len)
+ {
+ 	u32 mva;
+@@ -223,7 +131,7 @@ static void v7_inval_tlb(void)
+ 
+ void invalidate_dcache_all(void)
+ {
+-	v7_maint_dcache_all(ARMV7_DCACHE_INVAL_ALL);
++	v7_invalidate_dcache_all();
+ 
+ 	v7_outer_cache_inval_all();
+ }
+diff --git a/arch/arm/cpu/armv7/cache_v7_asm.S b/arch/arm/cpu/armv7/cache_v7_asm.S
+index 2e4629f..a433628 100644
+--- a/arch/arm/cpu/armv7/cache_v7_asm.S
++++ b/arch/arm/cpu/armv7/cache_v7_asm.S
+@@ -82,3 +82,73 @@ ENTRY(v7_flush_dcache_all)
+  THUMB(	ldmfd	sp!, {r4-r7, r9-r11, lr}	)
+ 	bx	lr
+ ENDPROC(v7_flush_dcache_all)
++
++/*
++ *	v7_invalidate_dcache_all()
++ *
++ *	Invalidate the whole D-cache.
++ *
++ *	Corrupted registers: r0-r7, r9-r11 (r6 only in Thumb mode)
++ *
++ *	Note: copied from __v7_flush_dcache_all above with
++ *	mcr     p15, 0, r11, c7, c14, 2
++ *	Replaced with:
++ *	mcr     p15, 0, r11, c7, c6, 2
++ */
++ENTRY(__v7_invalidate_dcache_all)
++	dmb					@ ensure ordering with previous memory accesses
++	mrc	p15, 1, r0, c0, c0, 1		@ read clidr
++	mov	r3, r0, lsr #23			@ move LoC into position
++	ands	r3, r3, #7 << 1			@ extract LoC*2 from clidr
++	beq	inval_finished			@ if loc is 0, then no need to clean
++	mov	r10, #0				@ start clean at cache level 0
++inval_levels:
++	add	r2, r10, r10, lsr #1		@ work out 3x current cache level
++	mov	r1, r0, lsr r2			@ extract cache type bits from clidr
++	and	r1, r1, #7			@ mask of the bits for current cache only
++	cmp	r1, #2				@ see what cache we have at this level
++	blt	inval_skip			@ skip if no cache, or just i-cache
++	mcr	p15, 2, r10, c0, c0, 0		@ select current cache level in cssr
++	isb					@ isb to sych the new cssr&csidr
++	mrc	p15, 1, r1, c0, c0, 0		@ read the new csidr
++	and	r2, r1, #7			@ extract the length of the cache lines
++	add	r2, r2, #4			@ add 4 (line length offset)
++	movw	r4, #0x3ff
++	ands	r4, r4, r1, lsr #3		@ find maximum number on the way size
++	clz	r5, r4				@ find bit position of way size increment
++	movw	r7, #0x7fff
++	ands	r7, r7, r1, lsr #13		@ extract max number of the index size
++inval_loop1:
++	mov	r9, r7				@ create working copy of max index
++inval_loop2:
++ ARM(	orr	r11, r10, r4, lsl r5	)	@ factor way and cache number into r11
++ THUMB(	lsl	r6, r4, r5		)
++ THUMB(	orr	r11, r10, r6		)	@ factor way and cache number into r11
++ ARM(	orr	r11, r11, r9, lsl r2	)	@ factor index number into r11
++ THUMB(	lsl	r6, r9, r2		)
++ THUMB(	orr	r11, r11, r6		)	@ factor index number into r11
++	mcr	p15, 0, r11, c7, c6, 2		@ invalidate by set/way
++	subs	r9, r9, #1			@ decrement the index
++	bge	inval_loop2
++	subs	r4, r4, #1			@ decrement the way
++	bge	inval_loop1
++inval_skip:
++	add	r10, r10, #2			@ increment cache number
++	cmp	r3, r10
++	bgt	inval_levels
++inval_finished:
++	mov	r10, #0				@ swith back to cache level 0
++	mcr	p15, 2, r10, c0, c0, 0		@ select current cache level in cssr
++	dsb	st
++	isb
++	bx	lr
++ENDPROC(__v7_invalidate_dcache_all)
++
++ENTRY(v7_invalidate_dcache_all)
++ ARM(	stmfd	sp!, {r4-r5, r7, r9-r11, lr}	)
++ THUMB(	stmfd	sp!, {r4-r7, r9-r11, lr}	)
++	bl	__v7_invalidate_dcache_all
++ ARM(	ldmfd	sp!, {r4-r5, r7, r9-r11, lr}	)
++ THUMB(	ldmfd	sp!, {r4-r7, r9-r11, lr}	)
++	bx	lr
++ENDPROC(v7_invalidate_dcache_all)
