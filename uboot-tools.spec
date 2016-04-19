@@ -66,7 +66,8 @@ u-boot bootloader binaries for armv7 boards
 %prep
 %setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
 
-git init 
+git init
+git config --global gc.auto 0
 git config user.email "noone@example.com" 
 git config user.name "no one" 
 git add . 
@@ -74,7 +75,6 @@ git commit -a -q -m "%{version} baseline"
 git am %{patches} </dev/null 
 git config --unset user.email 
 git config --unset user.name 
-sleep 10
 rm -rf .git
 
 %build
