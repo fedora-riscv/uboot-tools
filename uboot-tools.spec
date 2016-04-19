@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2016.03
-Release:   5%{?candidate:.%{candidate}}%{?dist}
+Release:   6%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -83,10 +83,10 @@ mkdir builds
 pngtopnm /usr/share/pixmaps/fedora-logo.png | ppmquant 256 | ppmtobmp -bpp 8 >fedora.bmp
 
 #replace the logos with fedora's
-for bmp in tools/logos/*bmp
-do
-cp fedora.bmp $bmp
-done
+#for bmp in tools/logos/*bmp
+#do
+#cp fedora.bmp $bmp
+#done
 
 %ifarch aarch64
 make vexpress_aemv8a_juno_config vexpress_aemv8a_semi_config O=builds/vexpress_aemv8a/
@@ -177,6 +177,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Apr 19 2016 Dennis Gilmore <dennis@ausil.us> - 2016.03-6
+- drop using the fedora logos for now rhbz#1328505
+
 * Sat Apr  9 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-5
 - Add upstream fix for ARMv7 cache issues preventing some devices from booting
 
