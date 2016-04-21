@@ -1,8 +1,8 @@
-#global candidate rc3
+%global candidate rc1
 
 Name:      uboot-tools
-Version:   2016.03
-Release:   6%{?candidate:.%{candidate}}%{?dist}
+Version:   2016.05
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -10,24 +10,13 @@ License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
 Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:   armv7-boards
+Source2:   armv8-boards
 
 Patch1:    0001-Copy-gcc5-over-to-compiler-gcc6.h-as-a-beginning-of-.patch
 Patch2:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch3:    0005-port-utilite-to-distro-generic-boot-commands.patch
-Patch4:    mvebu-enable-generic-distro-boot-config.patch
-Patch5:    0001-WIP-RPi-3-32-bit-port.patch
-Patch6:    sunxi-chip-enable-composite-video-out.patch
-Patch7:    sunxi-fix-DCDC2-output-in-CHIP_defconfig.patch
-Patch8:    0001-sunxi-A23-Fix-some-revisions-needing-a-different-mag.patch
-Patch9:    0001-sunxi-Fix-gmac-not-working-due-to-cpu_eth_init-no-lo.patch
-Patch10:   sunxi-Fix-2nd-usb-controller-on-sun4i-sun7i-no-longer-working.patch
-Patch11:   sunxi-Enable-support-for-the-eMMC-found-on-the-orangepi-plus.patch
-Patch12:   sunxi-Add-support-for-USB-vbus-pin-for-USB3.patch
-Patch13:   sunxi-Specify-USB-vbus-pins-for-orangepi-boards.patch
-Patch14:   sunxi-Add-a-bunch-of-missing-compatible-strings-to-sunxi_gpio.c.patch
-Patch15:   U-Boot-v2-1-2-arm-Replace-v7_maint_dcache_all-ARMV7_DCACHE_CLEAN_INVAL_ALL-with-asm-code.patch
-Patch16:   U-Boot-v2-2-2-arm-Replace-v7_maint_dcache_all-ARMV7_DCACHE_INVAL_ALL-with-asm-code.patch
-
+# Needs a rebase
+#Patch4:    mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -50,6 +39,7 @@ BuildArch:   noarch
 
 %description -n uboot-images-armv8
 u-boot bootloader binaries for the aarch64 vexpress_aemv8a
+
 %endif
 
 %ifarch %{arm}
@@ -80,7 +70,7 @@ rm -rf .git
 %build
 mkdir builds
 # convert fedora logo to bmp for use in u-boot
-pngtopnm /usr/share/pixmaps/fedora-logo.png | ppmquant 256 | ppmtobmp -bpp 8 >fedora.bmp
+# pngtopnm /usr/share/pixmaps/fedora-logo.png | ppmquant 256 | ppmtobmp -bpp 8 >fedora.bmp
 
 #replace the logos with fedora's
 #for bmp in tools/logos/*bmp
@@ -89,8 +79,12 @@ pngtopnm /usr/share/pixmaps/fedora-logo.png | ppmquant 256 | ppmtobmp -bpp 8 >fe
 #done
 
 %ifarch aarch64
-make vexpress_aemv8a_juno_config vexpress_aemv8a_semi_config O=builds/vexpress_aemv8a/
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/vexpress_aemv8a/
+for board in $(cat %SOURCE2)
+do
+make $(echo $board)_defconfig O=builds/$(echo $board)/
+make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
+done
+
 %endif
 
 %ifarch %{arm}
@@ -112,9 +106,16 @@ mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
 
 %ifarch aarch64
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/vexpress_aemv8a/
-
-install -p -m 0644 builds/vexpress_aemv8a/u-boot.bin $RPM_BUILD_ROOT%{_datadir}/uboot/vexpress_aemv8a/
+for board in $(cat %SOURCE2)
+do
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+ for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/smdkv310-spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
+ do
+  if [ -f builds/$(echo $board)/$(echo $file) ]; then
+    install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+  fi
+ done
+done
 %endif
 
 %ifarch %{arm}
@@ -144,6 +145,19 @@ do
   if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.imx ]; then
     rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.bin
   fi
+done
+%endif
+
+%ifarch aarch64
+for board in $(cat %SOURCE2)
+do
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+ for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/smdkv310-spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
+ do
+  if [ -f builds/$(echo $board)/$(echo $file) ]; then
+    install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+  fi
+ done
 done
 %endif
 
@@ -177,6 +191,12 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Thu Apr 21 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-0.1rc1
+- 2016.05 RC1
+- Build aarch64 u-boot for HiKey, DragonBoard, PINE64
+- Build new ARMv7 devices
+- Temp disable some i.MX6 devices as build broken
+
 * Tue Apr 19 2016 Dennis Gilmore <dennis@ausil.us> - 2016.03-6
 - drop using the fedora logos for now rhbz#1328505
 
