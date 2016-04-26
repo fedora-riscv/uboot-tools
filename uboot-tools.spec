@@ -1,8 +1,8 @@
-%global candidate rc1
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2016.05
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -175,6 +175,7 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 
 %files
 %doc README doc/README.imximage doc/README.kwbimage doc/uImage.FIT
+%doc doc/README.odroid doc/README.efi doc/README.imximage doc/README.rockchip
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
 %dir %{_datadir}/uboot/
@@ -191,6 +192,12 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Apr 26 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-0.2rc3
+- 2016.05 RC3
+- Add some useful device READMEs that contain locations of needed firmware blobs etc
+- Enable Jetson TX1
+- Re-enable i.MX6 devices
+
 * Thu Apr 21 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-0.1rc1
 - 2016.05 RC1
 - Build aarch64 u-boot for HiKey, DragonBoard, PINE64
