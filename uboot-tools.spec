@@ -196,7 +196,7 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 - 2016.05 RC3
 - Add some useful device READMEs that contain locations of needed firmware blobs etc
 - Enable Jetson TX1
-- Re-enable i.MX6 devices
+- i.MX6 still disabled
 
 * Thu Apr 21 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-0.1rc1
 - 2016.05 RC1
