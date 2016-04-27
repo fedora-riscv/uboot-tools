@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2016.05
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -17,6 +17,7 @@ Patch2:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch3:    0005-port-utilite-to-distro-generic-boot-commands.patch
 # Needs a rebase
 #Patch4:    mvebu-enable-generic-distro-boot-config.patch
+Patch5:    0001-Revert-video-ipu-avoid-overflow-issue.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -192,6 +193,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Wed Apr 27 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-0.3rc3
+- Add work around for imx6 and renable devices
+
 * Tue Apr 26 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-0.2rc3
 - 2016.05 RC3
 - Add some useful device READMEs that contain locations of needed firmware blobs etc
