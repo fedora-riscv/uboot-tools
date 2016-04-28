@@ -1,15 +1,7 @@
-From patchwork Fri Jan 15 01:20:50 2016
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [U-Boot] arm: mvebu: enable generic distro boot config
-From: Dennis Gilmore <dennis@ausil.us>
-X-Patchwork-Id: 567887
-Message-Id: <1452820850-12020-1-git-send-email-dennis@ausil.us>
-To: u-boot@lists.denx.de, sr@denx.de, thomas@wytron.com.tw,
- bmeng.cn@gmail.com, sjg@chromium.org, nikita@compulab.co.il
-Cc: Dennis Gilmore <dennis@ausil.us>, Dennis Gilmore <dgilmore@redhat.com>
-Date: Thu, 14 Jan 2016 19:20:50 -0600
+From 24fcb059b32a34f772e4de114671973f603c4493 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Thu, 28 Apr 2016 11:02:53 +0100
+Subject: [PATCH] arm: mvebu: enable generic distro boot config
 
 Switch all of the mvebu boards to support disto generic booting
 This will enable Fedora, Debian and other distros to support
@@ -22,10 +14,10 @@ Signed-off-by: Dennis Gilmore <dgilmore@redhat.com>
  2 files changed, 85 insertions(+), 6 deletions(-)
 
 diff --git a/include/configs/clearfog.h b/include/configs/clearfog.h
-index f0de827..926b3c5 100644
+index ffaeedb..fd0114e 100644
 --- a/include/configs/clearfog.h
 +++ b/include/configs/clearfog.h
-@@ -104,11 +104,6 @@
+@@ -90,11 +90,6 @@
  #define CONFIG_SYS_CONSOLE_INFO_QUIET	/* don't print console @ startup */
  #define CONFIG_SYS_ALT_MEMTEST
  
@@ -38,7 +30,7 @@ index f0de827..926b3c5 100644
  /*
   * Select the boot device here
 diff --git a/include/configs/mv-common.h b/include/configs/mv-common.h
-index d12d725..e219243 100644
+index 6d4bbd1..7050a83 100644
 --- a/include/configs/mv-common.h
 +++ b/include/configs/mv-common.h
 @@ -57,7 +57,7 @@
@@ -49,8 +41,8 @@ index d12d725..e219243 100644
 +#define CONFIG_BOOTDELAY	2	/* default enable autoboot */
  #define CONFIG_PREBOOT
  
- #define CONFIG_OF_LIBFDT		/* Device tree support */
-@@ -152,4 +152,88 @@
+ /*
+@@ -148,4 +148,88 @@
  #define CONFIG_LZO
  #endif
  
@@ -139,3 +131,6 @@ index d12d725..e219243 100644
 +#endif
 +
  #endif /* _MV_COMMON_H */
+-- 
+2.7.4
+
