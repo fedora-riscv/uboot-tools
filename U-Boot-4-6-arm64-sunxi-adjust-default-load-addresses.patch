@@ -1,0 +1,59 @@
+From patchwork Wed May  4 21:15:32 2016
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,4/6] arm64: sunxi: adjust default load addresses
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 618679
+Message-Id: <1462396534-32390-5-git-send-email-andre.przywara@arm.com>
+To: Hans de Goede <hdegoede@redhat.com>,
+	Ian Campbell <ijc@hellion.org.uk>
+Cc: Andre Przywara <andre.przywara@arm.com>, u-boot@lists.denx.de
+Date: Wed,  4 May 2016 22:15:32 +0100
+
+As arm64 has slightly different expectations about load addresses, lets
+use a different set of default addresses for things like the kernel.
+As arm64 kernels don't come with a decompressor right now, reserve some
+more space for really big uncompressed kernels.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+---
+ include/configs/sunxi-common.h | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/include/configs/sunxi-common.h b/include/configs/sunxi-common.h
+index 2406115..16f1a2c 100644
+--- a/include/configs/sunxi-common.h
++++ b/include/configs/sunxi-common.h
+@@ -390,6 +390,23 @@ extern int soft_i2c_gpio_scl;
+ #define CONFIG_PRE_CONSOLE_BUFFER
+ #define CONFIG_PRE_CON_BUF_SZ		4096 /* Aprox 2 80*25 screens */
+ 
++#ifdef CONFIG_ARM64
++/*
++ * Boards seem to come with at least 512MB of DRAM.
++ * The kernel should go at 512K, which is the default text offset (that will
++ * be adjusted at runtime if needed).
++ * There is no compression for arm64 kernels (yet), so leave some space
++ * for really big kernels, say 256MB for now.
++ * Scripts, PXE and DTBs should go afterwards, leaving the rest for the initrd.
++ * Align the initrd to a 2MB page.
++ */
++#define KERNEL_ADDR_R	__stringify(SDRAM_OFFSET(0080000))
++#define FDT_ADDR_R	__stringify(SDRAM_OFFSET(FA00000))
++#define SCRIPT_ADDR_R	__stringify(SDRAM_OFFSET(FC00000))
++#define PXEFILE_ADDR_R	__stringify(SDRAM_OFFSET(FD00000))
++#define RAMDISK_ADDR_R	__stringify(SDRAM_OFFSET(FE00000))
++
++#else
+ /*
+  * 160M RAM (256M minimum minus 64MB heap + 32MB for u-boot, stack, fb, etc.
+  * 32M uncompressed kernel, 16M compressed kernel, 1M fdt,
+@@ -401,6 +418,7 @@ extern int soft_i2c_gpio_scl;
+ #define SCRIPT_ADDR_R  __stringify(SDRAM_OFFSET(3100000))
+ #define PXEFILE_ADDR_R __stringify(SDRAM_OFFSET(3200000))
+ #define RAMDISK_ADDR_R __stringify(SDRAM_OFFSET(3300000))
++#endif
+ 
+ #define MEM_LAYOUT_ENV_SETTINGS \
+ 	"bootm_size=0xa000000\0" \

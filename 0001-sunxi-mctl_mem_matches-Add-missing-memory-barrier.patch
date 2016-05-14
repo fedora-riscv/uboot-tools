@@ -1,0 +1,52 @@
+From bfb33f0bc45b9ee92ed2f85107cf20b9bfdf9f8a Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 14 Apr 2016 18:53:32 +0200
+Subject: [PATCH 01/61] sunxi: mctl_mem_matches: Add missing memory barrier
+
+We are running with the caches disabled when mctl_mem_matches gets called,
+but the cpu's write buffer is still there and can still get in the way,
+add a memory barrier to fix this.
+
+This avoids mctl_mem_matches always returning false in some cases, which
+was resulting in:
+
+U-Boot SPL 2015.07 (Apr 14 2016 - 18:47:26)
+DRAM: 1024 MiB
+
+U-Boot 2015.07 (Apr 14 2016 - 18:47:26 +0200) Allwinner Technology
+
+CPU:   Allwinner A23 (SUN8I)
+DRAM:  512 MiB
+
+Where 512 MiB is the right amount, but the DRAM controller would be
+initialized for 1024 MiB.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Acked-by: Ian Campbell <ijc@hellion.org.uk>
+---
+ arch/arm/mach-sunxi/dram_helpers.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/mach-sunxi/dram_helpers.c b/arch/arm/mach-sunxi/dram_helpers.c
+index 50318d2..e0c823a 100644
+--- a/arch/arm/mach-sunxi/dram_helpers.c
++++ b/arch/arm/mach-sunxi/dram_helpers.c
+@@ -7,6 +7,7 @@
+  */
+ 
+ #include <common.h>
++#include <asm/armv7.h>
+ #include <asm/io.h>
+ #include <asm/arch/dram.h>
+ 
+@@ -31,6 +32,7 @@ bool mctl_mem_matches(u32 offset)
+ 	/* Try to write different values to RAM at two addresses */
+ 	writel(0, CONFIG_SYS_SDRAM_BASE);
+ 	writel(0xaa55aa55, (ulong)CONFIG_SYS_SDRAM_BASE + offset);
++	DSB;
+ 	/* Check if the same value is actually observed when reading back */
+ 	return readl(CONFIG_SYS_SDRAM_BASE) ==
+ 	       readl((ulong)CONFIG_SYS_SDRAM_BASE + offset);
+-- 
+2.7.4
+
