@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate rc3
 
 Name:      uboot-tools
 Version:   2016.05
-Release:   0.5%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -17,17 +17,12 @@ Patch2:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch3:    0005-port-utilite-to-distro-generic-boot-commands.patch
 Patch4:    mvebu-enable-generic-distro-boot-config.patch
 Patch5:    U-Boot-video-ipu_common-fix-build-error.patch
-Patch6:    sunxi-Enable-USB-host-in-CHIP-defconfig.patch
-Patch7:    0001-Revert-ti_armv7_common.h-Fix-U-Boot-location-on-eMMC.patch
-Patch8:    0002-Revert-omap3-Use-raw-SPL-by-default-for-mmc1.patch
 
-Patch10:   0001-sunxi-mctl_mem_matches-Add-missing-memory-barrier.patch
-Patch11:   U-Boot-1-6-arm-arm64-Move-barrier-instructions-into-separate-header.patch
-Patch12:   U-Boot-2-6-Revert-sunxi-Reserve-ATF-memory-space-on-A64.patch
-Patch13:   U-Boot-3-6-arm64-sunxi-reserve-space-for-boot0-header.patch
-Patch14:   U-Boot-4-6-arm64-sunxi-adjust-default-load-addresses.patch
-Patch15:   U-Boot-5-6-arm64-Pine64-update-FDT-files.patch
-Patch16:   U-Boot-6-6-Pine64-rename-defconfig.patch
+Patch11:   U-Boot-2-6-Revert-sunxi-Reserve-ATF-memory-space-on-A64.patch
+Patch12:   U-Boot-3-6-arm64-sunxi-reserve-space-for-boot0-header.patch
+Patch13:   U-Boot-4-6-arm64-sunxi-adjust-default-load-addresses.patch
+Patch14:   U-Boot-5-6-arm64-Pine64-update-FDT-files.patch
+Patch15:   U-Boot-6-6-Pine64-rename-defconfig.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -204,6 +199,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Mon May 16 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-1
+- Update to 2016.05 GA
+
 * Thu May 12 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-0.5rc3
 - Add USB storage support to CHIP
 - Enhanced PINE64 support
