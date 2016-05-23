@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2016.05
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Release:   3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -119,7 +119,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
 for board in $(cat %SOURCE2)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
- for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/smdkv310-spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
+ for file in MLO SPL spl/*spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
  do
   if [ -f builds/$(echo $board)/$(echo $file) ]; then
     install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
@@ -132,7 +132,7 @@ done
 for board in $(cat %SOURCE1)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
- for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/smdkv310-spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
+ for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/smdkv310-spl.bin spl/*spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
  do
   if [ -f builds/$(echo $board)/$(echo $file) ]; then
     install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
@@ -203,6 +203,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Mon May 23 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-3
+- Ship SPL for rockchips devices
+
 * Thu May 19 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-2
 - Fix distro boot on clearfog
 - arm64 EFI boot fixes
