@@ -1,8 +1,8 @@
-#global candidate rc3
+%global candidate rc1
 
 Name:      uboot-tools
-Version:   2016.05
-Release:   3%{?candidate:.%{candidate}}%{?dist}
+Version:   2016.07
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -16,17 +16,6 @@ Patch1:    0001-Copy-gcc5-over-to-compiler-gcc6.h-as-a-beginning-of-.patch
 Patch2:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch3:    0005-port-utilite-to-distro-generic-boot-commands.patch
 Patch4:    mvebu-enable-generic-distro-boot-config.patch
-Patch5:    U-Boot-video-ipu_common-fix-build-error.patch
-Patch6:    0001-clearfog-needs-HUSH-parser-for-distro-boot.patch
-
-Patch11:   U-Boot-2-6-Revert-sunxi-Reserve-ATF-memory-space-on-A64.patch
-Patch12:   U-Boot-3-6-arm64-sunxi-reserve-space-for-boot0-header.patch
-Patch13:   U-Boot-4-6-arm64-sunxi-adjust-default-load-addresses.patch
-Patch14:   U-Boot-5-6-arm64-Pine64-update-FDT-files.patch
-Patch15:   U-Boot-6-6-Pine64-rename-defconfig.patch
-Patch16:   U-Boot-efi_loader-Clean-up-system-table-on-exit.patch
-Patch17:   U-Boot-efi_loader-gop-Don-t-expose-fb-address.patch
-
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -203,6 +192,11 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Jun  7 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.07-0.1rc1
+- 2016.07 RC1
+- Build new aarch64 devices: odroid-c2
+- Build new ARMv7 devices: chromebook-jerry
+
 * Mon May 23 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-3
 - Ship SPL for rockchips devices
 
