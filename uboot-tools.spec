@@ -53,7 +53,7 @@ u-boot bootloader binaries for armv7 boards
 %endif
 
 %prep
-%setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
+%setup -q -n u-boot%{version}%{?candidate:-%{candidate}}
 
 git init
 git config --global gc.auto 0
