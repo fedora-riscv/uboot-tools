@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2016.07
-Release:   0.3%{?candidate:.%{candidate}}%{?dist}
+Release:   0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -12,10 +12,10 @@ Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candida
 Source1:   armv7-boards
 Source2:   armv8-boards
 
-Patch1:    0001-Copy-gcc5-over-to-compiler-gcc6.h-as-a-beginning-of-.patch
-Patch2:    0004-Add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-Patch3:    0005-port-utilite-to-distro-generic-boot-commands.patch
-#Patch4:    mvebu-enable-generic-distro-boot-config.patch
+Patch1:    copy-gcc5-over-to-compiler-gcc6.h-as-a-beginning-of-.patch
+Patch2:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
+Patch3:    port-utilite-to-distro-generic-boot-commands.patch
+Patch4:    mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -192,6 +192,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Thu Jul  7 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.07-0.4rc3
+- Minor updates and cleanups
+
 * Tue Jul  5 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.07-0.3rc3
 - 2016.07 RC3
 
