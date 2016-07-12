@@ -172,11 +172,23 @@ install -p -m 0755 builds/tools/env/fw_printenv $RPM_BUILD_ROOT%{_bindir}
 
 install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 
+# Copy sone useful docs over
+cp -p board/ti/am335x/README doc/README.am335x
+cp -p board/ti/omap5_uevm/README doc/README.omap5_uevm
+cp -p board/wandboard/README doc/README.wandboard
+cp -p board/hisilicon/hikey/README doc/README.hikey
+cp -p board/warp/README doc/README.warp
+cp -p board/sunxi/README.pine64 doc/README.pine64
+cp -p board/solidrun/clearfog/README doc/README.clearfog
+cp -p board/solidrun/mx6cuboxi/README doc/README.mx6cuboxi
+cp -p board/amlogic/odroid-c2/README doc/README.odroid-c2
 
 %files
-%doc README doc/README.imximage doc/README.kwbimage doc/README.imximage
-%doc doc/README.distro doc/README.gpt doc/README.efi doc/uImage.FIT
-%doc doc/README.odroid doc/README.rockchip
+%doc README doc/README.imximage doc/README.kwbimage doc/README.distro doc/README.gpt
+%doc doc/README.odroid doc/README.rockchip doc/README.efi doc/uImage.FIT
+%doc doc/README.am335x doc/README.omap5_uevm doc/README.wandboard doc/README.hikey
+%doc doc/README.warp doc/README.pine64 doc/README.clearfog doc/README.mx6cuboxi
+%doc doc/README.odroid-c2
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
 %dir %{_datadir}/uboot/
