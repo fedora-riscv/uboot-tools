@@ -12,11 +12,11 @@ Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candida
 Source1:   armv7-boards
 Source2:   armv8-boards
 
-Patch2:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-Patch3:    port-utilite-to-distro-generic-boot-commands.patch
-Patch4:    mvebu-enable-generic-distro-boot-config.patch
-Patch5:    RESEND-sunxi-mmc-increase-status-register-polling-rate-for-data-transfers.patch
-Patch6:    net-Add-EMAC-driver-for-H3-A83T-A64-SoCs..patch
+Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
+Patch2:    port-utilite-to-distro-generic-boot-commands.patch
+Patch3:    mvebu-enable-generic-distro-boot-config.patch
+Patch4:    sunxi-mmc-increase-status-register-polling-rate-for-data-transfers.patch
+Patch5:    net-Add-EMAC-driver-for-H3-A83T-A64-SoCs..patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
