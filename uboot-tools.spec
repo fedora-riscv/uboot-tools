@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate rc3
 
 Name:      uboot-tools
 Version:   2016.07
-Release:   0.4%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -16,6 +16,8 @@ Patch1:    copy-gcc5-over-to-compiler-gcc6.h-as-a-beginning-of-.patch
 Patch2:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch3:    port-utilite-to-distro-generic-boot-commands.patch
 Patch4:    mvebu-enable-generic-distro-boot-config.patch
+Patch5:    RESEND-sunxi-mmc-increase-status-register-polling-rate-for-data-transfers.patch
+Patch6:    net-Add-EMAC-driver-for-H3-A83T-A64-SoCs..patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -192,6 +194,9 @@ install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 %endif
 
 %changelog
+* Tue Jul 12 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.07-1
+- Update to 2016.07 GA
+
 * Thu Jul  7 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.07-0.4rc3
 - Minor updates and cleanups
 
