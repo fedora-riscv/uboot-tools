@@ -12,7 +12,6 @@ Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candida
 Source1:   armv7-boards
 Source2:   armv8-boards
 
-Patch1:    copy-gcc5-over-to-compiler-gcc6.h-as-a-beginning-of-.patch
 Patch2:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch3:    port-utilite-to-distro-generic-boot-commands.patch
 Patch4:    mvebu-enable-generic-distro-boot-config.patch
@@ -55,7 +54,7 @@ u-boot bootloader binaries for armv7 boards
 %endif
 
 %prep
-%setup -q -n u-boot%{version}%{?candidate:-%{candidate}}
+%setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
 
 git init
 git config --global gc.auto 0
