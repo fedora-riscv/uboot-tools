@@ -1,7 +1,7 @@
-#global candidate rc3
+%global candidate rc1
 
 Name:      uboot-tools
-Version:   2016.07
+Version:   2016.09
 Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
@@ -15,8 +15,6 @@ Source2:   armv8-boards
 Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch2:    port-utilite-to-distro-generic-boot-commands.patch
 Patch3:    mvebu-enable-generic-distro-boot-config.patch
-Patch4:    sunxi-mmc-increase-status-register-polling-rate-for-data-transfers.patch
-Patch5:    net-Add-EMAC-driver-for-H3-A83T-A64-SoCs..patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -205,6 +203,9 @@ cp -p board/amlogic/odroid-c2/README doc/README.odroid-c2
 %endif
 
 %changelog
+* Wed Jul 27 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.09-0.1rc1
+- 2016.0r97 RC1
+
 * Tue Jul 12 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.07-1
 - Update to 2016.07 GA
 
