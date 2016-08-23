@@ -1,7 +1,7 @@
-From 24fcb059b32a34f772e4de114671973f603c4493 Mon Sep 17 00:00:00 2001
+From ed2f11671a20a92841b4d0614e9f46d5867c2bb4 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Thu, 28 Apr 2016 11:02:53 +0100
-Subject: [PATCH] arm: mvebu: enable generic distro boot config
+Date: Tue, 23 Aug 2016 09:54:50 +0100
+Subject: [PATCH] [PATCH] arm: mvebu: enable generic distro boot config
 
 Switch all of the mvebu boards to support disto generic booting
 This will enable Fedora, Debian and other distros to support
@@ -10,8 +10,8 @@ mvebu systems easier. Tested on SolidRun ClearFog
 Signed-off-by: Dennis Gilmore <dgilmore@redhat.com>
 ---
  include/configs/clearfog.h  |  5 ---
- include/configs/mv-common.h | 86 ++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 85 insertions(+), 6 deletions(-)
+ include/configs/mv-common.h | 84 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 84 insertions(+), 5 deletions(-)
 
 diff --git a/include/configs/clearfog.h b/include/configs/clearfog.h
 index ffaeedb..fd0114e 100644
@@ -30,10 +30,10 @@ index ffaeedb..fd0114e 100644
  /*
   * Select the boot device here
 diff --git a/include/configs/mv-common.h b/include/configs/mv-common.h
-index 6d4bbd1..7050a83 100644
+index 62f4937..a3e2fbf 100644
 --- a/include/configs/mv-common.h
 +++ b/include/configs/mv-common.h
-@@ -148,4 +148,88 @@
+@@ -147,4 +147,88 @@
  #define CONFIG_LZO
  #endif
  
@@ -123,5 +123,5 @@ index 6d4bbd1..7050a83 100644
 +
  #endif /* _MV_COMMON_H */
 -- 
-2.7.4
+2.9.3
 

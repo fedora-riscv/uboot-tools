@@ -1,8 +1,8 @@
-%global candidate rc1
+%global candidate rc2
 
 Name:      uboot-tools
 Version:   2016.09
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -13,7 +13,7 @@ Source1:   armv7-boards
 Source2:   armv8-boards
 
 Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-Patch2:    port-utilite-to-distro-generic-boot-commands.patch
+#Patch2:    port-utilite-to-distro-generic-boot-commands.patch
 Patch3:    mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
@@ -126,6 +126,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
     install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
   fi
  done
+
 done
 
 # Bit of a hack to remove binaries we don't use as they're large
@@ -203,8 +204,11 @@ cp -p board/amlogic/odroid-c2/README doc/README.odroid-c2
 %endif
 
 %changelog
-* Wed Jul 27 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.09-0.1rc1
-- 2016.0r97 RC1
+* Tue Aug 23 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.09-2rc2
+- 2016.09 RC2
+
+* Wed Jul 27 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.09-1rc1
+- 2016.09 RC1
 
 * Tue Jul 12 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.07-1
 - Update to 2016.07 GA
