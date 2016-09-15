@@ -1,8 +1,8 @@
-%global candidate rc2
+#global candidate rc2
 
 Name:      uboot-tools
 Version:   2016.09
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Release:   3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -13,7 +13,7 @@ Source1:   armv7-boards
 Source2:   armv8-boards
 
 Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-#Patch2:    port-utilite-to-distro-generic-boot-commands.patch
+Patch2:    port-utilite-to-distro-generic-boot-commands.patch
 Patch3:    mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
@@ -37,7 +37,6 @@ BuildArch:   noarch
 
 %description -n uboot-images-armv8
 u-boot bootloader binaries for the aarch64 vexpress_aemv8a
-
 %endif
 
 %ifarch %{arm}
@@ -48,7 +47,15 @@ BuildArch:   noarch
 
 %description -n uboot-images-armv7
 u-boot bootloader binaries for armv7 boards
+%endif
 
+%ifarch %{arm} aarch64
+%package     -n uboot-images-qemu
+Summary:     u-boot bootloader images for armv7 boards
+Requires:    uboot-tools
+
+%description -n uboot-images-qemu
+u-boot bootloader ELF binaries for use with qemu
 %endif
 
 %prep
@@ -160,6 +167,33 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 done
 %endif
 
+# QEMU ELF binaries
+%ifarch %{arm}
+for board in vexpress_ca15_tc2 vexpress_ca9x4
+do
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/qemu/$(echo $board)/
+ for file in u-boot
+ do
+  if [ -f builds/$(echo $board)/$(echo $file) ]; then
+    install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/qemu/$(echo $board)/
+  fi
+ done
+done
+%endif
+
+%ifarch aarch64
+for board in vexpress_aemv8a_semi
+do
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/qemu/$(echo $board)/
+ for file in u-boot
+ do
+  if [ -f builds/$(echo $board)/$(echo $file) ]; then
+    install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/qemu/$(echo $board)/
+  fi
+ done
+done
+%endif
+
 for tool in bmp_logo dumpimage easylogo/easylogo env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr img2srec mkenvimage mkimage ncb proftool ubsha1 xway-swap-bytes
 do
 install -p -m 0755 builds/tools/$tool $RPM_BUILD_ROOT%{_bindir}
@@ -196,14 +230,25 @@ cp -p board/amlogic/odroid-c2/README doc/README.odroid-c2
 %ifarch aarch64
 %files -n uboot-images-armv8
 %{_datadir}/uboot/*
+%exclude %{_datadir}/uboot/qemu
 %endif
 
 %ifarch %{arm}
 %files -n uboot-images-armv7
 %{_datadir}/uboot/*
+%exclude %{_datadir}/uboot/qemu
+%endif
+
+%ifarch %{arm} aarch64
+%files -n uboot-images-qemu
+%{_datadir}/uboot/qemu
 %endif
 
 %changelog
+* Mon Sep 12 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.09-3
+- Update to 2016.09 GA
+- Add qemu elf binaries to new subpackage
+
 * Tue Aug 23 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.09-2rc2
 - 2016.09 RC2
 

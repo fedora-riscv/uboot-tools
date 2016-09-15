@@ -1,14 +1,14 @@
-From ad8f78f7df2cbfd271d73afc5296941972b38119 Mon Sep 17 00:00:00 2001
+From af017eb82317dc88c1b23301d76466b389c2e007 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 4 Aug 2015 09:37:38 +0100
-Subject: [PATCH 3/5] port utilite to distro generic boot commands
+Date: Tue, 13 Sep 2016 08:47:34 +0100
+Subject: [PATCH] port utilite to distro generic boot commands
 
 ---
- include/configs/cm_fx6.h | 107 ++++++++++++-----------------------------------
- 1 file changed, 27 insertions(+), 80 deletions(-)
+ include/configs/cm_fx6.h | 115 ++++++++++++-----------------------------------
+ 1 file changed, 29 insertions(+), 86 deletions(-)
 
 diff --git a/include/configs/cm_fx6.h b/include/configs/cm_fx6.h
-index 12734a1..602c178 100644
+index c839b03..4dd501e 100644
 --- a/include/configs/cm_fx6.h
 +++ b/include/configs/cm_fx6.h
 @@ -11,6 +11,7 @@
@@ -19,7 +19,7 @@ index 12734a1..602c178 100644
  #include "mx6_common.h"
  
  /* Machine config */
-@@ -64,97 +65,43 @@
+@@ -78,101 +79,43 @@
  #define CONFIG_ENV_SIZE			(8 * 1024)
  #define CONFIG_ENV_OFFSET		(768 * 1024)
  
@@ -45,28 +45,33 @@ index 12734a1..602c178 100644
  	"stderr=serial,vga\0" \
  	"panel=HDMI\0" \
 -	"autoload=no\0" \
+-	"uImage=uImage-cm-fx6\0" \
+-	"zImage=zImage-cm-fx6\0" \
 -	"kernel=uImage-cm-fx6\0" \
 -	"script=boot.scr\0" \
- 	"dtb=cm-fx6.dtb\0" \
+-	"dtb=cm-fx6.dtb\0" \
 -	"bootm_low=18000000\0" \
++	"dtb=imx6q-utilite-pro.dts\0" \
  	"loadaddr=0x10800000\0" \
  	"fdtaddr=0x11000000\0" \
-+        "fdt_addr_r=0x18000000\0" \
-+        "pxefile_addr_r=0x17f00000\0" \
-+        "scriptaddr=0x17e00000\0" \
-+        "kernel_addr_r=0x11000000\0" \
-+        "ramdisk_addr_r=0x18100000\0" \
-+        "bootm_size=0x20000000\0" \
++	"fdt_addr_r=0x18000000\0" \
++	"pxefile_addr_r=0x17f00000\0" \
++	"scriptaddr=0x17e00000\0" \
++	"kernel_addr_r=0x11000000\0" \
++	"ramdisk_addr_r=0x18100000\0" \
++	"bootm_size=0x20000000\0" \
  	"console=ttymxc3,115200\0" \
  	"ethprime=FEC0\0" \
 -	"video_hdmi=mxcfb0:dev=hdmi,1920x1080M-32@50,if=RGB32\0" \
 -	"video_dvi=mxcfb0:dev=dvi,1280x800M-32@50,if=RGB32\0" \
 -	"doboot=bootm ${loadaddr}\0" \
 -	"doloadfdt=false\0" \
--	"setboottypez=setenv kernel zImage-cm-fx6;" \
+-	"mtdids=" MTDIDS_DEFAULT "\0" \
+-	"mtdparts=" MTDPARTS_DEFAULT "\0" \
+-	"setboottypez=setenv kernel ${zImage};" \
 -		"setenv doboot bootz ${loadaddr} - ${fdtaddr};" \
 -		"setenv doloadfdt true;\0" \
--	"setboottypem=setenv kernel uImage-cm-fx6;" \
+-	"setboottypem=setenv kernel ${uImage};" \
 -		"setenv doboot bootm ${loadaddr};" \
 -		"setenv doloadfdt false;\0"\
 -	"mmcroot=/dev/mmcblk0p2 rw rootwait\0" \
@@ -74,13 +79,13 @@ index 12734a1..602c178 100644
 -	"nandroot=/dev/mtdblock4 rw\0" \
 -	"nandrootfstype=ubifs\0" \
 -	"mmcargs=setenv bootargs console=${console} root=${mmcroot} " \
--		"${video}\0" \
+-		"${video} ${extrabootargs}\0" \
 -	"sataargs=setenv bootargs console=${console} root=${sataroot} " \
--		"${video}\0" \
+-		"${video} ${extrabootargs}\0" \
 -	"nandargs=setenv bootargs console=${console} " \
 -		"root=${nandroot} " \
 -		"rootfstype=${nandrootfstype} " \
--		"${video}\0" \
+-		"${video} ${extrabootargs}\0" \
 -	"nandboot=if run nandloadkernel; then " \
 -			"run nandloadfdt;" \
 -			"run setboottypem;" \
@@ -117,8 +122,7 @@ index 12734a1..602c178 100644
 -		"run trybootk;" \
 -		"run setboottypez;" \
 -		"run trybootk;\0"
-+	BOOTENV
- 
+-
 -#define CONFIG_BOOTCOMMAND \
 -	"run setupmmcboot;" \
 -	"mmc dev ${storagedev};" \
@@ -137,12 +141,14 @@ index 12734a1..602c178 100644
 -	"fi;" \
 -	"run setupnandboot;" \
 -	"run nandboot;"
++	BOOTENV
++
 +#else /* ifndef CONFIG_SPL_BUILD */
 +#define CONFIG_EXTRA_ENV_SETTINGS
 +#endif
  
- #define CONFIG_PREBOOT		"usb start"
+ #define CONFIG_PREBOOT		"usb start;sf probe"
  
 -- 
-2.5.0
+2.9.3
 
