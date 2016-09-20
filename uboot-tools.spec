@@ -1,8 +1,8 @@
 #global candidate rc2
 
 Name:      uboot-tools
-Version:   2016.09
-Release:   3%{?candidate:.%{candidate}}%{?dist}
+Version:   2016.09.01
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -245,6 +245,9 @@ cp -p board/amlogic/odroid-c2/README doc/README.odroid-c2
 %endif
 
 %changelog
+* Tue Sep 20 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.09.01-1
+- Update to 2016.09.01 GA
+
 * Mon Sep 12 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.09-3
 - Update to 2016.09 GA
 - Add qemu elf binaries to new subpackage
