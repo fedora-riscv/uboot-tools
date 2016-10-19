@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2016.09.01
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -15,6 +15,7 @@ Source2:   armv8-boards
 Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch2:    port-utilite-to-distro-generic-boot-commands.patch
 Patch3:    mvebu-enable-generic-distro-boot-config.patch
+Patch4:    fix-ext4-64bit.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -245,6 +246,9 @@ cp -p board/amlogic/odroid-c2/README doc/README.odroid-c2
 %endif
 
 %changelog
+* Wed Oct 19 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.09.01-2
+- Add upstream ext4 patches to fix 64 bit feature issues with u-boot and /boot
+
 * Tue Sep 20 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.09.01-1
 - Update to 2016.09.01 GA
 
