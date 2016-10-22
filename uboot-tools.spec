@@ -21,7 +21,7 @@ BuildRequires:  dtc
 BuildRequires:  fedora-logos
 BuildRequires:  git
 BuildRequires:  netpbm-progs
-BuildRequires:  openssl-devel
+BuildRequires:  compat-openssl10-devel
 BuildRequires:  SDL-devel
 Requires:       dtc
 
