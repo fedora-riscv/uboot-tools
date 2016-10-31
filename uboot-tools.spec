@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2016.11
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -245,6 +245,9 @@ cp -p board/amlogic/odroid-c2/README doc/README.odroid-c2
 %endif
 
 %changelog
+* Mon Oct 31 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.11-0.3.rc3
+- 2016.11 RC3
+
 * Tue Oct 18 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.11-0.2.rc2
 - 2016.11 RC2
 
