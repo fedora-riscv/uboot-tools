@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate rc3
 
 Name:      uboot-tools
 Version:   2016.11
-Release:   0.3%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -215,6 +215,7 @@ cp -p board/sunxi/README.pine64 doc/README.pine64
 cp -p board/solidrun/clearfog/README doc/README.clearfog
 cp -p board/solidrun/mx6cuboxi/README doc/README.mx6cuboxi
 cp -p board/amlogic/odroid-c2/README doc/README.odroid-c2
+cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 
 %files
 %doc README doc/README.imximage doc/README.kwbimage doc/README.distro doc/README.gpt
@@ -245,6 +246,9 @@ cp -p board/amlogic/odroid-c2/README doc/README.odroid-c2
 %endif
 
 %changelog
+* Mon Nov 14 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.11-1
+- Update to 2016.11 GA
+
 * Mon Oct 31 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.11-0.3.rc3
 - 2016.11 RC3
 
