@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2016.11
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -15,6 +15,7 @@ Source2:   armv8-boards
 Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch2:    port-utilite-to-distro-generic-boot-commands.patch
 Patch3:    mvebu-enable-generic-distro-boot-config.patch
+Patch4:    mx6sx-Add-initial-support-for-UDOO-Neo-Board.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -246,6 +247,9 @@ cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 %endif
 
 %changelog
+* Tue Nov 29 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.11-2
+- Add upstream patch to support UDOO Neo
+
 * Mon Nov 14 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.11-1
 - Update to 2016.11 GA
 
