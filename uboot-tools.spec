@@ -14,7 +14,7 @@ Source2:   armv8-boards
 
 Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch2:    port-utilite-to-distro-generic-boot-commands.patch
-Patch3:    mvebu-enable-generic-distro-boot-config.patch
+# Patch3:    mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
