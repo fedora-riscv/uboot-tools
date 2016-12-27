@@ -23,6 +23,9 @@ BuildRequires:  git
 BuildRequires:  netpbm-progs
 BuildRequires:  compat-openssl10-devel
 BuildRequires:  SDL-devel
+BuildRequires:  python-devel
+BuildRequires:  python-setuptools
+
 Requires:       dtc
 
 %description
