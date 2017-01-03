@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2017.01
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -249,6 +249,9 @@ cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 %endif
 
 %changelog
+* Tue Jan  3 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.01-03.rc3
+- 2017.01 RC3
+
 * Tue Dec 20 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2017.01-02.rc2
 - 2017.01 RC2
 
