@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate rc3
 
 Name:      uboot-tools
 Version:   2017.01
-Release:   0.4%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -249,6 +249,9 @@ cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 %endif
 
 %changelog
+* Tue Jan 10 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.01-1
+- 2017.01
+
 * Tue Jan  3 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.01-04.rc3
 - Enable new devices
 
