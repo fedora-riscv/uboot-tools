@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.03
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -249,6 +249,9 @@ cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 %endif
 
 %changelog
+* Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2017.03-0.2.rc1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
 * Tue Jan 31 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.03-0.1.rc1
 - 2017.03 RC1
 
