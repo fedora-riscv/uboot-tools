@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.03
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -13,6 +13,9 @@ Source1:   armv7-boards
 Source2:   armv8-boards
 
 Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
+Patch2:    U-Boot-1-2-rsa-Fix-build-with-OpenSSL-1.1.x.patch
+Patch3:    U-Boot-2-2-rsa-Fix-deprecated-warnings-for-OpenSSL-1.1.x.patch
+
 # Patch2:    port-utilite-to-distro-generic-boot-commands.patch
 # Patch3:    mvebu-enable-generic-distro-boot-config.patch
 
@@ -21,7 +24,7 @@ BuildRequires:  dtc
 BuildRequires:  fedora-logos
 BuildRequires:  git
 BuildRequires:  netpbm-progs
-BuildRequires:  compat-openssl10-devel
+BuildRequires:  openssl-devel
 BuildRequires:  SDL-devel
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools
@@ -249,6 +252,9 @@ cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 %endif
 
 %changelog
+* Mon Feb 13 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.03-0.3.rc1
+- Add patches to fix build against OpenSSL 1.1
+
 * Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2017.03-0.2.rc1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
 
