@@ -19,7 +19,7 @@ Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch5:    0001-mx6sx-udoo_neo-Define-the-default-serial-console.patch
 Patch6:    0002-mx6sx-udoo_neo-use-different-load-address-for-ramdis.patch
 Patch7:    0003-mx6sx-udoo_neo-Enable-distro-boot-options-in-config.patch
-Patch8:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
+# Patch8:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -258,7 +258,6 @@ cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 - 2017.03 RC2
 - Temporarily drop OpenSSL 1.1 patches (need rebase)
 - Add fix for UDOO Neo distro boot
-- Rebase mvebu distro boot patch
 
 * Mon Feb 13 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.03-0.3.rc1
 - Add patches to fix build against OpenSSL 1.1
