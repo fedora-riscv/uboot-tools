@@ -1,6 +1,6 @@
-From 011868fbddecffffb38b1318953bf65c4816f966 Mon Sep 17 00:00:00 2001
+From 09339c34eeab4a73d5dfa48034b6c8ae8a775c14 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Mon, 31 Oct 2016 21:29:32 +0000
+Date: Tue, 14 Feb 2017 13:15:23 +0000
 Subject: [PATCH] arm: mvebu: enable generic distro boot config
 
 Switch all of the mvebu boards to support disto generic booting
@@ -14,10 +14,10 @@ Signed-off-by: Dennis Gilmore <dgilmore@redhat.com>
  2 files changed, 84 insertions(+), 5 deletions(-)
 
 diff --git a/include/configs/clearfog.h b/include/configs/clearfog.h
-index a8cda40..6abe313 100644
+index 0c51d2a..0034604 100644
 --- a/include/configs/clearfog.h
 +++ b/include/configs/clearfog.h
-@@ -87,11 +87,6 @@
+@@ -79,11 +79,6 @@
  
  #define CONFIG_SYS_ALT_MEMTEST
  
@@ -30,10 +30,10 @@ index a8cda40..6abe313 100644
  /*
   * Select the boot device here
 diff --git a/include/configs/mv-common.h b/include/configs/mv-common.h
-index b28030c..4cb62e4 100644
+index 25562fa..aebfabe 100644
 --- a/include/configs/mv-common.h
 +++ b/include/configs/mv-common.h
-@@ -143,4 +143,88 @@
+@@ -139,4 +139,88 @@
  #define CONFIG_LZO
  #endif
  

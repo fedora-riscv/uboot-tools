@@ -1,0 +1,46 @@
+From 2198e4bf9956e12cfb7c315ac523721152877020 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Tue, 14 Feb 2017 12:32:28 +0000
+Subject: [PATCH 3/3] mx6sx: udoo_neo: Enable distro boot options in config
+
+The include/configs/udoo_neo.h already includes the distro defaults
+include files so it seems the board was missed in the move to the
+config file, whether that in initial commit or conversion, so
+enable the option now and remove duplicated settings.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ configs/udoo_neo_defconfig | 11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
+
+diff --git a/configs/udoo_neo_defconfig b/configs/udoo_neo_defconfig
+index f9b1337..aa2f59d 100644
+--- a/configs/udoo_neo_defconfig
++++ b/configs/udoo_neo_defconfig
+@@ -13,22 +13,13 @@ CONFIG_SPL_WATCHDOG_SUPPORT=y
+ CONFIG_SYS_EXTRA_OPTIONS="IMX_CONFIG=arch/arm/imx-common/spl_sd.cfg"
+ CONFIG_BOARD_EARLY_INIT_F=y
+ CONFIG_SPL=y
+-CONFIG_HUSH_PARSER=y
+-CONFIG_CMD_BOOTZ=y
++CONFIG_DISTRO_DEFAULTS=y
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_CMD_MMC=y
+-CONFIG_CMD_PART=y
+ CONFIG_CMD_GPIO=y
+ # CONFIG_CMD_SETEXPR is not set
+-CONFIG_CMD_DHCP=y
+ CONFIG_CMD_CACHE=y
+ CONFIG_CMD_TIME=y
+-CONFIG_CMD_EXT2=y
+-CONFIG_CMD_EXT4=y
+ CONFIG_CMD_EXT4_WRITE=y
+-CONFIG_CMD_FAT=y
+-CONFIG_CMD_FS_GENERIC=y
+-CONFIG_ISO_PARTITION=y
+-CONFIG_EFI_PARTITION=y
+ CONFIG_OF_LIBFDT=y
+-- 
+2.9.3
+
