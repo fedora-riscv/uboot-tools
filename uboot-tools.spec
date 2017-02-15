@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.03
-Release:   0.4%{?candidate:.%{candidate}}%{?dist}
+Release:   0.5%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -13,8 +13,9 @@ Source1:   armv7-boards
 Source2:   armv8-boards
 
 Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-#Patch2:    U-Boot-1-2-rsa-Fix-build-with-OpenSSL-1.1.x.patch
-#Patch3:    U-Boot-2-2-rsa-Fix-deprecated-warnings-for-OpenSSL-1.1.x.patch
+Patch2:    U-Boot-1-2-rsa-Fix-build-with-OpenSSL-1.1.x.patch
+Patch3:    U-Boot-2-2-rsa-Fix-deprecated-warnings-for-OpenSSL-1.1.x.patch
+Patch4:    tools-kwbimage-fix-build-with-OpenSSL-1.1.x.patch
 
 Patch5:    0001-mx6sx-udoo_neo-Define-the-default-serial-console.patch
 Patch6:    0002-mx6sx-udoo_neo-use-different-load-address-for-ramdis.patch
@@ -26,7 +27,7 @@ BuildRequires:  dtc
 BuildRequires:  fedora-logos
 BuildRequires:  git
 BuildRequires:  netpbm-progs
-BuildRequires:  compat-openssl10-devel
+BuildRequires:  openssl-devel
 BuildRequires:  SDL-devel
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools
@@ -254,6 +255,9 @@ cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 %endif
 
 %changelog
+* Wed Feb 15 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.03-0.5.rc2
+- Rebase OpenSSL 1.1 patches
+
 * Mon Feb 13 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.03-0.4.rc2
 - 2017.03 RC2
 - Temporarily drop OpenSSL 1.1 patches (need rebase)
