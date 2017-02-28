@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2017.03
-Release:   0.5%{?candidate:.%{candidate}}%{?dist}
+Release:   0.6%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -17,10 +17,7 @@ Patch2:    U-Boot-1-2-rsa-Fix-build-with-OpenSSL-1.1.x.patch
 Patch3:    U-Boot-2-2-rsa-Fix-deprecated-warnings-for-OpenSSL-1.1.x.patch
 Patch4:    tools-kwbimage-fix-build-with-OpenSSL-1.1.x.patch
 
-Patch5:    0001-mx6sx-udoo_neo-Define-the-default-serial-console.patch
-Patch6:    0002-mx6sx-udoo_neo-use-different-load-address-for-ramdis.patch
-Patch7:    0003-mx6sx-udoo_neo-Enable-distro-boot-options-in-config.patch
-# Patch8:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
+# Patch5:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -255,6 +252,9 @@ cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 %endif
 
 %changelog
+* Tue Feb 28 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.03-0.6.rc3
+- 2017.03 RC3
+
 * Wed Feb 15 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.03-0.5.rc2
 - Rebase OpenSSL 1.1 patches
 
