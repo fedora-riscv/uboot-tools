@@ -1,0 +1,74 @@
+From ee16d90048ee985df6199c987e64daeac3378777 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Sat, 4 Mar 2017 14:26:19 +0000
+Subject: [PATCH] v2 mx6cuboxi: Add support for sata
+
+The Cubox-i and Hummingboard series of devices have an option of
+SATA on board, and depending on how the fuses are blown even the
+option to boot SPL from SATA. So enable support for it so it can
+be used to boot the OS from if people desire.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ board/solidrun/mx6cuboxi/mx6cuboxi.c |  7 +++++++
+ include/configs/mx6cuboxi.h          | 12 ++++++++++++
+ 2 files changed, 19 insertions(+)
+
+diff --git a/board/solidrun/mx6cuboxi/mx6cuboxi.c b/board/solidrun/mx6cuboxi/mx6cuboxi.c
+index 285588d..59a78df 100644
+--- a/board/solidrun/mx6cuboxi/mx6cuboxi.c
++++ b/board/solidrun/mx6cuboxi/mx6cuboxi.c
+@@ -22,6 +22,7 @@
+ #include <linux/errno.h>
+ #include <asm/gpio.h>
+ #include <asm/imx-common/iomux-v3.h>
++#include <asm/imx-common/sata.h>
+ #include <asm/imx-common/video.h>
+ #include <mmc.h>
+ #include <fsl_esdhc.h>
+@@ -314,6 +315,12 @@ int board_early_init_f(void)
+ 	ret = setup_display();
+ #endif
+ 
++#ifdef CONFIG_CMD_SATA
++	/* Only mx6q/mx6q has SATA */
++	if (is_mx6dq())
++		setup_sata();
++#endif
++
+ #ifdef CONFIG_USB_EHCI_MX6
+ 	setup_usb();
+ #endif
+diff --git a/include/configs/mx6cuboxi.h b/include/configs/mx6cuboxi.h
+index 2782911..cec626a 100644
+--- a/include/configs/mx6cuboxi.h
++++ b/include/configs/mx6cuboxi.h
+@@ -21,6 +21,17 @@
+ /* MMC Configs */
+ #define CONFIG_SYS_FSL_ESDHC_ADDR	USDHC2_BASE_ADDR
+ 
++/* SATA Configuration */
++#define CONFIG_CMD_SATA
++#ifdef CONFIG_CMD_SATA
++#define CONFIG_DWC_AHSATA
++#define CONFIG_SYS_SATA_MAX_DEVICE      1
++#define CONFIG_DWC_AHSATA_PORT_ID       0
++#define CONFIG_DWC_AHSATA_BASE_ADDR     SATA_ARB_BASE_ADDR
++#define CONFIG_LBA48
++#define CONFIG_LIBATA
++#endif
++
+ /* Ethernet Configuration */
+ #define CONFIG_FEC_MXC
+ #define CONFIG_MII
+@@ -119,6 +130,7 @@
+ 
+ #define BOOT_TARGET_DEVICES(func) \
+ 	func(MMC, mmc, 0) \
++	func(SATA, sata, 0) \
+ 	func(USB, usb, 0) \
+ 	func(PXE, pxe, na) \
+ 	func(DHCP, dhcp, na)
+-- 
+2.9.3
+

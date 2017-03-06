@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.03
-Release:   0.6%{?candidate:.%{candidate}}%{?dist}
+Release:   0.7%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -16,8 +16,11 @@ Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch2:    U-Boot-1-2-rsa-Fix-build-with-OpenSSL-1.1.x.patch
 Patch3:    U-Boot-2-2-rsa-Fix-deprecated-warnings-for-OpenSSL-1.1.x.patch
 Patch4:    tools-kwbimage-fix-build-with-OpenSSL-1.1.x.patch
+Patch5:    mx6cuboxi-Add-support-for-sata.patch
+Patch6:    mx6-Initial-Hummingboard-2-support.patch
+Patch7:    mvebu-ESPRESSOBin-board.patch
 
-# Patch5:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
+# Patch9:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -252,6 +255,11 @@ cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 %endif
 
 %changelog
+* Mon Mar  6 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.03-0.7.rc3
+- Add support for SATA on Cubox-i and Hummingboard
+- Add initial Hummingboard 2 (Gate/Edge) support
+- Add initial Marvell ESPRESSOBin board support
+
 * Tue Feb 28 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.03-0.6.rc3
 - 2017.03 RC3
 
