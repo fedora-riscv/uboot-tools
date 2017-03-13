@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate rc3
 
 Name:      uboot-tools
 Version:   2017.03
-Release:   0.7%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -255,6 +255,9 @@ cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 %endif
 
 %changelog
+* Mon Mar 13 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.03-1
+- 2017.03
+
 * Mon Mar  6 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.03-0.7.rc3
 - Add support for SATA on Cubox-i and Hummingboard
 - Add initial Hummingboard 2 (Gate/Edge) support
