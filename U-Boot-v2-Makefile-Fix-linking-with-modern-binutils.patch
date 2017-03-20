@@ -1,0 +1,58 @@
+From patchwork Fri Dec 16 04:53:30 2016
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Subject: [U-Boot,v2] Makefile: Fix linking with modern binutils
+From: Joel Stanley <joel@jms.id.au>
+X-Patchwork-Id: 706336
+X-Patchwork-Delegate: trini@ti.com
+Message-Id: <20161216045330.31257-1-joel@jms.id.au>
+To: u-boot@lists.denx.de
+Cc: npiggin@gmail.com, amodra@gmail.com
+Date: Fri, 16 Dec 2016 15:23:30 +1030
+
+Since Binutils 1a9ccd70f9a7[1] u-boot will not link targets that set
+CONFIG_SYS_TEXT_BASE=0 with the following error:
+
+  LD      u-boot
+arm-linux-gnueabi-ld.bfd: u-boot: Not enough room for program headers, try
+ linking with -N
+arm-linux-gnueabi-ld.bfd: final link failed: Bad value
+
+The issue can reproduced the bad binutils and the rock2_defconfig target.
+
+This issue was also encountered by the powerpc kernel[2], with the fix
+being to pass --no-dynamic-linker for linkers newer than 2.26 when this
+flag was introduced. The option tells ld that the PIE or shared lib does
+not need loaded program headers.
+
+Ubuntu Zesty's Binutils 2.27.51.20161202 hits this error.
+
+[1] https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commit;h=1a9ccd70f9a7
+[2] https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/commit/?h=next&id=ff45000fcb56b5b0f1a14a865d3541746d838a0a
+
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+Tested-by: Sjoerd Simons <sjoerd.simons@collabora.co.uk>
+---
+v2:
+ - use ld-option to test for the flag instead of the version, as suggested by Måns
+ - update commit message with clarification from Alan
+
+ Makefile | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index dfed58bec661..c98a8361654a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -793,6 +793,10 @@ ALL-y += $(CONFIG_BUILD_TARGET:"%"=%)
+ endif
+ 
+ LDFLAGS_u-boot += $(LDFLAGS_FINAL)
++
++# Avoid 'Not enough room for program headers' error on binutils 2.28 onwards.
++LDFLAGS_u-boot += $(call ld-option, --no-dynamic-linker)
++
+ ifneq ($(CONFIG_SYS_TEXT_BASE),)
+ LDFLAGS_u-boot += -Ttext $(CONFIG_SYS_TEXT_BASE)
+ endif

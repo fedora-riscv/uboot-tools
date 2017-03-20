@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.03
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -19,6 +19,7 @@ Patch4:    tools-kwbimage-fix-build-with-OpenSSL-1.1.x.patch
 Patch5:    mx6cuboxi-Add-support-for-sata.patch
 Patch6:    mx6-Initial-Hummingboard-2-support.patch
 Patch7:    mvebu-ESPRESSOBin-board.patch
+Patch8:    U-Boot-v2-Makefile-Fix-linking-with-modern-binutils.patch
 
 # Patch9:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
 
@@ -31,6 +32,7 @@ BuildRequires:  openssl-devel
 BuildRequires:  SDL-devel
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools
+BuildRequires:  gcc
 
 Requires:       dtc
 
@@ -255,6 +257,10 @@ cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 %endif
 
 %changelog
+* Mon Mar 20 2017 Jon Disnard <parasense@fedoraproject.org> 2017.03-2
+- Pass --no-dynamic-linker for linkers newer than 2.26 
+- Add build dependency on gcc
+
 * Mon Mar 13 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.03-1
 - 2017.03
 
