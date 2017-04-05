@@ -18,6 +18,7 @@ Patch3:    U-Boot-2-2-rsa-Fix-deprecated-warnings-for-OpenSSL-1.1.x.patch
 Patch4:    tools-kwbimage-fix-build-with-OpenSSL-1.1.x.patch
 Patch5:    mx6cuboxi-Add-support-for-sata.patch
 Patch6:    mx6-Initial-Hummingboard-2-support.patch
+Patch7:    bbone-new-devices.patch
 Patch8:    U-Boot-v2-Makefile-Fix-linking-with-modern-binutils.patch
 
 # Patch9:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
