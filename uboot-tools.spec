@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.05
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -257,6 +257,9 @@ cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 %endif
 
 %changelog
+* Wed Apr  5 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-0.2.rc1
+- Build am335x_evm
+
 * Wed Apr  5 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-0.1.rc1
 - 2017.05 RC1
 - Enable TinkerBoard and MacchiatoBIN
