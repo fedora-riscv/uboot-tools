@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.05
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -20,6 +20,7 @@ Patch5:    mx6cuboxi-Add-support-for-sata.patch
 Patch6:    mx6-Initial-Hummingboard-2-support.patch
 Patch7:    bbone-new-devices.patch
 Patch8:    U-Boot-v2-Makefile-Fix-linking-with-modern-binutils.patch
+Patch9:    sti-STiH410-B2260-support.patch
 
 # Patch9:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
 
@@ -257,6 +258,9 @@ cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 %endif
 
 %changelog
+* Tue Apr 11 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-0.3.rc1
+- Add support for STi STiH410
+
 * Wed Apr  5 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-0.2.rc1
 - Build am335x_evm
 
