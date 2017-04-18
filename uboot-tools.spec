@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.05
-Release:   0.4%{?candidate:.%{candidate}}%{?dist}
+Release:   0.5%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -124,7 +124,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
 for board in $(cat %SOURCE2)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
- for file in MLO SPL spl/*spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
+ for file in MLO SPL spl/*spl.bin u-boot u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot-dtb.img u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
  do
   if [ -f builds/$(echo $board)/$(echo $file) ]; then
     install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
@@ -256,6 +256,9 @@ cp -p board/rockchip/evb_rk3399/README doc/README.evb_rk3399
 %endif
 
 %changelog
+* Mon Apr 17 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-0.5.rc2
+- Ship the elf u-boot binaries for aarch64
+
 * Mon Apr 17 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-0.4.rc2
 - 2017.05 RC2
 
