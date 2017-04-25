@@ -1,0 +1,1949 @@
+From patchwork Fri Mar 31 22:31:13 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,01/19] SPL: FIT: refactor FDT loading
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745822
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-2-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:13 +0100
+
+Currently the SPL FIT loader uses the spl_fit_select_fdt() function to
+find the offset to the right DTB within the FIT image.
+For this it iterates over all subnodes of the /configuration node in
+the FIT tree and compares all "description" strings therein using a
+board specific matching function.
+If that finds a match, it uses the string in the "fdt" property of that
+subnode to locate the matching subnode in the /images node, which points
+to the DTB data.
+Now this works very well, but is quite specific to cover this particular
+use case. To open up the door for a more generic usage, let's split this
+function into:
+1) a function that just returns the node offset for the matching
+   configuration node (spl_fit_find_config_node())
+2) a function that returns the image data any given property in a given
+   configuration node points to, additionally using a given index into
+   a possbile list of strings (spl_fit_select_index())
+This allows us to replace the specific function above by asking for the
+image the _first string of the "fdt" property_ in the matching
+configuration subnode points to.
+
+This patch introduces no functional changes, it just refactors the code
+to allow reusing it later.
+
+(diff is overly clever here and produces a hard-to-read patch, so I
+recommend to throw a look at the result instead).
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+Reviewed-by: Lokesh Vutla <lokeshvuta@ti.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+ common/spl/spl_fit.c | 88 ++++++++++++++++++++++++++++++++++------------------
+ 1 file changed, 57 insertions(+), 31 deletions(-)
+
+diff --git a/common/spl/spl_fit.c b/common/spl/spl_fit.c
+index aae556f..bf9fbb6 100644
+--- a/common/spl/spl_fit.c
++++ b/common/spl/spl_fit.c
+@@ -22,13 +22,16 @@ static ulong fdt_getprop_u32(const void *fdt, int node, const char *prop)
+ 	return fdt32_to_cpu(*cell);
+ }
+ 
+-static int spl_fit_select_fdt(const void *fdt, int images, int *fdt_offsetp)
++/*
++ * Iterate over all /configurations subnodes and call a platform specific
++ * function to find the matching configuration.
++ * Returns the node offset.
++ */
++static int spl_fit_find_config_node(const void *fdt)
+ {
+-	const char *name, *fdt_name;
+-	int conf, node, fdt_node;
+-	int len;
++	const char *name;
++	int conf, node, len;
+ 
+-	*fdt_offsetp = 0;
+ 	conf = fdt_path_offset(fdt, FIT_CONFS_PATH);
+ 	if (conf < 0) {
+ 		debug("%s: Cannot find /configurations node: %d\n", __func__,
+@@ -50,39 +53,61 @@ static int spl_fit_select_fdt(const void *fdt, int images, int *fdt_offsetp)
+ 			continue;
+ 
+ 		debug("Selecting config '%s'", name);
+-		fdt_name = fdt_getprop(fdt, node, FIT_FDT_PROP, &len);
+-		if (!fdt_name) {
+-			debug("%s: Cannot find fdt name property: %d\n",
+-			      __func__, len);
+-			return -EINVAL;
+-		}
+ 
+-		debug(", fdt '%s'\n", fdt_name);
+-		fdt_node = fdt_subnode_offset(fdt, images, fdt_name);
+-		if (fdt_node < 0) {
+-			debug("%s: Cannot find fdt node '%s': %d\n",
+-			      __func__, fdt_name, fdt_node);
+-			return -EINVAL;
++		return node;
++	}
++
++	return -1;
++}
++
++static int spl_fit_select_index(const void *fit, int images, int *offsetp,
++				const char *type, int index)
++{
++	const char *name, *str;
++	int node, conf_node;
++	int len, i;
++
++	*offsetp = 0;
++	conf_node = spl_fit_find_config_node(fit);
++	if (conf_node < 0) {
++#ifdef CONFIG_SPL_LIBCOMMON_SUPPORT
++		printf("No matching DT out of these options:\n");
++		for (node = fdt_first_subnode(fit, conf_node);
++		     node >= 0;
++		     node = fdt_next_subnode(fit, node)) {
++			name = fdt_getprop(fit, node, "description", &len);
++			printf("   %s\n", name);
+ 		}
++#endif
++		return -ENOENT;
++	}
+ 
+-		*fdt_offsetp = fdt_getprop_u32(fdt, fdt_node, "data-offset");
+-		len = fdt_getprop_u32(fdt, fdt_node, "data-size");
+-		debug("FIT: Selected '%s'\n", name);
++	name = fdt_getprop(fit, conf_node, type, &len);
++	if (!name) {
++		debug("cannot find property '%s': %d\n", type, len);
++		return -EINVAL;
++	}
+ 
+-		return len;
++	str = name;
++	for (i = 0; i < index; i++) {
++		str = strchr(str, '\0') + 1;
++		if (!str || (str - name >= len)) {
++			debug("no string for index %d\n", index);
++			return -E2BIG;
++		}
+ 	}
+ 
+-#ifdef CONFIG_SPL_LIBCOMMON_SUPPORT
+-	printf("No matching DT out of these options:\n");
+-	for (node = fdt_first_subnode(fdt, conf);
+-	     node >= 0;
+-	     node = fdt_next_subnode(fdt, node)) {
+-		name = fdt_getprop(fdt, node, "description", &len);
+-		printf("   %s\n", name);
++	debug("%s: '%s'\n", type, str);
++	node = fdt_subnode_offset(fit, images, str);
++	if (node < 0) {
++		debug("cannot find image node '%s': %d\n", str, node);
++		return -EINVAL;
+ 	}
+-#endif
+ 
+-	return -ENOENT;
++	*offsetp = fdt_getprop_u32(fit, node, "data-offset");
++	len = fdt_getprop_u32(fit, node, "data-size");
++
++	return len;
+ }
+ 
+ static int get_aligned_image_offset(struct spl_load_info *info, int offset)
+@@ -218,7 +243,8 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
+ 	memcpy(dst, src, data_size);
+ 
+ 	/* Figure out which device tree the board wants to use */
+-	fdt_len = spl_fit_select_fdt(fit, images, &fdt_offset);
++	fdt_len = spl_fit_select_index(fit, images, &fdt_offset,
++				       FIT_FDT_PROP, 0);
+ 	if (fdt_len < 0)
+ 		return fdt_len;
+ 
+From patchwork Fri Mar 31 22:31:14 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,02/19] SPL: FIT: rework U-Boot image loading
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745823
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-3-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:14 +0100
+
+Currently the SPL FIT loader always looks only for the first image in
+the /images node a FIT tree, which it loads and later executes.
+
+Generalize this by looking for a "firmware" property in the matched
+configuration subnode, or, if that does not exist, for the first string
+in the "loadables" property. Then using the string in that property,
+load the image of that name from the /images node.
+This still loads only one image at the moment, but refactors the code to
+allow extending this in a following patch.
+To simplify later re-usage, we also generalize the spl_fit_select_index()
+function to not return the image location, but just the node offset.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+Reviewed-by: Lokesh Vutla <lokeshvuta@ti.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+ common/spl/spl_fit.c | 45 +++++++++++++++++++++++++++++++--------------
+ 1 file changed, 31 insertions(+), 14 deletions(-)
+
+diff --git a/common/spl/spl_fit.c b/common/spl/spl_fit.c
+index bf9fbb6..a4ac27b 100644
+--- a/common/spl/spl_fit.c
++++ b/common/spl/spl_fit.c
+@@ -60,14 +60,24 @@ static int spl_fit_find_config_node(const void *fdt)
+ 	return -1;
+ }
+ 
+-static int spl_fit_select_index(const void *fit, int images, int *offsetp,
+-				const char *type, int index)
++/*
++ * By using the matching configuration subnode, retrieve the name of an image,
++ * specified by a property name and an index into that.
++ * @fit: Pointer to the FDT blob.
++ * @images: Offset of the /images subnode.
++ * @type: Name of the property within the configuration subnode.
++ * @index: Index into the list of strings in this property.
++ *
++ * Returns the node offset of the respective image node or a negative error
++ * number.
++ */
++static int spl_fit_get_image_node(const void *fit, int images,
++				  const char *type, int index)
+ {
+ 	const char *name, *str;
+ 	int node, conf_node;
+ 	int len, i;
+ 
+-	*offsetp = 0;
+ 	conf_node = spl_fit_find_config_node(fit);
+ 	if (conf_node < 0) {
+ #ifdef CONFIG_SPL_LIBCOMMON_SUPPORT
+@@ -104,10 +114,7 @@ static int spl_fit_select_index(const void *fit, int images, int *offsetp,
+ 		return -EINVAL;
+ 	}
+ 
+-	*offsetp = fdt_getprop_u32(fit, node, "data-offset");
+-	len = fdt_getprop_u32(fit, node, "data-size");
+-
+-	return len;
++	return node;
+ }
+ 
+ static int get_aligned_image_offset(struct spl_load_info *info, int offset)
+@@ -193,15 +200,22 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
+ 	if (count == 0)
+ 		return -EIO;
+ 
+-	/* find the firmware image to load */
++	/* find the node holding the images information */
+ 	images = fdt_path_offset(fit, FIT_IMAGES_PATH);
+ 	if (images < 0) {
+ 		debug("%s: Cannot find /images node: %d\n", __func__, images);
+ 		return -1;
+ 	}
+-	node = fdt_first_subnode(fit, images);
++
++	/* find the U-Boot image */
++	node = spl_fit_get_image_node(fit, images, "firmware", 0);
++	if (node < 0) {
++		debug("could not find firmware image, trying loadables...\n");
++		node = spl_fit_get_image_node(fit, images, "loadables", 0);
++	}
+ 	if (node < 0) {
+-		debug("%s: Cannot find first image node: %d\n", __func__, node);
++		debug("%s: Cannot find u-boot image node: %d\n",
++		      __func__, node);
+ 		return -1;
+ 	}
+ 
+@@ -243,10 +257,13 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
+ 	memcpy(dst, src, data_size);
+ 
+ 	/* Figure out which device tree the board wants to use */
+-	fdt_len = spl_fit_select_index(fit, images, &fdt_offset,
+-				       FIT_FDT_PROP, 0);
+-	if (fdt_len < 0)
+-		return fdt_len;
++	node = spl_fit_get_image_node(fit, images, FIT_FDT_PROP, 0);
++	if (node < 0) {
++		debug("%s: cannot find FDT node\n", __func__);
++		return node;
++	}
++	fdt_offset = fdt_getprop_u32(fit, node, "data-offset");
++	fdt_len = fdt_getprop_u32(fit, node, "data-size");
+ 
+ 	/*
+ 	 * Read the device tree and place it after the image. There may be
+From patchwork Fri Mar 31 22:31:15 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,03/19] SPL: FIT: improve error handling
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745824
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-4-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:15 +0100
+
+At the moment we ignore any errors due to missing FIT properties,
+instead go ahead and calculate our addresses with the -1 return value.
+Fix this and bail out if any of the mandatory properties are missing.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+ common/spl/spl_fit.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/common/spl/spl_fit.c b/common/spl/spl_fit.c
+index a4ac27b..55da37a 100644
+--- a/common/spl/spl_fit.c
++++ b/common/spl/spl_fit.c
+@@ -11,14 +11,17 @@
+ #include <libfdt.h>
+ #include <spl.h>
+ 
++#define FDT_ERROR ((ulong)(-1))
++
+ static ulong fdt_getprop_u32(const void *fdt, int node, const char *prop)
+ {
+ 	const u32 *cell;
+ 	int len;
+ 
+ 	cell = fdt_getprop(fdt, node, prop, &len);
+-	if (len != sizeof(*cell))
+-		return -1U;
++	if (!cell || len != sizeof(*cell))
++		return FDT_ERROR;
++
+ 	return fdt32_to_cpu(*cell);
+ }
+ 
+@@ -221,7 +224,11 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
+ 
+ 	/* Get its information and set up the spl_image structure */
+ 	data_offset = fdt_getprop_u32(fit, node, "data-offset");
++	if (data_offset == FDT_ERROR)
++		return -1;
+ 	data_size = fdt_getprop_u32(fit, node, "data-size");
++	if (data_size == FDT_ERROR)
++		return -1;
+ 	load = fdt_getprop_u32(fit, node, "load");
+ 	debug("data_offset=%x, data_size=%x\n", data_offset, data_size);
+ 	spl_image->load_addr = load;
+@@ -264,6 +271,10 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
+ 	}
+ 	fdt_offset = fdt_getprop_u32(fit, node, "data-offset");
+ 	fdt_len = fdt_getprop_u32(fit, node, "data-size");
++	if (fdt_offset == FDT_ERROR || fdt_len == FDT_ERROR) {
++		debug("%s: cannot load FDT data\n" __func__);
++		return -1;
++	}
+ 
+ 	/*
+ 	 * Read the device tree and place it after the image. There may be
+From patchwork Fri Mar 31 22:31:16 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,04/19] SPL: FIT: factor out spl_load_fit_image()
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745826
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-5-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:16 +0100
+
+At the moment we load two images from a FIT image: the actual U-Boot
+image and the .dtb file. Both times we have very similar code, that deals
+with alignment requirements the media we load from imposes upon us.
+Factor out this code into a new function, which we just call twice.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+ common/spl/spl_fit.c | 160 +++++++++++++++++++++++++--------------------------
+ 1 file changed, 78 insertions(+), 82 deletions(-)
+
+diff --git a/common/spl/spl_fit.c b/common/spl/spl_fit.c
+index 55da37a..cfcb1fe 100644
+--- a/common/spl/spl_fit.c
++++ b/common/spl/spl_fit.c
+@@ -158,19 +158,79 @@ static int get_aligned_image_size(struct spl_load_info *info, int data_size,
+ 	return (data_size + info->bl_len - 1) / info->bl_len;
+ }
+ 
++/*
++ * spl_load_fit_image loads the image described in a certain FIT node.
++ * @info: points to information about the device to load data from
++ * @sector: the start sector of the FIT image on the device
++ * @fit: points to the flattened device tree blob describing the FIT image
++ * @base_offset: the beginning of the data area containing the actual
++ * 		 image data, relative to the beginning of the FIT
++ * @node: offset of the DT node describing the image to load (relative to @fit)
++ * @image_info: will be filled with information about the loaded image
++ * 		If the FIT node does not contain a "load" (address) property,
++ * 		the image gets loaded to the address pointed to by the
++ * 		load_addr member in this struct.
++ *
++ * Returns an error value or 0 on success.
++ */
++static int spl_load_fit_image(struct spl_load_info *info, ulong sector,
++			      void *fit, ulong base_offset, int node,
++			      struct spl_image_info *image_info)
++{
++	ulong offset;
++	size_t length;
++	ulong load_addr, load_ptr;
++	void *src;
++	ulong overhead;
++	int nr_sectors;
++	int align_len = ARCH_DMA_MINALIGN - 1;
++
++	offset = fdt_getprop_u32(fit, node, "data-offset");
++	if (offset == FDT_ERROR)
++		return -ENOENT;
++	offset += base_offset;
++	length = fdt_getprop_u32(fit, node, "data-size");
++	if (length == FDT_ERROR)
++		return -ENOENT;
++	load_addr = fdt_getprop_u32(fit, node, "load");
++	if (load_addr == FDT_ERROR && image_info)
++		load_addr = image_info->load_addr;
++	load_ptr = (load_addr + align_len) & ~align_len;
++
++	overhead = get_aligned_image_overhead(info, offset);
++	nr_sectors = get_aligned_image_size(info, length, offset);
++
++	if (info->read(info, sector + get_aligned_image_offset(info, offset),
++		       nr_sectors, (void*)load_ptr) != nr_sectors)
++		return -EIO;
++	debug("image: dst=%lx, offset=%lx, size=%lx\n", load_ptr, offset,
++	      (unsigned long)length);
++
++	src = (void *)load_ptr + overhead;
++#ifdef CONFIG_SPL_FIT_IMAGE_POST_PROCESS
++	board_fit_image_post_process(&src, &length);
++#endif
++
++	memcpy((void*)load_addr, src, length);
++
++	if (image_info) {
++		image_info->load_addr = load_addr;
++		image_info->size = length;
++		image_info->entry_point = fdt_getprop_u32(fit, node, "entry");
++	}
++
++	return 0;
++}
++
+ int spl_load_simple_fit(struct spl_image_info *spl_image,
+ 			struct spl_load_info *info, ulong sector, void *fit)
+ {
+ 	int sectors;
+-	ulong size, load;
++	ulong size;
+ 	unsigned long count;
+-	int node, images;
+-	void *load_ptr;
+-	int fdt_offset, fdt_len;
+-	int data_offset, data_size;
++	struct spl_image_info image_info;
++	int node, images, ret;
+ 	int base_offset, align_len = ARCH_DMA_MINALIGN - 1;
+-	int src_sector;
+-	void *dst, *src;
+ 
+ 	/*
+ 	 * Figure out where the external images start. This is the base for the
+@@ -222,46 +282,13 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
+ 		return -1;
+ 	}
+ 
+-	/* Get its information and set up the spl_image structure */
+-	data_offset = fdt_getprop_u32(fit, node, "data-offset");
+-	if (data_offset == FDT_ERROR)
+-		return -1;
+-	data_size = fdt_getprop_u32(fit, node, "data-size");
+-	if (data_size == FDT_ERROR)
+-		return -1;
+-	load = fdt_getprop_u32(fit, node, "load");
+-	debug("data_offset=%x, data_size=%x\n", data_offset, data_size);
+-	spl_image->load_addr = load;
+-	spl_image->entry_point = load;
+-	spl_image->os = IH_OS_U_BOOT;
+-
+-	/*
+-	 * Work out where to place the image. We read it so that the first
+-	 * byte will be at 'load'. This may mean we need to load it starting
+-	 * before then, since we can only read whole blocks.
+-	 */
+-	data_offset += base_offset;
+-	sectors = get_aligned_image_size(info, data_size, data_offset);
+-	load_ptr = (void *)load;
+-	debug("U-Boot size %x, data %p\n", data_size, load_ptr);
+-	dst = load_ptr;
+-
+-	/* Read the image */
+-	src_sector = sector + get_aligned_image_offset(info, data_offset);
+-	debug("Aligned image read: dst=%p, src_sector=%x, sectors=%x\n",
+-	      dst, src_sector, sectors);
+-	count = info->read(info, src_sector, sectors, dst);
+-	if (count != sectors)
+-		return -EIO;
+-	debug("image: dst=%p, data_offset=%x, size=%x\n", dst, data_offset,
+-	      data_size);
+-	src = dst + get_aligned_image_overhead(info, data_offset);
++	/* Load the image and set up the spl_image structure */
++	ret = spl_load_fit_image(info, sector, fit, base_offset, node,
++				 spl_image);
++	if (ret)
++		return ret;
+ 
+-#ifdef CONFIG_SPL_FIT_IMAGE_POST_PROCESS
+-	board_fit_image_post_process((void **)&src, (size_t *)&data_size);
+-#endif
+-
+-	memcpy(dst, src, data_size);
++	spl_image->os = IH_OS_U_BOOT;
+ 
+ 	/* Figure out which device tree the board wants to use */
+ 	node = spl_fit_get_image_node(fit, images, FIT_FDT_PROP, 0);
+@@ -269,43 +296,12 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
+ 		debug("%s: cannot find FDT node\n", __func__);
+ 		return node;
+ 	}
+-	fdt_offset = fdt_getprop_u32(fit, node, "data-offset");
+-	fdt_len = fdt_getprop_u32(fit, node, "data-size");
+-	if (fdt_offset == FDT_ERROR || fdt_len == FDT_ERROR) {
+-		debug("%s: cannot load FDT data\n" __func__);
+-		return -1;
+-	}
+ 
+ 	/*
+-	 * Read the device tree and place it after the image. There may be
+-	 * some extra data before it since we can only read entire blocks.
+-	 * And also align the destination address to ARCH_DMA_MINALIGN.
++	 * Read the device tree and place it after the image.
++	 * Align the destination address to ARCH_DMA_MINALIGN.
+ 	 */
+-	dst = (void *)((load + data_size + align_len) & ~align_len);
+-	fdt_offset += base_offset;
+-	sectors = get_aligned_image_size(info, fdt_len, fdt_offset);
+-	src_sector = sector + get_aligned_image_offset(info, fdt_offset);
+-	count = info->read(info, src_sector, sectors, dst);
+-	debug("Aligned fdt read: dst %p, src_sector = %x, sectors %x\n",
+-	      dst, src_sector, sectors);
+-	if (count != sectors)
+-		return -EIO;
+-
+-	/*
+-	 * Copy the device tree so that it starts immediately after the image.
+-	 * After this we will have the U-Boot image and its device tree ready
+-	 * for us to start.
+-	 */
+-	debug("fdt: dst=%p, data_offset=%x, size=%x\n", dst, fdt_offset,
+-	      fdt_len);
+-	src = dst + get_aligned_image_overhead(info, fdt_offset);
+-	dst = load_ptr + data_size;
+-
+-#ifdef CONFIG_SPL_FIT_IMAGE_POST_PROCESS
+-	board_fit_image_post_process((void **)&src, (size_t *)&fdt_len);
+-#endif
+-
+-	memcpy(dst, src, fdt_len);
+-
+-	return 0;
++	image_info.load_addr = spl_image->load_addr + spl_image->size;
++	return spl_load_fit_image(info, sector, fit, base_offset, node,
++				  &image_info);
+ }
+From patchwork Fri Mar 31 22:31:17 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,05/19] SPL: FIT: allow loading multiple images
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745827
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-6-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:17 +0100
+
+So far we were not using the FIT image format to its full potential:
+The SPL FIT loader was just loading the first image from the /images
+node plus one of the listed DTBs.
+Now with the refactored loader code it's easy to load an arbitrary
+number of images in addition to the two mentioned above.
+As described in the FIT image source file format description, iterate
+over all images listed at the "loadables" property in the configuration
+node and load every image at its desired location.
+This allows to load any kind of images:
+- firmware images to execute before U-Boot proper (for instance
+  ARM Trusted Firmware (ATF))
+- firmware images for management processors (SCP, arisc, ...)
+- firmware images for devices like WiFi controllers
+- bit files for FPGAs
+- additional configuration data
+- kernels and/or ramdisks
+The actual usage of this feature would be platform and/or board specific.
+
+Also update the FIT documentation to mention the new SPL feature.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+Reviewed-by: Lokesh Vutla <lokeshvuta@ti.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+ common/spl/spl_fit.c     | 42 ++++++++++++++++++++++++++++++++++++++++--
+ doc/uImage.FIT/howto.txt | 21 +++++++++++++++++++++
+ 2 files changed, 61 insertions(+), 2 deletions(-)
+
+diff --git a/common/spl/spl_fit.c b/common/spl/spl_fit.c
+index cfcb1fe..edf4a43 100644
+--- a/common/spl/spl_fit.c
++++ b/common/spl/spl_fit.c
+@@ -231,6 +231,7 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
+ 	struct spl_image_info image_info;
+ 	int node, images, ret;
+ 	int base_offset, align_len = ARCH_DMA_MINALIGN - 1;
++	int index = 0;
+ 
+ 	/*
+ 	 * Figure out where the external images start. This is the base for the
+@@ -275,6 +276,11 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
+ 	if (node < 0) {
+ 		debug("could not find firmware image, trying loadables...\n");
+ 		node = spl_fit_get_image_node(fit, images, "loadables", 0);
++		/*
++		 * If we pick the U-Boot image from "loadables", start at
++		 * the second image when later loading additional images.
++		 */
++		index = 1;
+ 	}
+ 	if (node < 0) {
+ 		debug("%s: Cannot find u-boot image node: %d\n",
+@@ -302,6 +308,38 @@ int spl_load_simple_fit(struct spl_image_info *spl_image,
+ 	 * Align the destination address to ARCH_DMA_MINALIGN.
+ 	 */
+ 	image_info.load_addr = spl_image->load_addr + spl_image->size;
+-	return spl_load_fit_image(info, sector, fit, base_offset, node,
+-				  &image_info);
++	ret = spl_load_fit_image(info, sector, fit, base_offset, node,
++				 &image_info);
++	if (ret < 0)
++		return ret;
++
++	/* Now check if there are more images for us to load */
++	for (; ; index++) {
++		node = spl_fit_get_image_node(fit, images, "loadables", index);
++		if (node < 0)
++			break;
++
++		ret = spl_load_fit_image(info, sector, fit, base_offset, node,
++					 &image_info);
++		if (ret < 0)
++			continue;
++
++		/*
++		 * If the "firmware" image did not provide an entry point,
++		 * use the first valid entry point from the loadables.
++		 */
++		if (spl_image->entry_point == FDT_ERROR &&
++		    image_info.entry_point != FDT_ERROR)
++			spl_image->entry_point = image_info.entry_point;
++	}
++
++	/*
++	 * If a platform does not provide CONFIG_SYS_UBOOT_START, U-Boot's
++	 * Makefile will set it to 0 and it will end up as the entry point
++	 * here. What it actually means is: use the load address.
++	 */
++	if (spl_image->entry_point == FDT_ERROR || spl_image->entry_point == 0)
++		spl_image->entry_point = spl_image->load_addr;
++
++	return 0;
+ }
+diff --git a/doc/uImage.FIT/howto.txt b/doc/uImage.FIT/howto.txt
+index 14e316f..2988a52 100644
+--- a/doc/uImage.FIT/howto.txt
++++ b/doc/uImage.FIT/howto.txt
+@@ -44,6 +44,27 @@ image source file     mkimage + dtc		  transfer to target
+ 	+	     ---------------> image file --------------------> bootm
+ image data file(s)
+ 
++SPL usage
++---------
++
++The SPL can make use of the new image format as well, this traditionally
++is used to ship multiple device tree files within one image. Code in the SPL
++will choose the one matching the current board and append this to the
++U-Boot proper binary to be automatically used up by it.
++Aside from U-Boot proper and one device tree blob the SPL can load multiple,
++arbitrary image files as well. These binaries should be specified in their
++own subnode under the /images node, which should then be referenced from one or
++multiple /configurations subnodes. The required images must be enumerated in
++the "loadables" property as a list of strings.
++
++If a platform specific image source file (.its) is shipped with the U-Boot
++source, it can be specified using the CONFIG_SPL_FIT_SOURCE Kconfig symbol.
++In this case it will be automatically used by U-Boot's Makefile to generate
++the image.
++If a static source file is not flexible enough, CONFIG_SPL_FIT_GENERATOR
++can point to a script which generates this image source file during
++the build process. It gets passed a list of device tree files (taken from the
++CONFIG_OF_LIST symbol).
+ 
+ Example 1 -- old-style (non-FDT) kernel booting
+ -----------------------------------------------
+From patchwork Fri Mar 31 22:31:18 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,06/19] Kconfig: fix SPL_FIT dependency
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745825
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-7-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:18 +0100
+
+SPL_FIT obviously requires libfdt in SPL, so let Kconfig express that by
+selecting SPL_OF_LIBFDT.
+Also make the actual options that users want (SPL signature and SPL FIT
+loading) visible in the menu and let them select the SPL_FIT as a
+requirement.
+Also remove the now redundant SPL_OF_LIBFDT from those Kconfigs that had
+it in for the SPL FIT loading feature.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+---
+ Kconfig                      | 4 +++-
+ configs/am335x_evm_defconfig | 1 -
+ configs/evb-rk3399_defconfig | 1 -
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/Kconfig b/Kconfig
+index e0744d1..a2f45d3 100644
+--- a/Kconfig
++++ b/Kconfig
+@@ -208,15 +208,17 @@ config FIT_IMAGE_POST_PROCESS
+ config SPL_FIT
+ 	bool "Support Flattened Image Tree within SPL"
+ 	depends on SPL
++	select SPL_OF_LIBFDT
+ 
+ config SPL_FIT_SIGNATURE
+ 	bool "Enable signature verification of FIT firmware within SPL"
+-	depends on SPL_FIT
+ 	depends on SPL_DM
++	select SPL_FIT
+ 	select SPL_RSA
+ 
+ config SPL_LOAD_FIT
+ 	bool "Enable SPL loading U-Boot as a FIT"
++	select SPL_FIT
+ 	help
+ 	  Normally with the SPL framework a legacy image is generated as part
+ 	  of the build. This contains U-Boot along with information as to
+diff --git a/configs/am335x_evm_defconfig b/configs/am335x_evm_defconfig
+index ab7b9aa..525d07e 100644
+--- a/configs/am335x_evm_defconfig
++++ b/configs/am335x_evm_defconfig
+@@ -57,4 +57,3 @@ CONFIG_G_DNL_MANUFACTURER="Texas Instruments"
+ CONFIG_G_DNL_VENDOR_NUM=0x0451
+ CONFIG_G_DNL_PRODUCT_NUM=0xd022
+ CONFIG_RSA=y
+-CONFIG_SPL_OF_LIBFDT=y
+diff --git a/configs/evb-rk3399_defconfig b/configs/evb-rk3399_defconfig
+index bedc1fd..8cae666 100644
+--- a/configs/evb-rk3399_defconfig
++++ b/configs/evb-rk3399_defconfig
+@@ -4,7 +4,6 @@ CONFIG_ROCKCHIP_RK3399=y
+ CONFIG_DEFAULT_DEVICE_TREE="rk3399-evb"
+ CONFIG_FIT=y
+ CONFIG_SPL_LOAD_FIT=y
+-CONFIG_SPL_OF_LIBFDT=y
+ CONFIG_SPL_ATF_SUPPORT=y
+ CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR=0x200
+ CONFIG_SPL_ATF_TEXT_BASE=0x00010000
+From patchwork Fri Mar 31 22:31:19 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,07/19] tools: mksunxiboot: allow larger SPL binaries
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745829
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-8-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:19 +0100
+
+mksunxiboot limits the size of the resulting SPL binaries to pretty
+conservative values to cover all SoCs and all boot media (NAND).
+It turns out that we have limit checks in place in the build process,
+so mksunxiboot can be relaxed and allow packaging binaries up to the
+actual 32KB the mask boot ROM actually imposes.
+This allows to have a bigger SPL, which is crucial for AArch64 builds.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+ tools/mksunxiboot.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tools/mksunxiboot.c b/tools/mksunxiboot.c
+index 0f0b003..111d74a 100644
+--- a/tools/mksunxiboot.c
++++ b/tools/mksunxiboot.c
+@@ -48,8 +48,8 @@ int gen_check_sum(struct boot_file_head *head_p)
+ #define ALIGN(x, a) __ALIGN_MASK((x), (typeof(x))(a)-1)
+ #define __ALIGN_MASK(x, mask) (((x)+(mask))&~(mask))
+ 
+-#define SUN4I_SRAM_SIZE 0x7600	/* 0x7748+ is used by BROM */
+-#define SRAM_LOAD_MAX_SIZE (SUN4I_SRAM_SIZE - sizeof(struct boot_file_head))
++#define SUNXI_SRAM_SIZE 0x8000	/* SoC with smaller size are limited before */
++#define SRAM_LOAD_MAX_SIZE (SUNXI_SRAM_SIZE - sizeof(struct boot_file_head))
+ 
+ /*
+  * BROM (at least on A10 and A20) requires NAND-images to be explicitly aligned
+From patchwork Fri Mar 31 22:31:20 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,08/19] armv8: SPL: only compile GIC code if needed
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745832
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-9-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:20 +0100
+
+Not every SoC needs to set up the GIC interrupt controller, so link
+think code only when the respective config option is set.
+This shaves off some bytes from the SPL code size.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+ arch/arm/lib/Makefile | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/lib/Makefile b/arch/arm/lib/Makefile
+index b95e105..5733430 100644
+--- a/arch/arm/lib/Makefile
++++ b/arch/arm/lib/Makefile
+@@ -44,7 +44,9 @@ ifdef CONFIG_CPU_V7M
+ obj-y	+= interrupts_m.o
+ else ifdef CONFIG_ARM64
+ obj-y	+= ccn504.o
++ifneq ($(CONFIG_GICV2)$(CONFIG_GICV3),)
+ obj-y	+= gic_64.o
++endif
+ obj-y	+= interrupts_64.o
+ else
+ obj-y	+= interrupts.o
+From patchwork Fri Mar 31 22:31:21 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,09/19] armv8: fsl: move ccn504 code into FSL Makefile
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745839
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-10-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:21 +0100
+
+The generic ARMv8 assembly code contains routines for setting up
+a CCN interconnect, though the Freescale SoCs are the only user.
+Link this code only for Freescale targets, this saves some precious
+bytes in the chronically tight SPL.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+---
+ arch/arm/lib/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/lib/Makefile b/arch/arm/lib/Makefile
+index 5733430..82154f6 100644
+--- a/arch/arm/lib/Makefile
++++ b/arch/arm/lib/Makefile
+@@ -43,7 +43,7 @@ obj-y	+= stack.o
+ ifdef CONFIG_CPU_V7M
+ obj-y	+= interrupts_m.o
+ else ifdef CONFIG_ARM64
+-obj-y	+= ccn504.o
++obj-$(CONFIG_FSL_LAYERSCAPE) += ccn504.o
+ ifneq ($(CONFIG_GICV2)$(CONFIG_GICV3),)
+ obj-y	+= gic_64.o
+ endif
+From patchwork Fri Mar 31 22:31:22 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,10/19] sunxi: A64: move SPL stack to end of SRAM A2
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745830
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-11-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:22 +0100
+
+The SPL stack is usually located at the end of SRAM A1, where it grows
+towards the end of the SPL.
+For the really big AArch64 binaries the stack overwrites code pretty
+soon, so move the SPL stack to the end of SRAM A2, which is unused at this
+time.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ include/configs/sunxi-common.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/include/configs/sunxi-common.h b/include/configs/sunxi-common.h
+index 171cea2..b7eb95e 100644
+--- a/include/configs/sunxi-common.h
++++ b/include/configs/sunxi-common.h
+@@ -182,7 +182,12 @@
+ #ifdef CONFIG_SUNXI_HIGH_SRAM
+ #define CONFIG_SPL_TEXT_BASE		0x10040		/* sram start+header */
+ #define CONFIG_SPL_MAX_SIZE		0x7fc0		/* 32 KiB */
++#ifdef CONFIG_ARM64
++/* end of SRAM A2 for now, as SRAM A1 is pretty tight for an ARM64 build */
++#define LOW_LEVEL_SRAM_STACK		0x00054000
++#else
+ #define LOW_LEVEL_SRAM_STACK		0x00018000
++#endif /* !CONFIG_ARM64 */
+ #else
+ #define CONFIG_SPL_TEXT_BASE		0x40		/* sram start+header */
+ #define CONFIG_SPL_MAX_SIZE		0x5fc0		/* 24KB on sun4i/sun7i */
+From patchwork Fri Mar 31 22:31:23 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,11/19] sunxi: SPL: store RAM size in gd
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745837
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-12-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:23 +0100
+
+The sunxi SPL was holding the detected RAM size in some local variable
+only, so it wasn't accessible for other functions.
+Store the value in gd->ram_size instead, so it can be used later on.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ board/sunxi/board.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index b966012..a510422 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -480,7 +480,6 @@ void i2c_init_board(void)
+ void sunxi_board_init(void)
+ {
+ 	int power_failed = 0;
+-	unsigned long ramsize;
+ 
+ #ifdef CONFIG_SY8106A_POWER
+ 	power_failed = sy8106a_set_vout1(CONFIG_SY8106A_VOUT1_VOLT);
+@@ -541,9 +540,9 @@ void sunxi_board_init(void)
+ #endif
+ #endif
+ 	printf("DRAM:");
+-	ramsize = sunxi_dram_init();
+-	printf(" %d MiB\n", (int)(ramsize >> 20));
+-	if (!ramsize)
++	gd->ram_size = sunxi_dram_init();
++	printf(" %d MiB\n", (int)(gd->ram_size >> 20));
++	if (!gd->ram_size)
+ 		hang();
+ 
+ 	/*
+From patchwork Fri Mar 31 22:31:24 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v3,
+ 12/19] sunxi: SPL: add FIT config selector for Pine64 boards
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745838
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-13-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:24 +0100
+
+For a board or platform to support FIT loading in the SPL, it has to
+provide a board_fit_config_name_match() routine, which helps to select
+one of possibly multiple DTBs contained in a FIT image.
+Provide a simple function which chooses the DT name U-Boot was
+configured with.
+If the DT name is one of the two Pine64 versions, determine the exact
+model by checking the DRAM size.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ board/sunxi/board.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index a510422..2ddff28 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -725,3 +725,26 @@ int ft_board_setup(void *blob, bd_t *bd)
+ #endif
+ 	return 0;
+ }
++
++#ifdef CONFIG_SPL_LOAD_FIT
++int board_fit_config_name_match(const char *name)
++{
++	const char *cmp_str;
++
++#ifdef CONFIG_DEFAULT_DEVICE_TREE
++	cmp_str = CONFIG_DEFAULT_DEVICE_TREE;
++#else
++	return 0;
++#endif
++
++/* Differentiate the two Pine64 board DTs by their DRAM size. */
++	if (strstr(name, "-pine64") && strstr(cmp_str, "-pine64")) {
++		if ((gd->ram_size > 512 * 1024 * 1024))
++			return !strstr(name, "plus");
++		else
++			return !!strstr(name, "plus");
++	} else {
++		return strcmp(name, cmp_str);
++	}
++}
++#endif
+From patchwork Fri Mar 31 22:31:25 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,13/19] Makefile: add rules to generate SPL FIT images
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745835
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-14-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:25 +0100
+
+Some platforms require more complex U-Boot images than we can easily
+generate via the mkimage command line, for instance to load additional
+image files.
+Introduce a CONFIG_SPL_FIT_SOURCE and CONFIG_SPL_FIT_GENERATOR symbol,
+which can either hold an .its source file describing the image layout,
+or, in the second case, a generator tool (script) to create such
+a source file. This script gets passed the list of device tree files
+from the CONFIG_OF_LIST variable.
+A platform or board can define either of those in their defconfig file
+to allow an easy building of such an image.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+---
+ Kconfig  | 17 +++++++++++++++++
+ Makefile | 20 ++++++++++++++++++++
+ 2 files changed, 37 insertions(+)
+
+diff --git a/Kconfig b/Kconfig
+index a2f45d3..5c82788 100644
+--- a/Kconfig
++++ b/Kconfig
+@@ -241,6 +241,23 @@ config SPL_FIT_IMAGE_POST_PROCESS
+ 	  injected into the FIT creation (i.e. the blobs would have been pre-
+ 	  processed before being added to the FIT image).
+ 
++config SPL_FIT_SOURCE
++	string ".its source file for U-Boot FIT image"
++	depends on SPL_FIT
++	help
++	  Specifies a (platform specific) FIT source file to generate the
++	  U-Boot FIT image. This could specify further image to load and/or
++	  execute.
++
++config SPL_FIT_GENERATOR
++	string ".its file generator script for U-Boot FIT image"
++	depends on SPL_FIT
++	help
++	  Specifies a (platform specific) script file to generate the FIT
++	  source file used to build the U-Boot FIT image file. This gets
++	  passed a list of supported device tree file stub names to
++	  include in the generated image.
++
+ endif # FIT
+ 
+ config OF_BOARD_SETUP
+diff --git a/Makefile b/Makefile
+index 539fb20..5ecf40f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -827,6 +827,10 @@ quiet_cmd_mkimage = MKIMAGE $@
+ cmd_mkimage = $(objtree)/tools/mkimage $(MKIMAGEFLAGS_$(@F)) -d $< $@ \
+ 	$(if $(KBUILD_VERBOSE:1=), >$(MKIMAGEOUTPUT))
+ 
++quiet_cmd_mkfitimage = MKIMAGE $@
++cmd_mkfitimage = $(objtree)/tools/mkimage $(MKIMAGEFLAGS_$(@F)) -f $(U_BOOT_ITS) -E $@ \
++	$(if $(KBUILD_VERBOSE:1=), >$(MKIMAGEOUTPUT))
++
+ quiet_cmd_cat = CAT     $@
+ cmd_cat = cat $(filter-out $(PHONY), $^) > $@
+ 
+@@ -946,6 +950,19 @@ quiet_cmd_cpp_cfg = CFG     $@
+ cmd_cpp_cfg = $(CPP) -Wp,-MD,$(depfile) $(cpp_flags) $(LDPPFLAGS) -ansi \
+ 	-DDO_DEPS_ONLY -D__ASSEMBLY__ -x assembler-with-cpp -P -dM -E -o $@ $<
+ 
++# Boards with more complex image requirments can provide an .its source file
++# or a generator script
++ifneq ($(CONFIG_SPL_FIT_SOURCE),"")
++U_BOOT_ITS = $(subst ",,$(CONFIG_SPL_FIT_SOURCE))
++else
++ifneq ($(CONFIG_SPL_FIT_GENERATOR),"")
++U_BOOT_ITS := u-boot.its
++$(U_BOOT_ITS): FORCE
++	$(srctree)/$(CONFIG_SPL_FIT_GENERATOR) \
++	$(patsubst %,arch/$(ARCH)/dts/%.dtb,$(subst ",,$(CONFIG_OF_LIST))) > $@
++endif
++endif
++
+ ifdef CONFIG_SPL_LOAD_FIT
+ MKIMAGEFLAGS_u-boot.img = -f auto -A $(ARCH) -T firmware -C none -O u-boot \
+ 	-a $(CONFIG_SYS_TEXT_BASE) -e $(CONFIG_SYS_UBOOT_START) \
+@@ -978,6 +995,9 @@ u-boot-dtb.img u-boot.img u-boot.kwb u-boot.pbl u-boot-ivt.img: \
+ 		$(if $(CONFIG_SPL_LOAD_FIT),u-boot-nodtb.bin dts/dt.dtb,u-boot.bin) FORCE
+ 	$(call if_changed,mkimage)
+ 
++u-boot.itb: u-boot-nodtb.bin dts/dt.dtb $(U_BOOT_ITS) FORCE
++	$(call if_changed,mkfitimage)
++
+ u-boot-spl.kwb: u-boot.img spl/u-boot-spl.bin FORCE
+ 	$(call if_changed,mkimage)
+ 
+From patchwork Fri Mar 31 22:31:26 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,14/19] sunxi: 64-bit SoCs: introduce FIT generator script
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745831
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-15-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:26 +0100
+
+Now that the Makefile can call a generator script to build a more
+advanced FIT image, let's use this feature to address the needs of
+Allwinner boards with 64-bit SoCs (A64 and H5).
+The (DTB stripped) U-Boot binary and the ATF are static, but we allow
+an arbitrary number of supported device trees to be passed.
+The script enters both a DT entry in the /images node and the respective
+subnode in /configurations to support all listed DTBs.
+
+This requires to copy the ARM Trusted Firmware build (bl31.bin) into
+the U-Boot source directory (or to create a symlink to it).
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ board/sunxi/mksunxi_fit_atf.sh | 73 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 73 insertions(+)
+ create mode 100755 board/sunxi/mksunxi_fit_atf.sh
+
+diff --git a/board/sunxi/mksunxi_fit_atf.sh b/board/sunxi/mksunxi_fit_atf.sh
+new file mode 100755
+index 0000000..afa22e8
+--- /dev/null
++++ b/board/sunxi/mksunxi_fit_atf.sh
+@@ -0,0 +1,73 @@
++#!/bin/sh
++#
++# script to generate FIT image source for 64-bit sunxi boards with
++# ARM Trusted Firmware and multiple device trees (given on the command line)
++#
++# usage: $0 <dt_name> [<dt_name> [<dt_name] ...]
++
++cat << __HEADER_EOF
++/dts-v1/;
++
++/ {
++	description = "Configuration to load ATF before U-Boot";
++	#address-cells = <1>;
++
++	images {
++		uboot@1 {
++			description = "U-Boot (64-bit)";
++			data = /incbin/("u-boot-nodtb.bin");
++			type = "standalone";
++			arch = "arm64";
++			compression = "none";
++			load = <0x4a000000>;
++		};
++		atf@1 {
++			description = "ARM Trusted Firmware";
++			data = /incbin/("bl31.bin");
++			type = "firmware";
++			arch = "arm64";
++			compression = "none";
++			load = <0x44000>;
++			entry = <0x44000>;
++		};
++__HEADER_EOF
++
++cnt=1
++for dtname in $*
++do
++	cat << __FDT_IMAGE_EOF
++		fdt@$cnt {
++			description = "$(basename $dtname .dtb)";
++			data = /incbin/("$dtname");
++			type = "flat_dt";
++			compression = "none";
++		};
++__FDT_IMAGE_EOF
++	cnt=$((cnt+1))
++done
++
++cat << __CONF_HEADER_EOF
++	};
++	configurations {
++		default = "config@1";
++
++__CONF_HEADER_EOF
++
++cnt=1
++for dtname in $*
++do
++	cat << __CONF_SECTION_EOF
++		config@$cnt {
++			description = "$(basename $dtname .dtb)";
++			firmware = "uboot@1";
++			loadables = "atf@1";
++			fdt = "fdt@$cnt";
++		};
++__CONF_SECTION_EOF
++	cnt=$((cnt+1))
++done
++
++cat << __ITS_EOF
++	};
++};
++__ITS_EOF
+From patchwork Fri Mar 31 22:31:27 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v3,
+ 15/19] sunxi: defconfig: add supported DT list for Pine64 and
+ OrangePi PC 2
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745834
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-16-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:27 +0100
+
+When a board uses a FIT image to load U-Boot proper, it requires a list
+of supported device trees to be supplied, from which it chooses the
+right one at runtime.
+Add this list for the Pine64 and OrangePi PC2 board.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+---
+ configs/orangepi_pc2_defconfig | 1 +
+ configs/pine64_plus_defconfig  | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/configs/orangepi_pc2_defconfig b/configs/orangepi_pc2_defconfig
+index 19a5c2b..9f02049 100644
+--- a/configs/orangepi_pc2_defconfig
++++ b/configs/orangepi_pc2_defconfig
+@@ -5,6 +5,7 @@ CONFIG_SPL=y
+ CONFIG_DRAM_CLK=672
+ CONFIG_DRAM_ZQ=3881977
+ CONFIG_DEFAULT_DEVICE_TREE="sun50i-h5-orangepi-pc2"
++CONFIG_OF_LIST="sun50i-h5-orangepi-pc2"
+ # CONFIG_SYS_MALLOC_CLEAR_ON_INIT is not set
+ CONFIG_CONSOLE_MUX=y
+ # CONFIG_CMD_IMLS is not set
+diff --git a/configs/pine64_plus_defconfig b/configs/pine64_plus_defconfig
+index 92bda60..593e24a 100644
+--- a/configs/pine64_plus_defconfig
++++ b/configs/pine64_plus_defconfig
+@@ -3,6 +3,7 @@ CONFIG_ARCH_SUNXI=y
+ CONFIG_MACH_SUN50I=y
+ CONFIG_RESERVE_ALLWINNER_BOOT0_HEADER=y
+ CONFIG_DEFAULT_DEVICE_TREE="sun50i-a64-pine64-plus"
++CONFIG_OF_LIST="sun50i-a64-pine64 sun50i-a64-pine64-plus"
+ # CONFIG_SYS_MALLOC_CLEAR_ON_INIT is not set
+ CONFIG_CONSOLE_MUX=y
+ CONFIG_SPL=y
+From patchwork Fri Mar 31 22:31:28 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,16/19] sunxi: enable automatic FIT build for 64-bit SoCs
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745840
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-17-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:28 +0100
+
+The Allwinner SoCs with 64-bit cores use an ARM Trusted Firmware binary,
+which needs to be loaded alongside U-Boot proper.
+Set the respective Kconfig options to let them select this feature and
+also automatically build the FIT image.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ Kconfig                        | 1 +
+ board/sunxi/Kconfig            | 4 ++++
+ include/configs/sunxi-common.h | 4 ++++
+ 3 files changed, 9 insertions(+)
+
+diff --git a/Kconfig b/Kconfig
+index 5c82788..ffea4c3 100644
+--- a/Kconfig
++++ b/Kconfig
+@@ -252,6 +252,7 @@ config SPL_FIT_SOURCE
+ config SPL_FIT_GENERATOR
+ 	string ".its file generator script for U-Boot FIT image"
+ 	depends on SPL_FIT
++	default "board/sunxi/mksunxi_fit_atf.sh" if SPL_LOAD_FIT && ARCH_SUNXI
+ 	help
+ 	  Specifies a (platform specific) script file to generate the FIT
+ 	  source file used to build the U-Boot FIT image file. This gets
+diff --git a/board/sunxi/Kconfig b/board/sunxi/Kconfig
+index 3e0e262..b629f3b 100644
+--- a/board/sunxi/Kconfig
++++ b/board/sunxi/Kconfig
+@@ -145,12 +145,16 @@ config MACH_SUN50I
+ 	select SUNXI_GEN_SUN6I
+ 	select SUNXI_HIGH_SRAM
+ 	select SUPPORT_SPL
++	select FIT
++	select SPL_LOAD_FIT
+ 
+ config MACH_SUN50I_H5
+ 	bool "sun50i (Allwinner H5)"
+ 	select ARM64
+ 	select MACH_SUNXI_H3_H5
+ 	select SUNXI_HIGH_SRAM
++	select FIT
++	select SPL_LOAD_FIT
+ 
+ endchoice
+ 
+diff --git a/include/configs/sunxi-common.h b/include/configs/sunxi-common.h
+index b7eb95e..1982063 100644
+--- a/include/configs/sunxi-common.h
++++ b/include/configs/sunxi-common.h
+@@ -32,6 +32,10 @@
+ # define CONFIG_MACH_TYPE_COMPAT_REV	1
+ #endif
+ 
++#ifdef CONFIG_ARM64
++#define CONFIG_BUILD_TARGET "u-boot.itb"
++#endif
++
+ /* Serial & console */
+ #define CONFIG_SYS_NS16550_SERIAL
+ /* ns16550 reg in the low bits of cpu reg */
+From patchwork Fri Mar 31 22:31:29 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v3,
+ 17/19] sunxi: Store the device tree name in the SPL header
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745828
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-18-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:29 +0100
+
+From: Siarhei Siamashka <siarhei.siamashka@gmail.com>
+
+This patch updates the mksunxiboot tool to optionally add
+the default device tree name string to the SPL header. This
+information can be used by the firmware upgrade tools to
+protect users from harming themselves by trying to upgrade
+to an incompatible bootloader.
+
+The primary use case here is a non-removable bootable media
+(such as NAND, eMMC or SPI flash), which already may have
+a properly working, but a little bit outdated bootloader
+installed. For example, the user may download or build a
+new U-Boot image for "Cubieboard", and then attemept to
+install it on a "Cubieboard2" hardware by mistake as a
+replacement for the already existing bootloader. If this
+happens, the flash programming tool can identify this
+problem and warn the user.
+
+The size of the SPL header is also increased from 64 bytes
+to 96 bytes to provide enough space for the device tree name
+string.
+[Andre: split patch to remove OF_LIST hash feature]
+
+Signed-off-by: Siarhei Siamashka <siarhei.siamashka@gmail.com>
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+---
+ arch/arm/include/asm/arch-sunxi/spl.h | 19 +++++++++++---
+ include/configs/sunxi-common.h        |  8 +++---
+ scripts/Makefile.spl                  |  3 ++-
+ tools/mksunxiboot.c                   | 49 ++++++++++++++++++++++++++++++++---
+ 4 files changed, 67 insertions(+), 12 deletions(-)
+
+diff --git a/arch/arm/include/asm/arch-sunxi/spl.h b/arch/arm/include/asm/arch-sunxi/spl.h
+index 831d0c0..9358397 100644
+--- a/arch/arm/include/asm/arch-sunxi/spl.h
++++ b/arch/arm/include/asm/arch-sunxi/spl.h
+@@ -10,7 +10,7 @@
+ 
+ #define BOOT0_MAGIC		"eGON.BT0"
+ #define SPL_SIGNATURE		"SPL" /* marks "sunxi" SPL header */
+-#define SPL_HEADER_VERSION	1
++#define SPL_HEADER_VERSION	2
+ 
+ #ifdef CONFIG_SUNXI_HIGH_SRAM
+ #define SPL_ADDR		0x10000
+@@ -58,11 +58,24 @@ struct boot_file_head {
+ 	 * compatible format, ready to be imported via "env import -t".
+ 	 */
+ 	uint32_t fel_uEnv_length;
+-	uint32_t reserved1[2];
++	/*
++	 * Offset of an ASCIIZ string (relative to the SPL header), which
++	 * contains the default device tree name (CONFIG_DEFAULT_DEVICE_TREE).
++	 * This is optional and may be set to NULL. Is intended to be used
++	 * by flash programming tools for providing nice informative messages
++	 * to the users.
++	 */
++	uint32_t dt_name_offset;
++	uint32_t reserved1;
+ 	uint32_t boot_media;		/* written here by the boot ROM */
+-	uint32_t reserved2[5];		/* padding, align to 64 bytes */
++	/* A padding area (may be used for storing text strings) */
++	uint32_t string_pool[13];
++	/* The header must be a multiple of 32 bytes (for VBAR alignment) */
+ };
+ 
++/* Compile time check to assure proper alignment of structure */
++typedef char boot_file_head_not_multiple_of_32[1 - 2*(sizeof(struct boot_file_head) % 32)];
++
+ #define is_boot0_magic(addr)	(memcmp((void *)addr, BOOT0_MAGIC, 8) == 0)
+ 
+ #endif
+diff --git a/include/configs/sunxi-common.h b/include/configs/sunxi-common.h
+index 1982063..65f0f69 100644
+--- a/include/configs/sunxi-common.h
++++ b/include/configs/sunxi-common.h
+@@ -184,8 +184,8 @@
+ #endif
+ 
+ #ifdef CONFIG_SUNXI_HIGH_SRAM
+-#define CONFIG_SPL_TEXT_BASE		0x10040		/* sram start+header */
+-#define CONFIG_SPL_MAX_SIZE		0x7fc0		/* 32 KiB */
++#define CONFIG_SPL_TEXT_BASE		0x10060		/* sram start+header */
++#define CONFIG_SPL_MAX_SIZE		0x7fa0		/* 32 KiB */
+ #ifdef CONFIG_ARM64
+ /* end of SRAM A2 for now, as SRAM A1 is pretty tight for an ARM64 build */
+ #define LOW_LEVEL_SRAM_STACK		0x00054000
+@@ -193,8 +193,8 @@
+ #define LOW_LEVEL_SRAM_STACK		0x00018000
+ #endif /* !CONFIG_ARM64 */
+ #else
+-#define CONFIG_SPL_TEXT_BASE		0x40		/* sram start+header */
+-#define CONFIG_SPL_MAX_SIZE		0x5fc0		/* 24KB on sun4i/sun7i */
++#define CONFIG_SPL_TEXT_BASE		0x60		/* sram start+header */
++#define CONFIG_SPL_MAX_SIZE		0x5fa0		/* 24KB on sun4i/sun7i */
+ #define LOW_LEVEL_SRAM_STACK		0x00008000	/* End of sram */
+ #endif
+ 
+diff --git a/scripts/Makefile.spl b/scripts/Makefile.spl
+index d01af3b..d134b74 100644
+--- a/scripts/Makefile.spl
++++ b/scripts/Makefile.spl
+@@ -294,7 +294,8 @@ $(obj)/$(SPL_BIN).sfp: $(obj)/$(SPL_BIN).bin FORCE
+ 	$(call if_changed,mkimage)
+ 
+ quiet_cmd_mksunxiboot = MKSUNXI $@
+-cmd_mksunxiboot = $(objtree)/tools/mksunxiboot $< $@
++cmd_mksunxiboot = $(objtree)/tools/mksunxiboot \
++			--default-dt $(CONFIG_DEFAULT_DEVICE_TREE) $< $@
+ $(obj)/sunxi-spl.bin: $(obj)/$(SPL_BIN).bin FORCE
+ 	$(call if_changed,mksunxiboot)
+ 
+diff --git a/tools/mksunxiboot.c b/tools/mksunxiboot.c
+index 111d74a..db0f10e 100644
+--- a/tools/mksunxiboot.c
++++ b/tools/mksunxiboot.c
+@@ -70,11 +70,40 @@ int main(int argc, char *argv[])
+ 	struct boot_img img;
+ 	unsigned file_size;
+ 	int count;
++	char *tool_name = argv[0];
++	char *default_dt = NULL;
+ 
+-	if (argc < 2) {
+-		printf("\tThis program makes an input bin file to sun4i " \
+-		       "bootable image.\n" \
+-		       "\tUsage: %s input_file out_putfile\n", argv[0]);
++	/* a sanity check */
++	if ((sizeof(img.header) % 32) != 0) {
++		fprintf(stderr, "ERROR: the SPL header must be a multiple ");
++		fprintf(stderr, "of 32 bytes.\n");
++		return EXIT_FAILURE;
++	}
++
++	/* process optional command line switches */
++	while (argc >= 2 && argv[1][0] == '-') {
++		if (strcmp(argv[1], "--default-dt") == 0) {
++			if (argc >= 3) {
++				default_dt = argv[2];
++				argv += 2;
++				argc -= 2;
++				continue;
++			}
++			fprintf(stderr, "ERROR: no --default-dt arg\n");
++			return EXIT_FAILURE;
++		} else {
++			fprintf(stderr, "ERROR: bad option '%s'\n", argv[1]);
++			return EXIT_FAILURE;
++		}
++	}
++
++	if (argc < 3) {
++		printf("This program converts an input binary file to a sunxi bootable image.\n");
++		printf("\nUsage: %s [options] input_file output_file\n",
++		       tool_name);
++		printf("Where [options] may be:\n");
++		printf("  --default-dt arg         - 'arg' is the default device tree name\n");
++		printf("                             (CONFIG_DEFAULT_DEVICE_TREE).\n");
+ 		return EXIT_FAILURE;
+ 	}
+ 
+@@ -122,6 +151,18 @@ int main(int argc, char *argv[])
+ 	memcpy(img.header.spl_signature, SPL_SIGNATURE, 3); /* "sunxi" marker */
+ 	img.header.spl_signature[3] = SPL_HEADER_VERSION;
+ 
++	if (default_dt) {
++		if (strlen(default_dt) + 1 <= sizeof(img.header.string_pool)) {
++			strcpy((char *)img.header.string_pool, default_dt);
++			img.header.dt_name_offset =
++				cpu_to_le32(offsetof(struct boot_file_head,
++						     string_pool));
++		} else {
++			printf("WARNING: The SPL header is too small\n");
++			printf("         and has no space to store the dt name.\n");
++		}
++	}
++
+ 	gen_check_sum(&img.header);
+ 
+ 	count = write(fd_out, &img, le32_to_cpu(img.header.length));
+From patchwork Fri Mar 31 22:31:30 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v3,
+ 18/19] sunxi: use SPL header DT name for FIT board matching
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745833
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-19-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:30 +0100
+
+Now that we can store a DT name in the SPL header, use this string (if
+available) when finding the right DT blob to load for U-Boot proper.
+This allows a generic U-Boot (proper) image to be combined with a bunch
+of supported DTs, with just the SPL (possibly only that string) to be
+different.
+Eventually this string can be written after the build process by some
+firmware update tool.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+---
+ board/sunxi/board.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index 2ddff28..714f8fd 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -729,13 +729,19 @@ int ft_board_setup(void *blob, bd_t *bd)
+ #ifdef CONFIG_SPL_LOAD_FIT
+ int board_fit_config_name_match(const char *name)
+ {
+-	const char *cmp_str;
++	struct boot_file_head *spl = (void *)(ulong)SPL_ADDR;
++	const char *cmp_str = (void *)(ulong)SPL_ADDR;
+ 
++	/* Check if there is a DT name stored in the SPL header and use that. */
++	if (spl->dt_name_offset) {
++		cmp_str += spl->dt_name_offset;
++	} else {
+ #ifdef CONFIG_DEFAULT_DEVICE_TREE
+-	cmp_str = CONFIG_DEFAULT_DEVICE_TREE;
++		cmp_str = CONFIG_DEFAULT_DEVICE_TREE;
+ #else
+-	return 0;
++		return 0;
+ #endif
++	};
+ 
+ /* Differentiate the two Pine64 board DTs by their DRAM size. */
+ 	if (strstr(name, "-pine64") && strstr(cmp_str, "-pine64")) {
+From patchwork Fri Mar 31 22:31:31 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Subject: [U-Boot,v3,19/19] sunxi: update Pine64 README
+From: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 745836
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <1490999491-14899-20-git-send-email-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jagan Teki <jagan@openedev.com>, Simon Glass <sjg@chromium.org>,
+ Tom Rini <trini@konsulko.com>
+Cc: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Michal Simek <michal.simek@xilinx.com>, u-boot@lists.denx.de,
+ Icenowy Zheng <icenowy@aosc.xyz>
+Date: Fri, 31 Mar 2017 23:31:31 +0100
+
+With the DRAM init code and the SPL's ability to load the ATF binary as
+well, we can now officially get rid of the boot0 boot method, which
+involed a closed-source proprietary blob to be used.
+Rework the Pine64 README file to document how to build the firmware.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+Tested-by: Andreas Färber <afaerber@suse.de>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+ board/sunxi/README.pine64 | 177 ++++++++++++++++++++++++++++++----------------
+ 1 file changed, 115 insertions(+), 62 deletions(-)
+
+diff --git a/board/sunxi/README.pine64 b/board/sunxi/README.pine64
+index 5553415..41fb58e 100644
+--- a/board/sunxi/README.pine64
++++ b/board/sunxi/README.pine64
+@@ -8,75 +8,130 @@ This chip has ARM Cortex A-53 cores and thus can run both in AArch32
+ in AArch32 mode and executes 32-bit code from the Boot ROM (BROM).
+ This has some implications on U-Boot.
+ 
+-Quick start
+-============
+-- Get hold of a boot0.img file (see below for more details).
+-- Get the boot0img tool source from the tools directory in [1] and compile
+-  that on your host.
+-- Build U-Boot:
++Quick Start / Overview
++======================
++- Build the ARM Trusted Firmware binary (see "ARM Trusted firmware (ATF)" below)
++- Build U-Boot (see "SPL/U-Boot" below)
++- Transfer to an uSD card (see "microSD card" below)
++- Boot and enjoy!
++
++Building the firmware
++=====================
++
++The Allwinner A64 firmware consists of three parts: U-Boot's SPL, an
++ARM Trusted Firmware (ATF) build and the U-Boot proper.
++The SPL will load both ATF and U-Boot proper along with the right device
++tree blob (.dtb) and will pass execution to ATF (in EL3), which in turn will
++drop into the U-Boot proper (in EL2).
++As the ATF binary will become part of the U-Boot image file, you will need
++to build it first.
++
++ ARM Trusted firmware (ATF)
++----------------------------
++Checkout the "allwinner" branch from the github repository [1] and build it:
++$ export CROSS_COMPILE=aarch64-linux-gnu-
++$ make PLAT=sun50iw1p1 DEBUG=1 bl31
++  The resulting binary is build/sun50iw1p1/debug/bl31.bin. Copy this to the
++  root of the U-Boot source tree (or create a symbolic link).
++
++ SPL/U-Boot
++------------
++Both U-Boot proper and the SPL are using the 64-bit mode. As the boot ROM
++enters the SPL still in AArch32 secure SVC mode, there is some shim code to
++enter AArch64 very early. The rest of the SPL runs in AArch64 EL3.
++U-boot proper runs in EL2 and can load any AArch64 code, EFI applications or
++arm64 Linux kernel images (often named "Image") using the booti command.
++
++$ make clean
+ $ export CROSS_COMPILE=aarch64-linux-gnu-
+ $ make pine64_plus_defconfig
+ $ make
+-- You also need a compiled ARM Trusted Firmware (ATF) binary. Checkout the
+-  "allwinner" branch from the github repository [2] and build it:
+-$ export CROSS_COMPILE=aarch64-linux-gnu-
+-$ make PLAT=sun50iw1p1 DEBUG=1 bl31
+-  The resulting binary is build/sun50iw1p1/debug/bl31.bin.
+ 
+-Now put an empty (or disposable) micro SD card in your card reader and learn
+-its device file name, replacing /dev/sd<x> below with the result (that could
+-be /dev/mmcblk<x> as well):
++This will build the SPL in spl/sunxi-spl.bin and a FIT image called u-boot.itb,
++which contains the rest of the firmware.
++
+ 
+-$ ./boot0img --device /dev/sd<x> -e -u u-boot.bin -B boot0.img \
+-	-d trampoline64:0x44000 -s bl31.bin -a 0x44008 -p 100
+-(either copying the respective files to the working directory or specifying
+-the paths directly)
++Boot process
++============
++The on-die BROM code will try several methods to load and execute the firmware.
++On the Pine64 this will result in the following boot order:
++1) Reading 32KB from sector 16 (@8K) of the microSD card to SRAM A1. If the
++BROM finds the magic "eGON" header in the first bytes, it will execute that
++code. If not, it will:
++2) Initialize the SPI0 controller and try to access a NOR flash connected to
++it (using the CS0 pin). If a flash chip is found, the BROM will load the
++first 32KB (from offset 0) into SRAM A1. Now it checks for the magic eGON
++header and will execute the code upon finding it. If not, it will:
++3) Initialize the USB OTG controller and will wait for a host to connect to
++it, speaking the Allwinner proprietary (but deciphered) "FEL" USB protocol.
++
++To boot the Pine64 board, you can use U-Boot and any of the described methods.
+ 
+-This will create a new partition table (with a 100 MB FAT boot partition),
+-copies boot0.img, ATF and U-Boot to the proper locations on the SD card and
+-will fill in the magic Allwinner header to be recognized by boot0.
+-Prefix the above call with "sudo" if you don't have write access to the
+-uSD card. You can also use "-o output.img" instead of "--device /dev/sd<x>"
+-to create an image file and "dd" that to the uSD card.
+-Omitting the "-p" option will skip the partition table.
++FEL boot (USB OTG)
++------------------
++FEL is the name of the Allwinner defined USB boot protocol built in the
++mask ROM of most Allwinner SoCs. It allows to bootstrap a board solely
++by using the USB-OTG interface and a host port on another computer.
++As the FEL mode is controlled by the boot ROM, it expects to be running in
++AArch32. For now the AArch64 SPL cannot properly return into FEL mode, so the
++feature is disabled in the configuration at the moment.
+ 
+-Now put this uSD card in the board and power it on. You should be greeted by
+-the U-Boot prompt.
++microSD card
++------------
++Transfer the SPL and the U-Boot FIT image directly to an uSD card:
++# dd if=spl/sunxi-spl.bin of=/dev/sdx bs=8k seek=1
++# dd if=u-boot.itb of=/dev/sdx bs=8k seek=5
++# sync
++(replace /dev/sdx with you SD card device file name, which could be
++/dev/mmcblk[x] as well).
+ 
++Alternative you can concatenate the SPL and the U-Boot FIT image into a single
++file and transfer that instead:
++$ cat spl/sunxi-spl.bin u-boot.itb > u-boot-sunxi-with-spl.bin
++# dd if=u-boot-sunxi-with-spl.bin of=/dev/sdx bs=8k seek=1
+ 
+-Main U-Boot
+-============
+-The main U-Boot proper is a real 64-bit ARMv8 port and runs entirely in the
+-64-bit AArch64 mode. It can load any AArch64 code, EFI applications or arm64
+-Linux kernel images (often named "Image") using the booti command.
+-Launching 32-bit code and kernels is technically possible, though not without
+-drawbacks (or hacks to avoid them) and currently not implemented.
++You can partition the microSD card, but leave the first MB unallocated (most
++partitioning tools will do this anyway).
+ 
+-SPL support
+-============
+-The main task of the SPL support is to bring up the DRAM controller and make
+-DRAM actually accessible. At the moment there is no documentation or source
+-code available which would do this.
+-There are currently two ways to overcome this situation: using a tainted 32-bit
+-SPL (involving some hacks and resulting in a non-redistributable binary, thus
+-not described here) or using the Allwinner boot0 blob.
+-
+-boot0 method
+--------------
++NOR flash
++---------
++The Pine64 board can be booted via an SPI NOR flash chip connected to SPI0/CS0
++on the PI-2 headers. The SoPine module and the Pinebook notebook come with
++a SPI flash soldered already.
++Create the SPL and FIT image like described above for the SD card.
++Now connect either an "A to A" USB cable to the upper USB port on the Pine64
++or get an adaptor and use a regular A-microB cable connected to it.
++Remove a microSD card from the slot and power on the board.
++On your host computer download and build the sunxi-tools package[2], then
++use "sunxi-fel" to access the board:
++$ ./sunxi-fel ver -v -p
++This should give you an output starting with: AWUSBFEX soc=00001689(A64) ...
++Now use the sunxi-fel tool to write to the NOR flash:
++$ ./sunxi-fel spiflash-write 0 spl/sunxi-spl.bin
++$ ./sunxi-fel spiflash-write 32768 u-boot.itb
++Now boot the board without an SD card inserted and you should see the
++U-Boot prompt on the serial console.
++
++(Legacy) boot0 method
++---------------------
+ boot0 is Allwiner's secondary program loader and it can be used as some kind
+-of SPL replacement to get U-Boot up and running.
+-The binary is a 32 KByte blob and contained on every Pine64 image distributed
+-so far. It can be easily extracted from a micro SD card or an image file:
++of SPL replacement to get U-Boot up and running from an microSD card.
++For some time using boot0 was the only option to get the Pine64 booted.
++With working DRAM init code in U-Boot's SPL this is no longer necessary,
++but this method is described here for the sake of completeness.
++
++The boot0 binary is a 32 KByte blob and contained in the official Pine64 images
++distributed by Pine64 or Allwinner. It can be easily extracted from a micro
++SD card or an image file:
+ # dd if=/dev/sd<x> of=boot0.bin bs=8k skip=1 count=4
+ where /dev/sd<x> is the device name of the uSD card or the name of the image
+ file. Apparently Allwinner allows re-distribution of this proprietary code
+ as-is.
+-For the time being this boot0 blob is the only redistributable way of making
+-U-Boot work on the Pine64. Beside loading the various parts of the (original)
+-firmware it also switches the core into AArch64 mode.
++This boot0 blob takes care of DRAM initialisation and loads the remaining
++firmware parts, then switches the core into AArch64 mode.
+ The original boot0 code looks for U-Boot at a certain place on an uSD card
+ (at 19096 KB), also it expects a header with magic bytes and a checksum.
+-There is a tool called boot0img[1] which takes a boot0.bin image and a compiled
++There is a tool called boot0img[3] which takes a boot0.bin image and a compiled
+ U-Boot binary (plus other binaries) and will populate that header accordingly.
+ To make space for the magic header, the pine64_plus_defconfig will make sure
+ there is sufficient space at the beginning of the U-Boot binary.
+@@ -85,14 +140,12 @@ places on the uSD card and works around unused, but mandatory parts by using
+ trampoline code. See the output of "boot0img -h" for more information.
+ boot0img can also patch boot0 to avoid loading U-Boot from 19MB, instead
+ fetching it from just behind the boot0 binary (-B option).
++$ ./boot0img -o firmware.img -B boot0.img -u u-boot-dtb.bin -e -s bl31.bin \
++-a 0x44008 -d trampoline64:0x44000
++Then write this image to a microSD card, replacing /dev/sdx with the right
++device file (see above):
++$ dd if=firmware.img of=/dev/sdx bs=8k seek=1
+ 
+-FEL boot
+-=========
+-FEL is the name of the Allwinner defined USB boot protocol built-in the
+-mask ROM of most Allwinner SoCs. It allows to bootstrap a board solely
+-by using the USB-OTG interface and a host port on another computer.
+-Since FEL boot does not work with boot0, it requires the libdram hack, which
+-is not described here.
+-
+-[1] https://github.com/apritzel/pine64/
+-[2] https://github.com/apritzel/arm-trusted-firmware.git
++[1] https://github.com/apritzel/arm-trusted-firmware.git
++[2] git://github.com/linux-sunxi/sunxi-tools.git
++[3] https://github.com/apritzel/pine64/

@@ -1,0 +1,35 @@
+From dfe26348e0255804981754b529b66790972833b9 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Mon, 24 Apr 2017 23:45:37 +0100
+Subject: [PATCH] use Fedora specific EFI path/name
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ include/config_distro_bootcmd.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
+index 0e01e8240d..756ea121e0 100644
+--- a/include/config_distro_bootcmd.h
++++ b/include/config_distro_bootcmd.h
+@@ -88,7 +88,7 @@
+ 
+ #ifdef CONFIG_EFI_LOADER
+ #if defined(CONFIG_ARM64)
+-#define BOOTEFI_NAME "bootaa64.efi"
++#define BOOTEFI_NAME "grubaa64.efi"
+ #elif defined(CONFIG_ARM)
+ #define BOOTEFI_NAME "bootarm.efi"
+ #endif
+@@ -113,7 +113,7 @@
+ #define BOOTENV_SHARED_EFI                                                \
+ 	"boot_efi_binary="                                                \
+ 		"load ${devtype} ${devnum}:${distro_bootpart} "           \
+-			"${kernel_addr_r} efi/boot/"BOOTEFI_NAME"; "      \
++			"${kernel_addr_r} efi/fedora/"BOOTEFI_NAME"; "      \
+ 		"if fdt addr ${fdt_addr_r}; then "                        \
+ 			"bootefi ${kernel_addr_r} ${fdt_addr_r};"         \
+ 		"else "                                                    \
+-- 
+2.12.2
+
