@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate rc3
 
 Name:      uboot-tools
 Version:   2017.05
-Release:   0.7%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -13,14 +13,12 @@ Source1:   armv7-boards
 Source2:   armv8-boards
 
 Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-Patch2:    U-Boot-1-2-rsa-Fix-build-with-OpenSSL-1.1.x.patch
-Patch3:    U-Boot-2-2-rsa-Fix-deprecated-warnings-for-OpenSSL-1.1.x.patch
-Patch4:    tools-kwbimage-fix-build-with-OpenSSL-1.1.x.patch
-Patch5:    mx6cuboxi-Add-support-for-sata.patch
-Patch6:    mx6-Initial-Hummingboard-2-support.patch
-Patch7:    sti-STiH410-B2260-support.patch
-Patch8:    AW64-add-spl-atf-support.patch
-Patch9:    use-Fedora-specific-EFI-path-name.patch
+Patch2:    u-boot-openssl-1.1.patch
+Patch3:    mx6cuboxi-Add-support-for-sata.patch
+Patch4:    mx6-Initial-Hummingboard-2-support.patch
+Patch5:    sti-STiH410-B2260-support.patch
+Patch6:    AW64-add-spl-atf-support.patch
+Patch7:    use-Fedora-specific-EFI-path-name.patch
 
 # Patch9:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
 
@@ -262,6 +260,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue May  9 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-01
+- 2017.05
+
 * Wed May  3 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-0.7.rc7
 - 2017.05 RC3
 
