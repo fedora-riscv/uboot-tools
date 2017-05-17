@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.05
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
@@ -19,6 +19,7 @@ Patch4:    mx6-Initial-Hummingboard-2-support.patch
 Patch5:    sti-STiH410-B2260-support.patch
 Patch6:    AW64-add-spl-atf-support.patch
 Patch7:    use-Fedora-specific-EFI-path-name.patch
+Patch8:    clearfog-distroboot.patch
 
 # Patch9:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
 
@@ -260,6 +261,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed May 17 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-02
+- Add distro-boot support for ClearFog
+
 * Tue May  9 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-01
 - 2017.05
 

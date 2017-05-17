@@ -1,0 +1,167 @@
+From patchwork Wed May 10 13:12:34 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] arm: mvebu: clearfog: generic distro bootcmd
+From: Patrick Wildt <patrick@blueri.se>
+X-Patchwork-Id: 760587
+X-Patchwork-Delegate: sr@denx.de
+Message-Id: <20170510131233.GA6368@eris.local>
+To: u-boot@lists.denx.de
+Cc: sr@denx.de
+Date: Wed, 10 May 2017 15:12:34 +0200
+
+Switch Clearfog to the generic distro defaults.  This has been taken
+from a Debian mailing list thread:
+
+https://lists.debian.org/debian-boot/2016/10/msg00026.html
+
+Signed-off-by: Patrick Wildt <patrick@blueri.se>
+---
+ configs/clearfog_defconfig | 10 +---------
+ include/configs/clearfog.h | 48 +++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 48 insertions(+), 10 deletions(-)
+
+diff --git a/configs/clearfog_defconfig b/configs/clearfog_defconfig
+index 1264871e83..097506872d 100644
+--- a/configs/clearfog_defconfig
++++ b/configs/clearfog_defconfig
+@@ -8,14 +8,13 @@ CONFIG_SPL_MMC_SUPPORT=y
+ CONFIG_SPL_SERIAL_SUPPORT=y
+ CONFIG_SPL_LIBDISK_SUPPORT=y
+ CONFIG_DEFAULT_DEVICE_TREE="armada-388-clearfog"
++CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_BOOTDELAY=3
+ CONFIG_SYS_CONSOLE_INFO_QUIET=y
+ # CONFIG_DISPLAY_BOARDINFO is not set
+ CONFIG_SPL=y
+ CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR=0x141
+ CONFIG_SPL_I2C_SUPPORT=y
+-CONFIG_HUSH_PARSER=y
+-CONFIG_CMD_BOOTZ=y
+ # CONFIG_CMD_IMLS is not set
+ # CONFIG_CMD_FLASH is not set
+ CONFIG_CMD_MMC=y
+@@ -25,15 +24,8 @@ CONFIG_CMD_I2C=y
+ CONFIG_CMD_USB=y
+ # CONFIG_CMD_SETEXPR is not set
+ CONFIG_CMD_TFTPPUT=y
+-CONFIG_CMD_DHCP=y
+-CONFIG_CMD_MII=y
+-CONFIG_CMD_PING=y
+ CONFIG_CMD_CACHE=y
+ CONFIG_CMD_TIME=y
+-CONFIG_CMD_EXT2=y
+-CONFIG_CMD_EXT4=y
+-CONFIG_CMD_FAT=y
+-CONFIG_CMD_FS_GENERIC=y
+ CONFIG_EFI_PARTITION=y
+ # CONFIG_PARTITION_UUIDS is not set
+ # CONFIG_SPL_PARTITION_UUIDS is not set
+diff --git a/include/configs/clearfog.h b/include/configs/clearfog.h
+index 0c51d2a288..bd96ed690f 100644
+--- a/include/configs/clearfog.h
++++ b/include/configs/clearfog.h
+@@ -80,7 +80,7 @@
+ #define CONFIG_SYS_ALT_MEMTEST
+ 
+ /* Keep device tree and initrd in lower memory so the kernel can access them */
+-#define CONFIG_EXTRA_ENV_SETTINGS	\
++#define RELOCATION_LIMITS_ENV_SETTINGS	\
+ 	"fdt_high=0x10000000\0"		\
+ 	"initrd_high=0x10000000\0"
+ 
+@@ -134,4 +134,50 @@
+  */
+ #include "mv-common.h"
+ 
++/* Include the common distro boot environment */
++#ifndef CONFIG_SPL_BUILD
++#include <config_distro_defaults.h>
++
++#ifdef CONFIG_MMC
++#define BOOT_TARGET_DEVICES_MMC(func) func(MMC, mmc, 0)
++#else
++#define BOOT_TARGET_DEVICES_MMC(func)
++#endif
++
++#ifdef CONFIG_USB_STORAGE
++#define BOOT_TARGET_DEVICES_USB(func) func(USB, usb, 0)
++#else
++#define BOOT_TARGET_DEVICES_USB(func)
++#endif
++
++#define BOOT_TARGET_DEVICES(func) \
++	BOOT_TARGET_DEVICES_MMC(func) \
++	BOOT_TARGET_DEVICES_USB(func) \
++	func(PXE, pxe, na) \
++	func(DHCP, dhcp, na)
++
++#define KERNEL_ADDR_R	__stringify(0x800000)
++#define FDT_ADDR_R	__stringify(0x100000)
++#define RAMDISK_ADDR_R	__stringify(0x1800000)
++#define SCRIPT_ADDR_R	__stringify(0x200000)
++#define PXEFILE_ADDR_R	__stringify(0x300000)
++
++#define LOAD_ADDRESS_ENV_SETTINGS \
++	"kernel_addr_r=" KERNEL_ADDR_R "\0" \
++	"fdt_addr_r=" FDT_ADDR_R "\0" \
++	"ramdisk_addr_r=" RAMDISK_ADDR_R "\0" \
++	"scriptaddr=" SCRIPT_ADDR_R "\0" \
++	"pxefile_addr_r=" PXEFILE_ADDR_R "\0"
++
++#include <config_distro_bootcmd.h>
++
++#define CONFIG_EXTRA_ENV_SETTINGS \
++	RELOCATION_LIMITS_ENV_SETTINGS \
++	LOAD_ADDRESS_ENV_SETTINGS \
++	"fdtfile=" CONFIG_DEFAULT_DEVICE_TREE ".dtb\0" \
++	"console=ttyS0,115200\0" \
++	BOOTENV
++
++#endif /* CONFIG_SPL_BUILD */
++
+ #endif /* _CONFIG_CLEARFOG_H */
+From patchwork Tue May  9 11:54:44 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] arm: mvebu: clearfog: reset uSOM onboard 1512 phy
+From: Patrick Wildt <patrick@blueri.se>
+X-Patchwork-Id: 760053
+X-Patchwork-Delegate: sr@denx.de
+Message-Id: <20170509115444.GA4503@eris.local>
+To: u-boot@lists.denx.de
+Cc: sr@denx.de
+Date: Tue, 9 May 2017 13:54:44 +0200
+
+Use GPIO19 which is wired to the uSOM phy reset signal in order to reset
+the uSOM's 1512 Gigabit Ethernet phy.
+
+This GPIO is valid on ClearFog rev 2.1 and newer.
+
+Taken from SolidRun's specialised u-boot, see
+https://github.com/SolidRun/u-boot-armada38x/commit/f906e3df172e07ac82cdd87b278d7896949262ea
+
+Signed-off-by: Patrick Wildt <patrick@blueri.se>
+---
+ board/solidrun/clearfog/clearfog.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/board/solidrun/clearfog/clearfog.c b/board/solidrun/clearfog/clearfog.c
+index 2773f5957e..3a8257cac3 100644
+--- a/board/solidrun/clearfog/clearfog.c
++++ b/board/solidrun/clearfog/clearfog.c
+@@ -131,8 +131,12 @@ int board_init(void)
+ 	/* Toggle GPIO41 to reset onboard switch and phy */
+ 	clrbits_le32(MVEBU_GPIO1_BASE + 0x0, BIT(9));
+ 	clrbits_le32(MVEBU_GPIO1_BASE + 0x4, BIT(9));
++	/* GPIO 19 on ClearFog rev 2.1 controls the uSOM onboard phy reset */
++	clrbits_le32(MVEBU_GPIO0_BASE + 0x0, BIT(19));
++	clrbits_le32(MVEBU_GPIO0_BASE + 0x4, BIT(19));
+ 	mdelay(1);
+ 	setbits_le32(MVEBU_GPIO1_BASE + 0x0, BIT(9));
++	setbits_le32(MVEBU_GPIO0_BASE + 0x0, BIT(19));
+ 	mdelay(10);
+ 
+ 	/* Init I2C IO expanders */
