@@ -20,8 +20,9 @@ Patch5:    sti-STiH410-B2260-support.patch
 Patch6:    AW64-add-spl-atf-support.patch
 Patch7:    use-Fedora-specific-EFI-path-name.patch
 Patch8:    clearfog-distroboot.patch
+Patch9:    arm-tegra-nyan-chromebook.patch
 
-# Patch9:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
+# Patch19:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -261,8 +262,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Wed May 17 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-02
+* Mon May 29 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-02
 - Add distro-boot support for ClearFog
+- Add support for building a chained u-boot for nyan-big
 
 * Tue May  9 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-01
 - 2017.05
