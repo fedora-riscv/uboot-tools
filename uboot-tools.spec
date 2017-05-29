@@ -238,7 +238,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %files
 %doc README doc/README.imximage doc/README.kwbimage doc/README.distro doc/README.gpt
 %doc doc/README.odroid doc/README.rockchip doc/README.efi doc/uImage.FIT doc/README.arm64
-%doc builds/docs/*
+%doc doc/README.chromium builds/docs/*
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
 %dir %{_datadir}/uboot/
