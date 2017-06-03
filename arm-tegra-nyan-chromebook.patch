@@ -1,7 +1,7 @@
-From 51a3b64ace7004cacf0d53326806fefded3e1b18 Mon Sep 17 00:00:00 2001
+From 020d7166a6896f1b50f6596c66aec8e7f1d00b19 Mon Sep 17 00:00:00 2001
 From: Simon Glass <sjg@chromium.org>
 Date: Mon, 22 May 2017 05:17:21 -0600
-Subject: [PATCH 01/12] arm: arm720t: Support CONFIG_SKIP_LOWLEVEL_INIT_ONLY
+Subject: [PATCH 01/16] arm: arm720t: Support CONFIG_SKIP_LOWLEVEL_INIT_ONLY
 
 This option allows skipping the call to lowlevel() while still performing
 CP15 init. Support this on ARM720T so it can be used with Tegra.
@@ -39,10 +39,10 @@ index 0bb3441fb8..365d8f08cb 100644
 -- 
 2.13.0
 
-From 820962e319b41a0b3ab8f2c0717ead575be4f04a Mon Sep 17 00:00:00 2001
+From 4ad88c5fe7417849cdf9469a89df114a802fd192 Mon Sep 17 00:00:00 2001
 From: Simon Glass <sjg@chromium.org>
 Date: Mon, 22 May 2017 05:17:22 -0600
-Subject: [PATCH 02/12] tegra: Init clocks even when SPL did not run
+Subject: [PATCH 02/16] tegra: Init clocks even when SPL did not run
 
 At present early clock init happens in SPL. If SPL did not run (because
 for example U-Boot is chain-loaded from another boot loader) then the
@@ -132,10 +132,10 @@ index 5e4406102f..5ae718b342 100644
 -- 
 2.13.0
 
-From a744ffcceb2417fc86743e301c44fb67b6ab1fde Mon Sep 17 00:00:00 2001
+From 7a620d51326418a688c2c8a0eb3d12477f137509 Mon Sep 17 00:00:00 2001
 From: Simon Glass <sjg@chromium.org>
 Date: Mon, 22 May 2017 05:17:23 -0600
-Subject: [PATCH 03/12] tegra: dts: Add cros-ec SPI settings
+Subject: [PATCH 03/16] tegra: dts: Add cros-ec SPI settings
 
 At present the interrupt does not work and the SPI bus runs much less
 quickly than it should. Add settings to fix this.
@@ -166,10 +166,10 @@ index fff1d78169..65c3851aff 100644
 -- 
 2.13.0
 
-From 829c38b95a27652e99e6cc8516199e492d1ac8a5 Mon Sep 17 00:00:00 2001
+From 2572367d6ac97d1570895d95b48e552b3368b946 Mon Sep 17 00:00:00 2001
 From: Simon Glass <sjg@chromium.org>
 Date: Mon, 22 May 2017 05:17:24 -0600
-Subject: [PATCH 04/12] arm: Rename HCTR to HTCR
+Subject: [PATCH 04/16] arm: Rename HCTR to HTCR
 
 This appears to be a typo. Fix it.
 
@@ -195,10 +195,10 @@ index e9bbcf5122..0f7020a315 100644
 -- 
 2.13.0
 
-From 33755d05d5f4e4f123e617663a7de2ca71c5039e Mon Sep 17 00:00:00 2001
+From 0774ee2d776a94db3643712e6ae2d17478d1d4f9 Mon Sep 17 00:00:00 2001
 From: Simon Glass <sjg@chromium.org>
 Date: Mon, 22 May 2017 05:17:25 -0600
-Subject: [PATCH 05/12] arm: Don't try to support CONFIG_ARMV7_LPAE on ARMv4T
+Subject: [PATCH 05/16] arm: Don't try to support CONFIG_ARMV7_LPAE on ARMv4T
 
 At present if CONFIG_ARMV7_LPAE is defined then mmu_setup() will use
 instructions which are invalid on ARMv4T. This happens on Tegra since it
@@ -227,10 +227,10 @@ index 0f7020a315..f293573601 100644
 -- 
 2.13.0
 
-From 6a56c16bcf12fa1306eef36b4c95e177bf9ffeeb Mon Sep 17 00:00:00 2001
+From ee429961064d33b40fe1c11a09bc92611db46dd8 Mon Sep 17 00:00:00 2001
 From: Simon Glass <sjg@chromium.org>
 Date: Mon, 22 May 2017 05:17:26 -0600
-Subject: [PATCH 06/12] arm: Disable LPAE if not enabled
+Subject: [PATCH 06/16] arm: Disable LPAE if not enabled
 
 If CONFIG_ARMV7_LPAE is not defined we should make sure that the feature
 is disabled. This can happen if U-Boot is chain-loaded from another boot
@@ -265,10 +265,10 @@ index f293573601..cf852c061b 100644
 -- 
 2.13.0
 
-From c19168287ab9dcaf7f9744c71b6d4385480bbd27 Mon Sep 17 00:00:00 2001
+From 3c8e3993c6b8cd34aefebf98e1cbeb49259c516c Mon Sep 17 00:00:00 2001
 From: Simon Glass <sjg@chromium.org>
 Date: Mon, 22 May 2017 05:17:27 -0600
-Subject: [PATCH 07/12] tegra: spi: Wait a little after setting the clocks
+Subject: [PATCH 07/16] tegra: spi: Wait a little after setting the clocks
 
 For devices that need a delay between SPI transactions we seem to need an
 additional delay before the first one if the CPU is running at full speed.
@@ -295,10 +295,10 @@ index 897409ca02..055cec599c 100644
 -- 
 2.13.0
 
-From 6012b06cfd360b0d7815222af3a9feb274abb6ce Mon Sep 17 00:00:00 2001
+From f60aa6adeb8dd601d0edd2944956b7f3866971e0 Mon Sep 17 00:00:00 2001
 From: Simon Glass <sjg@chromium.org>
 Date: Mon, 22 May 2017 05:17:29 -0600
-Subject: [PATCH 08/12] tegra: video: Don't power up the SOR twice
+Subject: [PATCH 08/16] tegra: video: Don't power up the SOR twice
 
 If U-Boot is the secondary boot loader, or has been run from itself, the
 SOR may already be powered up. Powering it up again causes a hang, so
@@ -337,10 +337,10 @@ index 5e4140ff53..4324071cdc 100644
 -- 
 2.13.0
 
-From 46d0d0f5d2a6b9a22fec1c5951cbf7c861e94435 Mon Sep 17 00:00:00 2001
+From c57061d42d97d0680906e3d61746dcf0659124b6 Mon Sep 17 00:00:00 2001
 From: Simon Glass <sjg@chromium.org>
 Date: Mon, 22 May 2017 05:17:30 -0600
-Subject: [PATCH 09/12] tegra: Enable CP15 init
+Subject: [PATCH 09/16] tegra: Enable CP15 init
 
 At present CP15 init is disabled on tegra. Use the correct option so that
 this init is performed on boot. This enables the instruction cache, for
@@ -367,10 +367,10 @@ index ab4136ab13..35d5d8bdc0 100644
 -- 
 2.13.0
 
-From 1b716e6972e3d7b90f86df28ac0daaecc5989871 Mon Sep 17 00:00:00 2001
+From 1f6a9c44b31b1bd18669715e58269e15666ac6f9 Mon Sep 17 00:00:00 2001
 From: Simon Glass <sjg@chromium.org>
 Date: Mon, 22 May 2017 05:17:31 -0600
-Subject: [PATCH 10/12] tegra: clock: Avoid a divide-by-zero error
+Subject: [PATCH 10/16] tegra: clock: Avoid a divide-by-zero error
 
 The clock fix-up for tegra is still present in the code. It causes a
 divide-by-zero bug after relocation when chain-loading U-Boot from
@@ -402,10 +402,363 @@ index 76436d8d91..bac42119cd 100644
 -- 
 2.13.0
 
-From 2f66e693a62b1ef51d0c8dca7f76f522258958a7 Mon Sep 17 00:00:00 2001
+From 164683eb90821555d90c7f471e12781eb278edf1 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Mon, 29 May 2017 14:22:28 +0100
+Subject: [PATCH 11/16] tegra: nyan-big: Enable the dhrystone benchmark
+
+Enable this so we can roughly measure CPU performance. Also enable the
+cache command to allow for timing.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+ configs/nyan-big_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/configs/nyan-big_defconfig b/configs/nyan-big_defconfig
+index 42fe120786..85a8bb80c3 100644
+--- a/configs/nyan-big_defconfig
++++ b/configs/nyan-big_defconfig
+@@ -23,6 +23,7 @@ CONFIG_CMD_GPIO=y
+ # CONFIG_CMD_SETEXPR is not set
+ # CONFIG_CMD_NFS is not set
+ CONFIG_CMD_BMP=y
++CONFIG_CMD_CACHE=y
+ CONFIG_CMD_PMIC=y
+ CONFIG_CMD_REGULATOR=y
+ CONFIG_CMD_TPM=y
+@@ -63,5 +64,6 @@ CONFIG_DM_VIDEO=y
+ CONFIG_DISPLAY=y
+ CONFIG_VIDEO_TEGRA124=y
+ CONFIG_VIDEO_BRIDGE=y
++CONFIG_CMD_DHRYSTONE=y
+ CONFIG_TPM=y
+ CONFIG_ERRNO_STR=y
+-- 
+2.13.0
+
+From a7ae84b53bf008a2491854fb57ce55e769a7ed79 Mon Sep 17 00:00:00 2001
 From: Simon Glass <sjg@chromium.org>
-Date: Mon, 22 May 2017 05:17:32 -0600
-Subject: [PATCH 11/12] README: Add instructions for chain-loading U-Boot
+Date: Wed, 31 May 2017 17:57:09 -0600
+Subject: [PATCH 12/16] display_options: Refactor to allow obtaining the banner
+
+Move the display options code into a separate function so that the U-Boot
+banner can be obtained from other code. Adjust the 'version' command to
+use it.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+ cmd/version.c             |  4 +++-
+ include/display_options.h | 15 +++++++++++++++
+ lib/display_options.c     | 21 +++++++++++++++++----
+ 3 files changed, 35 insertions(+), 5 deletions(-)
+
+diff --git a/cmd/version.c b/cmd/version.c
+index 1be0667f09..15aab5dc18 100644
+--- a/cmd/version.c
++++ b/cmd/version.c
+@@ -17,7 +17,9 @@ const char __weak version_string[] = U_BOOT_VERSION_STRING;
+ 
+ static int do_version(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+ {
+-	printf("\n%s\n", version_string);
++	char buf[DISPLAY_OPTIONS_BANNER_LENGTH];
++
++	printf(display_options_get_banner(false, buf, sizeof(buf)));
+ #ifdef CC_VERSION_STRING
+ 	puts(CC_VERSION_STRING "\n");
+ #endif
+diff --git a/include/display_options.h b/include/display_options.h
+index ac44c459b3..90891a817f 100644
+--- a/include/display_options.h
++++ b/include/display_options.h
+@@ -56,4 +56,19 @@ int print_buffer(ulong addr, const void *data, uint width, uint count,
+  */
+ int display_options(void);
+ 
++/* Suggested length of the buffer to pass to display_options_get_banner() */
++#define DISPLAY_OPTIONS_BANNER_LENGTH	120
++
++/**
++ * display_options_get_banner() - Get the U-Boot banner as a string
++ *
++ * This returns the U-Boot banner string
++ *
++ * @newlines: true to include two newlines at the start
++ * @buf: place to put string
++ * @size: Size of buf
++ * @return buf
++ */
++char *display_options_get_banner(bool newlines, char *buf, int size);
++
+ #endif
+diff --git a/lib/display_options.c b/lib/display_options.c
+index 29343fc00e..ebf684f43b 100644
+--- a/lib/display_options.c
++++ b/lib/display_options.c
+@@ -13,13 +13,26 @@
+ #include <linux/ctype.h>
+ #include <asm/io.h>
+ 
+-int display_options (void)
++char *display_options_get_banner(bool newlines, char *buf, int size)
+ {
++	int len;
++
++	len = snprintf(buf, size, "%s%s", newlines ? "\n\n" : "",
++		       version_string);
+ #if defined(BUILD_TAG)
+-	printf ("\n\n%s, Build: %s\n\n", version_string, BUILD_TAG);
+-#else
+-	printf ("\n\n%s\n\n", version_string);
++	len += snprintf(buf + len, size - len, ", Build: %s", BUILD_TAG);
+ #endif
++	len += snprintf(buf + len, size - len, "\n\n");
++
++	return buf;
++}
++
++int display_options(void)
++{
++	char buf[DISPLAY_OPTIONS_BANNER_LENGTH];
++
++	printf(display_options_get_banner(true, buf, sizeof(buf)));
++
+ 	return 0;
+ }
+ 
+-- 
+2.13.0
+
+From 68b78517e76a87445147dc76b774d3995d825933 Mon Sep 17 00:00:00 2001
+From: Simon Glass <sjg@chromium.org>
+Date: Wed, 31 May 2017 17:57:10 -0600
+Subject: [PATCH 13/16] Allow displaying the U-Boot banner on a video display
+
+At present the U-Boot banner is only displayed on the serial console. If
+this is not visible to the user, the banner does not show. Some devices
+have a video display which can usefully display this information.
+
+Add a banner which is printed after relocation only on non-serial devices
+if CONFIG_DISPLAY_BOARDINFO_LATE is defined.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+ common/board_r.c  |  1 +
+ common/console.c  | 15 +++++++++++----
+ include/console.h | 12 ++++++++++++
+ 3 files changed, 24 insertions(+), 4 deletions(-)
+
+diff --git a/common/board_r.c b/common/board_r.c
+index d69a33c4a3..20d412293a 100644
+--- a/common/board_r.c
++++ b/common/board_r.c
+@@ -844,6 +844,7 @@ static init_fnc_t init_sequence_r[] = {
+ #endif
+ 	console_init_r,		/* fully init console as a device */
+ #ifdef CONFIG_DISPLAY_BOARDINFO_LATE
++	console_announce_r,
+ 	show_board_info,
+ #endif
+ #ifdef CONFIG_ARCH_MISC_INIT
+diff --git a/common/console.c b/common/console.c
+index 1232808df5..3fcd7ce66b 100644
+--- a/common/console.c
++++ b/common/console.c
+@@ -202,7 +202,6 @@ static void console_putc(int file, const char c)
+ 	}
+ }
+ 
+-#if CONFIG_IS_ENABLED(PRE_CONSOLE_BUFFER)
+ static void console_puts_noserial(int file, const char *s)
+ {
+ 	int i;
+@@ -214,7 +213,6 @@ static void console_puts_noserial(int file, const char *s)
+ 			dev->puts(dev, s);
+ 	}
+ }
+-#endif
+ 
+ static void console_puts(int file, const char *s)
+ {
+@@ -248,13 +246,11 @@ static inline void console_putc(int file, const char c)
+ 	stdio_devices[file]->putc(stdio_devices[file], c);
+ }
+ 
+-#if CONFIG_IS_ENABLED(PRE_CONSOLE_BUFFER)
+ static inline void console_puts_noserial(int file, const char *s)
+ {
+ 	if (strcmp(stdio_devices[file]->name, "serial") != 0)
+ 		stdio_devices[file]->puts(stdio_devices[file], s);
+ }
+-#endif
+ 
+ static inline void console_puts(int file, const char *s)
+ {
+@@ -699,6 +695,17 @@ static void console_update_silent(void)
+ #endif
+ }
+ 
++int console_announce_r(void)
++{
++	char buf[DISPLAY_OPTIONS_BANNER_LENGTH];
++
++	display_options_get_banner(false, buf, sizeof(buf));
++
++	console_puts_noserial(stdout, buf);
++
++	return 0;
++}
++
+ /* Called before relocation - use serial functions */
+ int console_init_f(void)
+ {
+diff --git a/include/console.h b/include/console.h
+index 3d37f6a53b..511b38e9e7 100644
+--- a/include/console.h
++++ b/include/console.h
+@@ -42,6 +42,18 @@ void console_record_reset(void);
+  */
+ void console_record_reset_enable(void);
+ 
++/**
++ * console_announce_r() - print a U-Boot console on non-serial consoles
++ *
++ * When U-Boot starts up with a display it generally does not account itself
++ * on the display. The banner is emitted on the UART before relocation instead.
++ * This function prints a banner on devices which (we assume) did not receive
++ * it before relocation.
++ *
++ * @return 0 (meaning no errors)
++ */
++int console_announce_r(void);
++
+ /*
+  * CONSOLE multiplexing.
+  */
+-- 
+2.13.0
+
+From 20a987d243ea956a34409b241519c015eabead85 Mon Sep 17 00:00:00 2001
+From: Simon Glass <sjg@chromium.org>
+Date: Wed, 31 May 2017 17:57:15 -0600
+Subject: [PATCH 14/16] power: regulator: Add more debugging and fix a missing
+ newline
+
+This file does not report a few possible errors and one message is missing
+a newline. Fix these.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+Reviewed-by: Jaehoon Chung <jh80.chung@samsung.com>
+---
+ drivers/power/regulator/regulator-uclass.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/power/regulator/regulator-uclass.c b/drivers/power/regulator/regulator-uclass.c
+index 2e0b5ed307..5a245d3c6b 100644
+--- a/drivers/power/regulator/regulator-uclass.c
++++ b/drivers/power/regulator/regulator-uclass.c
+@@ -146,8 +146,10 @@ int regulator_get_by_platname(const char *plat_name, struct udevice **devp)
+ 
+ 	for (ret = uclass_find_first_device(UCLASS_REGULATOR, &dev); dev;
+ 	     ret = uclass_find_next_device(&dev)) {
+-		if (ret)
++		if (ret) {
++			debug("regulator %s, ret=%d\n", dev->name, ret);
+ 			continue;
++		}
+ 
+ 		uc_pdata = dev_get_uclass_platdata(dev);
+ 		if (!uc_pdata || strcmp(plat_name, uc_pdata->name))
+@@ -156,7 +158,7 @@ int regulator_get_by_platname(const char *plat_name, struct udevice **devp)
+ 		return uclass_get_device_tail(dev, 0, devp);
+ 	}
+ 
+-	debug("%s: can't find: %s\n", __func__, plat_name);
++	debug("%s: can't find: %s, ret=%d\n", __func__, plat_name, ret);
+ 
+ 	return -ENODEV;
+ }
+@@ -219,7 +221,7 @@ int regulator_autoset_by_name(const char *platname, struct udevice **devp)
+ 	if (devp)
+ 		*devp = dev;
+ 	if (ret) {
+-		debug("Can get the regulator: %s!", platname);
++		debug("Can get the regulator: %s (err=%d)\n", platname, ret);
+ 		return ret;
+ 	}
+ 
+-- 
+2.13.0
+
+From 42ef87e5d135c47c542546d50a57c5c3a585ac0f Mon Sep 17 00:00:00 2001
+From: Simon Glass <sjg@chromium.org>
+Date: Wed, 31 May 2017 17:57:23 -0600
+Subject: [PATCH 15/16] tegra: nyan-big: Add a .its file for chromium
+
+Add a sample .its file for booting U-Boot on a nyan-big Chromebook.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+ doc/chromium/nyan-big.its | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+ create mode 100644 doc/chromium/nyan-big.its
+
+diff --git a/doc/chromium/nyan-big.its b/doc/chromium/nyan-big.its
+new file mode 100644
+index 0000000000..8dc8d73041
+--- /dev/null
++++ b/doc/chromium/nyan-big.its
+@@ -0,0 +1,42 @@
++/dts-v1/;
++
++/ {
++	description = "U-Boot mainline";
++	#address-cells = <1>;
++
++	images {
++		kernel@1 {
++			description = "U-Boot mainline";
++			type = "kernel_noload";
++			arch = "arm";
++			os = "linux";
++			data = /incbin/("../.././b/nyan-big/u-boot.bin");
++			compression = "none";
++			load = <0>;
++			entry = <0>;
++			hash@2 {
++				algo = "sha1";
++			};
++		};
++
++		fdt@1{
++			description = "tegra124-nyan-big.dtb";
++			data = /incbin/("../.././b/nyan-big/u-boot.dtb");
++			type = "flat_dt";
++			arch = "arm";
++			compression = "none";
++			hash@1{
++				algo = "sha1";
++			};
++		};
++	};
++
++	configurations {
++		default = "config@1";
++		config@1 {
++			description = "Boot U-Boot";
++			kernel = "kernel@1";
++			fdt = "fdt@1";
++		};
++	};
++};
+-- 
+2.13.0
+
+From 38a4a9121f479a9ed85a351223bb6cf83b088810 Mon Sep 17 00:00:00 2001
+From: Simon Glass <sjg@chromium.org>
+Date: Wed, 31 May 2017 17:57:24 -0600
+Subject: [PATCH 16/16] README: Add instructions for chain-loading U-Boot
 
 Most Chromebooks support chain-loading U-Boot but instructions are
 somewhat scattered. Add a README to hold this information within the
@@ -416,20 +769,20 @@ For now this only supports nyan-big.
 
 Signed-off-by: Simon Glass <sjg@chromium.org>
 ---
- doc/README.chromium                          | 222 +++++++++++++++++++++++++++
+ doc/README.chromium                          | 182 +++++++++++++++++++++++++++
  doc/chromium/devkeys/kernel.keyblock         | Bin 0 -> 1208 bytes
  doc/chromium/devkeys/kernel_data_key.vbprivk | Bin 0 -> 1199 bytes
- 3 files changed, 222 insertions(+)
+ 3 files changed, 182 insertions(+)
  create mode 100644 doc/README.chromium
  create mode 100644 doc/chromium/devkeys/kernel.keyblock
  create mode 100644 doc/chromium/devkeys/kernel_data_key.vbprivk
 
 diff --git a/doc/README.chromium b/doc/README.chromium
 new file mode 100644
-index 0000000000..1dd111c65d
+index 0000000000..61e285da5e
 --- /dev/null
 +++ b/doc/README.chromium
-@@ -0,0 +1,222 @@
+@@ -0,0 +1,182 @@
 +Running U-Boot from coreboot on Chromebooks
 +===========================================
 +
@@ -494,51 +847,10 @@ index 0000000000..1dd111c65d
 +   make -j8 O=b/nyan-big CROSS_COMPILE=arm-linux-gnueabi- nyan-big_defconfig all
 +
 +
-+3. Create a file called u-boot.its as follows:
++3. Select a .its file
 +
-+/dts-v1/;
-+
-+/ {
-+	description = "U-Boot mainline";
-+	#address-cells = <1>;
-+
-+	images {
-+		kernel@1 {
-+			description = "U-Boot mainline";
-+			type = "kernel_noload";
-+			arch = "arm";
-+			os = "linux";
-+			data = /incbin/("./b/nyan-big/u-boot.bin");
-+			compression = "none";
-+			load = <0>;
-+			entry = <0>;
-+			hash@2 {
-+				algo = "sha1";
-+			};
-+		};
-+
-+		fdt@1{
-+			description = "tegra124-nyan-big.dtb";
-+			data = /incbin/("./b/nyan-big/u-boot.dtb");
-+			type = "flat_dt";
-+			arch = "arm";
-+			compression = "none";
-+			hash@1{
-+				algo = "sha1";
-+			};
-+		};
-+	};
-+
-+	configurations {
-+		default = "config@1";
-+		config@1 {
-+			description = "Boot U-Boot";
-+			kernel = "kernel@1";
-+			fdt = "fdt@1";
-+		};
-+	};
-+};
-+
++Select something from doc/chromium which matches your board, or create your
++own.
 +
 +Note that the device tree node is required, even though it is not actually
 +used by U-Boot. This is because the Chromebook expects to pass it to the
@@ -547,7 +859,8 @@ index 0000000000..1dd111c65d
 +
 +4. Build and sign an image
 +
-+   ./b/nyan-big/tools/mkimage -f u-boot.its u-boot-chromium.fit
++   ./b/nyan-big/tools/mkimage -f doc/chromium/nyan-big.its u-boot-chromium.fit
++   echo test >dummy.txt
 +   vbutil_kernel --arch arm --keyblock doc/chromium/devkeys/kernel.keyblock \
 +	--signprivate doc/chromium/devkeys/kernel_data_key.vbprivk \
 +	--version 1 --config dummy.txt --vmlinuz u-boot-chromium.fit \
@@ -560,7 +873,7 @@ index 0000000000..1dd111c65d
 +   sudo cgpt create $DISK
 +   sudo cgpt add -b 34 -s 32768 -P 1 -S 1 -t kernel $DISK
 +   sudo cgpt add -b 32802 -s 2000000 -t rootfs $DISK
-+   sudo gdisk $DISK   #
++   sudo gdisk $DISK   # Enter command 'w' to write a protective MBR to the disk
 +
 +
 +6. Write U-Boot to the SD card
@@ -718,41 +1031,6 @@ Nc%M>kp-Cb4AVU2jMyUV*
 literal 0
 HcmV?d00001
 
--- 
-2.13.0
-
-From d0044b52ff67fd96d9576554994fac778d3f2f1f Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Mon, 29 May 2017 14:22:28 +0100
-Subject: [PATCH 12/12] tegra: nyan-big: Enable the dhrystone benchmark
-
-Enable this so we can roughly measure CPU performance. Also enable the
-cache command to allow for timing.
-
-Signed-off-by: Simon Glass <sjg@chromium.org>
----
- configs/nyan-big_defconfig | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/configs/nyan-big_defconfig b/configs/nyan-big_defconfig
-index 42fe120786..85a8bb80c3 100644
---- a/configs/nyan-big_defconfig
-+++ b/configs/nyan-big_defconfig
-@@ -23,6 +23,7 @@ CONFIG_CMD_GPIO=y
- # CONFIG_CMD_SETEXPR is not set
- # CONFIG_CMD_NFS is not set
- CONFIG_CMD_BMP=y
-+CONFIG_CMD_CACHE=y
- CONFIG_CMD_PMIC=y
- CONFIG_CMD_REGULATOR=y
- CONFIG_CMD_TPM=y
-@@ -63,5 +64,6 @@ CONFIG_DM_VIDEO=y
- CONFIG_DISPLAY=y
- CONFIG_VIDEO_TEGRA124=y
- CONFIG_VIDEO_BRIDGE=y
-+CONFIG_CMD_DHRYSTONE=y
- CONFIG_TPM=y
- CONFIG_ERRNO_STR=y
 -- 
 2.13.0
 
