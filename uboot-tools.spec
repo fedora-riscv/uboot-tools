@@ -4,13 +4,12 @@ Name:      uboot-tools
 Version:   2017.05
 Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
-
-Group:     Development/Tools
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
+
 Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
-Source1:   armv7-boards
-Source2:   armv8-boards
+Source1:   arm-boards
+Source2:   aarch64-boards
 
 Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
 Patch2:    u-boot-openssl-1.1.patch
@@ -86,31 +85,23 @@ git config --unset user.email
 git config --unset user.name 
 rm -rf .git
 
+cp %SOURCE1 %SOURCE2 .
+
 %build
 mkdir builds
 
-%ifarch aarch64
-for board in $(cat %SOURCE2)
+%ifarch aarch64 %{arm}
+for board in $(cat %{_arch}-boards)
 do
-mkdir builds/$(echo $board)/
-# Needs improving but currently Pine64 is the only one
-if [ "$board" = ""pine64_plus ]; then
-  cp /usr/share/arm-trusted-firmware/sun50iw1p1/bl31.bin builds/$(echo $board)/
-fi
-make $(echo $board)_defconfig O=builds/$(echo $board)/
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
+  echo "Building board: $board"
+  mkdir builds/$(echo $board)/
+  # Needs improving but currently Pine64 is the only one
+  if [ "$board" = ""pine64_plus ]; then
+    cp /usr/share/arm-trusted-firmware/sun50iw1p1/bl31.bin builds/$(echo $board)/
+  fi
+  make $(echo $board)_defconfig O=builds/$(echo $board)/
+  make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
 done
-
-%endif
-
-%ifarch %{arm}
-for board in $(cat %SOURCE1)
-do
-mkdir builds/$(echo $board)/
-make $(echo $board)_defconfig V=1 O=builds/$(echo $board)/
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
-done
-
 %endif
 
 make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" defconfig V=1 O=builds/
@@ -122,34 +113,20 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
 
-%ifarch aarch64
-for board in $(cat %SOURCE2)
+%ifarch aarch64 %{arm}
+for board in $(cat %{_arch}-boards)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
- for file in spl/*spl.bin u-boot.bin u-boot.dtb u-boot-dtb.img u-boot.img u-boot.itb spl/sunxi-spl.bin
+ for file in MLO SPL u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin u-boot.itb
  do
   if [ -f builds/$(echo $board)/$(echo $file) ]; then
     install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
   fi
  done
-done
-%endif
-
-%ifarch %{arm}
-for board in $(cat %SOURCE1)
-do
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
- for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/smdkv310-spl.bin spl/*spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
- do
-  if [ -f builds/$(echo $board)/$(echo $file) ]; then
-    install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
-  fi
- done
-
 done
 
 # Bit of a hack to remove binaries we don't use as they're large
-for board in $(cat %SOURCE1)
+for board in $(cat %{_arch}-boards)
 do
   if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-sunxi-with-spl.bin ]; then
     rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.*
@@ -163,11 +140,16 @@ do
   if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.imx ]; then
     rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.bin
   fi
+  if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.itb ]; then
+    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/*.bin
+    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/*.dtb
+    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/*.img
+  fi
 done
 %endif
 
 %ifarch aarch64
-for board in $(cat %SOURCE2)
+for board in $(cat %{_arch}-boards)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
  for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/smdkv310-spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
@@ -194,7 +176,7 @@ done
 %endif
 
 %ifarch aarch64
-for board in $(cat %SOURCE2)
+for board in $(cat %{_arch}-boards)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/elf/$(echo $board)/
  for file in u-boot
@@ -262,11 +244,12 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Mon May 29 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-02
+* Mon May 29 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-2
+- Spec and build refactoring
 - Add distro-boot support for ClearFog
 - Add support for building a chained u-boot for nyan-big
 
-* Tue May  9 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-01
+* Tue May  9 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-1
 - 2017.05
 
 * Wed May  3 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-0.7.rc7
