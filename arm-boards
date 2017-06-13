@@ -19,9 +19,6 @@ Bananapi_M2_Ultra
 Bananapro
 chiliboard
 CHIP
-chromebook_jerry
-chromebit_mickey
-chromebook_minnie
 Chuwi_V7_CW0825
 clearfog
 cl-som-am57x
@@ -71,9 +68,9 @@ MK808C
 MSI_Primo73
 MSI_Primo81
 mx6cuboxi
+nanopi_m1
 nanopi_neo
 novena
-nyan-big
 odroid
 odroid-xu3
 omap3_beagle
@@ -92,8 +89,6 @@ orangepi_plus2e
 orangepi_zero
 origen
 paz00
-peach-pi
-peach-pit
 polaroid_mid2809pxe04
 pov_protab2_ips9
 q8_a13_tablet
@@ -107,9 +102,8 @@ rock2
 rpi_2
 rpi_3_32b
 Sinlinx_SinA31s
+Sinovoip_BPI_M2_Plus
 smdkv310
-snow
-spring
 stih410-b2260
 sunxi_Gemei_G9
 tinker-rk3288

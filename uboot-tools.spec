@@ -1,25 +1,25 @@
-#global candidate rc3
+%global candidate rc1
 
 Name:      uboot-tools
-Version:   2017.05
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Version:   2017.07
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 
 Group:     Development/Tools
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
 Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
-Source1:   armv7-boards
-Source2:   armv8-boards
+Source1:   arm-boards
+Source2:   arm-chromebooks
+Source3:   aarch64-boards
+Source4:   aarch64-chromebooks
 
 Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-Patch2:    u-boot-openssl-1.1.patch
 Patch3:    mx6cuboxi-Add-support-for-sata.patch
 Patch4:    mx6-Initial-Hummingboard-2-support.patch
-Patch5:    sti-STiH410-B2260-support.patch
-Patch6:    AW64-add-spl-atf-support.patch
+# Patch5:    sti-STiH410-B2260-support.patch
+# Patch6:    AW64-add-spl-atf-support.patch
 Patch7:    use-Fedora-specific-EFI-path-name.patch
-Patch8:    clearfog-distroboot.patch
 Patch9:    arm-tegra-nyan-chromebook.patch
 
 # Patch19:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
@@ -29,8 +29,13 @@ BuildRequires:  dtc
 BuildRequires:  gcc
 BuildRequires:  git
 BuildRequires:  openssl-devel
-BuildRequires:  python-devel
-BuildRequires:  python-setuptools
+BuildRequires:  python2-devel
+BuildRequires:  python2-setuptools
+BuildRequires:  python2-libfdt
+BuildRequires:  swig
+%ifarch %{arm} aarch64
+BuildRequires:  vboot-utils
+%endif
 %ifarch aarch64
 BuildRequires:  arm-trusted-firmware-armv8
 %endif
@@ -43,12 +48,12 @@ and fw_printenv/fw_setenv for manipulating the boot environment variables.
 
 %ifarch aarch64
 %package     -n uboot-images-armv8
-Summary:     u-boot bootloader images for armv8 boards
+Summary:     u-boot bootloader images for aarch64 boards
 Requires:    uboot-tools
 BuildArch:   noarch
 
 %description -n uboot-images-armv8
-u-boot bootloader binaries for the aarch64 vexpress_aemv8a
+u-boot bootloader binaries for aarch64 boards
 %endif
 
 %ifarch %{arm}
@@ -86,29 +91,22 @@ git config --unset user.email
 git config --unset user.name 
 rm -rf .git
 
+cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 .
+
 %build
 mkdir builds
 
-%ifarch aarch64
-for board in $(cat %SOURCE2)
+%ifarch aarch64 %{arm}
+for board in $(cat %{_arch}-boards)
 do
-mkdir builds/$(echo $board)/
-# Needs improving but currently Pine64 is the only one
-if [ "$board" = ""pine64_plus ]; then
-  cp /usr/share/arm-trusted-firmware/sun50iw1p1/bl31.bin builds/$(echo $board)/
-fi
-make $(echo $board)_defconfig O=builds/$(echo $board)/
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
-done
-
-%endif
-
-%ifarch %{arm}
-for board in $(cat %SOURCE1)
-do
-mkdir builds/$(echo $board)/
-make $(echo $board)_defconfig V=1 O=builds/$(echo $board)/
-make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
+  echo "Building board: $board"
+  mkdir builds/$(echo $board)/
+  # Needs improving but currently Pine64 is the only one
+  if [ "$board" = ""pine64_plus ]; then
+    cp /usr/share/arm-trusted-firmware/sun50iw1p1/bl31.bin builds/$(echo $board)/
+  fi
+  make $(echo $board)_defconfig O=builds/$(echo $board)/
+  make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
 done
 
 %endif
@@ -123,7 +121,7 @@ mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
 
 %ifarch aarch64
-for board in $(cat %SOURCE2)
+for board in $(cat %{_arch}-boards)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
  for file in spl/*spl.bin u-boot.bin u-boot.dtb u-boot-dtb.img u-boot.img u-boot.itb spl/sunxi-spl.bin
@@ -136,7 +134,7 @@ done
 %endif
 
 %ifarch %{arm}
-for board in $(cat %SOURCE1)
+for board in $(cat %{_arch}-boards)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
  for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/smdkv310-spl.bin spl/*spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
@@ -149,7 +147,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 done
 
 # Bit of a hack to remove binaries we don't use as they're large
-for board in $(cat %SOURCE1)
+for board in $(cat %{_arch}-boards)
 do
   if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-sunxi-with-spl.bin ]; then
     rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.*
@@ -167,7 +165,7 @@ done
 %endif
 
 %ifarch aarch64
-for board in $(cat %SOURCE2)
+for board in $(cat %{_arch}-boards)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
  for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/smdkv310-spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
@@ -194,7 +192,7 @@ done
 %endif
 
 %ifarch aarch64
-for board in $(cat %SOURCE2)
+for board in $(cat %{_arch}-boards)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/elf/$(echo $board)/
  for file in u-boot
@@ -226,7 +224,7 @@ cp -p board/Marvell/db-88f6820-gp/README builds/docs/README.mvebu-db-88f6820
 cp -p board/rockchip/evb_rk3399/README builds/docs/README.evb_rk3399
 cp -p board/solidrun/clearfog/README builds/docs/README.clearfog
 cp -p board/solidrun/mx6cuboxi/README builds/docs/README.mx6cuboxi
-cp -p board/sunxi/README.pine64 builds/docs/README.pine64
+cp -p board/sunxi/README.sunxi64 builds/docs/README.sunxi64
 cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 cp -p board/ti/am335x/README builds/docs/README.am335x
 cp -p board/ti/omap5_uevm/README builds/docs/README.omap5_uevm
@@ -262,6 +260,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Jun  6 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.07-0.1.rc1
+- 2017.07 RC1
+
 * Mon May 29 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-02
 - Add distro-boot support for ClearFog
 - Add support for building a chained u-boot for nyan-big
