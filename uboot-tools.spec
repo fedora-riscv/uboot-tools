@@ -101,8 +101,10 @@ for board in $(cat %{_arch}-boards)
 do
   echo "Building board: $board"
   mkdir builds/$(echo $board)/
-  # Needs improving but currently Pine64 is the only one
-  if [ "$board" = ""pine64_plus ]; then
+  # ATF selection, needs improving, suggestions of ATF SoC to Board matrix welcome
+  sun50i=(pine64_plus bananapi_m64 orangepi_pc2 orangepi_prime)
+  if [[ " ${sun50i[*]} " == *" $board "* ]]; then
+    echo "Board: $board using sun50iw1p1"
     cp /usr/share/arm-trusted-firmware/sun50iw1p1/bl31.bin builds/$(echo $board)/
   fi
   make $(echo $board)_defconfig O=builds/$(echo $board)/
@@ -262,6 +264,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %changelog
 * Tue Jun  6 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.07-0.1.rc1
 - 2017.07 RC1
+- Build BananaPi m64, OrangePi pc2, OrangePi Prime with ATF
 
 * Mon May 29 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-02
 - Add distro-boot support for ClearFog
