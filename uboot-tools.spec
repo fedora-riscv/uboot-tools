@@ -1,13 +1,12 @@
-%global candidate rc1
+%global candidate rc2
 
 Name:      uboot-tools
 Version:   2017.07
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
-
-Group:     Development/Tools
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
+
 Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:   arm-boards
 Source2:   arm-chromebooks
@@ -102,11 +101,22 @@ do
   echo "Building board: $board"
   mkdir builds/$(echo $board)/
   # ATF selection, needs improving, suggestions of ATF SoC to Board matrix welcome
-  sun50i=(pine64_plus bananapi_m64 orangepi_pc2 orangepi_prime)
+  sun50i=(pine64_plus bananapi_m64 nanopi_neo2 orangepi_pc2 orangepi_prime orangepi_win orangepi_zero_plus2 sopine_baseboard)
   if [[ " ${sun50i[*]} " == *" $board "* ]]; then
     echo "Board: $board using sun50iw1p1"
     cp /usr/share/arm-trusted-firmware/sun50iw1p1/bl31.bin builds/$(echo $board)/
   fi
+  rk3338=(geekbox sheep-rk3368)
+  if [[ " ${rk3338[*]} " == *" $board "* ]]; then
+    echo "Board: $board using rk3338"
+    cp /usr/share/arm-trusted-firmware/rk3368/bl31.bin builds/$(echo $board)/
+  fi
+  rk3399=(evb-rk3399 firefly-rk3399 puma-rk3399)
+  if [[ " ${rk3399[*]} " == *" $board "* ]]; then
+    echo "Board: $board using rk3399"
+    cp /usr/share/arm-trusted-firmware/rk3399/bl31.bin builds/$(echo $board)/
+  fi
+  # End ATF
   make $(echo $board)_defconfig O=builds/$(echo $board)/
   make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
 done
@@ -262,6 +272,11 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Jun 20 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.07-0.2.rc2
+- 2017.07 RC2
+- Enable AllWinner: NanoPi M1+, NanoPi Neo2, SoPine baseboard, OrangePi Zero+2, OrangePi Win
+- Enable Rockchips: GeekBox, Sheep
+
 * Tue Jun  6 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.07-0.1.rc1
 - 2017.07 RC1
 - Build BananaPi m64, OrangePi pc2, OrangePi Prime with ATF
