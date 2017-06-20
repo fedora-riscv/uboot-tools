@@ -19,7 +19,7 @@ Patch4:    mx6-Initial-Hummingboard-2-support.patch
 # Patch5:    sti-STiH410-B2260-support.patch
 # Patch6:    AW64-add-spl-atf-support.patch
 Patch7:    use-Fedora-specific-EFI-path-name.patch
-Patch9:    arm-tegra-nyan-chromebook.patch
+# Patch9:    arm-tegra-nyan-chromebook.patch
 
 # Patch19:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
 
