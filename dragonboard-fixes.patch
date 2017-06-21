@@ -1,0 +1,85 @@
+From patchwork Tue Jun 20 21:55:24 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,1/2] board/db410c: add missing linker map entries for efi
+From: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 778514
+Message-Id: <20170620215525.10430-1-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Nicolas Dechesne <nicolas.dechesne@linaro.org>,
+ Stephen Boyd <sboyd@codeaurora.org>
+Date: Tue, 20 Jun 2017 17:55:24 -0400
+
+Otherwise the loaded image would miss the efi_runtime sections, and fall
+over hard when grub (for example) tried to call runtime services located
+in this section.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ board/qualcomm/dragonboard410c/u-boot.lds | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/board/qualcomm/dragonboard410c/u-boot.lds b/board/qualcomm/dragonboard410c/u-boot.lds
+index 6e1c5a8..62ac4d7 100644
+--- a/board/qualcomm/dragonboard410c/u-boot.lds
++++ b/board/qualcomm/dragonboard410c/u-boot.lds
+@@ -43,6 +43,22 @@ SECTIONS
+ 
+ 	. = ALIGN(8);
+ 
++	.efi_runtime : {
++                __efi_runtime_start = .;
++		*(efi_runtime_text)
++		*(efi_runtime_data)
++                __efi_runtime_stop = .;
++	}
++
++	.efi_runtime_rel : {
++                __efi_runtime_rel_start = .;
++		*(.relaefi_runtime_text)
++		*(.relaefi_runtime_data)
++                __efi_runtime_rel_stop = .;
++	}
++
++	. = ALIGN(8);
++
+ 	.image_copy_end :
+ 	{
+ 		*(.__image_copy_end)
+From patchwork Tue Jun 20 21:55:25 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,2/2] board/db410c: fix fdt address
+From: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 778516
+Message-Id: <20170620215525.10430-2-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Nicolas Dechesne <nicolas.dechesne@linaro.org>,
+ Stephen Boyd <sboyd@codeaurora.org>
+Date: Tue, 20 Jun 2017 17:55:25 -0400
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+Maybe there is a better way to not hardcode this?  But at least with
+the build of lk that I have, the fdt table is at 0x81e00000.  I guess
+there must be a more robust way to do this, since presumably lk when
+booting the linux kernel directly somehow passes the fdt address.
+
+ include/configs/dragonboard410c.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/dragonboard410c.h b/include/configs/dragonboard410c.h
+index 11c842d..3b9932d 100644
+--- a/include/configs/dragonboard410c.h
++++ b/include/configs/dragonboard410c.h
+@@ -105,7 +105,7 @@ REFLASH(dragonboard/u-boot.img, 8)\
+ 	"linux_image=Image\0" \
+ 	"kernel_addr_r=0x81000000\0"\
+ 	"fdtfile=apq8016-sbc.dtb\0" \
+-	"fdt_addr_r=0x83000000\0"\
++	"fdt_addr_r=0x81e00000\0"\
+ 	"ramdisk_addr_r=0x84000000\0"\
+ 	"scriptaddr=0x90000000\0"\
+ 	"pxefile_addr_r=0x90100000\0"\

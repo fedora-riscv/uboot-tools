@@ -14,14 +14,16 @@ Source3:   aarch64-boards
 Source4:   aarch64-chromebooks
 
 Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
+Patch2:    dragonboard-fixes.patch
 Patch3:    mx6cuboxi-Add-support-for-sata.patch
 Patch4:    mx6-Initial-Hummingboard-2-support.patch
-# Patch5:    sti-STiH410-B2260-support.patch
-# Patch6:    AW64-add-spl-atf-support.patch
-Patch7:    use-Fedora-specific-EFI-path-name.patch
-# Patch9:    arm-tegra-nyan-chromebook.patch
+Patch5:    uefi-fixes.patch
+Patch6:    use-Fedora-specific-EFI-path-name.patch
 
-# Patch19:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
+# Patch11:    sti-STiH410-B2260-support.patch
+# Patch12:    AW64-add-spl-atf-support.patch
+# Patch13:    arm-tegra-nyan-chromebook.patch
+# Patch14:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -276,6 +278,8 @@ cp -p board/warp7/README builds/docs/README.warp7
 - 2017.07 RC2
 - Enable AllWinner: NanoPi M1+, NanoPi Neo2, SoPine baseboard, OrangePi Zero+2, OrangePi Win
 - Enable Rockchips: GeekBox, Sheep
+- Dragonboard fixes
+- uEFI fixes
 
 * Tue Jun  6 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.07-0.1.rc1
 - 2017.07 RC1
