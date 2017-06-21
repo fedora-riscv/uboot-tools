@@ -1,0 +1,212 @@
+From patchwork Tue Jun 20 21:49:23 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] dm: core: don't fail to iterate if first one fails to probe
+From: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 778515
+Message-Id: <20170620214923.8564-1-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Tue, 20 Jun 2017 17:49:23 -0400
+
+efi_disk_register() would try to iterate all the blk devices.  But if
+the first one in the list failed to probe, uclass_first_device() would
+return NULL and no attempt would be made to register the remaining
+devices.  Also uclass_next_device() needs the same fix.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ drivers/core/uclass.c | 24 +++++++++++++++++++++---
+ 1 file changed, 21 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/core/uclass.c b/drivers/core/uclass.c
+index 21dc696..c47ff56 100644
+--- a/drivers/core/uclass.c
++++ b/drivers/core/uclass.c
+@@ -458,14 +458,23 @@ int uclass_get_device_by_phandle(enum uclass_id id, struct udevice *parent,
+ 
+ int uclass_first_device(enum uclass_id id, struct udevice **devp)
+ {
+-	struct udevice *dev;
++	struct udevice *dev = NULL;
+ 	int ret;
+ 
+ 	*devp = NULL;
+ 	ret = uclass_find_first_device(id, &dev);
+ 	if (!dev)
+ 		return 0;
+-	return uclass_get_device_tail(dev, ret, devp);
++	ret = uclass_get_device_tail(dev, ret, devp);
++	if (ret && dev) {
++		/* we have a device, but it failed to probe, move on and
++		 * try the next one.
++		 */
++		ret = uclass_next_device(&dev);
++		if (!ret)
++			*devp = dev;
++	}
++	return ret;
+ }
+ 
+ int uclass_first_device_err(enum uclass_id id, struct udevice **devp)
+@@ -490,7 +499,16 @@ int uclass_next_device(struct udevice **devp)
+ 	ret = uclass_find_next_device(&dev);
+ 	if (!dev)
+ 		return 0;
+-	return uclass_get_device_tail(dev, ret, devp);
++	ret = uclass_get_device_tail(dev, ret, devp);
++	if (ret && (dev != *devp)) {
++		/* we have a device, but it failed to probe, move on and
++		 * try the next one.
++		 */
++		ret = uclass_next_device(&dev);
++		if (!ret)
++			*devp = dev;
++	}
++	return ret;
+ }
+ 
+ int uclass_bind_device(struct udevice *dev)
+From patchwork Tue Jun 20 06:35:53 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v2] efi: Export mbr partition for EFI.
+From: Emmanuel Vadot <manu@bidouilliste.com>
+X-Patchwork-Id: 778138
+Message-Id: <20170620063553.8637-1-manu@bidouilliste.com>
+To: agraf@suse.de
+Cc: u-boot@lists.denx.de
+Date: Tue, 20 Jun 2017 08:35:53 +0200
+
+While MBR partition isn't supposed to work in a EFI environment some
+board rely partially or fully on MBR (BeagleBone, RPI and probably others).
+This export the MBR partition as logical partition which is useful to efi
+application that cannot read raw disks.
+
+Signed-off-by: Emmanuel Vadot <manu@bidouilliste.com>
+---
+Changes in v2:
+ * Pass correct arg to efi_disk_create_mbr
+
+ lib/efi_loader/efi_disk.c | 59 +++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 50 insertions(+), 9 deletions(-)
+
+diff --git a/lib/efi_loader/efi_disk.c b/lib/efi_loader/efi_disk.c
+index 39e602a868..097bb544d7 100644
+--- a/lib/efi_loader/efi_disk.c
++++ b/lib/efi_loader/efi_disk.c
+@@ -197,11 +197,13 @@ static void efi_disk_add_dev(const char *name,
+ 			     const char *if_typename,
+ 			     const struct blk_desc *desc,
+ 			     int dev_index,
+-			     lbaint_t offset)
++			     disk_partition_t *info,
++			     int logical_partition)
+ {
+ 	struct efi_disk_obj *diskobj;
+ 	struct efi_device_path_file_path *dp;
+ 	int objlen = sizeof(*diskobj) + (sizeof(*dp) * 2);
++	static int mediaid;
+ 
+ 	/* Don't add empty devices */
+ 	if (!desc->lba)
+@@ -218,16 +220,26 @@ static void efi_disk_add_dev(const char *name,
+ 	diskobj->ops = block_io_disk_template;
+ 	diskobj->ifname = if_typename;
+ 	diskobj->dev_index = dev_index;
+-	diskobj->offset = offset;
++	if (info)
++		diskobj->offset = info->start;
++
+ 	diskobj->desc = desc;
+ 
+ 	/* Fill in EFI IO Media info (for read/write callbacks) */
+ 	diskobj->media.removable_media = desc->removable;
+ 	diskobj->media.media_present = 1;
+-	diskobj->media.block_size = desc->blksz;
+-	diskobj->media.io_align = desc->blksz;
+-	diskobj->media.last_block = desc->lba - offset;
++	diskobj->media.media_id = mediaid++;
+ 	diskobj->ops.media = &diskobj->media;
++	if (logical_partition) {
++		diskobj->media.logical_partition = 1;
++		diskobj->media.block_size = info->blksz;
++		diskobj->media.io_align = info->blksz;
++		diskobj->media.last_block = info->size - 1;
++	} else {
++		diskobj->media.block_size = desc->blksz;
++		diskobj->media.io_align = desc->blksz;
++		diskobj->media.last_block = desc->lba;
++	}
+ 
+ 	/* Fill in device path */
+ 	dp = (void*)&diskobj[1];
+@@ -262,8 +274,33 @@ static int efi_disk_create_eltorito(struct blk_desc *desc,
+ 	while (!part_get_info(desc, part, &info)) {
+ 		snprintf(devname, sizeof(devname), "%s:%d", pdevname,
+ 			 part);
+-		efi_disk_add_dev(devname, if_typename, desc, diskid,
+-				 info.start);
++		efi_disk_add_dev(devname, if_typename, desc, diskid, 0, 0);
++		part++;
++		disks++;
++	}
++#endif
++
++	return disks;
++}
++
++static int efi_disk_create_mbr(struct blk_desc *desc,
++				    const char *if_typename,
++				    int diskid)
++{
++	int disks = 0;
++#if CONFIG_IS_ENABLED(DOS_PARTITION)
++	char devname[32] = { 0 }; /* dp->str is u16[32] long */
++	disk_partition_t info;
++	int part = 1;
++
++	if (desc->part_type != PART_TYPE_DOS)
++		return 0;
++
++	while (!part_get_info(desc, part, &info)) {
++		snprintf(devname, sizeof(devname), "%s%d:%d", if_typename,
++			 diskid, part);
++
++		efi_disk_add_dev(devname, if_typename, desc, diskid, &info, 1);
+ 		part++;
+ 		disks++;
+ 	}
+@@ -296,9 +333,11 @@ int efi_disk_register(void)
+ 		const char *if_typename = dev->driver->name;
+ 
+ 		printf("Scanning disk %s...\n", dev->name);
+-		efi_disk_add_dev(dev->name, if_typename, desc, desc->devnum, 0);
++		efi_disk_add_dev(dev->name, if_typename, desc, desc->devnum,
++				 NULL, 0);
+ 		disks++;
+ 
++		disks += efi_disk_create_mbr(desc, if_typename, desc->devnum);
+ 		/*
+ 		* El Torito images show up as block devices in an EFI world,
+ 		* so let's create them here
+@@ -332,15 +371,17 @@ int efi_disk_register(void)
+ 
+ 			snprintf(devname, sizeof(devname), "%s%d",
+ 				 if_typename, i);
+-			efi_disk_add_dev(devname, if_typename, desc, i, 0);
++			efi_disk_add_dev(devname, if_typename, desc, i, 0, 0);
+ 			disks++;
+ 
++			disks += efi_disk_create_mbr(desc, if_typename, i);
+ 			/*
+ 			 * El Torito images show up as block devices
+ 			 * in an EFI world, so let's create them here
+ 			 */
+ 			disks += efi_disk_create_eltorito(desc, if_typename,
+ 							  i, devname);
++
+ 		}
+ 	}
+ #endif
