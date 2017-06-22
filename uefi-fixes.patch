@@ -1,13 +1,8 @@
-From patchwork Tue Jun 20 21:49:23 2017
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [U-Boot] dm: core: don't fail to iterate if first one fails to probe
+From dfc84987d97d83c82c99fa2e11ad9ccf3c4ac5f8 Mon Sep 17 00:00:00 2001
 From: Rob Clark <robdclark@gmail.com>
-X-Patchwork-Id: 778515
-Message-Id: <20170620214923.8564-1-robdclark@gmail.com>
-To: U-Boot Mailing List <u-boot@lists.denx.de>
-Date: Tue, 20 Jun 2017 17:49:23 -0400
+Date: Tue, 20 Jun 2017 14:29:12 -0400
+Subject: [PATCH 1/8] dm: core: don't fail to iterate if first one fails to
+ probe
 
 efi_disk_register() would try to iterate all the blk devices.  But if
 the first one in the list failed to probe, uclass_first_device() would
@@ -20,7 +15,7 @@ Signed-off-by: Rob Clark <robdclark@gmail.com>
  1 file changed, 21 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/core/uclass.c b/drivers/core/uclass.c
-index 21dc696..c47ff56 100644
+index 21dc696da3..c47ff5661d 100644
 --- a/drivers/core/uclass.c
 +++ b/drivers/core/uclass.c
 @@ -458,14 +458,23 @@ int uclass_get_device_by_phandle(enum uclass_id id, struct udevice *parent,
@@ -67,146 +62,549 @@ index 21dc696..c47ff56 100644
  }
  
  int uclass_bind_device(struct udevice *dev)
-From patchwork Tue Jun 20 06:35:53 2017
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,v2] efi: Export mbr partition for EFI.
-From: Emmanuel Vadot <manu@bidouilliste.com>
-X-Patchwork-Id: 778138
-Message-Id: <20170620063553.8637-1-manu@bidouilliste.com>
-To: agraf@suse.de
-Cc: u-boot@lists.denx.de
-Date: Tue, 20 Jun 2017 08:35:53 +0200
+-- 
+2.13.0
 
-While MBR partition isn't supposed to work in a EFI environment some
-board rely partially or fully on MBR (BeagleBone, RPI and probably others).
-This export the MBR partition as logical partition which is useful to efi
-application that cannot read raw disks.
+From f62aad2dc1b25dd234373e7697c9152b89c75ed6 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Wed, 21 Jun 2017 16:39:02 -0400
+Subject: [PATCH 5/8] efi: add some more device path structures
 
-Signed-off-by: Emmanuel Vadot <manu@bidouilliste.com>
+Signed-off-by: Peter Jones <pjones@redhat.com>
 ---
-Changes in v2:
- * Pass correct arg to efi_disk_create_mbr
+ include/efi_api.h | 33 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 32 insertions(+), 1 deletion(-)
 
- lib/efi_loader/efi_disk.c | 59 +++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 50 insertions(+), 9 deletions(-)
+diff --git a/include/efi_api.h b/include/efi_api.h
+index 5c3836a51b..5150962872 100644
+--- a/include/efi_api.h
++++ b/include/efi_api.h
+@@ -272,6 +272,18 @@ struct efi_mac_addr {
+ 	u8 addr[32];
+ };
+ 
++#define DEVICE_PATH_TYPE_ACPI_DEVICE		0x02
++#define DEVICE_PATH_SUB_TYPE_ACPI_DEVICE	0x01
++
++#define EFI_PNP_ID(ID)				(u32)(((ID) << 16) | 0x41D0)
++#define EISA_PNP_ID(ID)				EFI_PNP_ID(ID)
++
++struct efi_device_path_acpi_path {
++	struct efi_device_path dp;
++	u32 hid;
++	u32 uid;
++} __packed;
++
+ #define DEVICE_PATH_TYPE_MESSAGING_DEVICE	0x03
+ #  define DEVICE_PATH_SUB_TYPE_MSG_MAC_ADDR	0x0b
+ 
+@@ -282,12 +294,31 @@ struct efi_device_path_mac_addr {
+ };
+ 
+ #define DEVICE_PATH_TYPE_MEDIA_DEVICE		0x04
++#  define DEVICE_PATH_SUB_TYPE_HARD_DRIVE_PATH	0x01
++#  define DEVICE_PATH_SUB_TYPE_CDROM_PATH	0x02
+ #  define DEVICE_PATH_SUB_TYPE_FILE_PATH	0x04
+ 
++struct efi_device_path_hard_drive_path {
++	struct efi_device_path dp;
++	u32 partition_number;
++	u64 partition_start;
++	u64 partition_end;
++	u8 partition_signature[16];
++	u8 partmap_type;
++	u8 signature_type;
++} __packed;
++
++struct efi_device_path_cdrom_path {
++	struct efi_device_path dp;
++	u32 boot_entry;
++	u64 partition_start;
++	u64 partition_end;
++} __packed;
++
+ struct efi_device_path_file_path {
+ 	struct efi_device_path dp;
+ 	u16 str[32];
+-};
++} __packed;
+ 
+ #define BLOCK_IO_GUID \
+ 	EFI_GUID(0x964e5b21, 0x6459, 0x11d2, \
+-- 
+2.13.0
+
+From 09b8585ae5ae6749172f8cca40f322999693e32e Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Wed, 21 Jun 2017 13:18:06 -0400
+Subject: [PATCH 6/8] Don't treat a disk as GPT just because you found a valid
+ PMBR.
+
+Without this part_gpt's ->get_info() winds up getting called instead of
+part_dos's.
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ disk/part_efi.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/disk/part_efi.c b/disk/part_efi.c
+index 1b7ba27947..16adb95b0a 100644
+--- a/disk/part_efi.c
++++ b/disk/part_efi.c
+@@ -301,10 +301,16 @@ int part_get_info_efi(struct blk_desc *dev_desc, int part,
+ static int part_test_efi(struct blk_desc *dev_desc)
+ {
+ 	ALLOC_CACHE_ALIGN_BUFFER_PAD(legacy_mbr, legacymbr, 1, dev_desc->blksz);
++	ALLOC_CACHE_ALIGN_BUFFER_PAD(gpt_header, gpt_head, 1, dev_desc->blksz);
++	gpt_entry *gpt_pte = NULL;
+ 
+ 	/* Read legacy MBR from block 0 and validate it */
+ 	if ((blk_dread(dev_desc, 0, 1, (ulong *)legacymbr) != 1)
+-		|| (is_pmbr_valid(legacymbr) != 1)) {
++		|| (is_pmbr_valid(legacymbr) != 1)
++		|| ((is_gpt_valid(dev_desc, GPT_PRIMARY_PARTITION_TABLE_LBA,
++				  gpt_head, &gpt_pte) != 1)
++		    && is_gpt_valid(dev_desc, (dev_desc->lba - 1),
++				    gpt_head, &gpt_pte) != 1)) {
+ 		return -1;
+ 	}
+ 	return 0;
+-- 
+2.13.0
+
+From 2d0173238102c2e6a90e4d36f2fcb812cc4e7b24 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Wed, 21 Jun 2017 16:42:07 -0400
+Subject: [PATCH 7/8] efi: make efi_disk_obj's for partitions, and give them
+ better device paths
+
+In this case the device paths stem from a fictional ACPI PNP device, but
+that's fine, so long as we can match it later.
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ lib/efi_loader/efi_disk.c | 124 +++++++++++++++++++++++++++++++---------------
+ 1 file changed, 84 insertions(+), 40 deletions(-)
 
 diff --git a/lib/efi_loader/efi_disk.c b/lib/efi_loader/efi_disk.c
-index 39e602a868..097bb544d7 100644
+index 39e602a868..90844fdcde 100644
 --- a/lib/efi_loader/efi_disk.c
 +++ b/lib/efi_loader/efi_disk.c
-@@ -197,11 +197,13 @@ static void efi_disk_add_dev(const char *name,
- 			     const char *if_typename,
- 			     const struct blk_desc *desc,
- 			     int dev_index,
+@@ -28,7 +28,7 @@ struct efi_disk_obj {
+ 	/* EFI Interface Media descriptor struct, referenced by ops */
+ 	struct efi_block_io_media media;
+ 	/* EFI device path to this block device */
+-	struct efi_device_path_file_path *dp;
++	struct efi_device_path *dp;
+ 	/* Offset into disk for simple partitions */
+ 	lbaint_t offset;
+ 	/* Internal block device */
+@@ -193,19 +193,26 @@ static const struct efi_block_io block_io_disk_template = {
+ 	.flush_blocks = &efi_disk_flush_blocks,
+ };
+ 
+-static void efi_disk_add_dev(const char *name,
+-			     const char *if_typename,
+-			     const struct blk_desc *desc,
+-			     int dev_index,
 -			     lbaint_t offset)
-+			     disk_partition_t *info,
-+			     int logical_partition)
++static struct efi_disk_obj *efi_disk_add_dev(const char *name,
++					     const char *if_typename,
++					     struct blk_desc *desc,
++					     int dev_index,
++					     lbaint_t offset,
++					     struct efi_disk_obj *parent,
++					     int part)
  {
++	disk_partition_t info;
  	struct efi_disk_obj *diskobj;
- 	struct efi_device_path_file_path *dp;
- 	int objlen = sizeof(*diskobj) + (sizeof(*dp) * 2);
-+	static int mediaid;
+-	struct efi_device_path_file_path *dp;
+-	int objlen = sizeof(*diskobj) + (sizeof(*dp) * 2);
++	struct efi_device_path_acpi_path *adp;
++	struct efi_device_path_hard_drive_path *hddp;
++	struct efi_device_path_cdrom_path *cddp;
++	struct efi_device_path *edp;
++	/* we just happen to know hddp is bigger than cddp */
++	int objlen = sizeof(*diskobj) + sizeof (*adp) + sizeof(*hddp) + sizeof (*edp);
  
  	/* Don't add empty devices */
  	if (!desc->lba)
-@@ -218,16 +220,26 @@ static void efi_disk_add_dev(const char *name,
- 	diskobj->ops = block_io_disk_template;
- 	diskobj->ifname = if_typename;
- 	diskobj->dev_index = dev_index;
--	diskobj->offset = offset;
-+	if (info)
-+		diskobj->offset = info->start;
-+
- 	diskobj->desc = desc;
+-		return;
++		return NULL;
  
- 	/* Fill in EFI IO Media info (for read/write callbacks) */
- 	diskobj->media.removable_media = desc->removable;
- 	diskobj->media.media_present = 1;
--	diskobj->media.block_size = desc->blksz;
--	diskobj->media.io_align = desc->blksz;
--	diskobj->media.last_block = desc->lba - offset;
-+	diskobj->media.media_id = mediaid++;
+ 	diskobj = calloc(1, objlen);
+ 
+@@ -229,45 +236,89 @@ static void efi_disk_add_dev(const char *name,
+ 	diskobj->media.last_block = desc->lba - offset;
  	diskobj->ops.media = &diskobj->media;
-+	if (logical_partition) {
-+		diskobj->media.logical_partition = 1;
-+		diskobj->media.block_size = info->blksz;
-+		diskobj->media.io_align = info->blksz;
-+		diskobj->media.last_block = info->size - 1;
+ 
++	adp = (void*)&diskobj[1];
++	diskobj->dp = (struct efi_device_path *)adp;
++
++	adp[0].dp.type = DEVICE_PATH_TYPE_ACPI_DEVICE;
++	adp[0].dp.sub_type = DEVICE_PATH_SUB_TYPE_ACPI_DEVICE;
++	adp[0].dp.length = sizeof (*adp);
++	adp[0].hid = EISA_PNP_ID(0x1337);
++	adp[0].uid = 0;
++
++	if (part >= 0)
++		part_get_info(desc, part, &info);
++
+ 	/* Fill in device path */
+-	dp = (void*)&diskobj[1];
+-	diskobj->dp = dp;
+-	dp[0].dp.type = DEVICE_PATH_TYPE_MEDIA_DEVICE;
+-	dp[0].dp.sub_type = DEVICE_PATH_SUB_TYPE_FILE_PATH;
+-	dp[0].dp.length = sizeof(*dp);
+-	ascii2unicode(dp[0].str, name);
++	if (part < 0) {
++		edp = (struct efi_device_path *)((u8 *)adp + adp[0].dp.length);
++	} else if (desc->part_type == PART_TYPE_ISO) {
++		cddp = (struct efi_device_path_cdrom_path *)((u8 *)adp + adp[0].dp.length);
++
++		cddp[0].boot_entry = part - 1;
++		cddp[0].dp.type = DEVICE_PATH_TYPE_MEDIA_DEVICE;
++		cddp[0].dp.sub_type = DEVICE_PATH_SUB_TYPE_CDROM_PATH;
++		cddp[0].dp.length = sizeof (*cddp);
++		cddp[0].partition_start = info.start;
++		cddp[0].partition_end = info.size;
++
++		edp = (struct efi_device_path *)((u8 *)cddp + cddp[0].dp.length);
 +	} else {
-+		diskobj->media.block_size = desc->blksz;
-+		diskobj->media.io_align = desc->blksz;
-+		diskobj->media.last_block = desc->lba;
++		hddp = (struct efi_device_path_hard_drive_path *)((u8 *)adp + adp[0].dp.length);
++
++		hddp[0].dp.type = DEVICE_PATH_TYPE_MEDIA_DEVICE;
++		hddp[0].dp.sub_type = DEVICE_PATH_SUB_TYPE_HARD_DRIVE_PATH;
++		hddp[0].dp.length = sizeof (*hddp);
++		hddp[0].partition_number = part - 1;
++		hddp[0].partition_start = info.start;
++		hddp[0].partition_end = info.size;
++		if (desc->part_type == PART_TYPE_EFI)
++			hddp[0].partmap_type = 2;
++		else
++			hddp[0].partmap_type = 1;
++		hddp[0].signature_type = 0;
++
++		edp = (struct efi_device_path *)((u8 *)hddp + hddp[0].dp.length);
 +	}
  
- 	/* Fill in device path */
- 	dp = (void*)&diskobj[1];
-@@ -262,8 +274,33 @@ static int efi_disk_create_eltorito(struct blk_desc *desc,
+-	dp[1].dp.type = DEVICE_PATH_TYPE_END;
+-	dp[1].dp.sub_type = DEVICE_PATH_SUB_TYPE_END;
+-	dp[1].dp.length = sizeof(*dp);
++	edp[0].type = DEVICE_PATH_TYPE_END;
++	edp[0].sub_type = DEVICE_PATH_SUB_TYPE_END;
++	edp[0].length = sizeof(*edp);
+ 
+ 	/* Hook up to the device list */
+ 	list_add_tail(&diskobj->parent.link, &efi_obj_list);
++
++	return diskobj;
+ }
+ 
+-static int efi_disk_create_eltorito(struct blk_desc *desc,
+-				    const char *if_typename,
+-				    int diskid,
+-				    const char *pdevname)
++static int efi_disk_create_partitions(struct blk_desc *desc,
++				      const char *if_typename,
++				      int diskid,
++				      const char *pdevname,
++				      struct efi_disk_obj *parent)
+ {
+ 	int disks = 0;
+-#if CONFIG_IS_ENABLED(ISO_PARTITION)
+ 	char devname[32] = { 0 }; /* dp->str is u16[32] long */
+ 	disk_partition_t info;
+ 	int part = 1;
+ 
+-	if (desc->part_type != PART_TYPE_ISO)
++#if !CONFIG_IS_ENABLED(ISO_PARTITION)
++	/*
++	 * El Torito images show up as block devices in an EFI world,
++	 * so let's create them here, unless it's disabled...
++	 */
++	if (desc->part_type == PART_TYPE_ISO)
+ 		return 0;
+ 
++#endif
++
  	while (!part_get_info(desc, part, &info)) {
  		snprintf(devname, sizeof(devname), "%s:%d", pdevname,
  			 part);
--		efi_disk_add_dev(devname, if_typename, desc, diskid,
+ 		efi_disk_add_dev(devname, if_typename, desc, diskid,
 -				 info.start);
-+		efi_disk_add_dev(devname, if_typename, desc, diskid, 0, 0);
-+		part++;
-+		disks++;
-+	}
-+#endif
-+
-+	return disks;
-+}
-+
-+static int efi_disk_create_mbr(struct blk_desc *desc,
-+				    const char *if_typename,
-+				    int diskid)
-+{
-+	int disks = 0;
-+#if CONFIG_IS_ENABLED(DOS_PARTITION)
-+	char devname[32] = { 0 }; /* dp->str is u16[32] long */
-+	disk_partition_t info;
-+	int part = 1;
-+
-+	if (desc->part_type != PART_TYPE_DOS)
-+		return 0;
-+
-+	while (!part_get_info(desc, part, &info)) {
-+		snprintf(devname, sizeof(devname), "%s%d:%d", if_typename,
-+			 diskid, part);
-+
-+		efi_disk_add_dev(devname, if_typename, desc, diskid, &info, 1);
++				 info.start, parent, part);
  		part++;
  		disks++;
  	}
-@@ -296,9 +333,11 @@ int efi_disk_register(void)
+-#endif
+ 
+ 	return disks;
+ }
+@@ -286,6 +337,7 @@ static int efi_disk_create_eltorito(struct blk_desc *desc,
+ int efi_disk_register(void)
+ {
+ 	int disks = 0;
++	struct efi_disk_obj *diskobj;
+ #ifdef CONFIG_BLK
+ 	struct udevice *dev;
+ 
+@@ -296,15 +348,11 @@ int efi_disk_register(void)
  		const char *if_typename = dev->driver->name;
  
  		printf("Scanning disk %s...\n", dev->name);
 -		efi_disk_add_dev(dev->name, if_typename, desc, desc->devnum, 0);
-+		efi_disk_add_dev(dev->name, if_typename, desc, desc->devnum,
-+				 NULL, 0);
++		diskobj = efi_disk_add_dev(dev->name, if_typename, desc, desc->devnum, 0, NULL, -1);
  		disks++;
  
-+		disks += efi_disk_create_mbr(desc, if_typename, desc->devnum);
- 		/*
- 		* El Torito images show up as block devices in an EFI world,
- 		* so let's create them here
-@@ -332,15 +371,17 @@ int efi_disk_register(void)
+-		/*
+-		* El Torito images show up as block devices in an EFI world,
+-		* so let's create them here
+-		*/
+-		disks += efi_disk_create_eltorito(desc, if_typename,
+-						  desc->devnum, dev->name);
++		disks += efi_disk_create_partitions(desc, if_typename,
++						    desc->devnum, dev->name, diskobj);
+ 	}
+ #else
+ 	int i, if_type;
+@@ -332,15 +380,11 @@ int efi_disk_register(void)
  
  			snprintf(devname, sizeof(devname), "%s%d",
  				 if_typename, i);
 -			efi_disk_add_dev(devname, if_typename, desc, i, 0);
-+			efi_disk_add_dev(devname, if_typename, desc, i, 0, 0);
++			diskobj = efi_disk_add_dev(devname, if_typename, desc, i, 0, NULL, -1);
  			disks++;
  
-+			disks += efi_disk_create_mbr(desc, if_typename, i);
- 			/*
- 			 * El Torito images show up as block devices
- 			 * in an EFI world, so let's create them here
- 			 */
- 			disks += efi_disk_create_eltorito(desc, if_typename,
- 							  i, devname);
-+
+-			/*
+-			 * El Torito images show up as block devices
+-			 * in an EFI world, so let's create them here
+-			 */
+-			disks += efi_disk_create_eltorito(desc, if_typename,
+-							  i, devname);
++			disks += efi_disk_create_partitions(desc, if_typename,
++							    i, devname, diskobj);
  		}
  	}
  #endif
+-- 
+2.13.0
+
+From 2d840bc18c38137ff58a0884eb380f8a12ed6db8 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Wed, 21 Jun 2017 16:44:13 -0400
+Subject: [PATCH 8/8] bootefi: make our device and image device paths more
+ realistic.
+
+This makes the device and image device paths into something grub can
+match its disks up against, allowing grub to find its config file on the
+original device.
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ cmd/bootefi.c | 123 +++++++++++++++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 97 insertions(+), 26 deletions(-)
+
+diff --git a/cmd/bootefi.c b/cmd/bootefi.c
+index a0a5434967..a6598dface 100644
+--- a/cmd/bootefi.c
++++ b/cmd/bootefi.c
+@@ -28,32 +28,49 @@ DECLARE_GLOBAL_DATA_PTR;
+  * In addition to the originating device we also declare the file path
+  * of "bootefi" based loads to be /bootefi.
+  */
+-static struct efi_device_path_file_path bootefi_image_path[] = {
+-	{
+-		.dp.type = DEVICE_PATH_TYPE_MEDIA_DEVICE,
+-		.dp.sub_type = DEVICE_PATH_SUB_TYPE_FILE_PATH,
+-		.dp.length = sizeof(bootefi_image_path[0]),
+-		.str = { 'b','o','o','t','e','f','i' },
+-	}, {
+-		.dp.type = DEVICE_PATH_TYPE_END,
+-		.dp.sub_type = DEVICE_PATH_SUB_TYPE_END,
+-		.dp.length = sizeof(bootefi_image_path[0]),
+-	}
++static struct efi_device_path_acpi_path bootefi_acpi_path = {
++	.dp.type = DEVICE_PATH_TYPE_ACPI_DEVICE,
++	.dp.sub_type = DEVICE_PATH_SUB_TYPE_ACPI_DEVICE,
++	.dp.length = sizeof(bootefi_acpi_path),
++	.hid = EISA_PNP_ID(0x1337),
++	.uid = 0,
++};
++
++static struct efi_device_path_hard_drive_path bootefi_hard_drive_path = {
++	.dp.type = DEVICE_PATH_TYPE_MEDIA_DEVICE,
++	.dp.sub_type = DEVICE_PATH_SUB_TYPE_HARD_DRIVE_PATH,
++	.dp.length = sizeof(bootefi_hard_drive_path),
+ };
+ 
+-static struct efi_device_path_file_path bootefi_device_path[] = {
++static struct efi_device_path_file_path bootefi_image_path_template[] = {
+ 	{
+ 		.dp.type = DEVICE_PATH_TYPE_MEDIA_DEVICE,
+ 		.dp.sub_type = DEVICE_PATH_SUB_TYPE_FILE_PATH,
+-		.dp.length = sizeof(bootefi_image_path[0]),
++		.dp.length = sizeof(bootefi_image_path_template[0]),
+ 		.str = { 'b','o','o','t','e','f','i' },
+ 	}, {
+ 		.dp.type = DEVICE_PATH_TYPE_END,
+ 		.dp.sub_type = DEVICE_PATH_SUB_TYPE_END,
+-		.dp.length = sizeof(bootefi_image_path[0]),
++		.dp.length = sizeof(bootefi_image_path_template[0]),
+ 	}
+ };
+ 
++static u8 image_dp_buf[sizeof(bootefi_acpi_path)
++			+ sizeof(bootefi_hard_drive_path)
++			+ sizeof(bootefi_image_path_template)];
++
++static struct efi_device_path_file_path bootefi_device_path_template = {
++	.dp.type = DEVICE_PATH_TYPE_END,
++	.dp.sub_type = DEVICE_PATH_SUB_TYPE_END,
++	.dp.length = sizeof(bootefi_device_path_template),
++};
++
++static u8 device_dp_buf[sizeof(bootefi_acpi_path)
++			+ sizeof(bootefi_hard_drive_path)
++			+ sizeof(bootefi_device_path_template)];
++
++static struct efi_device_path *bootefi_device_path = (void *)device_dp_buf;
++
+ static efi_status_t EFIAPI bootefi_open_dp(void *handle, efi_guid_t *protocol,
+ 			void **protocol_interface, void *agent_handle,
+ 			void *controller_handle, uint32_t attributes)
+@@ -64,8 +81,8 @@ static efi_status_t EFIAPI bootefi_open_dp(void *handle, efi_guid_t *protocol,
+ 
+ /* The EFI loaded_image interface for the image executed via "bootefi" */
+ static struct efi_loaded_image loaded_image_info = {
+-	.device_handle = bootefi_device_path,
+-	.file_path = bootefi_image_path,
++	.device_handle = (void *)device_dp_buf,
++	.file_path = (void *)image_dp_buf,
+ };
+ 
+ /* The EFI object struct for the image executed via "bootefi" */
+@@ -93,7 +110,7 @@ static struct efi_object loaded_image_info_obj = {
+ 
+ /* The EFI object struct for the device the "bootefi" image was loaded from */
+ static struct efi_object bootefi_device_obj = {
+-	.handle = bootefi_device_path,
++	.handle = (void *)device_dp_buf,
+ 	.protocols = {
+ 		{
+ 			/* When asking for the device path interface, return
+@@ -104,6 +121,59 @@ static struct efi_object bootefi_device_obj = {
+ 	},
+ };
+ 
++void make_device_paths(int net, struct blk_desc *desc, int part)
++{
++	memcpy(device_dp_buf,
++	       &bootefi_acpi_path,
++	       sizeof(bootefi_acpi_path));
++	memcpy(image_dp_buf,
++	       &bootefi_acpi_path,
++	       sizeof(bootefi_acpi_path));
++
++	if (net) {
++		memcpy(device_dp_buf + sizeof(bootefi_acpi_path),
++		       &bootefi_device_path_template,
++		       sizeof (bootefi_device_path_template));
++		memcpy(image_dp_buf + sizeof(bootefi_acpi_path),
++		       bootefi_image_path_template,
++		       sizeof (bootefi_image_path_template));
++	} else {
++		disk_partition_t info;
++		int rc = -1;
++		if (part > 0)
++			rc = part_get_info(desc, part, &info);
++
++		if (rc < 0) {
++			memcpy(device_dp_buf + sizeof(bootefi_acpi_path),
++			       &bootefi_device_path_template,
++			       sizeof (bootefi_device_path_template));
++			memcpy(image_dp_buf + sizeof(bootefi_acpi_path),
++			       bootefi_image_path_template,
++			       sizeof (bootefi_image_path_template));
++		} else {
++			bootefi_hard_drive_path.partition_number = part - 1;
++			bootefi_hard_drive_path.partition_start = info.start;
++			bootefi_hard_drive_path.partition_end = info.size;
++
++			memcpy(device_dp_buf + sizeof(bootefi_acpi_path),
++			       &bootefi_hard_drive_path,
++			       sizeof (bootefi_hard_drive_path));
++			memcpy(device_dp_buf + sizeof(bootefi_acpi_path)
++					     + sizeof(bootefi_hard_drive_path),
++			       &bootefi_device_path_template,
++			       sizeof (bootefi_device_path_template));
++
++			memcpy(image_dp_buf + sizeof(bootefi_acpi_path),
++			       &bootefi_hard_drive_path,
++			       sizeof (bootefi_hard_drive_path));
++			memcpy(image_dp_buf + sizeof(bootefi_acpi_path)
++					    + sizeof(bootefi_hard_drive_path),
++			       bootefi_image_path_template,
++			       sizeof (bootefi_image_path_template));
++		}
++	}
++}
++
+ static void *copy_fdt(void *fdt)
+ {
+ 	u64 fdt_size = fdt_totalsize(fdt);
+@@ -217,7 +287,7 @@ static unsigned long do_bootefi_exec(void *efi, void *fdt)
+ 	void *nethandle = loaded_image_info.device_handle;
+ 	efi_net_register(&nethandle);
+ 
+-	if (!memcmp(bootefi_device_path[0].str, "N\0e\0t", 6))
++	if (!memcmp(bootefi_device_path_template.str, "N\0e\0t", 6))
+ 		loaded_image_info.device_handle = nethandle;
+ 	else
+ 		loaded_image_info.device_handle = bootefi_device_path;
+@@ -320,6 +390,7 @@ void efi_set_bootdev(const char *dev, const char *devnr, const char *path)
+ 	__maybe_unused struct blk_desc *desc;
+ 	char devname[32] = { 0 }; /* dp->str is u16[32] long */
+ 	char *colon;
++	int part = -1;
+ 
+ #if defined(CONFIG_BLK) || CONFIG_IS_ENABLED(ISO_PARTITION)
+ 	desc = blk_get_dev(dev, simple_strtol(devnr, NULL, 10));
+@@ -336,7 +407,9 @@ void efi_set_bootdev(const char *dev, const char *devnr, const char *path)
+ 		snprintf(devname, sizeof(devname), "%s%s", dev, devnr);
+ 	}
+ 
+-	colon = strchr(devname, ':');
++	colon = strchr(devnr, ':');
++	if (colon)
++		part = simple_strtol(colon+1, NULL, 10);
+ 
+ #if CONFIG_IS_ENABLED(ISO_PARTITION)
+ 	/* For ISOs we create partition block devices */
+@@ -352,17 +425,15 @@ void efi_set_bootdev(const char *dev, const char *devnr, const char *path)
+ 	if (colon)
+ 		*colon = '\0';
+ 
+-	/* Patch bootefi_device_path to the target device */
+-	memset(bootefi_device_path[0].str, 0, sizeof(bootefi_device_path[0].str));
+-	ascii2unicode(bootefi_device_path[0].str, devname);
+-
+-	/* Patch bootefi_image_path to the target file path */
+-	memset(bootefi_image_path[0].str, 0, sizeof(bootefi_image_path[0].str));
++	/* Patch bootefi_image_path_template to the target file path */
++	memset(bootefi_image_path_template[0].str, 0, sizeof(bootefi_image_path_template[0].str));
+ 	if (strcmp(dev, "Net")) {
+ 		/* Add leading / to fs paths, because they're absolute */
+ 		snprintf(devname, sizeof(devname), "/%s", path);
+ 	} else {
+ 		snprintf(devname, sizeof(devname), "%s", path);
+ 	}
+-	ascii2unicode(bootefi_image_path[0].str, devname);
++	ascii2unicode(bootefi_image_path_template[0].str, devname);
++
++	make_device_paths(!strcmp(dev, "Net"), desc, part);
+ }
+-- 
+2.13.0
+

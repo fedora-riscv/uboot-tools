@@ -1,15 +1,7 @@
-From patchwork Tue Jun 20 21:55:24 2017
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,1/2] board/db410c: add missing linker map entries for efi
+From a74e70ec7f5ffdd9f618e2a8f92f4986256cb5c1 Mon Sep 17 00:00:00 2001
 From: Rob Clark <robdclark@gmail.com>
-X-Patchwork-Id: 778514
-Message-Id: <20170620215525.10430-1-robdclark@gmail.com>
-To: U-Boot Mailing List <u-boot@lists.denx.de>
-Cc: Nicolas Dechesne <nicolas.dechesne@linaro.org>,
- Stephen Boyd <sboyd@codeaurora.org>
-Date: Tue, 20 Jun 2017 17:55:24 -0400
+Date: Tue, 20 Jun 2017 17:50:16 -0400
+Subject: [PATCH 2/8] board/db410c: add missing linker map entries for efi
 
 Otherwise the loaded image would miss the efi_runtime sections, and fall
 over hard when grub (for example) tried to call runtime services located
@@ -21,7 +13,7 @@ Signed-off-by: Rob Clark <robdclark@gmail.com>
  1 file changed, 16 insertions(+)
 
 diff --git a/board/qualcomm/dragonboard410c/u-boot.lds b/board/qualcomm/dragonboard410c/u-boot.lds
-index 6e1c5a8..62ac4d7 100644
+index 6e1c5a8a67..62ac4d7a60 100644
 --- a/board/qualcomm/dragonboard410c/u-boot.lds
 +++ b/board/qualcomm/dragonboard410c/u-boot.lds
 @@ -43,6 +43,22 @@ SECTIONS
@@ -47,31 +39,21 @@ index 6e1c5a8..62ac4d7 100644
  	.image_copy_end :
  	{
  		*(.__image_copy_end)
-From patchwork Tue Jun 20 21:55:25 2017
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,2/2] board/db410c: fix fdt address
+-- 
+2.13.0
+
+From 9bf27e4adce115e1e6694c8807ad1b6689f9b074 Mon Sep 17 00:00:00 2001
 From: Rob Clark <robdclark@gmail.com>
-X-Patchwork-Id: 778516
-Message-Id: <20170620215525.10430-2-robdclark@gmail.com>
-To: U-Boot Mailing List <u-boot@lists.denx.de>
-Cc: Nicolas Dechesne <nicolas.dechesne@linaro.org>,
- Stephen Boyd <sboyd@codeaurora.org>
-Date: Tue, 20 Jun 2017 17:55:25 -0400
+Date: Tue, 20 Jun 2017 17:52:41 -0400
+Subject: [PATCH 3/8] board/db410c: fix fdt address
 
 Signed-off-by: Rob Clark <robdclark@gmail.com>
 ---
-Maybe there is a better way to not hardcode this?  But at least with
-the build of lk that I have, the fdt table is at 0x81e00000.  I guess
-there must be a more robust way to do this, since presumably lk when
-booting the linux kernel directly somehow passes the fdt address.
-
  include/configs/dragonboard410c.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/include/configs/dragonboard410c.h b/include/configs/dragonboard410c.h
-index 11c842d..3b9932d 100644
+index 11c842d952..3b9932da8b 100644
 --- a/include/configs/dragonboard410c.h
 +++ b/include/configs/dragonboard410c.h
 @@ -105,7 +105,7 @@ REFLASH(dragonboard/u-boot.img, 8)\
@@ -83,3 +65,31 @@ index 11c842d..3b9932d 100644
  	"ramdisk_addr_r=0x84000000\0"\
  	"scriptaddr=0x90000000\0"\
  	"pxefile_addr_r=0x90100000\0"\
+-- 
+2.13.0
+
+From 95177af6eb3d7b835bbb467aad2565e4680830a3 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Wed, 21 Jun 2017 14:21:15 -0400
+Subject: [PATCH 4/8] WIP: fix usb
+
+---
+ common/usb_storage.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/common/usb_storage.c b/common/usb_storage.c
+index 03171f74cb..0e3de9064b 100644
+--- a/common/usb_storage.c
++++ b/common/usb_storage.c
+@@ -1019,7 +1019,7 @@ static int usb_test_unit_ready(ccb *srb, struct us_data *ss)
+ 		if ((srb->sense_buf[2] == 0x02) &&
+ 		    (srb->sense_buf[12] == 0x3a))
+ 			return -1;
+-		mdelay(100);
++		mdelay(250);
+ 	} while (retries--);
+ 
+ 	return -1;
+-- 
+2.13.0
+
