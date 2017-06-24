@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.05
-Release:   3%{?candidate:.%{candidate}}%{?dist}
+Release:   4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -22,6 +22,7 @@ Patch8:    clearfog-distroboot.patch
 Patch9:    arm-tegra-nyan-chromebook.patch
 Patch10:   dragonboard-fixes.patch
 Patch11:   uefi-fixes.patch
+Patch12:   device-tree-overlays.patch
 
 # Patch19:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
 
@@ -154,7 +155,7 @@ done
 for board in $(cat %{_arch}-boards)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
- for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/smdkv310-spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
+ for file in MLO SPL spl/sunxi-spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
  do
   if [ -f builds/$(echo $board)/$(echo $file) ]; then
     install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
@@ -246,6 +247,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sat Jun 24 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-4
+- Fix bug in aarch64 builds that dropped some files
+- Add DT Overlay support for RPi/BeagleBone/CHIP/96boards devices
+
 * Thu Jun 29 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-3
 - Further uEFI and DragonBoard fixes
 
