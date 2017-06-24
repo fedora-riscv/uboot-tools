@@ -251,7 +251,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 - Fix bug in aarch64 builds that dropped some files
 - Add DT Overlay support for RPi/BeagleBone/CHIP/96boards devices
 
-* Thu Jun 29 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-3
+* Thu Jun 22 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-3
 - Further uEFI and DragonBoard fixes
 
 * Mon May 29 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-2
