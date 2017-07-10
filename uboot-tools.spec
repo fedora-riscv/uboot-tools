@@ -19,6 +19,7 @@ Patch3:    mx6cuboxi-Add-support-for-sata.patch
 Patch4:    mx6-Initial-Hummingboard-2-support.patch
 Patch5:    uefi-fixes.patch
 Patch6:    use-Fedora-specific-EFI-path-name.patch
+Patch7:    U-Boot-libfdt-Drop--FDT_ERR_TOODEEP.patch
 
 # Patch11:    sti-STiH410-B2260-support.patch
 # Patch12:    AW64-add-spl-atf-support.patch
