@@ -23,6 +23,7 @@ Patch9:    arm-tegra-nyan-chromebook.patch
 Patch10:   dragonboard-fixes.patch
 Patch11:   uefi-fixes.patch
 Patch12:   device-tree-overlays.patch
+Patch13:   net-Mark-the-ip_udp_hdr-struct-as-packed.patch
 
 # Patch19:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
 
