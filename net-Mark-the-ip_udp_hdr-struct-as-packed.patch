@@ -1,0 +1,41 @@
+From patchwork Wed Jul 12 14:34:50 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] net: Mark the ip_udp_hdr struct as packed
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+X-Patchwork-Id: 787298
+Message-Id: <20170712143450.12233-1-maxime.ripard@free-electrons.com>
+To: Tom Rini <trini@konsulko.com>
+Cc: u-boot@lists.denx.de, Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Wed, 12 Jul 2017 16:34:50 +0200
+
+The -mno-unaligned-access flag used on ARM to prevent GCC from generating
+unaligned accesses (obviously) will only do so on packed structures.
+
+It seems like gcc 7.1 is a bit stricter than previous gcc versions on this,
+and using it lead to data abort for unaligned accesses when generating
+network traffic.
+
+Fix this by adding the packed attribute to the ip_udp_hdr structure in
+order to let GCC do its job.
+
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Reviewed-by: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>
+---
+ include/net.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/net.h b/include/net.h
+index 997db9210a8f..7b815afffafa 100644
+--- a/include/net.h
++++ b/include/net.h
+@@ -390,7 +390,7 @@ struct ip_udp_hdr {
+ 	u16		udp_dst;	/* UDP destination port		*/
+ 	u16		udp_len;	/* Length of UDP packet		*/
+ 	u16		udp_xsum;	/* Checksum			*/
+-};
++} __attribute__ ((packed));
+ 
+ #define IP_UDP_HDR_SIZE		(sizeof(struct ip_udp_hdr))
+ #define UDP_HDR_SIZE		(IP_UDP_HDR_SIZE - IP_HDR_SIZE)
