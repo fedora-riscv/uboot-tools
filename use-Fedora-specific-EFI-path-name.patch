@@ -1,15 +1,15 @@
-From dfe26348e0255804981754b529b66790972833b9 Mon Sep 17 00:00:00 2001
+From 95140df8476e255cb279a60228b9c703b3ca318f Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Mon, 24 Apr 2017 23:45:37 +0100
+Date: Wed, 12 Jul 2017 08:43:31 +0100
 Subject: [PATCH] use Fedora specific EFI path/name
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- include/config_distro_bootcmd.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ include/config_distro_bootcmd.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index 0e01e8240d..756ea121e0 100644
+index 4b2c493ae3..704dee7772 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
 @@ -88,7 +88,7 @@
@@ -30,6 +30,18 @@ index 0e01e8240d..756ea121e0 100644
  		"if fdt addr ${fdt_addr_r}; then "                        \
  			"bootefi ${kernel_addr_r} ${fdt_addr_r};"         \
  		"else "                                                    \
+@@ -136,9 +136,9 @@
+ 			"fi;"                                             \
+ 		"done;"                                                   \
+ 		"if test -e ${devtype} ${devnum}:${distro_bootpart} "     \
+-					"efi/boot/"BOOTEFI_NAME"; then "  \
++					"efi/fedora/"BOOTEFI_NAME"; then "  \
+ 				"echo Found EFI removable media binary "  \
+-					"efi/boot/"BOOTEFI_NAME"; "       \
++					"efi/fedora/"BOOTEFI_NAME"; "       \
+ 				"run boot_efi_binary; "                   \
+ 				"echo EFI LOAD FAILED: continuing...; "   \
+ 		"fi; "                                                    \
 -- 
-2.12.2
+2.13.0
 

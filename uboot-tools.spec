@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate rc3
 
 Name:      uboot-tools
 Version:   2017.07
-Release:   0.3%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -19,7 +19,6 @@ Patch3:    mx6cuboxi-Add-support-for-sata.patch
 Patch4:    mx6-Initial-Hummingboard-2-support.patch
 Patch5:    uefi-fixes.patch
 Patch6:    use-Fedora-specific-EFI-path-name.patch
-Patch7:    U-Boot-libfdt-Drop--FDT_ERR_TOODEEP.patch
 
 # Patch11:    sti-STiH410-B2260-support.patch
 # Patch12:    AW64-add-spl-atf-support.patch
@@ -275,6 +274,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Jul 12 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.07-1
+- 2017.07
+
 * Thu Jul  6 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.07-0.3.rc3
 - 2017.07 RC3
 
