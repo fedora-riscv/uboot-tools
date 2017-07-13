@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.05
-Release:   4%{?candidate:.%{candidate}}%{?dist}
+Release:   5%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -248,6 +248,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Jul 13 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-5
+- Netboot data abort fix
+- EFI path fix
+
 * Sat Jun 24 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.05-4
 - Fix bug in aarch64 builds that dropped some files
 - Add DT Overlay support for RPi/BeagleBone/CHIP/96boards devices
