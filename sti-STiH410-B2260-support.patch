@@ -275,7 +275,7 @@ index 3df0e04768..6c84e9b485 100644
  
  #define CONFIG_SKIP_LOWLEVEL_INIT
  
-++/* USB Configs */
++/* USB Configs */
  #define CONFIG_USB_OHCI_NEW
  #define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS     2
  
