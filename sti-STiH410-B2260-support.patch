@@ -324,22 +324,22 @@ index 7fcb327a52..ccbbf32470 100644
 -- 
 2.12.2
 
-From 8837ece92eb62dd285feb8b98ac2e606ccbb5745 Mon Sep 17 00:00:00 2001
+From 73c47454a638029bafeaa4b5061f25bc6ddb6cea Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 1 Aug 2017 09:02:13 +0100
+Date: Tue, 1 Aug 2017 11:28:54 +0100
 Subject: [PATCH] sti: enable distro defaults, USB and a few other bits
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- configs/stih410-b2260_defconfig | 25 +++++++++++++++++++++----
+ configs/stih410-b2260_defconfig | 26 ++++++++++++++++++++++----
  include/configs/stih410-b2260.h | 31 +++++++++++++++++++++++++------
- 2 files changed, 46 insertions(+), 10 deletions(-)
+ 2 files changed, 47 insertions(+), 10 deletions(-)
 
 diff --git a/configs/stih410-b2260_defconfig b/configs/stih410-b2260_defconfig
-index e29c29bc6f..d19b3579d3 100644
+index e29c29bc6f..48f534c907 100644
 --- a/configs/stih410-b2260_defconfig
 +++ b/configs/stih410-b2260_defconfig
-@@ -2,26 +2,43 @@ CONFIG_ARM=y
+@@ -2,26 +2,44 @@ CONFIG_ARM=y
  CONFIG_ARCH_STI=y
  CONFIG_IDENT_STRING="STMicroelectronics STiH410-B2260"
  CONFIG_DEFAULT_DEVICE_TREE="stih410-b2260"
@@ -368,6 +368,7 @@ index e29c29bc6f..d19b3579d3 100644
  CONFIG_MMC_SDHCI=y
  CONFIG_MMC_SDHCI_STI=y
  CONFIG_PINCTRL=y
++CONFIG_STI_RESET=y
  CONFIG_STI_ASC_SERIAL=y
  CONFIG_SYSRESET=y
  CONFIG_TIMER=y
