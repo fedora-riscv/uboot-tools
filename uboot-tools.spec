@@ -1,8 +1,8 @@
-#global candidate rc3
+%global candidate rc1
 
 Name:      uboot-tools
-Version:   2017.07
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Version:   2017.09
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -13,17 +13,16 @@ Source2:   arm-chromebooks
 Source3:   aarch64-boards
 Source4:   aarch64-chromebooks
 
+# Fedoraisms patches, general fixes
 Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-Patch2:    dragonboard-fixes.patch
-Patch3:    mx6cuboxi-Add-support-for-sata.patch
-Patch4:    mx6-Initial-Hummingboard-2-support.patch
-Patch5:    uefi-fixes.patch
-Patch6:    use-Fedora-specific-EFI-path-name.patch
-Patch7:    net-Mark-the-ip_udp_hdr-struct-as-packed.patch
+Patch2:    use-Fedora-specific-EFI-path-name.patch
+Patch3:    net-Mark-the-ip_udp_hdr-struct-as-packed.patch
 
-# Patch11:    sti-STiH410-B2260-support.patch
-# Patch12:    AW64-add-spl-atf-support.patch
-# Patch13:    arm-tegra-nyan-chromebook.patch
+# Board fixes and enablement
+Patch10:    dragonboard-fixes.patch
+Patch11:    mx6-Initial-Hummingboard-2-support.patch
+Patch12:    sti-STiH410-B2260-support.patch
+
 # Patch14:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
@@ -275,6 +274,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Aug  1 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-0.1.rc1
+- 2017.09 RC1
+- Initial patch rebase
+
 * Thu Jul 27 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2017.07-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
 
