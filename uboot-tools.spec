@@ -14,16 +14,15 @@ Source3:   aarch64-boards
 Source4:   aarch64-chromebooks
 
 # Fedoraisms patches, general fixes
-Patch1:    add-BOOTENV_INIT_COMMAND-for-commands-that-may-be-ne.patch
-Patch2:    use-Fedora-specific-EFI-path-name.patch
-Patch3:    net-Mark-the-ip_udp_hdr-struct-as-packed.patch
+Patch1:    uefi-use-Fedora-specific-path-name.patch
+Patch2:    net-Mark-the-ip_udp_hdr-struct-as-packed.patch
 
 # Board fixes and enablement
 Patch10:    dragonboard-fixes.patch
 Patch11:    mx6-Initial-Hummingboard-2-support.patch
 Patch12:    sti-STiH410-B2260-support.patch
 
-# Patch14:    0001-arm-mvebu-enable-generic-distro-boot-config.patch
+# Patch14:    mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
