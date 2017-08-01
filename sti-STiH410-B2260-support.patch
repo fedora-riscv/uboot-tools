@@ -246,13 +246,12 @@ diff --git a/include/configs/stih410-b2260.h b/include/configs/stih410-b2260.h
 index 6f4070ff43..3df0e04768 100644
 --- a/include/configs/stih410-b2260.h
 +++ b/include/configs/stih410-b2260.h
-@@ -52,4 +52,8 @@
+@@ -51,4 +51,7 @@
  
  #define CONFIG_SKIP_LOWLEVEL_INIT
  
 +#define CONFIG_USB_OHCI_NEW
-+#define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS	2
-+#define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS	2
++#define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS     2
 +
  #endif /* __CONFIG_H */
 -- 
@@ -272,14 +271,13 @@ diff --git a/include/configs/stih410-b2260.h b/include/configs/stih410-b2260.h
 index 3df0e04768..6c84e9b485 100644
 --- a/include/configs/stih410-b2260.h
 +++ b/include/configs/stih410-b2260.h
-@@ -52,8 +52,20 @@
+@@ -51,7 +51,19 @@
  
  #define CONFIG_SKIP_LOWLEVEL_INIT
  
-+/* USB Configs */
+++/* USB Configs */
  #define CONFIG_USB_OHCI_NEW
- #define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS	2
- #define CONFIG_SYS_USB_XHCI_MAX_ROOT_PORTS	2
+ #define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS     2
  
 +#define CONFIG_USB_HOST_ETHER
 +#define CONFIG_USB_ETHER_ASIX
