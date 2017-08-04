@@ -1,0 +1,24 @@
+From e0010e2633c473b36b8b04c94dd29978d38919d3 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Thu, 3 Aug 2017 17:28:15 +0100
+Subject: [PATCH] sunxi pine64 dm mmc support
+
+---
+ configs/pine64_plus_defconfig | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/configs/pine64_plus_defconfig b/configs/pine64_plus_defconfig
+index a509ca92b2..5c4a688bdd 100644
+--- a/configs/pine64_plus_defconfig
++++ b/configs/pine64_plus_defconfig
+@@ -14,3 +14,7 @@ CONFIG_SPL=y
+ CONFIG_OF_LIST="sun50i-a64-pine64 sun50i-a64-pine64-plus"
+ CONFIG_SUN8I_EMAC=y
+ CONFIG_USB_EHCI_HCD=y
++# CONFIG_SPL_BLK is not set
++CONFIG_DM_MMC=y
++# CONFIG_SPL_DM_MMC is not set
++# CONFIG_SPL_DM_MMC_OPS is not set
+-- 
+2.13.3
+
