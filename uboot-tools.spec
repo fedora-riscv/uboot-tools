@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.09
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -14,13 +14,17 @@ Source3:   aarch64-boards
 Source4:   aarch64-chromebooks
 
 # Fedoraisms patches, general fixes
+Patch0:    sunxi-dm-mmc-sata.patch
 Patch1:    uefi-use-Fedora-specific-path-name.patch
-Patch2:    net-Mark-the-ip_udp_hdr-struct-as-packed.patch
+Patch2:    uefi-fixes.patch
+Patch3:    net-Mark-the-ip_udp_hdr-struct-as-packed.patch
 
 # Board fixes and enablement
-Patch10:    dragonboard-fixes.patch
-Patch11:    mx6-Initial-Hummingboard-2-support.patch
-Patch12:    sti-STiH410-B2260-support.patch
+Patch10:   dragonboard-fixes.patch
+Patch11:   mx6-Initial-Hummingboard-2-support.patch
+Patch12:   sti-STiH410-B2260-support.patch
+Patch13:   rpi-Revert-dm-Drop-CONFIG_OF_EMBED.patch
+Patch14:   sunxi-dm-pine64.patch
 
 # Patch14:    mvebu-enable-generic-distro-boot-config.patch
 
@@ -273,6 +277,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Aug  3 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-0.2.rc1
+- uEFI fixes
+- DragonBoard 410c fixes
+
 * Tue Aug  1 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-0.1.rc1
 - 2017.09 RC1
 - Initial patch rebase

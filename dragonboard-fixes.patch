@@ -83,3 +83,733 @@ index 11c842d..3b9932d 100644
  	"ramdisk_addr_r=0x84000000\0"\
  	"scriptaddr=0x90000000\0"\
  	"pxefile_addr_r=0x90100000\0"\
+From a2782063c8daf9000d131e85200bc631a16450b4 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Wed, 21 Jun 2017 14:21:15 -0400
+Subject: [PATCH 01/23] WIP: fix usb
+
+---
+ common/usb_storage.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/common/usb_storage.c b/common/usb_storage.c
+index df0b057308..b2a3ab49ec 100644
+--- a/common/usb_storage.c
++++ b/common/usb_storage.c
+@@ -996,7 +996,7 @@ static int usb_request_sense(struct scsi_cmd *srb, struct us_data *ss)
+ 
+ static int usb_test_unit_ready(struct scsi_cmd *srb, struct us_data *ss)
+ {
+-	int retries = 10;
++	int retries = 20;
+ 
+ 	do {
+ 		memset(&srb->cmd[0], 0, 12);
+@@ -1019,7 +1019,7 @@ static int usb_test_unit_ready(struct scsi_cmd *srb, struct us_data *ss)
+ 		if ((srb->sense_buf[2] == 0x02) &&
+ 		    (srb->sense_buf[12] == 0x3a))
+ 			return -1;
+-		mdelay(100);
++		mdelay(250);
+ 	} while (retries--);
+ 
+ 	return -1;
+-- 
+2.13.3
+
+From 40b06f8d422efc1d9674f081ef22445904c01f4f Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Mon, 3 Jul 2017 08:34:37 -0400
+Subject: [PATCH 02/23] HACK: disable emmc
+
+Hitting some timeout which makes boot take much longer.  And
+uefi/boot/rootfs partitions will be on sd-card or usb disk, etc,
+so we can just ignore emmc.
+---
+ arch/arm/dts/dragonboard410c.dts | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/dts/dragonboard410c.dts b/arch/arm/dts/dragonboard410c.dts
+index 7746622dda..0d3b7a35f4 100644
+--- a/arch/arm/dts/dragonboard410c.dts
++++ b/arch/arm/dts/dragonboard410c.dts
+@@ -67,6 +67,7 @@
+ 			reg = <0x78d9000 0x400>;
+ 		};
+ 
++/*
+ 		sdhci@07824000 {
+ 			compatible = "qcom,sdhci-msm-v4";
+ 			reg = <0x7824900 0x11c 0x7824000 0x800>;
+@@ -76,6 +77,7 @@
+ 			clock = <&clkc 0>;
+ 			clock-frequency = <100000000>;
+ 		};
++*/
+ 
+ 		sdhci@07864000 {
+ 			compatible = "qcom,sdhci-msm-v4";
+-- 
+2.13.3
+
+From 03569f3ef44fd1208a68030c1740d7347bcf3fa3 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Fri, 23 Jun 2017 15:36:33 -0400
+Subject: [PATCH 03/23] dm: core: also parse chosen node
+
+This is the node that would contain, for example, the framebuffer setup
+by an earlier stage.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ drivers/core/root.c | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/core/root.c b/drivers/core/root.c
+index d691d6ff94..5e6b2da248 100644
+--- a/drivers/core/root.c
++++ b/drivers/core/root.c
+@@ -266,6 +266,26 @@ static int dm_scan_fdt_node(struct udevice *parent, const void *blob,
+ 	for (offset = fdt_first_subnode(blob, offset);
+ 	     offset > 0;
+ 	     offset = fdt_next_subnode(blob, offset)) {
++		ofnode node = offset_to_ofnode(offset);
++
++		/* "chosen" node isn't a device itself but may contain some: */
++		if (strcmp(ofnode_get_name(node), "chosen") == 0) {
++			dm_dbg("parsing subnodes of \"chosen\"\n");
++
++			for (node = ofnode_first_subnode(node);
++			     ofnode_valid(node);
++			     node = ofnode_next_subnode(node)) {
++				dm_dbg("subnode: %s\n", ofnode_get_name(node));
++				err = lists_bind_fdt(parent, node, NULL);
++				if (err && !ret) {
++					ret = err;
++					dm_dbg("%s: ret=%d\n", ofnode_get_name(node), ret);
++				}
++			}
++
++			continue;
++		}
++
+ 		if (pre_reloc_only &&
+ 		    !dm_fdt_pre_reloc(blob, offset))
+ 			continue;
+@@ -273,7 +293,7 @@ static int dm_scan_fdt_node(struct udevice *parent, const void *blob,
+ 			dm_dbg("   - ignoring disabled device\n");
+ 			continue;
+ 		}
+-		err = lists_bind_fdt(parent, offset_to_ofnode(offset), NULL);
++		err = lists_bind_fdt(parent, node, NULL);
+ 		if (err && !ret) {
+ 			ret = err;
+ 			debug("%s: ret=%d\n", fdt_get_name(blob, offset, NULL),
+-- 
+2.13.3
+
+From 9f99ca35c96d4b564062bb86ddc62f7421632906 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Thu, 22 Jun 2017 16:17:00 -0400
+Subject: [PATCH 04/23] video: simplefb
+
+Not really qcom specific, but for now qcom/lk is the one firmware that
+is (afaiu) setting up the appropriate dt node for pre-configured
+display.  Uses the generic simple-framebuffer DT bindings so this should
+be useful on other platforms.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ drivers/video/Kconfig    | 10 +++++++
+ drivers/video/Makefile   |  2 +-
+ drivers/video/simplefb.c | 71 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 82 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/video/simplefb.c
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 61dfed8c06..8eb0359231 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -628,4 +628,14 @@ config VIDEO_DW_HDMI
+ 	  rather requires a SoC-specific glue driver to call it), it
+ 	  can not be enabled from the configuration menu.
+ 
++config VIDEO_SIMPLE
++	bool "Simple display driver for preconfigured display"
++	help
++	  Enables a simple generic display driver which utilizes the
++	  simple-framebuffer devicetree bindings.
++
++	  This driver assumes that the display hardware has been initialized
++	  before u-boot starts, and u-boot will simply render to the pre-
++	  allocated frame buffer surface.
++
+ endmenu
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index ac5371f2ae..52f50f647b 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -57,7 +57,7 @@ obj-$(CONFIG_FORMIKE) += formike.o
+ obj-$(CONFIG_LG4573) += lg4573.o
+ obj-$(CONFIG_AM335X_LCD) += am335x-fb.o
+ obj-$(CONFIG_VIDEO_DW_HDMI) += dw_hdmi.o
+-
++obj-$(CONFIG_VIDEO_SIMPLE) += simplefb.o
+ obj-${CONFIG_VIDEO_TEGRA124} += tegra124/
+ obj-${CONFIG_EXYNOS_FB} += exynos/
+ obj-${CONFIG_VIDEO_ROCKCHIP} += rockchip/
+diff --git a/drivers/video/simplefb.c b/drivers/video/simplefb.c
+new file mode 100644
+index 0000000000..035a9761b9
+--- /dev/null
++++ b/drivers/video/simplefb.c
+@@ -0,0 +1,71 @@
++/*
++ * (C) Copyright 2017 Rob Clark
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include <common.h>
++#include <dm.h>
++#include <fdtdec.h>
++#include <fdt_support.h>
++#include <video.h>
++
++static int simple_video_probe(struct udevice *dev)
++{
++	struct video_uc_platdata *plat = dev_get_uclass_platdata(dev);
++	struct video_priv *uc_priv = dev_get_uclass_priv(dev);
++	const void *blob = gd->fdt_blob;
++	const int node = dev_of_offset(dev);
++	const char *format;
++	fdt_addr_t base;
++	fdt_size_t size;
++
++	base = fdtdec_get_addr_size_auto_parent(blob, dev_of_offset(dev->parent),
++			node, "reg", 0, &size, false);
++	if (base == FDT_ADDR_T_NONE) {
++		debug("%s: Failed to decode memory region\n", __func__);
++		return -EINVAL;
++	}
++
++	debug("%s: base=%llx, size=%llu\n", __func__, base, size);
++
++	// TODO is there some way to reserve the framebuffer
++	// region so it isn't clobbered?
++	plat->base = base;
++	plat->size = size;
++
++	video_set_flush_dcache(dev, true);
++
++	debug("%s: Query resolution...\n", __func__);
++
++	uc_priv->xsize = fdtdec_get_uint(blob, node, "width", 0);
++	uc_priv->ysize = fdtdec_get_uint(blob, node, "height", 0);
++	uc_priv->rot = 0;
++
++	format = fdt_getprop(blob, node, "format", NULL);
++	debug("%s: %dx%d@%s\n", __func__, uc_priv->xsize, uc_priv->ysize, format);
++
++	if (strcmp(format, "r5g6b5") == 0) {
++		uc_priv->bpix = VIDEO_BPP16;
++	} else if (strcmp(format, "a8b8g8r8") == 0) {
++		uc_priv->bpix = VIDEO_BPP32;
++	} else {
++		printf("%s: invalid format: %s\n", __func__, format);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static const struct udevice_id simple_video_ids[] = {
++	{ .compatible = "simple-framebuffer" },
++	{ }
++};
++
++U_BOOT_DRIVER(simple_video) = {
++	.name	= "simple_video",
++	.id	= UCLASS_VIDEO,
++	.of_match = simple_video_ids,
++	.probe	= simple_video_probe,
++	.flags	= DM_FLAG_PRE_RELOC,
++};
+-- 
+2.13.3
+
+From 1d6f9273461ba5afa7f04cb8ea00fd87272642f8 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Tue, 4 Jul 2017 09:16:08 -0400
+Subject: [PATCH 05/23] video: add config option to skip framebuffer clear
+
+The use-case is that the thing that loaded u-boot already put a splash
+image on screen.  And we want to preserve that until grub boot menu
+takes over.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ drivers/video/Kconfig        | 8 ++++++++
+ drivers/video/cfb_console.c  | 3 ++-
+ drivers/video/video-uclass.c | 4 +++-
+ 3 files changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 8eb0359231..7b56b20344 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -98,6 +98,14 @@ config SYS_WHITE_ON_BLACK
+ 	 better in low-light situations or to reduce eye strain in some
+ 	 cases.
+ 
++config NO_FB_CLEAR
++	bool "Skip framebuffer clear"
++	help
++	  If firmware (whatever loads u-boot) has already put a splash image
++	  on screen, you might want to preserve it until whatever u-boots
++	  loads takes over the screen.  This, for example, can be used to
++	  keep splash image on screen until grub graphical boot menu starts.
++
+ source "drivers/video/fonts/Kconfig"
+ 
+ config VIDCONSOLE_AS_LCD
+diff --git a/drivers/video/cfb_console.c b/drivers/video/cfb_console.c
+index f54802052e..85fa5b0cae 100644
+--- a/drivers/video/cfb_console.c
++++ b/drivers/video/cfb_console.c
+@@ -2091,7 +2091,8 @@ static int cfg_video_init(void)
+ 	}
+ 	eorx = fgx ^ bgx;
+ 
+-	video_clear();
++	if (!CONFIG_IS_ENABLED(NO_FB_CLEAR))
++		video_clear();
+ 
+ #ifdef CONFIG_VIDEO_LOGO
+ 	/* Plot the logo and get start point of console */
+diff --git a/drivers/video/video-uclass.c b/drivers/video/video-uclass.c
+index 3036e3a1f2..dfa39b0d1b 100644
+--- a/drivers/video/video-uclass.c
++++ b/drivers/video/video-uclass.c
+@@ -199,7 +199,9 @@ static int video_post_probe(struct udevice *dev)
+ #else
+ 	priv->colour_bg = 0xffffff;
+ #endif
+-	video_clear(dev);
++
++	if (!CONFIG_IS_ENABLED(NO_FB_CLEAR))
++		video_clear(dev);
+ 
+ 	/*
+ 	 * Create a text console device. For now we always do this, although
+-- 
+2.13.3
+
+From d031c039a18b3a76a4ef16fb4ff8581a79f42fe3 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Thu, 3 Aug 2017 09:52:14 -0400
+Subject: [PATCH 06/23] fdtdec: allow board to provide fdt for
+ CONFIG_OF_SEPARATE
+
+Similar to CONFIG_OF_BOARD, but in this case the fdt is still built by
+u-boot build.  This allows the board to patch the fdt, etc.
+
+In the specific case of dragonboard 410c, we pass the u-boot generated
+fdt to the previous stage of bootloader (by embedding it in the
+u-boot.img that is loaded by lk/aboot), which patches the fdt and passes
+it back to u-boot.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ include/fdtdec.h |  3 ++-
+ lib/fdtdec.c     | 45 ++++++++++++++++++++++++++-------------------
+ 2 files changed, 28 insertions(+), 20 deletions(-)
+
+diff --git a/include/fdtdec.h b/include/fdtdec.h
+index 4a0947c626..b9acec735a 100644
+--- a/include/fdtdec.h
++++ b/include/fdtdec.h
+@@ -986,7 +986,8 @@ int fdtdec_setup(void);
+ 
+ /**
+  * Board-specific FDT initialization. Returns the address to a device tree blob.
+- * Called when CONFIG_OF_BOARD is defined.
++ * Called when CONFIG_OF_BOARD is defined, or if CONFIG_OF_SEPARATE is defined
++ * and the board implements it.
+  */
+ void *board_fdt_blob_setup(void);
+ 
+diff --git a/lib/fdtdec.c b/lib/fdtdec.c
+index d2dbd0f122..07c458673c 100644
+--- a/lib/fdtdec.c
++++ b/lib/fdtdec.c
+@@ -1203,34 +1203,41 @@ int fdtdec_setup_memory_banksize(void)
+ }
+ #endif
+ 
+-int fdtdec_setup(void)
++#ifdef CONFIG_OF_SEPARATE
++/*
++ * For CONFIG_OF_SEPARATE, the board may optionally implement this to
++ * provide and/or fixup the fdt.
++ */
++__weak void *board_fdt_blob_setup(void)
+ {
+-#if CONFIG_IS_ENABLED(OF_CONTROL)
+-# ifdef CONFIG_OF_EMBED
+-	/* Get a pointer to the FDT */
+-	gd->fdt_blob = __dtb_dt_begin;
+-# elif defined CONFIG_OF_SEPARATE
+-#  ifdef CONFIG_SPL_BUILD
++	void *fdt_blob = NULL;
++#ifdef CONFIG_SPL_BUILD
+ 	/* FDT is at end of BSS unless it is in a different memory region */
+ 	if (IS_ENABLED(CONFIG_SPL_SEPARATE_BSS))
+-		gd->fdt_blob = (ulong *)&_image_binary_end;
++		fdt_blob = (ulong *)&_image_binary_end;
+ 	else
+-		gd->fdt_blob = (ulong *)&__bss_end;
++		fdt_blob = (ulong *)&__bss_end;
+ 
+-#  elif defined CONFIG_FIT_EMBED
+-	gd->fdt_blob = locate_dtb_in_fit(&_end);
++#elif defined CONFIG_FIT_EMBED
++	fdt_blob = locate_dtb_in_fit(&_end);
+ 
+-	if (gd->fdt_blob == NULL || gd->fdt_blob <= ((void *)&_end)) {
++	if (fdt_blob == NULL || fdt_blob <= ((void *)&_end))
+ 		puts("Failed to find proper dtb in embedded FIT Image\n");
+-		return -1;
+-	}
+-
+-#  else
++#else
+ 	/* FDT is at end of image */
+-	gd->fdt_blob = (ulong *)&_end;
++	fdt_blob = (ulong *)&_end;
+ #  endif
+-# elif defined(CONFIG_OF_BOARD)
+-	/* Allow the board to override the fdt address. */
++	return fdt_blob;
++}
++#endif
++
++int fdtdec_setup(void)
++{
++#if CONFIG_IS_ENABLED(OF_CONTROL)
++# ifdef CONFIG_OF_EMBED
++	/* Get a pointer to the FDT */
++	gd->fdt_blob = __dtb_dt_begin;
++# elif defined(CONFIG_OF_SEPARATE) || defined(CONFIG_OF_BOARD)
+ 	gd->fdt_blob = board_fdt_blob_setup();
+ # elif defined(CONFIG_OF_HOSTFILE)
+ 	if (sandbox_read_fdt_from_file()) {
+-- 
+2.13.3
+
+From 7f0491168cf31c9935dede6fb1f560ef33cfb739 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Fri, 23 Jun 2017 07:52:08 -0400
+Subject: [PATCH 07/23] db410c: use fdt passed from lk
+
+lk patches the fdt to set some device's MAC addresses and more
+importantly to patch in the simple-framebuffer node that we want u-boot
+to see.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ board/qualcomm/dragonboard410c/Makefile          |  1 +
+ board/qualcomm/dragonboard410c/dragonboard410c.c |  8 ++++++
+ board/qualcomm/dragonboard410c/lowlevel_init.S   | 36 ++++++++++++++++++++++++
+ 3 files changed, 45 insertions(+)
+ create mode 100644 board/qualcomm/dragonboard410c/lowlevel_init.S
+
+diff --git a/board/qualcomm/dragonboard410c/Makefile b/board/qualcomm/dragonboard410c/Makefile
+index cd678088fa..5082383be4 100644
+--- a/board/qualcomm/dragonboard410c/Makefile
++++ b/board/qualcomm/dragonboard410c/Makefile
+@@ -5,4 +5,5 @@
+ #
+ 
+ obj-y	:= dragonboard410c.o
++obj-y	+= lowlevel_init.o
+ extra-y += head.o
+diff --git a/board/qualcomm/dragonboard410c/dragonboard410c.c b/board/qualcomm/dragonboard410c/dragonboard410c.c
+index 37d0b85e0e..1fa4dc1b15 100644
+--- a/board/qualcomm/dragonboard410c/dragonboard410c.c
++++ b/board/qualcomm/dragonboard410c/dragonboard410c.c
+@@ -27,6 +27,14 @@ int dram_init_banksize(void)
+ 	return 0;
+ }
+ 
++extern unsigned long fw_dtb_pointer;
++
++void *board_fdt_blob_setup(void)
++{
++	if (fdt_magic(fw_dtb_pointer) != FDT_MAGIC)
++		return NULL;
++	return (void *)fw_dtb_pointer;
++}
+ 
+ int board_prepare_usb(enum usb_init_type type)
+ {
+diff --git a/board/qualcomm/dragonboard410c/lowlevel_init.S b/board/qualcomm/dragonboard410c/lowlevel_init.S
+new file mode 100644
+index 0000000000..cdbd8e14db
+--- /dev/null
++++ b/board/qualcomm/dragonboard410c/lowlevel_init.S
+@@ -0,0 +1,36 @@
++/*
++ * (C) Copyright 2016
++ * Cédric Schieli <cschieli@gmail.com>
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include <config.h>
++
++.align 8
++.global fw_dtb_pointer
++fw_dtb_pointer:
++#ifdef CONFIG_ARM64
++	.dword 0x0
++#else
++	.word 0x0
++#endif
++
++/*
++ * Routine: save_boot_params (called after reset from start.S)
++ * Description: save ATAG/FDT address provided by the firmware at boot time
++ */
++
++.global save_boot_params
++save_boot_params:
++
++	/* The firmware provided ATAG/FDT address can be found in r2/x0 */
++#ifdef CONFIG_ARM64
++	adr	x8, fw_dtb_pointer
++	str	x0, [x8]
++#else
++	str	r2, fw_dtb_pointer
++#endif
++
++	/* Returns */
++	b	save_boot_params_ret
+-- 
+2.13.3
+
+From 9999019fa74908218fd85a51f8c4b45231f9489a Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Wed, 19 Jul 2017 11:40:15 -0400
+Subject: [PATCH 08/23] db410c: add reserved-memory node to dts
+
+If lk lights up display and populates simple-framebuffer node, it will
+also setup a reserved-memory node (needed by simplefb on linux).  But
+it isn't clever enough to cope when the reserved-memory node is not
+present.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ arch/arm/dts/dragonboard410c.dts | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/dragonboard410c.dts b/arch/arm/dts/dragonboard410c.dts
+index 0d3b7a35f4..a47b95264c 100644
+--- a/arch/arm/dts/dragonboard410c.dts
++++ b/arch/arm/dts/dragonboard410c.dts
+@@ -23,11 +23,16 @@
+ 		reg = <0 0x80000000 0 0x3da00000>;
+ 	};
+ 
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++	};
++
+ 	chosen {
+ 		stdout-path = "/soc/serial@78b0000";
+ 	};
+ 
+-
+ 	soc {
+ 		#address-cells = <0x1>;
+ 		#size-cells = <0x1>;
+-- 
+2.13.3
+
+From 8f96a0198893ace6d53993ac091e81e7c0d1764c Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Sat, 24 Jun 2017 10:01:45 -0400
+Subject: [PATCH 10/23] db410c: config updates
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ configs/dragonboard410c_defconfig | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/configs/dragonboard410c_defconfig b/configs/dragonboard410c_defconfig
+index c78b4a6fd5..d9cb269085 100644
+--- a/configs/dragonboard410c_defconfig
++++ b/configs/dragonboard410c_defconfig
+@@ -9,6 +9,7 @@ CONFIG_ENV_IS_NOWHERE=y
+ CONFIG_SYS_PROMPT="dragonboard410c => "
+ # CONFIG_CMD_IMI is not set
+ # CONFIG_CMD_IMLS is not set
++CONFIG_CMD_POWEROFF=y
+ CONFIG_CMD_MD5SUM=y
+ CONFIG_CMD_MEMINFO=y
+ CONFIG_CMD_UNZIP=y
+@@ -21,11 +22,14 @@ CONFIG_CMD_TIMER=y
+ CONFIG_CLK=y
+ CONFIG_MSM_GPIO=y
+ CONFIG_PM8916_GPIO=y
++CONFIG_DM_KEYBOARD=y
+ CONFIG_LED=y
+ CONFIG_LED_GPIO=y
+ CONFIG_DM_MMC=y
+ CONFIG_MMC_SDHCI=y
+ CONFIG_MMC_SDHCI_MSM=y
++CONFIG_DM_ETH=y
++# CONFIG_NETDEVICES is not set
+ CONFIG_DM_PMIC=y
+ CONFIG_PMIC_PM8916=y
+ CONFIG_MSM_SERIAL=y
+@@ -38,4 +42,11 @@ CONFIG_USB_EHCI_MSM=y
+ CONFIG_USB_ULPI_VIEWPORT=y
+ CONFIG_USB_ULPI=y
+ CONFIG_USB_STORAGE=y
++CONFIG_USB_KEYBOARD=y
++CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
++CONFIG_DM_VIDEO=y
++# CONFIG_VIDEO_BPP8 is not set
++CONFIG_NO_FB_CLEAR=y
++CONFIG_VIDEO_SIMPLE=y
++CONFIG_FAT_WRITE=y
+ CONFIG_OF_LIBFDT_OVERLAY=y
+-- 
+2.13.3
+
+From 4667c7da8cfb1883d5e734d1017b33e354e699eb Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Fri, 21 Jul 2017 16:24:03 -0400
+Subject: [PATCH 11/23] db410c: enable r8152 usb eth
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ include/configs/dragonboard410c.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/configs/dragonboard410c.h b/include/configs/dragonboard410c.h
+index 626dff8dcd..bbc9685e0e 100644
+--- a/include/configs/dragonboard410c.h
++++ b/include/configs/dragonboard410c.h
+@@ -44,6 +44,7 @@
+ #define CONFIG_USB_ETHER_ASIX88179
+ #define CONFIG_USB_ETHER_MCS7830
+ #define CONFIG_USB_ETHER_SMSC95XX
++#define CONFIG_USB_ETHER_RTL8152
+ 
+ /* Extra Commands */
+ /* Enable that for switching of boot partitions */
+-- 
+2.13.3
+
+From 76fba480e6ee494e2e01c19bb8952f42a3b6a710 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Mon, 3 Jul 2017 09:15:44 -0400
+Subject: [PATCH 12/23] usb: kbd: don't fail with iomux
+
+stdin might not be set, which would cause iomux_doenv() to fail
+therefore causing probe_usb_keyboard() to fail.  Furthermore if we do
+have iomux enabled, the sensible thing (in terms of user experience)
+would be to simply add ourselves to the list of stdin devices.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ common/usb_kbd.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/common/usb_kbd.c b/common/usb_kbd.c
+index d2d29cc98f..703dd748f5 100644
+--- a/common/usb_kbd.c
++++ b/common/usb_kbd.c
+@@ -517,7 +517,22 @@ static int probe_usb_keyboard(struct usb_device *dev)
+ 
+ 	stdinname = getenv("stdin");
+ #if CONFIG_IS_ENABLED(CONSOLE_MUX)
++	char *devname = DEVNAME;
++	/*
++	 * stdin might not be set yet.. either way, with console-mux the
++	 * sensible thing to do is add ourselves to the list of stdio
++	 * devices:
++	 */
++	if (stdinname && !strstr(stdinname, DEVNAME)) {
++		char *newstdin = malloc(strlen(stdinname) + strlen(","DEVNAME) + 1);
++		sprintf(newstdin, "%s,"DEVNAME, stdinname);
++		stdinname = newstdin;
++	} else if (!stdinname) {
++		stdinname = devname;
++	}
+ 	error = iomux_doenv(stdin, stdinname);
++	if (stdinname != devname)
++		free(stdinname);
+ 	if (error)
+ 		return error;
+ #else
+-- 
+2.13.3
+
+From 47f22a41df082c62411389ab5bf6e9ae26d93083 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Wed, 19 Jul 2017 10:39:12 -0400
+Subject: [PATCH 13/23] usb: kbd: add missing \n
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ common/usb_kbd.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/common/usb_kbd.c b/common/usb_kbd.c
+index 703dd748f5..92d5e96d01 100644
+--- a/common/usb_kbd.c
++++ b/common/usb_kbd.c
+@@ -655,7 +655,7 @@ static int usb_kbd_remove(struct udevice *dev)
+ 
+ 	return 0;
+ err:
+-	printf("%s: warning, ret=%d", __func__, ret);
++	printf("%s: warning, ret=%d\n", __func__, ret);
+ 	return ret;
+ }
+ 
+-- 
+2.13.3
+
+From 54997f67cc935704cab36025d98d27eaf5a4aa7c Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Mon, 26 Jun 2017 10:29:40 -0400
+Subject: [PATCH 09/23] db410c: on aarch64 the fdtfile is in per-vendor
+ subdirectory
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ include/configs/dragonboard410c.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/dragonboard410c.h b/include/configs/dragonboard410c.h
+index d9dc639aeb..626dff8dcd 100644
+--- a/include/configs/dragonboard410c.h
++++ b/include/configs/dragonboard410c.h
+@@ -104,7 +104,7 @@
+ 	"initrd_high=0xffffffffffffffff\0" \
+ 	"linux_image=Image\0" \
+ 	"kernel_addr_r=0x81000000\0"\
+-	"fdtfile=apq8016-sbc.dtb\0" \
++	"fdtfile=qcom/apq8016-sbc.dtb\0" \
+ 	"fdt_addr_r=0x81e00000\0"\
+ 	"ramdisk_addr_r=0x84000000\0"\
+ 	"scriptaddr=0x90000000\0"\
+-- 
+2.13.3
+
