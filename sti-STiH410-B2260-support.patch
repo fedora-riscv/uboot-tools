@@ -1,7 +1,7 @@
-From d47e40830ae8406e248880b7eb08bead00377adc Mon Sep 17 00:00:00 2001
+From c8ba51a9128dad186794a0bc20639c38851477fa Mon Sep 17 00:00:00 2001
 From: Patrice Chotard <patrice.chotard@st.com>
 Date: Mon, 13 Feb 2017 10:24:16 +0100
-Subject: [PATCH 01/16] mmc: sti_sdhci: Rework sti_mmc_core_config()
+Subject: [PATCH 1/7] mmc: sti_sdhci: Rework sti_mmc_core_config()
 
 Use struct udevice* as input parameter. Previous
 parameters are retrieved through plat and priv data.
@@ -15,7 +15,7 @@ Reviewed-by: Jaehoon Chung <jh80.chung@samsung.com>
  1 file changed, 18 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/mmc/sti_sdhci.c b/drivers/mmc/sti_sdhci.c
-index 2a07082036..d6c4d677b8 100644
+index f85f6b4db6..714afd92e3 100644
 --- a/drivers/mmc/sti_sdhci.c
 +++ b/drivers/mmc/sti_sdhci.c
 @@ -16,6 +16,7 @@ DECLARE_GLOBAL_DATA_PTR;
@@ -107,12 +107,12 @@ index 2a07082036..d6c4d677b8 100644
  	host->quirks = SDHCI_QUIRK_WAIT_SEND_CMD |
  		       SDHCI_QUIRK_32BIT_DMA_ADDR |
 -- 
-2.12.2
+2.13.4
 
-From 7a13a40753f67f4989d08e11ce67059206c95e2c Mon Sep 17 00:00:00 2001
+From 9da099b52c1e64c831b4243a0ac76c8f9c9f04fb Mon Sep 17 00:00:00 2001
 From: Patrice Chotard <patrice.chotard@st.com>
 Date: Mon, 13 Feb 2017 10:00:07 +0100
-Subject: [PATCH 02/16] ARM: dts: stih410-family: Add missing reset_names for
+Subject: [PATCH 2/7] ARM: dts: stih410-family: Add missing reset_names for
  mmc1 node
 
 reset-names property is needed to use the reset
@@ -137,12 +137,12 @@ index af66b53471..452ac1cdce 100644
  		};
  
 -- 
-2.12.2
+2.13.4
 
-From ef5fc6a1069e21332358d2b3b2fb4ee926cb4e11 Mon Sep 17 00:00:00 2001
+From dcf231fae86261375f95043c7eee880f9027fa37 Mon Sep 17 00:00:00 2001
 From: Patrice Chotard <patrice.chotard@st.com>
 Date: Tue, 28 Feb 2017 18:18:42 +0100
-Subject: [PATCH 03/16] mmc: sti_sdhci: Use reset framework
+Subject: [PATCH 3/7] mmc: sti_sdhci: Use reset framework
 
 Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
 Reviewed-by: Jaehoon Chung <jh80.chung@samsung.com>
@@ -151,7 +151,7 @@ Reviewed-by: Jaehoon Chung <jh80.chung@samsung.com>
  1 file changed, 22 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/mmc/sti_sdhci.c b/drivers/mmc/sti_sdhci.c
-index d6c4d677b8..8b1b2c08a1 100644
+index 714afd92e3..b0ff54cf73 100644
 --- a/drivers/mmc/sti_sdhci.c
 +++ b/drivers/mmc/sti_sdhci.c
 @@ -8,6 +8,7 @@
@@ -230,23 +230,23 @@ index d6c4d677b8..8b1b2c08a1 100644
  	host->quirks = SDHCI_QUIRK_WAIT_SEND_CMD |
  		       SDHCI_QUIRK_32BIT_DMA_ADDR |
 -- 
-2.12.2
+2.13.4
 
-From bec77a7aaeeaa5f77fc239c672aa23d7aaa481b7 Mon Sep 17 00:00:00 2001
+From 57f7ca4d9419eab5021866f3d2deae088d7ef545 Mon Sep 17 00:00:00 2001
 From: Patrice Chotard <patrice.chotard@st.com>
 Date: Mon, 20 Mar 2017 13:40:41 +0100
-Subject: [PATCH 10/16] board: STiH410-B2260: add OHCI and XHCI related defines
+Subject: [PATCH 4/7] board: STiH410-B2260: add OHCI and XHCI related defines
 
 Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
 ---
- include/configs/stih410-b2260.h | 4 ++++
- 1 file changed, 4 insertions(+)
+ include/configs/stih410-b2260.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/include/configs/stih410-b2260.h b/include/configs/stih410-b2260.h
-index 6f4070ff43..3df0e04768 100644
+index c71413cc53..5cc6ef884b 100644
 --- a/include/configs/stih410-b2260.h
 +++ b/include/configs/stih410-b2260.h
-@@ -51,4 +51,7 @@
+@@ -48,4 +48,7 @@
  
  #define CONFIG_SKIP_LOWLEVEL_INIT
  
@@ -255,12 +255,12 @@ index 6f4070ff43..3df0e04768 100644
 +
  #endif /* __CONFIG_H */
 -- 
-2.12.2
+2.13.4
 
-From f6976cd38b82390054b9ff135f8346119082f2ad Mon Sep 17 00:00:00 2001
+From accdee28c26f95b9ff82db8b46c5ce7c0993fefb Mon Sep 17 00:00:00 2001
 From: Patrice Chotard <patrice.chotard@st.com>
 Date: Mon, 20 Mar 2017 14:38:49 +0100
-Subject: [PATCH 12/16] STiH410-B2260: enable USB Host Networking
+Subject: [PATCH 5/7] STiH410-B2260: enable USB Host Networking
 
 Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
 ---
@@ -268,10 +268,10 @@ Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
  1 file changed, 12 insertions(+)
 
 diff --git a/include/configs/stih410-b2260.h b/include/configs/stih410-b2260.h
-index 3df0e04768..6c84e9b485 100644
+index 5cc6ef884b..ecf8944818 100644
 --- a/include/configs/stih410-b2260.h
 +++ b/include/configs/stih410-b2260.h
-@@ -51,7 +51,19 @@
+@@ -48,7 +48,19 @@
  
  #define CONFIG_SKIP_LOWLEVEL_INIT
  
@@ -292,12 +292,12 @@ index 3df0e04768..6c84e9b485 100644
 +
  #endif /* __CONFIG_H */
 -- 
-2.12.2
+2.13.4
 
-From 4b762469b09955d56bf45b81af8f5d26433e933d Mon Sep 17 00:00:00 2001
+From 11154aae6801c09838e61da6645015e86c95ee5f Mon Sep 17 00:00:00 2001
 From: Nicolas Le Bayon <nicolas.le.bayon@st.com>
 Date: Mon, 27 Mar 2017 16:10:45 +0200
-Subject: [PATCH 15/16] board: STiH410-B2260: fix sdram size
+Subject: [PATCH 6/7] board: STiH410-B2260: fix sdram size
 
 32MB are reserved for Trusted Zone purpose
 
@@ -307,7 +307,7 @@ Signed-off-by: Nicolas Le Bayon <nicolas.le.bayon@st.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/include/configs/stih410-b2260.h b/include/configs/stih410-b2260.h
-index 7fcb327a52..ccbbf32470 100644
+index ecf8944818..2ef5c3c68c 100644
 --- a/include/configs/stih410-b2260.h
 +++ b/include/configs/stih410-b2260.h
 @@ -14,7 +14,7 @@
@@ -320,24 +320,24 @@ index 7fcb327a52..ccbbf32470 100644
  #define CONFIG_SYS_LOAD_ADDR		PHYS_SDRAM_1	/* default load addr */
  
 -- 
-2.12.2
+2.13.4
 
-From 73c47454a638029bafeaa4b5061f25bc6ddb6cea Mon Sep 17 00:00:00 2001
+From ea8ddd51d7c4c27e83586ca5520a26a90d14671d Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 1 Aug 2017 11:28:54 +0100
-Subject: [PATCH] sti: enable distro defaults, USB and a few other bits
+Date: Tue, 15 Aug 2017 11:08:31 +0100
+Subject: [PATCH 7/7] sti: enable distro defaults, USB and a few other bits
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
  configs/stih410-b2260_defconfig | 26 ++++++++++++++++++++++----
- include/configs/stih410-b2260.h | 31 +++++++++++++++++++++++++------
- 2 files changed, 47 insertions(+), 10 deletions(-)
+ include/configs/stih410-b2260.h | 24 +++++++++++++++++++++---
+ 2 files changed, 43 insertions(+), 7 deletions(-)
 
 diff --git a/configs/stih410-b2260_defconfig b/configs/stih410-b2260_defconfig
-index e29c29bc6f..48f534c907 100644
+index 998602c3b2..9b5db8503b 100644
 --- a/configs/stih410-b2260_defconfig
 +++ b/configs/stih410-b2260_defconfig
-@@ -2,26 +2,44 @@ CONFIG_ARM=y
+@@ -2,6 +2,7 @@ CONFIG_ARM=y
  CONFIG_ARCH_STI=y
  CONFIG_IDENT_STRING="STMicroelectronics STiH410-B2260"
  CONFIG_DEFAULT_DEVICE_TREE="stih410-b2260"
@@ -345,6 +345,7 @@ index e29c29bc6f..48f534c907 100644
  CONFIG_FIT=y
  CONFIG_FIT_VERBOSE=y
  CONFIG_ENV_IS_NOWHERE=y
+@@ -10,20 +11,37 @@ CONFIG_BOOTARGS="console=ttyS0,115200 earlyprintk consoleblank=0 ignore_loglevel
  # CONFIG_DISPLAY_CPUINFO is not set
  CONFIG_SYS_PROMPT="stih410-b2260 => "
  # CONFIG_CMD_IMLS is not set
@@ -387,26 +388,19 @@ index e29c29bc6f..48f534c907 100644
 +CONFIG_OF_LIBFDT_OVERLAY=y
  CONFIG_SPL_OF_LIBFDT=y
 diff --git a/include/configs/stih410-b2260.h b/include/configs/stih410-b2260.h
-index eaa93a5830..1909f3b0d6 100644
+index 2ef5c3c68c..c1149b707c 100644
 --- a/include/configs/stih410-b2260.h
 +++ b/include/configs/stih410-b2260.h
-@@ -20,13 +20,32 @@
+@@ -20,10 +20,28 @@
  
  #define CONFIG_SYS_HZ_CLOCK		1000000000	/* 1 GHz */
  
--#define CONFIG_BOOTARGS							\
--	"console=ttyS0,115200 earlyprintk consoleblank=0 ignore_loglevel"
--
 +#include <config_distro_defaults.h>
++
  /* Environment */
 -#define CONFIG_EXTRA_ENV_SETTINGS \
 -	"board= B2260" \
 -	"load_addr= #CONFIG_SYS_LOAD_ADDR \0"
-+
-+/* we assume that rootfs is located on second partition formatted in ext4 */
-+#define CONFIG_BOOTARGS			\
-+	"console=ttyAS1,115200 CONSOLE=/dev/ttyAS1 consoleblank=0 root=/dev/mmcblk0p2 rootfstype=ext4 rw rootwait mem=992M@0x40000000 vmalloc=256m"
-+
 +#define CONFIG_LOADADDR			CONFIG_SYS_LOAD_ADDR
 +
 +#define CONFIG_ENV_VARS_UBOOT_CONFIG
@@ -430,5 +424,5 @@ index eaa93a5830..1909f3b0d6 100644
  #define CONFIG_ENV_SIZE 0x4000
  
 -- 
-2.13.3
+2.13.4
 
