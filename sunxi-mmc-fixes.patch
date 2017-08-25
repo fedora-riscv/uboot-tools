@@ -1,0 +1,309 @@
+From patchwork Wed Aug 23 11:41:33 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,1/4] mmc: sunxi: fix legacy MMC initialisation
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+X-Patchwork-Id: 804954
+Message-Id: <20170823114136.10919-2-maxime.ripard@free-electrons.com>
+To: Jagan Teki <jagan@openedev.com>, Jaehoon Chung <jh80.chung@samsung.com>, 
+ Simon Glass <sjg@chromium.org>
+Cc: u-boot@lists.denx.de, Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Wed, 23 Aug 2017 13:41:33 +0200
+
+The driver-model rework changed, among other things, the way the private
+data were moved around. It now uses the private field in the struct mmc.
+
+However, the mmc_create argument was changed in the process to always pass
+the array we used to have to store our private structures.
+
+The basically means that all the MMC driver instances will now have the
+private data of the first instance, which obviously doesn't work very well.
+
+Pass the proper pointer to mmc_create.
+
+Fixes: 034e226bc77e ("dm: mmc: sunxi: Pass private data around explicitly")
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Tested-by: Chen-Yu Tsai <wens@csie.org>
+Tested-by: Jagan Teki <jagan@openedev.com>
+Reviewed-by: Jagan Teki <jagan@openedev.com>
+---
+ drivers/mmc/sunxi_mmc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/mmc/sunxi_mmc.c b/drivers/mmc/sunxi_mmc.c
+index 588574fab6a9..30f1f76e9f8c 100644
+--- a/drivers/mmc/sunxi_mmc.c
++++ b/drivers/mmc/sunxi_mmc.c
+@@ -498,7 +498,7 @@ struct mmc *sunxi_mmc_init(int sdc_no)
+ 	if (ret)
+ 		return NULL;
+ 
+-	return mmc_create(cfg, mmc_host);
++	return mmc_create(cfg, priv);
+ }
+ #else
+ 
+From patchwork Wed Aug 23 11:41:34 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,2/4] arm: sunxi: compile spl_boot_device even for U-Boot
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+X-Patchwork-Id: 804955
+Message-Id: <20170823114136.10919-3-maxime.ripard@free-electrons.com>
+To: Jagan Teki <jagan@openedev.com>, Jaehoon Chung <jh80.chung@samsung.com>, 
+ Simon Glass <sjg@chromium.org>
+Cc: u-boot@lists.denx.de, Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Wed, 23 Aug 2017 13:41:34 +0200
+
+U-Boot itself might need to identify the boot device, for example to be
+able to tell where to load the kernel from when several options are
+possible.
+
+Remove the guard preventing it from being compiled.
+
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Tested-by: Chen-Yu Tsai <wens@csie.org>
+---
+ arch/arm/mach-sunxi/board.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/arch/arm/mach-sunxi/board.c b/arch/arm/mach-sunxi/board.c
+index 65b1ebd83787..f5e977b4183d 100644
+--- a/arch/arm/mach-sunxi/board.c
++++ b/arch/arm/mach-sunxi/board.c
+@@ -14,9 +14,7 @@
+ #include <mmc.h>
+ #include <i2c.h>
+ #include <serial.h>
+-#ifdef CONFIG_SPL_BUILD
+ #include <spl.h>
+-#endif
+ #include <asm/gpio.h>
+ #include <asm/io.h>
+ #include <asm/arch/clock.h>
+@@ -210,7 +208,6 @@ void s_init(void)
+ 	eth_init_board();
+ }
+ 
+-#ifdef CONFIG_SPL_BUILD
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+ /* The sunxi internal brom will try to loader external bootloader
+@@ -261,6 +258,7 @@ u32 spl_boot_mode(const u32 boot_device)
+ 	return MMCSD_MODE_RAW;
+ }
+ 
++#ifdef CONFIG_SPL_BUILD
+ void board_init_f(ulong dummy)
+ {
+ 	spl_init();
+From patchwork Wed Aug 23 11:41:35 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,3/4] sunxi: Use spl_boot_device
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+X-Patchwork-Id: 804957
+Message-Id: <20170823114136.10919-4-maxime.ripard@free-electrons.com>
+To: Jagan Teki <jagan@openedev.com>, Jaehoon Chung <jh80.chung@samsung.com>, 
+ Simon Glass <sjg@chromium.org>
+Cc: u-boot@lists.denx.de, Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Wed, 23 Aug 2017 13:41:35 +0200
+
+Our current board code duplicates a bit the spl_boot_device logic. Now that
+we can use that function in the full-flavoured U-Boot, remove that
+duplication and call the function instead.
+
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ board/sunxi/board.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index 800f412b383d..e1d48140878f 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -32,6 +32,7 @@
+ #include <libfdt.h>
+ #include <nand.h>
+ #include <net.h>
++#include <spl.h>
+ #include <sy8106a.h>
+ #include <asm/setup.h>
+ 
+@@ -720,11 +721,14 @@ static void setup_environment(const void *fdt)
+ int misc_init_r(void)
+ {
+ 	__maybe_unused int ret;
++	uint boot;
+ 
+ 	setenv("fel_booted", NULL);
+ 	setenv("fel_scriptaddr", NULL);
++
++	boot = spl_boot_device();
+ 	/* determine if we are running in FEL mode */
+-	if (!is_boot0_magic(SPL_ADDR + 4)) { /* eGON.BT0 */
++	if (boot == BOOT_DEVICE_BOARD) {
+ 		setenv("fel_booted", "1");
+ 		parse_spl_header(SPL_ADDR);
+ 	}
+From patchwork Wed Aug 23 11:41:36 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,4/4] sunxi: Remove the MMC index hack
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+X-Patchwork-Id: 804956
+Message-Id: <20170823114136.10919-5-maxime.ripard@free-electrons.com>
+To: Jagan Teki <jagan@openedev.com>, Jaehoon Chung <jh80.chung@samsung.com>, 
+ Simon Glass <sjg@chromium.org>
+Cc: u-boot@lists.denx.de, Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Wed, 23 Aug 2017 13:41:36 +0200
+
+The current code, if there's both an eMMC and an MMC slot available on the
+board, will swap the MMC indices based on whether we booted from the eMMC
+or the MMC. This way, the MMC we're supposed to boot on will always have
+the index 0.
+
+However, this causes various issues, for example when using other
+components that base their behaviour on the MMC index, such as fastboot.
+
+Let's remove that hack, and take the opposite approach. The MMC will always
+have the same index, but the bootcmd will pick the same device than the one
+we booted from. This is done through the introduction of the mmc_bootdev
+environment variable that will be filled by the board code based on the
+boot device informations we can get from the SoC.
+
+In order to not introduce regressions, we also need to adjust the fastboot
+MMC device and the environment device in order to set it to the eMMC, over
+the MMC, like it used to be the case.
+
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Tested-by: Chen-Yu Tsai <wens@csie.org>
+---
+ board/sunxi/board.c            | 20 ++++++--------------
+ include/configs/sunxi-common.h | 36 ++++++++++++++++++++++++++++++------
+ 2 files changed, 36 insertions(+), 20 deletions(-)
+
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index e1d48140878f..664c7d2d8126 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -492,20 +492,6 @@ int board_mmc_init(bd_t *bis)
+ 		return -1;
+ #endif
+ 
+-#if !defined(CONFIG_SPL_BUILD) && CONFIG_MMC_SUNXI_SLOT_EXTRA == 2
+-	/*
+-	 * On systems with an emmc (mmc2), figure out if we are booting from
+-	 * the emmc and if we are make it "mmc dev 0" so that boot.scr, etc.
+-	 * are searched there first. Note we only do this for u-boot proper,
+-	 * not for the SPL, see spl_boot_device().
+-	 */
+-	if (readb(SPL_ADDR + 0x28) == SUNXI_BOOTED_FROM_MMC2) {
+-		/* Booting from emmc / mmc2, swap */
+-		mmc0->block_dev.devnum = 1;
+-		mmc1->block_dev.devnum = 0;
+-	}
+-#endif
+-
+ 	return 0;
+ }
+ #endif
+@@ -725,12 +711,18 @@ int misc_init_r(void)
+ 
+ 	setenv("fel_booted", NULL);
+ 	setenv("fel_scriptaddr", NULL);
++	setenv("mmc_bootdev", NULL);
+ 
+ 	boot = spl_boot_device();
+ 	/* determine if we are running in FEL mode */
+ 	if (boot == BOOT_DEVICE_BOARD) {
+ 		setenv("fel_booted", "1");
+ 		parse_spl_header(SPL_ADDR);
++	/* or if we booted from MMC, and which one */
++	} else if (boot == BOOT_DEVICE_MMC1) {
++		setenv("mmc_bootdev", "0");
++	} else if (boot == BOOT_DEVICE_MMC2) {
++		setenv("mmc_bootdev", "1");
+ 	}
+ 
+ 	setup_environment(gd->fdt_blob);
+diff --git a/include/configs/sunxi-common.h b/include/configs/sunxi-common.h
+index 07c7ffd7f204..79dc3dddd0cc 100644
+--- a/include/configs/sunxi-common.h
++++ b/include/configs/sunxi-common.h
+@@ -148,7 +148,13 @@
+ #endif
+ 
+ #if defined(CONFIG_ENV_IS_IN_MMC)
+-#define CONFIG_SYS_MMC_ENV_DEV		0	/* first detected MMC controller */
++#if CONFIG_MMC_SUNXI_SLOT_EXTRA != -1
++/* If we have two devices (most likely eMMC + MMC), favour the eMMC */
++#define CONFIG_SYS_MMC_ENV_DEV		1
++#else
++/* Otherwise, use the only device we have */
++#define CONFIG_SYS_MMC_ENV_DEV		0
++#endif
+ #define CONFIG_SYS_MMC_MAX_DEVICE	4
+ #elif defined(CONFIG_ENV_IS_NOWHERE)
+ #define CONFIG_ENV_SIZE			(128 << 10)
+@@ -328,9 +334,15 @@ extern int soft_i2c_gpio_scl;
+ #define CONFIG_FASTBOOT_FLASH
+ 
+ #ifdef CONFIG_MMC
++#if CONFIG_MMC_SUNXI_SLOT_EXTRA != -1
++/* If we have two devices (most likely eMMC + MMC), favour the eMMC */
++#define CONFIG_FASTBOOT_FLASH_MMC_DEV	1
++#else
++/* Otherwise, use the only device we have */
+ #define CONFIG_FASTBOOT_FLASH_MMC_DEV	0
+ #endif
+ #endif
++#endif
+ 
+ #ifdef CONFIG_USB_FUNCTION_MASS_STORAGE
+ #endif
+@@ -405,15 +417,28 @@ extern int soft_i2c_gpio_scl;
+ 	"ramdisk ram " RAMDISK_ADDR_R " 0x4000000\0"
+ 
+ #ifdef CONFIG_MMC
+-#define BOOT_TARGET_DEVICES_MMC(func) func(MMC, mmc, 0)
+ #if CONFIG_MMC_SUNXI_SLOT_EXTRA != -1
+-#define BOOT_TARGET_DEVICES_MMC_EXTRA(func) func(MMC, mmc, 1)
++#define BOOTENV_DEV_MMC_AUTO(devtypeu, devtypel, instance)		\
++	BOOTENV_DEV_MMC(MMC, mmc, 0)					\
++	BOOTENV_DEV_MMC(MMC, mmc, 1)					\
++	"bootcmd_mmc_auto="						\
++		"if test ${mmc_bootdev} -eq 1; then "			\
++			"run bootcmd_mmc1; "				\
++			"run bootcmd_mmc0; "				\
++		"elif test ${mmc_bootdev} -eq 0; then "			\
++			"run bootcmd_mmc0; "				\
++			"run bootcmd_mmc1; "				\
++		"fi\0"
++
++#define BOOTENV_DEV_NAME_MMC_AUTO(devtypeu, devtypel, instance) \
++	"mmc_auto "
++
++#define BOOT_TARGET_DEVICES_MMC(func) func(MMC_AUTO, mmc_auto, na)
+ #else
+-#define BOOT_TARGET_DEVICES_MMC_EXTRA(func)
++#define BOOT_TARGET_DEVICES_MMC(func) func(MMC, mmc, 0)
+ #endif
+ #else
+ #define BOOT_TARGET_DEVICES_MMC(func)
+-#define BOOT_TARGET_DEVICES_MMC_EXTRA(func)
+ #endif
+ 
+ #ifdef CONFIG_AHCI
+@@ -441,7 +466,6 @@ extern int soft_i2c_gpio_scl;
+ #define BOOT_TARGET_DEVICES(func) \
+ 	func(FEL, fel, na) \
+ 	BOOT_TARGET_DEVICES_MMC(func) \
+-	BOOT_TARGET_DEVICES_MMC_EXTRA(func) \
+ 	BOOT_TARGET_DEVICES_SCSI(func) \
+ 	BOOT_TARGET_DEVICES_USB(func) \
+ 	func(PXE, pxe, na) \
