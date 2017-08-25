@@ -1,0 +1,74 @@
+From patchwork Fri Aug 25 01:45:31 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] rpi: Enable USB keyboard support
+From: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 805721
+Message-Id: <20170825014531.192640-1-sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Fabian Vogt <fvogt@suse.com>, Stephen Warren <swarren@nvidia.com>
+Date: Thu, 24 Aug 2017 19:45:31 -0600
+
+This is currently disabled, so USB keyboards are not detected in U_Boot.
+Enable this option to fix that.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+Tested-by: Jonathan Gray <jsg@jsg.id.au>
+Reviewed-by: Bin Meng <bmeng.cn@gmail.com>
+---
+
+ configs/rpi_2_defconfig     | 1 +
+ configs/rpi_3_32b_defconfig | 1 +
+ configs/rpi_3_defconfig     | 1 +
+ configs/rpi_defconfig       | 1 +
+ 4 files changed, 4 insertions(+)
+
+diff --git a/configs/rpi_2_defconfig b/configs/rpi_2_defconfig
+index 63d1e4042d..5150eed79c 100644
+--- a/configs/rpi_2_defconfig
++++ b/configs/rpi_2_defconfig
+@@ -15,6 +15,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_MMC=y
+ CONFIG_CMD_USB=y
++CONFIG_DM_KEYBOARD=y
+ CONFIG_DM_MMC=y
+ CONFIG_MMC_SDHCI=y
+ CONFIG_MMC_SDHCI_BCM2835=y
+diff --git a/configs/rpi_3_32b_defconfig b/configs/rpi_3_32b_defconfig
+index 343cb197a1..caceb85b07 100644
+--- a/configs/rpi_3_32b_defconfig
++++ b/configs/rpi_3_32b_defconfig
+@@ -16,6 +16,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_MMC=y
+ CONFIG_CMD_USB=y
++CONFIG_DM_KEYBOARD=y
+ CONFIG_DM_MMC=y
+ CONFIG_MMC_SDHCI=y
+ CONFIG_MMC_SDHCI_BCM2835=y
+diff --git a/configs/rpi_3_defconfig b/configs/rpi_3_defconfig
+index 6c9f2e32b5..e3dd1b9124 100644
+--- a/configs/rpi_3_defconfig
++++ b/configs/rpi_3_defconfig
+@@ -16,6 +16,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_MMC=y
+ CONFIG_CMD_USB=y
++CONFIG_DM_KEYBOARD=y
+ CONFIG_DM_MMC=y
+ CONFIG_MMC_SDHCI=y
+ CONFIG_MMC_SDHCI_BCM2835=y
+diff --git a/configs/rpi_defconfig b/configs/rpi_defconfig
+index 6b3cec5ce0..eaf9bb9189 100644
+--- a/configs/rpi_defconfig
++++ b/configs/rpi_defconfig
+@@ -15,6 +15,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_MMC=y
+ CONFIG_CMD_USB=y
++CONFIG_DM_KEYBOARD=y
+ CONFIG_DM_MMC=y
+ CONFIG_MMC_SDHCI=y
+ CONFIG_MMC_SDHCI_BCM2835=y

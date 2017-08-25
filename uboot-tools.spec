@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.09
-Release:   0.3%{?candidate:.%{candidate}}%{?dist}
+Release:   0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -22,8 +22,11 @@ Patch10:   dragonboard-fixes.patch
 Patch11:   mx6-Initial-Hummingboard-2-support.patch
 Patch12:   sti-STiH410-B2260-support.patch
 Patch13:   rpi-Revert-dm-Drop-CONFIG_OF_EMBED.patch
-#Patch14:   sunxi-dm-pine64.patch
+Patch14:   rpi-Enable-USB-keyboard-support.patch
+Patch15:   sunxi-Fix-CONFIG_SUNXI_GMAC-references.patch
+Patch16:   sunxi-mmc-fixes.patch
 
+# Patch17:   sunxi-dm-pine64.patch
 # Patch14:    mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
@@ -275,6 +278,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Fri Aug 25 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-0.4.rc2
+- Raspberry Pi and Allwinner fixes
+- Enable some new devices
+
 * Tue Aug 15 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-0.3.rc2
 - 2017.09 RC2
 

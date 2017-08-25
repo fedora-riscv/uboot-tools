@@ -1,0 +1,81 @@
+From aeac5d911f15e3d17ca857b6e0830e770b4e6db1 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Tue, 22 Aug 2017 15:52:50 +0100
+Subject: [PATCH] sun7i: fix gmac rename
+
+---
+ arch/arm/include/asm/arch-sunxi/sys_proto.h | 2 +-
+ board/sunxi/Makefile                        | 2 +-
+ include/configs/sunxi-common.h              | 2 +-
+ scripts/build-whitelist.sh                  | 2 +-
+ scripts/config_whitelist.txt                | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm/include/asm/arch-sunxi/sys_proto.h b/arch/arm/include/asm/arch-sunxi/sys_proto.h
+index a373319a2b..096510b787 100644
+--- a/arch/arm/include/asm/arch-sunxi/sys_proto.h
++++ b/arch/arm/include/asm/arch-sunxi/sys_proto.h
+@@ -24,7 +24,7 @@ void sdelay(unsigned long);
+ void return_to_fel(uint32_t lr, uint32_t sp);
+ 
+ /* Board / SoC level designware gmac init */
+-#if !defined CONFIG_SPL_BUILD && defined CONFIG_SUNXI_GMAC
++#if !defined CONFIG_SPL_BUILD && defined CONFIG_SUN7I_GMAC
+ void eth_init_board(void);
+ #else
+ static inline void eth_init_board(void) {}
+diff --git a/board/sunxi/Makefile b/board/sunxi/Makefile
+index f4411f01c3..526cb72a51 100644
+--- a/board/sunxi/Makefile
++++ b/board/sunxi/Makefile
+@@ -9,7 +9,7 @@
+ # SPDX-License-Identifier:	GPL-2.0+
+ #
+ obj-y	+= board.o
+-obj-$(CONFIG_SUNXI_GMAC)	+= gmac.o
++obj-$(CONFIG_SUN7I_GMAC)	+= gmac.o
+ ifndef CONFIG_SPL_BUILD
+ obj-$(CONFIG_SUNXI_AHCI)	+= ahci.o
+ endif
+diff --git a/include/configs/sunxi-common.h b/include/configs/sunxi-common.h
+index 212862acd1..1373b1f037 100644
+--- a/include/configs/sunxi-common.h
++++ b/include/configs/sunxi-common.h
+@@ -294,7 +294,7 @@ extern int soft_i2c_gpio_scl;
+ #define CONFIG_MII			/* MII PHY management		*/
+ #endif
+ 
+-#ifdef CONFIG_SUNXI_GMAC
++#ifdef CONFIG_SUN7I_GMAC
+ #define CONFIG_PHY_ADDR		1
+ #define CONFIG_MII			/* MII PHY management		*/
+ #define CONFIG_PHY_REALTEK
+diff --git a/scripts/build-whitelist.sh b/scripts/build-whitelist.sh
+index 7d8160d5f2..0f102a0585 100755
+--- a/scripts/build-whitelist.sh
++++ b/scripts/build-whitelist.sh
+@@ -16,7 +16,7 @@ export LC_ALL=C LC_COLLATE=C
+ #	SUNXI_GMAC,AHCI,SATAPWR=SUNXI_GPB(8)
+ #
+ # We want this to produce:
+-#	CONFIG_SUNXI_GMAC
++#	CONFIG_SUN7I_GMAC
+ #	CONFIG_AHCI
+ #	CONFIG_SATAPWR
+ #
+diff --git a/scripts/config_whitelist.txt b/scripts/config_whitelist.txt
+index 6c628c878c..024dcd6a1e 100644
+--- a/scripts/config_whitelist.txt
++++ b/scripts/config_whitelist.txt
+@@ -2308,7 +2308,7 @@ CONFIG_STV0991_HZ_CLOCK
+ CONFIG_ST_SMI
+ CONFIG_SUNXI_AHCI
+ CONFIG_SUNXI_EMAC
+-CONFIG_SUNXI_GMAC
++CONFIG_SUN7I_GMAC
+ CONFIG_SUNXI_GPIO
+ CONFIG_SUNXI_MAX_FB_SIZE
+ CONFIG_SUNXI_USB_PHYS
+-- 
+2.13.5
+
