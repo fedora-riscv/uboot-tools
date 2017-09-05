@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc4
 
 Name:      uboot-tools
 Version:   2017.09
-Release:   0.4%{?candidate:.%{candidate}}%{?dist}
+Release:   0.5%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -16,18 +16,17 @@ Source4:   aarch64-chromebooks
 # Fedoraisms patches, general fixes
 Patch1:    uefi-use-Fedora-specific-path-name.patch
 Patch2:    uefi-fixes.patch
+Patch3:    env-Fix-out-of-tree-building-of-tools-all.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
-Patch11:   mx6-Initial-Hummingboard-2-support.patch
-Patch12:   sti-STiH410-B2260-support.patch
-Patch13:   rpi-Revert-dm-Drop-CONFIG_OF_EMBED.patch
-Patch14:   rpi-Enable-USB-keyboard-support.patch
-Patch15:   sunxi-Fix-CONFIG_SUNXI_GMAC-references.patch
-Patch16:   sunxi-mmc-fixes.patch
+Patch11:   rpi-Revert-dm-Drop-CONFIG_OF_EMBED.patch
+Patch12:   qemu-machine-virt-ARM.patch
+Patch13:   sti-STiH410-B2260-support.patch
 
-# Patch17:   sunxi-dm-pine64.patch
-# Patch14:    mvebu-enable-generic-distro-boot-config.patch
+# Patch15:   mx6-Initial-Hummingboard-2-support.patch
+# Patch16:   sunxi-dm-pine64.patch
+# Patch17:   mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -37,6 +36,7 @@ BuildRequires:  openssl-devel
 BuildRequires:  python2-devel
 BuildRequires:  python2-setuptools
 BuildRequires:  python2-libfdt
+BuildRequires:  SDL-devel
 BuildRequires:  swig
 %ifarch %{arm} aarch64
 BuildRequires:  vboot-utils
@@ -107,7 +107,7 @@ do
   echo "Building board: $board"
   mkdir builds/$(echo $board)/
   # ATF selection, needs improving, suggestions of ATF SoC to Board matrix welcome
-  sun50i=(pine64_plus bananapi_m64 nanopi_neo2 orangepi_pc2 orangepi_prime orangepi_win orangepi_zero_plus2 sopine_baseboard)
+  sun50i=(pine64_plus a64-olinuxino bananapi_m64 nanopi_a64 nanopi_neo2 orangepi_pc2 orangepi_prime orangepi_win orangepi_zero_plus2 sopine_baseboard)
   if [[ " ${sun50i[*]} " == *" $board "* ]]; then
     echo "Board: $board using sun50iw1p1"
     cp /usr/share/arm-trusted-firmware/sun50iw1p1/bl31.bin builds/$(echo $board)/
@@ -278,6 +278,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Sep  5 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-0.5.rc4
+- 2017.09 RC4
+- Add qemu arm target config
+
 * Fri Aug 25 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-0.4.rc2
 - Raspberry Pi and Allwinner fixes
 - Enable some new devices

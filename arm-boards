@@ -97,6 +97,7 @@ q8_a13_tablet
 q8_a23_tablet_800x480
 q8_a33_tablet_1024x600
 q8_a33_tablet_800x480
+qemu_arm
 r7-tv-dongle
 riotboard
 rock

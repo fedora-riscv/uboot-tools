@@ -2340,17 +2340,3 @@ index 4b78f6d556..4a19fabdb3 100644
  					  struct efi_device_path *file_path,
 -- 
 2.13.3
-
-diff --git a/lib/efi_loader/efi_gop.c b/lib/efi_loader/efi_gop.c
-index e063e0c79b..411a8c9226 100644
---- a/lib/efi_loader/efi_gop.c
-+++ b/lib/efi_loader/efi_gop.c
-@@ -137,7 +137,7 @@ int efi_gop_register(void)
- 	struct udevice *vdev;
- 
- 	/* We only support a single video output device for now */
--	if (uclass_first_device(UCLASS_VIDEO, &vdev))
-+	if (uclass_first_device(UCLASS_VIDEO, &vdev) || !vdev)
- 		return -1;
- 
- 	struct video_priv *priv = dev_get_uclass_priv(vdev);

@@ -1,7 +1,18 @@
-From c8ba51a9128dad186794a0bc20639c38851477fa Mon Sep 17 00:00:00 2001
+From patchwork Tue Sep  5 09:04:18 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v10,01/10] mmc: sti_sdhci: Rework sti_mmc_core_config()
+X-Patchwork-Submitter: Patrice CHOTARD <patrice.chotard@st.com>
+X-Patchwork-Id: 810017
+Message-Id: <1504602267-31283-2-git-send-email-patrice.chotard@st.com>
+To: <u-boot@lists.denx.de>, <albert.u.boot@aribaud.net>, <sjg@chromium.org>, 
+ <jh80.chung@samsung.com>, <marex@denx.de>
+Date: Tue, 5 Sep 2017 11:04:18 +0200
+From: <patrice.chotard@st.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
 From: Patrice Chotard <patrice.chotard@st.com>
-Date: Mon, 13 Feb 2017 10:24:16 +0100
-Subject: [PATCH 1/7] mmc: sti_sdhci: Rework sti_mmc_core_config()
 
 Use struct udevice* as input parameter. Previous
 parameters are retrieved through plat and priv data.
@@ -10,12 +21,23 @@ This to prepare to use the reset framework.
 
 Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
 Reviewed-by: Jaehoon Chung <jh80.chung@samsung.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
 ---
+v10:	_ none
+v9:	_ none
+v8:	_ none
+v7:	_ none
+v6:	_ add reviewed-by Simon Glass
+v5:	_ none
+v4:	_ none
+v3:	_ none
+v2:	_ none
+
  drivers/mmc/sti_sdhci.c | 33 ++++++++++++++++++---------------
  1 file changed, 18 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/mmc/sti_sdhci.c b/drivers/mmc/sti_sdhci.c
-index f85f6b4db6..714afd92e3 100644
+index f85f6b4..714afd9 100644
 --- a/drivers/mmc/sti_sdhci.c
 +++ b/drivers/mmc/sti_sdhci.c
 @@ -16,6 +16,7 @@ DECLARE_GLOBAL_DATA_PTR;
@@ -106,26 +128,46 @@ index f85f6b4db6..714afd92e3 100644
  
  	host->quirks = SDHCI_QUIRK_WAIT_SEND_CMD |
  		       SDHCI_QUIRK_32BIT_DMA_ADDR |
--- 
-2.13.4
 
-From 9da099b52c1e64c831b4243a0ac76c8f9c9f04fb Mon Sep 17 00:00:00 2001
+From patchwork Tue Sep  5 09:04:19 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v10,
+ 02/10] ARM: dts: stih410-family: Add missing reset_names for mmc1 node
+X-Patchwork-Submitter: Patrice CHOTARD <patrice.chotard@st.com>
+X-Patchwork-Id: 810023
+Message-Id: <1504602267-31283-3-git-send-email-patrice.chotard@st.com>
+To: <u-boot@lists.denx.de>, <albert.u.boot@aribaud.net>, <sjg@chromium.org>, 
+ <jh80.chung@samsung.com>, <marex@denx.de>
+Date: Tue, 5 Sep 2017 11:04:19 +0200
+From: <patrice.chotard@st.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
 From: Patrice Chotard <patrice.chotard@st.com>
-Date: Mon, 13 Feb 2017 10:00:07 +0100
-Subject: [PATCH 2/7] ARM: dts: stih410-family: Add missing reset_names for
- mmc1 node
 
 reset-names property is needed to use the reset
 API for STi sdhci driver.
 
 Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
 Reviewed-by: Jaehoon Chung <jh80.chung@samsung.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
 ---
+
+v10:	_ none
+v9:	_ none
+v8:	_ none
+v7:	_ none
+v6:	_ add reviewed-by Simon Glass
+v5:	_ none
+v4:	_ none
+v3:	_ none
+v2:	_ none
  arch/arm/dts/stih407-family.dtsi | 1 +
  1 file changed, 1 insertion(+)
 
 diff --git a/arch/arm/dts/stih407-family.dtsi b/arch/arm/dts/stih407-family.dtsi
-index af66b53471..452ac1cdce 100644
+index af66b53..452ac1c 100644
 --- a/arch/arm/dts/stih407-family.dtsi
 +++ b/arch/arm/dts/stih407-family.dtsi
 @@ -563,6 +563,7 @@
@@ -136,22 +178,41 @@ index af66b53471..452ac1cdce 100644
  			bus-width = <4>;
  		};
  
--- 
-2.13.4
 
-From dcf231fae86261375f95043c7eee880f9027fa37 Mon Sep 17 00:00:00 2001
+From patchwork Tue Sep  5 09:04:20 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v10,03/10] mmc: sti_sdhci: Use reset framework
+X-Patchwork-Submitter: Patrice CHOTARD <patrice.chotard@st.com>
+X-Patchwork-Id: 810027
+Message-Id: <1504602267-31283-4-git-send-email-patrice.chotard@st.com>
+To: <u-boot@lists.denx.de>, <albert.u.boot@aribaud.net>, <sjg@chromium.org>, 
+ <jh80.chung@samsung.com>, <marex@denx.de>
+Date: Tue, 5 Sep 2017 11:04:20 +0200
+From: <patrice.chotard@st.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
 From: Patrice Chotard <patrice.chotard@st.com>
-Date: Tue, 28 Feb 2017 18:18:42 +0100
-Subject: [PATCH 3/7] mmc: sti_sdhci: Use reset framework
 
 Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
 Reviewed-by: Jaehoon Chung <jh80.chung@samsung.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
 ---
- drivers/mmc/sti_sdhci.c | 31 ++++++++++++++++++++++---------
- 1 file changed, 22 insertions(+), 9 deletions(-)
+v10:	_ none
+v9:	_ none
+v8:	_ none
+v7:	_ none
+v6:	_ add reviewed-by Simon Glass
+v5:	_ none
+v4:	_ none
+v3:	_ none
+v2:	_ none
+ drivers/mmc/sti_sdhci.c | 35 ++++++++++++++++++++---------------
+ 1 file changed, 20 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/mmc/sti_sdhci.c b/drivers/mmc/sti_sdhci.c
-index 714afd92e3..b0ff54cf73 100644
+index 714afd9..d8b5888 100644
 --- a/drivers/mmc/sti_sdhci.c
 +++ b/drivers/mmc/sti_sdhci.c
 @@ -8,6 +8,7 @@
@@ -162,7 +223,7 @@ index 714afd92e3..b0ff54cf73 100644
  #include <sdhci.h>
  #include <asm/arch/sdhci.h>
  
-@@ -16,6 +17,7 @@ DECLARE_GLOBAL_DATA_PTR;
+@@ -16,15 +17,10 @@ DECLARE_GLOBAL_DATA_PTR;
  struct sti_sdhci_plat {
  	struct mmc_config cfg;
  	struct mmc mmc;
@@ -170,7 +231,16 @@ index 714afd92e3..b0ff54cf73 100644
  	int instance;
  };
  
-@@ -37,17 +39,19 @@ struct sti_sdhci_plat {
+-/*
+- * used to get access to MMC1 reset,
+- * will be removed when STi reset driver will be available
+- */
+-#define STIH410_SYSCONF5_BASE		0x092b0000
+-
+ /**
+  * sti_mmc_core_config: configure the Arasan HC
+  * @dev : udevice
+@@ -37,17 +33,19 @@ struct sti_sdhci_plat {
   * W/o these settings the SDHCI could configure and use the embedded controller
   * with limited features.
   */
@@ -195,7 +265,7 @@ index 714afd92e3..b0ff54cf73 100644
  	}
  
  	writel(STI_FLASHSS_MMC_CORE_CONFIG_1,
-@@ -66,6 +70,8 @@ static void sti_mmc_core_config(struct udevice *dev)
+@@ -66,6 +64,8 @@ static void sti_mmc_core_config(struct udevice *dev)
  	}
  	writel(STI_FLASHSS_MMC_CORE_CONFIG4,
  	       host->ioaddr + FLASHSS_MMC_CORE_CONFIG_4);
@@ -204,23 +274,21 @@ index 714afd92e3..b0ff54cf73 100644
  }
  
  static int sti_sdhci_probe(struct udevice *dev)
-@@ -80,13 +86,20 @@ static int sti_sdhci_probe(struct udevice *dev)
+@@ -80,13 +80,18 @@ static int sti_sdhci_probe(struct udevice *dev)
  	 * MMC0 is wired to the SD slot,
  	 * MMC1 is wired on the high speed connector
  	 */
 -
 -	if (fdt_getprop(gd->fdt_blob, dev_of_offset(dev), "resets", NULL))
-+	if (fdt_getprop(gd->fdt_blob, dev_of_offset(dev), "resets", NULL)) {
++	ret = reset_get_by_index(dev, 0, &plat->reset);
++	if (!ret)
  		plat->instance = 1;
--	else
-+		ret = reset_get_by_name(dev, "softreset", &plat->reset);
-+		if (ret) {
-+			error("can't get reset for %s (%d)", dev->name, ret);
+ 	else
+-		plat->instance = 0;
++		if (ret == -ENOENT)
++			plat->instance = 0;
++		else
 +			return ret;
-+		}
-+	} else {
- 		plat->instance = 0;
-+	}
  
 -	sti_mmc_core_config(dev);
 +	ret = sti_mmc_core_config(dev);
@@ -229,56 +297,342 @@ index 714afd92e3..b0ff54cf73 100644
  
  	host->quirks = SDHCI_QUIRK_WAIT_SEND_CMD |
  		       SDHCI_QUIRK_32BIT_DMA_ADDR |
--- 
-2.13.4
 
-From 57f7ca4d9419eab5021866f3d2deae088d7ef545 Mon Sep 17 00:00:00 2001
+From patchwork Tue Sep  5 09:04:21 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v10,04/10] usb: phy: Add STi USB2 PHY
+X-Patchwork-Submitter: Patrice CHOTARD <patrice.chotard@st.com>
+X-Patchwork-Id: 810026
+Message-Id: <1504602267-31283-5-git-send-email-patrice.chotard@st.com>
+To: <u-boot@lists.denx.de>, <albert.u.boot@aribaud.net>, <sjg@chromium.org>, 
+ <jh80.chung@samsung.com>, <marex@denx.de>
+Date: Tue, 5 Sep 2017 11:04:21 +0200
+From: <patrice.chotard@st.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
 From: Patrice Chotard <patrice.chotard@st.com>
-Date: Mon, 20 Mar 2017 13:40:41 +0100
-Subject: [PATCH 4/7] board: STiH410-B2260: add OHCI and XHCI related defines
+
+This is the generic phy driver for the picoPHY ports
+used by USB2/1.1 controllers. It is found on STiH407 SoC
+family from STMicroelectronics.
 
 Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
 ---
- include/configs/stih410-b2260.h | 3 +++
- 1 file changed, 3 insertions(+)
+v10:	_ none
+v9:	_ update doc/device-tree-bindings/phy/phy-stih407-usb.txt requested by
+	  Marek Vasut 
+v8:	_ add Reviewed-by Simon Glass
+v7:	_ replace fdtdec_parse_phandle_with_args() by dev_read_phandle_with_args() 
+	_ replace uclass_get_device_by_of_offset() by uclass_get_device_by_ofnode()
+v6:	_ none
+v5:	_ add Reviewed-by: Marek Vasut <marex@denx.de>
+v4:	_ update to use the new PHY uclass currently available on dm-next branch
+v3:	_ convert driver to USB PHY uclass
+v2:	_ replace bitfield_replace() by clrsetbits_le32()
 
-diff --git a/include/configs/stih410-b2260.h b/include/configs/stih410-b2260.h
-index c71413cc53..5cc6ef884b 100644
---- a/include/configs/stih410-b2260.h
-+++ b/include/configs/stih410-b2260.h
-@@ -48,4 +48,7 @@
- 
- #define CONFIG_SKIP_LOWLEVEL_INIT
- 
-+#define CONFIG_USB_OHCI_NEW
-+#define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS     2
+ doc/device-tree-bindings/phy/phy-stih407-usb.txt |  24 +++
+ drivers/phy/Kconfig                              |   8 +
+ drivers/phy/Makefile                             |   1 +
+ drivers/phy/sti_usb_phy.c                        | 181 +++++++++++++++++++++++
+ 4 files changed, 214 insertions(+)
+ create mode 100644 doc/device-tree-bindings/phy/phy-stih407-usb.txt
+ create mode 100644 drivers/phy/sti_usb_phy.c
+
+diff --git a/doc/device-tree-bindings/phy/phy-stih407-usb.txt b/doc/device-tree-bindings/phy/phy-stih407-usb.txt
+new file mode 100644
+index 0000000..371a7fe
+--- /dev/null
++++ b/doc/device-tree-bindings/phy/phy-stih407-usb.txt
+@@ -0,0 +1,24 @@
++ST STiH407 USB PHY controller
 +
- #endif /* __CONFIG_H */
--- 
-2.13.4
++This file documents the dt bindings for the usb picoPHY driver which is the PHY for both USB2 and USB3
++host controllers (when controlling usb2/1.1 devices) available on STiH407 SoC family from STMicroelectronics.
++
++Required properties:
++- compatible		: should be "st,stih407-usb2-phy"
++- st,syscfg		: phandle of sysconfig bank plus integer array containing phyparam and phyctrl register offsets
++- resets		: list of phandle and reset specifier pairs. There should be two entries, one
++			  for the whole phy and one for the port
++- reset-names		: list of reset signal names. Should be "global" and "port"
++See: Documentation/devicetree/bindings/reset/st,sti-powerdown.txt
++See: Documentation/devicetree/bindings/reset/reset.txt
++
++Example:
++
++usb2_picophy0: usbpicophy {
++	compatible	= "st,stih407-usb2-phy";
++	#phy-cells	= <0>;
++	st,syscfg	= <&syscfg_core 0x100 0xf4>;
++	resets		= <&softreset STIH407_PICOPHY_SOFTRESET>,
++			  <&picophyreset STIH407_PICOPHY0_RESET>;
++	reset-names	= "global", "port";
++};
+diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
+index 98f2a1b..3b9a09c 100644
+--- a/drivers/phy/Kconfig
++++ b/drivers/phy/Kconfig
+@@ -77,4 +77,12 @@ config SPL_PIPE3_PHY
+ 	  This PHY is found on omap devices supporting SATA such as dra7, am57x
+ 	  and omap5
+ 
++config STI_USB_PHY
++	bool "STMicroelectronics USB2 picoPHY driver for STiH407 family"
++	depends on PHY && ARCH_STI
++	help
++	  This is the generic phy driver for the picoPHY ports
++	  used by USB2 and USB3 Host controllers available on
++	  STiH407 SoC families.
++
+ endmenu
+diff --git a/drivers/phy/Makefile b/drivers/phy/Makefile
+index ab56c46..668040b 100644
+--- a/drivers/phy/Makefile
++++ b/drivers/phy/Makefile
+@@ -9,3 +9,4 @@ obj-$(CONFIG_$(SPL_)PHY) += phy-uclass.o
+ obj-$(CONFIG_$(SPL_)NOP_PHY) += nop-phy.o
+ obj-$(CONFIG_PHY_SANDBOX) += sandbox-phy.o
+ obj-$(CONFIG_$(SPL_)PIPE3_PHY) += ti-pipe3-phy.o
++obj-$(CONFIG_STI_USB_PHY) += sti_usb_phy.o
+diff --git a/drivers/phy/sti_usb_phy.c b/drivers/phy/sti_usb_phy.c
+new file mode 100644
+index 0000000..0e0b1c0
+--- /dev/null
++++ b/drivers/phy/sti_usb_phy.c
+@@ -0,0 +1,181 @@
++/*
++ * Copyright (c) 2017
++ * Patrice Chotard <patrice.chotard@st.com>
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include <common.h>
++#include <asm/io.h>
++#include <bitfield.h>
++#include <dm.h>
++#include <errno.h>
++#include <fdtdec.h>
++#include <generic-phy.h>
++#include <libfdt.h>
++#include <regmap.h>
++#include <reset-uclass.h>
++#include <syscon.h>
++#include <wait_bit.h>
++
++#include <linux/bitops.h>
++#include <linux/compat.h>
++
++DECLARE_GLOBAL_DATA_PTR;
++
++/* Default PHY_SEL and REFCLKSEL configuration */
++#define STIH407_USB_PICOPHY_CTRL_PORT_CONF	0x6
++
++/* ports parameters overriding */
++#define STIH407_USB_PICOPHY_PARAM_DEF		0x39a4dc
++
++#define PHYPARAM_REG	1
++#define PHYCTRL_REG	2
++#define PHYPARAM_NB	3
++
++struct sti_usb_phy {
++	struct regmap *regmap;
++	struct reset_ctl global_ctl;
++	struct reset_ctl port_ctl;
++	int param;
++	int ctrl;
++};
++
++static int sti_usb_phy_deassert(struct sti_usb_phy *phy)
++{
++	int ret;
++
++	ret = reset_deassert(&phy->global_ctl);
++	if (ret < 0) {
++		error("PHY global deassert failed: %d", ret);
++		return ret;
++	}
++
++	ret = reset_deassert(&phy->port_ctl);
++	if (ret < 0)
++		error("PHY port deassert failed: %d", ret);
++
++	return ret;
++}
++
++static int sti_usb_phy_init(struct phy *usb_phy)
++{
++	struct udevice *dev = usb_phy->dev;
++	struct sti_usb_phy *phy = dev_get_priv(dev);
++	void __iomem *reg;
++
++	/* set ctrl picophy value */
++	reg = (void __iomem *)phy->regmap->base + phy->ctrl;
++	/* CTRL_PORT mask is 0x1f */
++	clrsetbits_le32(reg, 0x1f, STIH407_USB_PICOPHY_CTRL_PORT_CONF);
++
++	/* set ports parameters overriding */
++	reg = (void __iomem *)phy->regmap->base + phy->param;
++	/* PARAM_DEF mask is 0xffffffff */
++	clrsetbits_le32(reg, 0xffffffff, STIH407_USB_PICOPHY_PARAM_DEF);
++
++	return sti_usb_phy_deassert(phy);
++}
++
++static int sti_usb_phy_exit(struct phy *usb_phy)
++{
++	struct udevice *dev = usb_phy->dev;
++	struct sti_usb_phy *phy = dev_get_priv(dev);
++	int ret;
++
++	ret = reset_assert(&phy->port_ctl);
++	if (ret < 0) {
++		error("PHY port assert failed: %d", ret);
++		return ret;
++	}
++
++	ret = reset_assert(&phy->global_ctl);
++	if (ret < 0)
++		error("PHY global assert failed: %d", ret);
++
++	return ret;
++}
++
++struct phy_ops sti_usb_phy_ops = {
++	.init = sti_usb_phy_init,
++	.exit = sti_usb_phy_exit,
++};
++
++int sti_usb_phy_probe(struct udevice *dev)
++{
++	struct sti_usb_phy *priv = dev_get_priv(dev);
++	struct udevice *syscon;
++	struct ofnode_phandle_args syscfg_phandle;
++	u32 cells[PHYPARAM_NB];
++	int ret, count;
++
++	/* get corresponding syscon phandle */
++	ret = dev_read_phandle_with_args(dev, "st,syscfg", NULL, 0, 0,
++					 &syscfg_phandle);
++
++	if (ret < 0) {
++		error("Can't get syscfg phandle: %d\n", ret);
++		return ret;
++	}
++
++	ret = uclass_get_device_by_ofnode(UCLASS_SYSCON, syscfg_phandle.node,
++					  &syscon);
++	if (ret) {
++		error("unable to find syscon device (%d)\n", ret);
++		return ret;
++	}
++
++	priv->regmap = syscon_get_regmap(syscon);
++	if (!priv->regmap) {
++		error("unable to find regmap\n");
++		return -ENODEV;
++	}
++
++	/* get phy param offset */
++	count = fdtdec_get_int_array_count(gd->fdt_blob, dev_of_offset(dev),
++					   "st,syscfg", cells,
++					   ARRAY_SIZE(cells));
++
++	if (count < 0) {
++		error("Bad PHY st,syscfg property %d\n", count);
++		return -EINVAL;
++	}
++
++	if (count > PHYPARAM_NB) {
++		error("Unsupported PHY param count %d\n", count);
++		return -EINVAL;
++	}
++
++	priv->param = cells[PHYPARAM_REG];
++	priv->ctrl = cells[PHYCTRL_REG];
++
++	/* get global reset control */
++	ret = reset_get_by_name(dev, "global", &priv->global_ctl);
++	if (ret) {
++		error("can't get global reset for %s (%d)", dev->name, ret);
++		return ret;
++	}
++
++	/* get port reset control */
++	ret = reset_get_by_name(dev, "port", &priv->port_ctl);
++	if (ret) {
++		error("can't get port reset for %s (%d)", dev->name, ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static const struct udevice_id sti_usb_phy_ids[] = {
++	{ .compatible = "st,stih407-usb2-phy" },
++	{ }
++};
++
++U_BOOT_DRIVER(sti_usb_phy) = {
++	.name = "sti_usb_phy",
++	.id = UCLASS_PHY,
++	.of_match = sti_usb_phy_ids,
++	.probe = sti_usb_phy_probe,
++	.ops = &sti_usb_phy_ops,
++	.priv_auto_alloc_size = sizeof(struct sti_usb_phy),
++};
 
-From accdee28c26f95b9ff82db8b46c5ce7c0993fefb Mon Sep 17 00:00:00 2001
+From patchwork Tue Sep  5 09:04:22 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v10,05/10] STiH410-B2260: enable USB Host Networking
+X-Patchwork-Submitter: Patrice CHOTARD <patrice.chotard@st.com>
+X-Patchwork-Id: 810018
+Message-Id: <1504602267-31283-6-git-send-email-patrice.chotard@st.com>
+To: <u-boot@lists.denx.de>, <albert.u.boot@aribaud.net>, <sjg@chromium.org>, 
+ <jh80.chung@samsung.com>, <marex@denx.de>
+Date: Tue, 5 Sep 2017 11:04:22 +0200
+From: <patrice.chotard@st.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
 From: Patrice Chotard <patrice.chotard@st.com>
-Date: Mon, 20 Mar 2017 14:38:49 +0100
-Subject: [PATCH 5/7] STiH410-B2260: enable USB Host Networking
+
+Enable USB Host Networking support by enabling Ethernet/USB
+adaptors support and by enabling some BOOTP flags
 
 Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
 ---
- include/configs/stih410-b2260.h | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+
+v10:	_ remove obsolete CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS
+v9:	_ none
+v8:	_ none
+v7:	_ none
+v6:	_ add reviewed-by Simon Glass
+	_ add missing comment in commit message
+v5:	_ none
+v4:	_ none
+v3:	_ none
+v2:	_ none
+
+ include/configs/stih410-b2260.h | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
 diff --git a/include/configs/stih410-b2260.h b/include/configs/stih410-b2260.h
-index 5cc6ef884b..ecf8944818 100644
+index e07dd0e..372c083 100644
 --- a/include/configs/stih410-b2260.h
 +++ b/include/configs/stih410-b2260.h
-@@ -48,7 +48,19 @@
+@@ -45,4 +45,19 @@
  
  #define CONFIG_SKIP_LOWLEVEL_INIT
  
 +/* USB Configs */
- #define CONFIG_USB_OHCI_NEW
- #define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS     2
- 
++#define CONFIG_USB_OHCI_NEW
++#define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS	2
++
 +#define CONFIG_USB_HOST_ETHER
 +#define CONFIG_USB_ETHER_ASIX
 +#define CONFIG_USB_ETHER_MCS7830
@@ -291,63 +645,65 @@ index 5cc6ef884b..ecf8944818 100644
 +#define CONFIG_BOOTP_BOOTPATH
 +
  #endif /* __CONFIG_H */
--- 
-2.13.4
 
-From 11154aae6801c09838e61da6645015e86c95ee5f Mon Sep 17 00:00:00 2001
-From: Nicolas Le Bayon <nicolas.le.bayon@st.com>
-Date: Mon, 27 Mar 2017 16:10:45 +0200
-Subject: [PATCH 6/7] board: STiH410-B2260: fix sdram size
+From patchwork Tue Sep  5 09:04:23 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v10, 06/10] STiH410-B2260: enable USB, fastboot, reset,
+ PHY related flags
+X-Patchwork-Submitter: Patrice CHOTARD <patrice.chotard@st.com>
+X-Patchwork-Id: 810024
+Message-Id: <1504602267-31283-7-git-send-email-patrice.chotard@st.com>
+To: <u-boot@lists.denx.de>, <albert.u.boot@aribaud.net>, <sjg@chromium.org>, 
+ <jh80.chung@samsung.com>, <marex@denx.de>
+Date: Tue, 5 Sep 2017 11:04:23 +0200
+From: <patrice.chotard@st.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
-32MB are reserved for Trusted Zone purpose
+From: Patrice Chotard <patrice.chotard@st.com>
 
-Signed-off-by: Nicolas Le Bayon <nicolas.le.bayon@st.com>
+Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
 ---
- include/configs/stih410-b2260.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+v10:	_ none
+v9:	_ none
+v8:	_ none
+v7:	_ none
+v6:	_ add reviewed-by Simon Glass
+v5:	_ remove CONFIG_USB_OHCI_STI and CONFIG_USB_EHCI_STI
+:	_ enable CONFIG_USB_EHCI_GENERIC and CONFIG_USB_OHCI_GENERIC
+v4:	_ enable CONFIG_PHY and CONFIG_STI_USB_PHY
+v3:	_ none
+v2:	_ none
 
-diff --git a/include/configs/stih410-b2260.h b/include/configs/stih410-b2260.h
-index ecf8944818..2ef5c3c68c 100644
---- a/include/configs/stih410-b2260.h
-+++ b/include/configs/stih410-b2260.h
-@@ -14,7 +14,7 @@
- #define CONFIG_NR_DRAM_BANKS		1
- #define PHYS_SDRAM_1			0x40000000
- #define CONFIG_SYS_SDRAM_BASE		PHYS_SDRAM_1
--#define PHYS_SDRAM_1_SIZE		0x3FE00000
-+#define PHYS_SDRAM_1_SIZE		0x3E000000
- #define CONFIG_SYS_TEXT_BASE		0x7D600000
- #define CONFIG_SYS_LOAD_ADDR		PHYS_SDRAM_1	/* default load addr */
- 
--- 
-2.13.4
 
-From ea8ddd51d7c4c27e83586ca5520a26a90d14671d Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 15 Aug 2017 11:08:31 +0100
-Subject: [PATCH 7/7] sti: enable distro defaults, USB and a few other bits
-
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
----
- configs/stih410-b2260_defconfig | 26 ++++++++++++++++++++++----
- include/configs/stih410-b2260.h | 24 +++++++++++++++++++++---
- 2 files changed, 43 insertions(+), 7 deletions(-)
+ configs/stih410-b2260_defconfig | 39 +++++++++++++++++++++++++++++++++++----
+ 1 file changed, 35 insertions(+), 4 deletions(-)
 
 diff --git a/configs/stih410-b2260_defconfig b/configs/stih410-b2260_defconfig
-index 998602c3b2..9b5db8503b 100644
+index 10e1a2d..8fd1ff2 100644
 --- a/configs/stih410-b2260_defconfig
 +++ b/configs/stih410-b2260_defconfig
-@@ -2,6 +2,7 @@ CONFIG_ARM=y
+@@ -2,27 +2,58 @@ CONFIG_ARM=y
  CONFIG_ARCH_STI=y
  CONFIG_IDENT_STRING="STMicroelectronics STiH410-B2260"
  CONFIG_DEFAULT_DEVICE_TREE="stih410-b2260"
 +CONFIG_DISTRO_DEFAULTS=y
  CONFIG_FIT=y
  CONFIG_FIT_VERBOSE=y
- CONFIG_ENV_IS_NOWHERE=y
-@@ -10,20 +11,37 @@ CONFIG_BOOTARGS="console=ttyS0,115200 earlyprintk consoleblank=0 ignore_loglevel
+ CONFIG_USE_BOOTARGS=y
+ CONFIG_BOOTARGS="console=ttyS0,115200 earlyprintk consoleblank=0 ignore_loglevel"
  # CONFIG_DISPLAY_CPUINFO is not set
  CONFIG_SYS_PROMPT="stih410-b2260 => "
++CONFIG_FASTBOOT=y
++CONFIG_USB_FUNCTION_FASTBOOT=y
++CONFIG_CMD_FASTBOOT=y
++CONFIG_ANDROID_BOOT_IMAGE=y
++CONFIG_FASTBOOT_BUF_ADDR=0x40000000
++CONFIG_FASTBOOT_BUF_SIZE=0x3DF00000
++CONFIG_FASTBOOT_FLASH=y
++CONFIG_FASTBOOT_FLASH_MMC_DEV=0
  # CONFIG_CMD_IMLS is not set
 +CONFIG_CMD_GPT=y
  CONFIG_CMD_MMC=y
@@ -363,9 +719,12 @@ index 998602c3b2..9b5db8503b 100644
  CONFIG_OF_CONTROL=y
  CONFIG_REGMAP=y
  CONFIG_SYSCON=y
++CONFIG_CLK=y
 +CONFIG_MISC=y
  CONFIG_MMC_SDHCI=y
  CONFIG_MMC_SDHCI_STI=y
++CONFIG_PHY=y
++CONFIG_STI_USB_PHY=y
  CONFIG_PINCTRL=y
 +CONFIG_STI_RESET=y
  CONFIG_STI_ASC_SERIAL=y
@@ -376,7 +735,10 @@ index 998602c3b2..9b5db8503b 100644
 +CONFIG_USB_XHCI_HCD=y
 +CONFIG_USB_XHCI_DWC3=y
 +CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_GENERIC=y
 +CONFIG_USB_OHCI_HCD=y
++CONFIG_USB_OHCI_GENERIC=y
++CONFIG_USB_DWC3=y
 +CONFIG_USB_DWC3_GADGET=y
 +CONFIG_USB_STORAGE=y
 +CONFIG_USB_GADGET=y
@@ -384,45 +746,726 @@ index 998602c3b2..9b5db8503b 100644
 +CONFIG_G_DNL_MANUFACTURER="STMicroelectronics"
 +CONFIG_G_DNL_VENDOR_NUM=0x483
 +CONFIG_G_DNL_PRODUCT_NUM=0x7270
-+CONFIG_USB_PHY=y
 +CONFIG_OF_LIBFDT_OVERLAY=y
  CONFIG_SPL_OF_LIBFDT=y
-diff --git a/include/configs/stih410-b2260.h b/include/configs/stih410-b2260.h
-index 2ef5c3c68c..c1149b707c 100644
---- a/include/configs/stih410-b2260.h
-+++ b/include/configs/stih410-b2260.h
-@@ -20,10 +20,28 @@
- 
- #define CONFIG_SYS_HZ_CLOCK		1000000000	/* 1 GHz */
- 
-+#include <config_distro_defaults.h>
-+
- /* Environment */
--#define CONFIG_EXTRA_ENV_SETTINGS \
--	"board= B2260" \
--	"load_addr= #CONFIG_SYS_LOAD_ADDR \0"
-+#define CONFIG_LOADADDR			CONFIG_SYS_LOAD_ADDR
-+
-+#define CONFIG_ENV_VARS_UBOOT_CONFIG
-+
-+#define BOOT_TARGET_DEVICES(func) \
-+	func(MMC, mmc, 0) \
-+	func(USB, usb, 0) \
-+	func(DHCP, dhcp, na)
-+#include <config_distro_bootcmd.h>
-+#define CONFIG_BOOTFILE			"uImage"
-+#define CONFIG_EXTRA_ENV_SETTINGS				\
-+			"kernel_addr_r=0x40000000\0"		\
-+			"fdtfile=stih410-b2260.dtb\0"		\
-+			"fdt_addr_r=0x47000000\0"		\
-+			"scriptaddr=0x50000000\0"		\
-+			"fdt_high=0xffffffffffffffff\0"		\
-+			"initrd_high=0xffffffffffffffff\0"	\
-+			"ramdisk_addr_r=0x48000000\0"		\
-+			BOOTENV
- 
- #define CONFIG_ENV_SIZE 0x4000
- 
--- 
-2.13.4
 
+From patchwork Tue Sep  5 09:04:24 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v10,07/10] usb: dwc3: Add dwc3 glue driver support for STi
+X-Patchwork-Submitter: Patrice CHOTARD <patrice.chotard@st.com>
+X-Patchwork-Id: 810020
+Message-Id: <1504602267-31283-8-git-send-email-patrice.chotard@st.com>
+To: <u-boot@lists.denx.de>, <albert.u.boot@aribaud.net>, <sjg@chromium.org>, 
+ <jh80.chung@samsung.com>, <marex@denx.de>
+Date: Tue, 5 Sep 2017 11:04:24 +0200
+From: <patrice.chotard@st.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+From: Patrice Chotard <patrice.chotard@st.com>
+
+This patch adds the ST glue logic to manage the DWC3 HC
+on STiH407 SoC family. It configures the internal glue
+logic and syscfg registers.
+
+Part of this code been extracted from kernel.org driver
+(drivers/usb/dwc3/dwc3-st.c)
+
+Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+v10:	_ none
+v9:	_ move inclusion of linux/usb/otg.h from include/dwc3-sti-glue.h to 
+	  drivers/usb/host/dwc3-sti-glue.c requested by Marek Vasut
+v8:	_ update failpath label names in sti_dwc3_glue_probe()
+v7:	_ none
+v6:	_ add reviewed-by Simon Glass
+	_ put #define <common.h> first
+v5:	_ none
+v4:	_ none
+v3:	_ rename dwc3-sti.c to dwc3-sti-glue.c
+	  respect device tree hierarchy, this driver is now responsible
+:	  for xhci-sti binding (done in sti_dwc3_glue_bind())
+v2:	_ use setbits_le32() instead of read, modify, write sequence
+	  add missing parenthesis
+
+
+
+ arch/arm/include/asm/arch-stih410/sys_proto.h |  11 ++
+ doc/device-tree-bindings/usb/dwc3-st.txt      |  60 ++++++
+ drivers/usb/host/Kconfig                      |   9 +
+ drivers/usb/host/Makefile                     |   1 +
+ drivers/usb/host/dwc3-sti-glue.c              | 257 ++++++++++++++++++++++++++
+ include/dwc3-sti-glue.h                       |  41 ++++
+ 6 files changed, 379 insertions(+)
+ create mode 100644 arch/arm/include/asm/arch-stih410/sys_proto.h
+ create mode 100644 doc/device-tree-bindings/usb/dwc3-st.txt
+ create mode 100644 drivers/usb/host/dwc3-sti-glue.c
+ create mode 100644 include/dwc3-sti-glue.h
+
+diff --git a/arch/arm/include/asm/arch-stih410/sys_proto.h b/arch/arm/include/asm/arch-stih410/sys_proto.h
+new file mode 100644
+index 0000000..5c40d3b
+--- /dev/null
++++ b/arch/arm/include/asm/arch-stih410/sys_proto.h
+@@ -0,0 +1,11 @@
++/*
++ * Copyright (c) 2017
++ * Patrice Chotard <patrice.chotard@st.com>
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#ifndef _ASM_ARCH_SYS_PROTO_H
++#define _ASM_ARCH_SYS_PROTO_H
++
++#endif /* _ASM_ARCH_SYS_PROTO_H */
+diff --git a/doc/device-tree-bindings/usb/dwc3-st.txt b/doc/device-tree-bindings/usb/dwc3-st.txt
+new file mode 100644
+index 0000000..a26a139
+--- /dev/null
++++ b/doc/device-tree-bindings/usb/dwc3-st.txt
+@@ -0,0 +1,60 @@
++ST DWC3 glue logic
++
++This file documents the parameters for the dwc3-st driver.
++This driver controls the glue logic used to configure the dwc3 core on
++STiH407 based platforms.
++
++Required properties:
++ - compatible	: must be "st,stih407-dwc3"
++ - reg		: glue logic base address and USB syscfg ctrl register offset
++ - reg-names	: should be "reg-glue" and "syscfg-reg"
++ - st,syscon	: should be phandle to system configuration node which
++		  encompasses the glue registers
++ - resets	: list of phandle and reset specifier pairs. There should be two entries, one
++		  for the powerdown and softreset lines of the usb3 IP
++ - reset-names	: list of reset signal names. Names should be "powerdown" and "softreset"
++
++ - #address-cells, #size-cells : should be '1' if the device has sub-nodes
++   with 'reg' property
++
++ - pinctl-names	: A pinctrl state named "default" must be defined
++
++ - pinctrl-0	: Pin control group
++
++ - ranges	: allows valid 1:1 translation between child's address space and
++		  parent's address space
++
++Sub-nodes:
++The dwc3 core should be added as subnode to ST DWC3 glue as shown in the
++example below.
++
++NB: The dr_mode property is NOT optional for this driver, as the default value
++is "otg", which isn't supported by this SoC. Valid dr_mode values for dwc3-st are
++either "host" or "device".
++
++Example:
++
++st_dwc3: dwc3@8f94000 {
++	status		= "disabled";
++	compatible	= "st,stih407-dwc3";
++	reg		= <0x08f94000 0x1000>, <0x110 0x4>;
++	reg-names	= "reg-glue", "syscfg-reg";
++	st,syscfg	= <&syscfg_core>;
++	resets		= <&powerdown STIH407_USB3_POWERDOWN>,
++			  <&softreset STIH407_MIPHY2_SOFTRESET>;
++	reset-names	= "powerdown", "softreset";
++	#address-cells	= <1>;
++	#size-cells	= <1>;
++	pinctrl-names	= "default";
++	pinctrl-0	= <&pinctrl_usb3>;
++	ranges;
++
++	dwc3: dwc3@9900000 {
++		compatible	= "snps,dwc3";
++		reg		= <0x09900000 0x100000>;
++		interrupts	= <GIC_SPI 155 IRQ_TYPE_NONE>;
++		dr_mode		= "host";
++		phy-names	= "usb2-phy", "usb3-phy";
++		phys		= <&usb2_picophy2>, <&phy_port2 PHY_TYPE_USB3>;
++	};
++};
+diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
+index eb035a4..f797a25 100644
+--- a/drivers/usb/host/Kconfig
++++ b/drivers/usb/host/Kconfig
+@@ -47,6 +47,15 @@ config USB_XHCI_ROCKCHIP
+ 	help
+ 	  Enables support for the on-chip xHCI controller on Rockchip SoCs.
+ 
++config USB_XHCI_STI
++	bool "Support for STMicroelectronics STiH407 family on-chip xHCI USB controller"
++	depends on ARCH_STI
++	default y
++	help
++	  Enables support for the on-chip xHCI controller on STMicroelectronics
++	  STiH407 family SoCs. This is a driver for the dwc3 to provide the glue logic
++	  to configure the controller.
++
+ config USB_XHCI_ZYNQMP
+ 	bool "Support for Xilinx ZynqMP on-chip xHCI USB controller"
+ 	depends on ARCH_ZYNQMP
+diff --git a/drivers/usb/host/Makefile b/drivers/usb/host/Makefile
+index ab5a99f..29afb7c 100644
+--- a/drivers/usb/host/Makefile
++++ b/drivers/usb/host/Makefile
+@@ -60,6 +60,7 @@ obj-$(CONFIG_USB_XHCI_FSL) += xhci-fsl.o
+ obj-$(CONFIG_USB_XHCI_MVEBU) += xhci-mvebu.o
+ obj-$(CONFIG_USB_XHCI_OMAP) += xhci-omap.o
+ obj-$(CONFIG_USB_XHCI_PCI) += xhci-pci.o
++obj-$(CONFIG_USB_XHCI_STI) += dwc3-sti-glue.o
+ 
+ # designware
+ obj-$(CONFIG_USB_DWC2) += dwc2.o
+diff --git a/drivers/usb/host/dwc3-sti-glue.c b/drivers/usb/host/dwc3-sti-glue.c
+new file mode 100644
+index 0000000..02ad311
+--- /dev/null
++++ b/drivers/usb/host/dwc3-sti-glue.c
+@@ -0,0 +1,257 @@
++/*
++ * STiH407 family DWC3 specific Glue layer
++ *
++ * Copyright (c) 2017
++ * Patrice Chotard <patrice.chotard@st.com>
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include <common.h>
++#include <asm/io.h>
++#include <dm.h>
++#include <errno.h>
++#include <fdtdec.h>
++#include <libfdt.h>
++#include <dm/lists.h>
++#include <regmap.h>
++#include <reset-uclass.h>
++#include <syscon.h>
++#include <usb.h>
++
++#include <linux/usb/dwc3.h>
++#include <linux/usb/otg.h>
++#include <dwc3-sti-glue.h>
++
++DECLARE_GLOBAL_DATA_PTR;
++
++/*
++ * struct sti_dwc3_glue_platdata - dwc3 STi glue driver private structure
++ * @syscfg_base:	addr for the glue syscfg
++ * @glue_base:		addr for the glue registers
++ * @syscfg_offset:	usb syscfg control offset
++ * @powerdown_ctl:	rest controller for powerdown signal
++ * @softreset_ctl:	reset controller for softreset signal
++ * @mode:		drd static host/device config
++ */
++struct sti_dwc3_glue_platdata {
++	phys_addr_t syscfg_base;
++	phys_addr_t glue_base;
++	phys_addr_t syscfg_offset;
++	struct reset_ctl powerdown_ctl;
++	struct reset_ctl softreset_ctl;
++	enum usb_dr_mode mode;
++};
++
++static int sti_dwc3_glue_drd_init(struct sti_dwc3_glue_platdata *plat)
++{
++	unsigned long val;
++
++	val = readl(plat->syscfg_base + plat->syscfg_offset);
++
++	val &= USB3_CONTROL_MASK;
++
++	switch (plat->mode) {
++	case USB_DR_MODE_PERIPHERAL:
++		val &= ~(USB3_DELAY_VBUSVALID
++			| USB3_SEL_FORCE_OPMODE | USB3_FORCE_OPMODE(0x3)
++			| USB3_SEL_FORCE_DPPULLDOWN2 | USB3_FORCE_DPPULLDOWN2
++			| USB3_SEL_FORCE_DMPULLDOWN2 | USB3_FORCE_DMPULLDOWN2);
++
++		val |= USB3_DEVICE_NOT_HOST | USB3_FORCE_VBUSVALID;
++		break;
++
++	case USB_DR_MODE_HOST:
++		val &= ~(USB3_DEVICE_NOT_HOST | USB3_FORCE_VBUSVALID
++			| USB3_SEL_FORCE_OPMODE	| USB3_FORCE_OPMODE(0x3)
++			| USB3_SEL_FORCE_DPPULLDOWN2 | USB3_FORCE_DPPULLDOWN2
++			| USB3_SEL_FORCE_DMPULLDOWN2 | USB3_FORCE_DMPULLDOWN2);
++
++		val |= USB3_DELAY_VBUSVALID;
++		break;
++
++	default:
++		error("Unsupported mode of operation %d\n", plat->mode);
++		return -EINVAL;
++	}
++	writel(val, plat->syscfg_base + plat->syscfg_offset);
++
++	return 0;
++}
++
++static void sti_dwc3_glue_init(struct sti_dwc3_glue_platdata *plat)
++{
++	unsigned long reg;
++
++	reg = readl(plat->glue_base + CLKRST_CTRL);
++
++	reg |= AUX_CLK_EN | EXT_CFG_RESET_N | XHCI_REVISION;
++	reg &= ~SW_PIPEW_RESET_N;
++
++	writel(reg, plat->glue_base + CLKRST_CTRL);
++
++	/* configure mux for vbus, powerpresent and bvalid signals */
++	reg = readl(plat->glue_base + USB2_VBUS_MNGMNT_SEL1);
++
++	reg |= SEL_OVERRIDE_VBUSVALID(USB2_VBUS_UTMIOTG) |
++	       SEL_OVERRIDE_POWERPRESENT(USB2_VBUS_UTMIOTG) |
++	       SEL_OVERRIDE_BVALID(USB2_VBUS_UTMIOTG);
++
++	writel(reg, plat->glue_base + USB2_VBUS_MNGMNT_SEL1);
++
++	setbits_le32(plat->glue_base + CLKRST_CTRL, SW_PIPEW_RESET_N);
++}
++
++static int sti_dwc3_glue_ofdata_to_platdata(struct udevice *dev)
++{
++	struct sti_dwc3_glue_platdata *plat = dev_get_platdata(dev);
++	struct udevice *syscon;
++	struct regmap *regmap;
++	int ret;
++	u32 reg[4];
++
++	ret = fdtdec_get_int_array(gd->fdt_blob, dev_of_offset(dev),
++				   "reg", reg, ARRAY_SIZE(reg));
++	if (ret) {
++		error("unable to find st,stih407-dwc3 reg property(%d)\n", ret);
++		return ret;
++	}
++
++	plat->glue_base = reg[0];
++	plat->syscfg_offset = reg[2];
++
++	/* get corresponding syscon phandle */
++	ret = uclass_get_device_by_phandle(UCLASS_SYSCON, dev, "st,syscfg",
++					   &syscon);
++	if (ret) {
++		error("unable to find syscon device (%d)\n", ret);
++		return ret;
++	}
++
++	/* get syscfg-reg base address */
++	regmap = syscon_get_regmap(syscon);
++	if (!regmap) {
++		error("unable to find regmap\n");
++		return -ENODEV;
++	}
++	plat->syscfg_base = regmap->base;
++
++	/* get powerdown reset */
++	ret = reset_get_by_name(dev, "powerdown", &plat->powerdown_ctl);
++	if (ret) {
++		error("can't get powerdown reset for %s (%d)", dev->name, ret);
++		return ret;
++	}
++
++	/* get softreset reset */
++	ret = reset_get_by_name(dev, "softreset", &plat->softreset_ctl);
++	if (ret)
++		error("can't get soft reset for %s (%d)", dev->name, ret);
++
++	return ret;
++};
++
++static int sti_dwc3_glue_bind(struct udevice *dev)
++{
++	struct sti_dwc3_glue_platdata *plat = dev_get_platdata(dev);
++	int dwc3_node;
++
++	/* check if one subnode is present */
++	dwc3_node = fdt_first_subnode(gd->fdt_blob, dev_of_offset(dev));
++	if (dwc3_node <= 0) {
++		error("Can't find subnode for %s\n", dev->name);
++		return -ENODEV;
++	}
++
++	/* check if the subnode compatible string is the dwc3 one*/
++	if (fdt_node_check_compatible(gd->fdt_blob, dwc3_node,
++				      "snps,dwc3") != 0) {
++		error("Can't find dwc3 subnode for %s\n", dev->name);
++		return -ENODEV;
++	}
++
++	/* retrieve the DWC3 dual role mode */
++	plat->mode = usb_get_dr_mode(dwc3_node);
++	if (plat->mode == USB_DR_MODE_UNKNOWN)
++		/* by default set dual role mode to HOST */
++		plat->mode = USB_DR_MODE_HOST;
++
++	return dm_scan_fdt_dev(dev);
++}
++
++static int sti_dwc3_glue_probe(struct udevice *dev)
++{
++	struct sti_dwc3_glue_platdata *plat = dev_get_platdata(dev);
++	int ret;
++
++	/* deassert both powerdown and softreset */
++	ret = reset_deassert(&plat->powerdown_ctl);
++	if (ret < 0) {
++		error("DWC3 powerdown reset deassert failed: %d", ret);
++		return ret;
++	}
++
++	ret = reset_deassert(&plat->softreset_ctl);
++	if (ret < 0) {
++		error("DWC3 soft reset deassert failed: %d", ret);
++		goto softreset_err;
++	}
++
++	ret = sti_dwc3_glue_drd_init(plat);
++	if (ret)
++		goto init_err;
++
++	sti_dwc3_glue_init(plat);
++
++	return 0;
++
++init_err:
++	ret = reset_assert(&plat->softreset_ctl);
++	if (ret < 0) {
++		error("DWC3 soft reset deassert failed: %d", ret);
++		return ret;
++	}
++
++softreset_err:
++	ret = reset_assert(&plat->powerdown_ctl);
++	if (ret < 0)
++		error("DWC3 powerdown reset deassert failed: %d", ret);
++
++	return ret;
++}
++
++static int sti_dwc3_glue_remove(struct udevice *dev)
++{
++	struct sti_dwc3_glue_platdata *plat = dev_get_platdata(dev);
++	int ret;
++
++	/* assert both powerdown and softreset */
++	ret = reset_assert(&plat->powerdown_ctl);
++	if (ret < 0) {
++		error("DWC3 powerdown reset deassert failed: %d", ret);
++		return ret;
++	}
++
++	ret = reset_assert(&plat->softreset_ctl);
++	if (ret < 0)
++		error("DWC3 soft reset deassert failed: %d", ret);
++
++	return ret;
++}
++
++static const struct udevice_id sti_dwc3_glue_ids[] = {
++	{ .compatible = "st,stih407-dwc3" },
++	{ }
++};
++
++U_BOOT_DRIVER(dwc3_sti_glue) = {
++	.name = "dwc3_sti_glue",
++	.id = UCLASS_MISC,
++	.of_match = sti_dwc3_glue_ids,
++	.ofdata_to_platdata = sti_dwc3_glue_ofdata_to_platdata,
++	.probe = sti_dwc3_glue_probe,
++	.remove = sti_dwc3_glue_remove,
++	.bind = sti_dwc3_glue_bind,
++	.platdata_auto_alloc_size = sizeof(struct sti_dwc3_glue_platdata),
++	.flags = DM_FLAG_ALLOC_PRIV_DMA,
++};
+diff --git a/include/dwc3-sti-glue.h b/include/dwc3-sti-glue.h
+new file mode 100644
+index 0000000..98e7696
+--- /dev/null
++++ b/include/dwc3-sti-glue.h
+@@ -0,0 +1,41 @@
++/*
++ * Copyright (c) 2017
++ * Patrice Chotard <patrice.chotard@st.com>
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#ifndef __DWC3_STI_UBOOT_H_
++#define __DWC3_STI_UBOOT_H_
++
++/* glue registers */
++#define CLKRST_CTRL		0x00
++#define AUX_CLK_EN		BIT(0)
++#define SW_PIPEW_RESET_N	BIT(4)
++#define EXT_CFG_RESET_N		BIT(8)
++
++#define XHCI_REVISION		BIT(12)
++
++#define USB2_VBUS_MNGMNT_SEL1	0x2C
++#define USB2_VBUS_UTMIOTG	0x1
++
++#define SEL_OVERRIDE_VBUSVALID(n)	((n) << 0)
++#define SEL_OVERRIDE_POWERPRESENT(n)	((n) << 4)
++#define SEL_OVERRIDE_BVALID(n)		((n) << 8)
++
++/* Static DRD configuration */
++#define USB3_CONTROL_MASK		0xf77
++
++#define USB3_DEVICE_NOT_HOST		BIT(0)
++#define USB3_FORCE_VBUSVALID		BIT(1)
++#define USB3_DELAY_VBUSVALID		BIT(2)
++#define USB3_SEL_FORCE_OPMODE		BIT(4)
++#define USB3_FORCE_OPMODE(n)		((n) << 5)
++#define USB3_SEL_FORCE_DPPULLDOWN2	BIT(8)
++#define USB3_FORCE_DPPULLDOWN2		BIT(9)
++#define USB3_SEL_FORCE_DMPULLDOWN2	BIT(10)
++#define USB3_FORCE_DMPULLDOWN2		BIT(11)
++
++int sti_dwc3_init(enum usb_dr_mode mode);
++
++#endif /* __DWC3_STI_UBOOT_H_ */
+
+From patchwork Tue Sep  5 09:04:25 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v10,
+ 08/10] ARM: dts: STiH410: set DWC3 dual role mode to peripheral
+X-Patchwork-Submitter: Patrice CHOTARD <patrice.chotard@st.com>
+X-Patchwork-Id: 810021
+Message-Id: <1504602267-31283-9-git-send-email-patrice.chotard@st.com>
+To: <u-boot@lists.denx.de>, <albert.u.boot@aribaud.net>, <sjg@chromium.org>, 
+ <jh80.chung@samsung.com>, <marex@denx.de>
+Date: Tue, 5 Sep 2017 11:04:25 +0200
+From: <patrice.chotard@st.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+From: Patrice Chotard <patrice.chotard@st.com>
+
+On STi 96boards, configure by default the micro USB connector
+(managed by DWC3 hardware block) in peripheral mode.
+This will allow to use fastboot feature.
+
+Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+
+v10:	_ none
+v9:	_ none
+v8:	_ add Reviewed-by: Simon Glass
+v7:	_ none
+
+ arch/arm/dts/stih407-family.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/stih407-family.dtsi b/arch/arm/dts/stih407-family.dtsi
+index 452ac1c..6c6de58 100644
+--- a/arch/arm/dts/stih407-family.dtsi
++++ b/arch/arm/dts/stih407-family.dtsi
+@@ -655,7 +655,7 @@
+ 				compatible	= "snps,dwc3";
+ 				reg		= <0x09900000 0x100000>;
+ 				interrupts	= <GIC_SPI 155 IRQ_TYPE_NONE>;
+-				dr_mode		= "host";
++				dr_mode		= "peripheral";
+ 				phy-names	= "usb2-phy", "usb3-phy";
+ 				phys		= <&usb2_picophy0>,
+ 						  <&phy_port2 PHY_TYPE_USB3>;
+
+From patchwork Tue Sep  5 09:04:26 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v10,
+ 09/10] ARM: dts: STiH410: update ehci and ohci compatible
+X-Patchwork-Submitter: Patrice CHOTARD <patrice.chotard@st.com>
+X-Patchwork-Id: 810019
+Message-Id: <1504602267-31283-10-git-send-email-patrice.chotard@st.com>
+To: <u-boot@lists.denx.de>, <albert.u.boot@aribaud.net>, <sjg@chromium.org>, 
+ <jh80.chung@samsung.com>, <marex@denx.de>
+Date: Tue, 5 Sep 2017 11:04:26 +0200
+From: <patrice.chotard@st.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+From: Patrice Chotard <patrice.chotard@st.com>
+
+Update ehci and ohci node's compatible string in order to
+use ehci-generic and ohci-generic drivers.
+
+Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+
+v10:	_ none
+v9:	_ none
+v8:	_ add Reviewed-by: Simon Glass
+v7:	_ none
+
+ arch/arm/dts/stih410.dtsi | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/dts/stih410.dtsi b/arch/arm/dts/stih410.dtsi
+index f118a9e..b59b110 100644
+--- a/arch/arm/dts/stih410.dtsi
++++ b/arch/arm/dts/stih410.dtsi
+@@ -83,7 +83,7 @@
+ 		};
+ 
+ 		ohci0: usb@9a03c00 {
+-			compatible = "st,st-ohci-300x";
++			compatible = "generic-ohci";
+ 			reg = <0x9a03c00 0x100>;
+ 			interrupts = <GIC_SPI 180 IRQ_TYPE_NONE>;
+ 			clocks = <&clk_s_c0_flexgen CLK_TX_ICN_DISP_0>,
+@@ -91,6 +91,7 @@
+ 			resets = <&powerdown STIH407_USB2_PORT0_POWERDOWN>,
+ 				 <&softreset STIH407_USB2_PORT0_SOFTRESET>;
+ 			reset-names = "power", "softreset";
++
+ 			phys = <&usb2_picophy1>;
+ 			phy-names = "usb";
+ 
+@@ -98,7 +99,7 @@
+ 		};
+ 
+ 		ehci0: usb@9a03e00 {
+-			compatible = "st,st-ehci-300x";
++			compatible = "generic-ehci";
+ 			reg = <0x9a03e00 0x100>;
+ 			interrupts = <GIC_SPI 151 IRQ_TYPE_NONE>;
+ 			pinctrl-names = "default";
+@@ -115,7 +116,7 @@
+ 		};
+ 
+ 		ohci1: usb@9a83c00 {
+-			compatible = "st,st-ohci-300x";
++			compatible = "generic-ohci";
+ 			reg = <0x9a83c00 0x100>;
+ 			interrupts = <GIC_SPI 181 IRQ_TYPE_NONE>;
+ 			clocks = <&clk_s_c0_flexgen CLK_TX_ICN_DISP_0>,
+@@ -123,6 +124,7 @@
+ 			resets = <&powerdown STIH407_USB2_PORT1_POWERDOWN>,
+ 				 <&softreset STIH407_USB2_PORT1_SOFTRESET>;
+ 			reset-names = "power", "softreset";
++
+ 			phys = <&usb2_picophy2>;
+ 			phy-names = "usb";
+ 
+@@ -130,7 +132,7 @@
+ 		};
+ 
+ 		ehci1: usb@9a83e00 {
+-			compatible = "st,st-ehci-300x";
++			compatible = "generic-ehci";
+ 			reg = <0x9a83e00 0x100>;
+ 			interrupts = <GIC_SPI 153 IRQ_TYPE_NONE>;
+ 			pinctrl-names = "default";
+@@ -140,6 +142,7 @@
+ 			resets = <&powerdown STIH407_USB2_PORT1_POWERDOWN>,
+ 				 <&softreset STIH407_USB2_PORT1_SOFTRESET>;
+ 			reset-names = "power", "softreset";
++
+ 			phys = <&usb2_picophy2>;
+ 			phy-names = "usb";
+ 
+
+From patchwork Tue Sep  5 09:04:27 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v10,10/10] board: STiH410-B2260: add fastboot support
+X-Patchwork-Submitter: Patrice CHOTARD <patrice.chotard@st.com>
+X-Patchwork-Id: 810022
+Message-Id: <1504602267-31283-11-git-send-email-patrice.chotard@st.com>
+To: <u-boot@lists.denx.de>, <albert.u.boot@aribaud.net>, <sjg@chromium.org>, 
+ <jh80.chung@samsung.com>, <marex@denx.de>
+Date: Tue, 5 Sep 2017 11:04:27 +0200
+From: <patrice.chotard@st.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+From: Patrice Chotard <patrice.chotard@st.com>
+
+Add usb_gadget_handle_interrupts(), board_usb_init(),
+board_usb_cleanup() and g_dnl_board_usb_cable_connected()
+callbacks needed for FASTBOOT support
+
+Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+v10:	_ none
+v9:	_ none
+v8:	_ none
+v7:	_ none
+v6:	_ add reviewed-by Simon Glass
+v5:	_ none
+v4:	_ none
+v3:	_ none
+v2:	_ none
+
+
+
+ board/st/stih410-b2260/board.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+
+diff --git a/board/st/stih410-b2260/board.c b/board/st/stih410-b2260/board.c
+index 92b0695..d6cbbb8 100644
+--- a/board/st/stih410-b2260/board.c
++++ b/board/st/stih410-b2260/board.c
+@@ -7,6 +7,10 @@
+  */
+ 
+ #include <common.h>
++#include <linux/usb/otg.h>
++#include <dwc3-sti-glue.h>
++#include <dwc3-uboot.h>
++#include <usb.h>
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+@@ -36,3 +40,41 @@ int board_init(void)
+ {
+ 	return 0;
+ }
++
++#ifdef CONFIG_USB_DWC3
++static struct dwc3_device dwc3_device_data = {
++	.maximum_speed = USB_SPEED_HIGH,
++	.dr_mode = USB_DR_MODE_PERIPHERAL,
++	.index = 0,
++};
++
++int usb_gadget_handle_interrupts(int index)
++{
++	dwc3_uboot_handle_interrupt(index);
++	return 0;
++}
++
++int board_usb_init(int index, enum usb_init_type init)
++{
++	int node;
++	const void *blob = gd->fdt_blob;
++
++	/* find the snps,dwc3 node */
++	node = fdt_node_offset_by_compatible(blob, -1, "snps,dwc3");
++
++	dwc3_device_data.base = fdtdec_get_addr(blob, node, "reg");
++
++	return dwc3_uboot_init(&dwc3_device_data);
++}
++
++int board_usb_cleanup(int index, enum usb_init_type init)
++{
++	dwc3_uboot_exit(index);
++	return 0;
++}
++
++int g_dnl_board_usb_cable_connected(void)
++{
++	return 1;
++}
++#endif
