@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.09
-Release:   0.5%{?candidate:.%{candidate}}%{?dist}
+Release:   0.6%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -112,9 +112,9 @@ do
     echo "Board: $board using sun50iw1p1"
     cp /usr/share/arm-trusted-firmware/sun50iw1p1/bl31.bin builds/$(echo $board)/
   fi
-  rk3338=(geekbox sheep-rk3368)
-  if [[ " ${rk3338[*]} " == *" $board "* ]]; then
-    echo "Board: $board using rk3338"
+  rk3368=(geekbox sheep-rk3368)
+  if [[ " ${rk3368[*]} " == *" $board "* ]]; then
+    echo "Board: $board using rk3368"
     cp /usr/share/arm-trusted-firmware/rk3368/bl31.bin builds/$(echo $board)/
   fi
   rk3399=(evb-rk3399 firefly-rk3399 puma-rk3399)
@@ -278,6 +278,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Sep 12 2017 Than Ngo <than@redhat.com> - 2017.09-0.6.rc4
+- fixed the check for rockchip rk3368 boards
+
 * Tue Sep  5 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-0.5.rc4
 - 2017.09 RC4
 - Add qemu arm target config
