@@ -23,7 +23,7 @@ Patch4:    uefi-use-Fedora-specific-path-name.patch
 Patch10:   dragonboard-fixes.patch
 Patch11:   qemu-machine-virt-ARM.patch
 Patch12:   sti-STiH410-B2260-support.patch
-Patch13:   mvebu-enable-generic-distro-boot-config.patch
+# Patch13:   mvebu-enable-generic-distro-boot-config.patch
 # Patch15:   mx6-Initial-Hummingboard-2-support.patch
 
 BuildRequires:  bc
