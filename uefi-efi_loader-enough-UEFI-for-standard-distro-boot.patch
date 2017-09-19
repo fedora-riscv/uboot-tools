@@ -1,0 +1,4423 @@
+From patchwork Wed Sep 13 22:05:24 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,01/21] part: move efi_guid_t
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813637
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-2-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Petr Kulhavy <brain@jikos.cz>, Heinrich Schuchardt <xypron.glpk@gmx.de>, 
+ Alison Chaiken <alison@peloton-tech.com>,
+ Steve Rae <steve.rae@raedomain.com>, 
+ Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Wed, 13 Sep 2017 18:05:24 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Prep work for next patch.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+---
+ include/efi.h      | 4 ++++
+ include/part.h     | 3 ++-
+ include/part_efi.h | 4 ----
+ 3 files changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/include/efi.h b/include/efi.h
+index 02b78b31b1..87b0b43f20 100644
+--- a/include/efi.h
++++ b/include/efi.h
+@@ -28,6 +28,10 @@
+ 
+ struct efi_device_path;
+ 
++typedef struct {
++	u8 b[16];
++} efi_guid_t;
++
+ #define EFI_BITS_PER_LONG	BITS_PER_LONG
+ 
+ /*
+diff --git a/include/part.h b/include/part.h
+index 86117a7ce5..b2e820ef8a 100644
+--- a/include/part.h
++++ b/include/part.h
+@@ -280,8 +280,9 @@ struct part_driver {
+ #define U_BOOT_PART_TYPE(__name)					\
+ 	ll_entry_declare(struct part_driver, __name, part_driver)
+ 
+-#if CONFIG_IS_ENABLED(EFI_PARTITION)
+ #include <part_efi.h>
++
++#if CONFIG_IS_ENABLED(EFI_PARTITION)
+ /* disk/part_efi.c */
+ /**
+  * write_gpt_table() - Write the GUID Partition Table to disk
+diff --git a/include/part_efi.h b/include/part_efi.h
+index 317c044795..31e6bc6e14 100644
+--- a/include/part_efi.h
++++ b/include/part_efi.h
+@@ -58,10 +58,6 @@
+ /* linux/include/efi.h */
+ typedef u16 efi_char16_t;
+ 
+-typedef struct {
+-	u8 b[16];
+-} efi_guid_t;
+-
+ /* based on linux/include/genhd.h */
+ struct partition {
+ 	u8 boot_ind;		/* 0x80 - active */
+
+From patchwork Wed Sep 13 22:05:25 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,02/21] part: extract MBR signature from partitions
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813639
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-3-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Petr Kulhavy <brain@jikos.cz>, Heinrich Schuchardt <xypron.glpk@gmx.de>, 
+ Wenbin Song <wenbin.song@nxp.com>,
+ Alison Chaiken <alison@peloton-tech.com>, Peter Jones <pjones@redhat.com>,
+ Vincent Tinelli <vincent.tinelli@intel.com>, 
+ Steve Rae <steve.rae@raedomain.com>,
+ Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Wed, 13 Sep 2017 18:05:25 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+From: Peter Jones <pjones@redhat.com>
+
+EFI client programs need the signature information from the partition
+table to determine the disk a partition is on, so we need to fill that
+in here.
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+[separated from efi_loader part, and fixed build-errors for non-
+ CONFIG_EFI_PARTITION case]
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ disk/part_dos.c | 12 +++++++++---
+ disk/part_efi.c | 20 ++++++++++++++++++++
+ include/blk.h   | 18 ++++++++++++++++++
+ 3 files changed, 47 insertions(+), 3 deletions(-)
+
+diff --git a/disk/part_dos.c b/disk/part_dos.c
+index 7ede15ec26..850a538e83 100644
+--- a/disk/part_dos.c
++++ b/disk/part_dos.c
+@@ -89,14 +89,20 @@ static int test_block_type(unsigned char *buffer)
+ 
+ static int part_test_dos(struct blk_desc *dev_desc)
+ {
+-	ALLOC_CACHE_ALIGN_BUFFER(unsigned char, buffer, dev_desc->blksz);
++	ALLOC_CACHE_ALIGN_BUFFER(legacy_mbr, mbr, dev_desc->blksz);
+ 
+-	if (blk_dread(dev_desc, 0, 1, (ulong *)buffer) != 1)
++	if (blk_dread(dev_desc, 0, 1, (ulong *)mbr) != 1)
+ 		return -1;
+ 
+-	if (test_block_type(buffer) != DOS_MBR)
++	if (test_block_type((unsigned char *)mbr) != DOS_MBR)
+ 		return -1;
+ 
++	if (dev_desc->sig_type == SIG_TYPE_NONE &&
++	    mbr->unique_mbr_signature != 0) {
++		dev_desc->sig_type = SIG_TYPE_MBR;
++		dev_desc->mbr_sig = mbr->unique_mbr_signature;
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/disk/part_efi.c b/disk/part_efi.c
+index 2973d52f6a..208bb14ee8 100644
+--- a/disk/part_efi.c
++++ b/disk/part_efi.c
+@@ -923,11 +923,19 @@ static int is_pmbr_valid(legacy_mbr * mbr)
+ static int is_gpt_valid(struct blk_desc *dev_desc, u64 lba,
+ 			gpt_header *pgpt_head, gpt_entry **pgpt_pte)
+ {
++	ALLOC_CACHE_ALIGN_BUFFER(legacy_mbr, mbr, dev_desc->blksz);
++
+ 	if (!dev_desc || !pgpt_head) {
+ 		printf("%s: Invalid Argument(s)\n", __func__);
+ 		return 0;
+ 	}
+ 
++	/* Read MBR Header from device */
++	if (blk_dread(dev_desc, 0, 1, (ulong *)mbr) != 1) {
++		printf("*** ERROR: Can't read MBR header ***\n");
++		return 0;
++	}
++
+ 	/* Read GPT Header from device */
+ 	if (blk_dread(dev_desc, (lbaint_t)lba, 1, pgpt_head) != 1) {
+ 		printf("*** ERROR: Can't read GPT header ***\n");
+@@ -937,6 +945,18 @@ static int is_gpt_valid(struct blk_desc *dev_desc, u64 lba,
+ 	if (validate_gpt_header(pgpt_head, (lbaint_t)lba, dev_desc->lba))
+ 		return 0;
+ 
++	if (dev_desc->sig_type == SIG_TYPE_NONE) {
++		efi_guid_t empty = {};
++		if (memcmp(&pgpt_head->disk_guid, &empty, sizeof(empty))) {
++			dev_desc->sig_type = SIG_TYPE_GUID;
++			memcpy(&dev_desc->guid_sig, &pgpt_head->disk_guid,
++			      sizeof(empty));
++		} else if (mbr->unique_mbr_signature != 0) {
++			dev_desc->sig_type = SIG_TYPE_MBR;
++			dev_desc->mbr_sig = mbr->unique_mbr_signature;
++		}
++	}
++
+ 	/* Read and allocate Partition Table Entries */
+ 	*pgpt_pte = alloc_read_gpt_entries(dev_desc, pgpt_head);
+ 	if (*pgpt_pte == NULL) {
+diff --git a/include/blk.h b/include/blk.h
+index 1965812a9d..41b4d7efa8 100644
+--- a/include/blk.h
++++ b/include/blk.h
+@@ -8,6 +8,8 @@
+ #ifndef BLK_H
+ #define BLK_H
+ 
++#include <efi.h>
++
+ #ifdef CONFIG_SYS_64BIT_LBA
+ typedef uint64_t lbaint_t;
+ #define LBAFlength "ll"
+@@ -41,6 +43,17 @@ enum if_type {
+ #define BLK_REV_SIZE		8
+ 
+ /*
++ * Identifies the partition table type (ie. MBR vs GPT GUID) signature
++ */
++enum sig_type {
++	SIG_TYPE_NONE,
++	SIG_TYPE_MBR,
++	SIG_TYPE_GUID,
++
++	SIG_TYPE_COUNT			/* Number of signature types */
++};
++
++/*
+  * With driver model (CONFIG_BLK) this is uclass platform data, accessible
+  * with dev_get_uclass_platdata(dev)
+  */
+@@ -67,6 +80,11 @@ struct blk_desc {
+ 	char		vendor[BLK_VEN_SIZE + 1]; /* device vendor string */
+ 	char		product[BLK_PRD_SIZE + 1]; /* device product number */
+ 	char		revision[BLK_REV_SIZE + 1]; /* firmware revision */
++	enum sig_type	sig_type;	/* Partition table signature type */
++	union {
++		uint32_t mbr_sig;	/* MBR integer signature */
++		efi_guid_t guid_sig;	/* GPT GUID Signature */
++	};
+ #if CONFIG_IS_ENABLED(BLK)
+ 	/*
+ 	 * For now we have a few functions which take struct blk_desc as a
+
+From patchwork Wed Sep 13 22:05:26 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,03/21] efi: add some missing __packed
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813645
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-4-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>, Peter Jones <pjones@redhat.com>
+Date: Wed, 13 Sep 2017 18:05:26 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+All of the device-path related structures should be packed.  UEFI
+defines the device-path as a byte-aligned data structure.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ include/efi_api.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/include/efi_api.h b/include/efi_api.h
+index ec1b321e8e..175341348e 100644
+--- a/include/efi_api.h
++++ b/include/efi_api.h
+@@ -284,11 +284,11 @@ struct efi_device_path {
+ 	u8 type;
+ 	u8 sub_type;
+ 	u16 length;
+-};
++} __packed;
+ 
+ struct efi_mac_addr {
+ 	u8 addr[32];
+-};
++} __packed;
+ 
+ #define DEVICE_PATH_TYPE_MESSAGING_DEVICE	0x03
+ #  define DEVICE_PATH_SUB_TYPE_MSG_MAC_ADDR	0x0b
+@@ -297,7 +297,7 @@ struct efi_device_path_mac_addr {
+ 	struct efi_device_path dp;
+ 	struct efi_mac_addr mac;
+ 	u8 if_type;
+-};
++} __packed;
+ 
+ #define DEVICE_PATH_TYPE_MEDIA_DEVICE		0x04
+ #  define DEVICE_PATH_SUB_TYPE_FILE_PATH	0x04
+@@ -305,7 +305,7 @@ struct efi_device_path_mac_addr {
+ struct efi_device_path_file_path {
+ 	struct efi_device_path dp;
+ 	u16 str[32];
+-};
++} __packed;
+ 
+ #define BLOCK_IO_GUID \
+ 	EFI_GUID(0x964e5b21, 0x6459, 0x11d2, \
+
+From patchwork Wed Sep 13 22:05:27 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,04/21] efi: add some more device path structures
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813638
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-5-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>, Peter Jones <pjones@redhat.com>
+Date: Wed, 13 Sep 2017 18:05:27 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+From: Peter Jones <pjones@redhat.com>
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ include/efi_api.h | 54 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 54 insertions(+)
+
+diff --git a/include/efi_api.h b/include/efi_api.h
+index 175341348e..b761cf4822 100644
+--- a/include/efi_api.h
++++ b/include/efi_api.h
+@@ -290,8 +290,38 @@ struct efi_mac_addr {
+ 	u8 addr[32];
+ } __packed;
+ 
++#define DEVICE_PATH_TYPE_HARDWARE_DEVICE	0x01
++#  define DEVICE_PATH_SUB_TYPE_VENDOR		0x04
++
++struct efi_device_path_vendor {
++	struct efi_device_path dp;
++	efi_guid_t guid;
++	u8 vendor_data[];
++} __packed;
++
++#define DEVICE_PATH_TYPE_ACPI_DEVICE		0x02
++#  define DEVICE_PATH_SUB_TYPE_ACPI_DEVICE	0x01
++
++#define EFI_PNP_ID(ID)				(u32)(((ID) << 16) | 0x41D0)
++#define EISA_PNP_ID(ID)				EFI_PNP_ID(ID)
++
++struct efi_device_path_acpi_path {
++	struct efi_device_path dp;
++	u32 hid;
++	u32 uid;
++} __packed;
++
+ #define DEVICE_PATH_TYPE_MESSAGING_DEVICE	0x03
++#  define DEVICE_PATH_SUB_TYPE_MSG_USB		0x05
+ #  define DEVICE_PATH_SUB_TYPE_MSG_MAC_ADDR	0x0b
++#  define DEVICE_PATH_SUB_TYPE_MSG_SD		0x1a
++#  define DEVICE_PATH_SUB_TYPE_MSG_MMC		0x1d
++
++struct efi_device_path_usb {
++	struct efi_device_path dp;
++	u8 parent_port_number;
++	u8 usb_interface;
++} __packed;
+ 
+ struct efi_device_path_mac_addr {
+ 	struct efi_device_path dp;
+@@ -299,9 +329,33 @@ struct efi_device_path_mac_addr {
+ 	u8 if_type;
+ } __packed;
+ 
++struct efi_device_path_sd_mmc_path {
++	struct efi_device_path dp;
++	u8 slot_number;
++} __packed;
++
+ #define DEVICE_PATH_TYPE_MEDIA_DEVICE		0x04
++#  define DEVICE_PATH_SUB_TYPE_HARD_DRIVE_PATH	0x01
++#  define DEVICE_PATH_SUB_TYPE_CDROM_PATH	0x02
+ #  define DEVICE_PATH_SUB_TYPE_FILE_PATH	0x04
+ 
++struct efi_device_path_hard_drive_path {
++	struct efi_device_path dp;
++	u32 partition_number;
++	u64 partition_start;
++	u64 partition_end;
++	u8 partition_signature[16];
++	u8 partmap_type;
++	u8 signature_type;
++} __packed;
++
++struct efi_device_path_cdrom_path {
++	struct efi_device_path dp;
++	u32 boot_entry;
++	u64 partition_start;
++	u64 partition_end;
++} __packed;
++
+ struct efi_device_path_file_path {
+ 	struct efi_device_path dp;
+ 	u16 str[32];
+
+From patchwork Wed Sep 13 22:05:28 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,05/21] efi_loader: add device-path utils
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813641
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-6-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>, Peter Jones <pjones@redhat.com>
+Date: Wed, 13 Sep 2017 18:05:28 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Helpers to construct device-paths from devices, partitions, files, and
+for parsing and manipulating device-paths.
+
+For non-legacy devices, this will use u-boot's device-model to construct
+device-paths which include bus hierarchy to construct device-paths.  For
+legacy devices we still fake it, but slightly more convincingly.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ include/efi_api.h                |  10 +
+ include/efi_loader.h             |  26 ++
+ lib/efi_loader/Makefile          |   2 +-
+ lib/efi_loader/efi_boottime.c    |  13 +-
+ lib/efi_loader/efi_device_path.c | 563 +++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 611 insertions(+), 3 deletions(-)
+ create mode 100644 lib/efi_loader/efi_device_path.c
+
+diff --git a/include/efi_api.h b/include/efi_api.h
+index b761cf4822..4e27c82129 100644
+--- a/include/efi_api.h
++++ b/include/efi_api.h
+@@ -314,6 +314,7 @@ struct efi_device_path_acpi_path {
+ #define DEVICE_PATH_TYPE_MESSAGING_DEVICE	0x03
+ #  define DEVICE_PATH_SUB_TYPE_MSG_USB		0x05
+ #  define DEVICE_PATH_SUB_TYPE_MSG_MAC_ADDR	0x0b
++#  define DEVICE_PATH_SUB_TYPE_MSG_USB_CLASS	0x0f
+ #  define DEVICE_PATH_SUB_TYPE_MSG_SD		0x1a
+ #  define DEVICE_PATH_SUB_TYPE_MSG_MMC		0x1d
+ 
+@@ -329,6 +330,15 @@ struct efi_device_path_mac_addr {
+ 	u8 if_type;
+ } __packed;
+ 
++struct efi_device_path_usb_class {
++	struct efi_device_path dp;
++	u16 vendor_id;
++	u16 product_id;
++	u8 device_class;
++	u8 device_subclass;
++	u8 device_protocol;
++} __packed;
++
+ struct efi_device_path_sd_mmc_path {
+ 	struct efi_device_path dp;
+ 	u8 slot_number;
+diff --git a/include/efi_loader.h b/include/efi_loader.h
+index 1179234f68..d052b03ab7 100644
+--- a/include/efi_loader.h
++++ b/include/efi_loader.h
+@@ -197,6 +197,32 @@ extern void *efi_bounce_buffer;
+ #define EFI_LOADER_BOUNCE_BUFFER_SIZE (64 * 1024 * 1024)
+ #endif
+ 
++
++struct efi_device_path *efi_dp_next(const struct efi_device_path *dp);
++int efi_dp_match(struct efi_device_path *a, struct efi_device_path *b);
++struct efi_object *efi_dp_find_obj(struct efi_device_path *dp,
++				   struct efi_device_path **rem);
++unsigned efi_dp_size(const struct efi_device_path *dp);
++struct efi_device_path *efi_dp_dup(const struct efi_device_path *dp);
++struct efi_device_path *efi_dp_append(const struct efi_device_path *dp1,
++				      const struct efi_device_path *dp2);
++struct efi_device_path *efi_dp_append_node(const struct efi_device_path *dp,
++					   const struct efi_device_path *node);
++
++
++struct efi_device_path *efi_dp_from_dev(struct udevice *dev);
++struct efi_device_path *efi_dp_from_part(struct blk_desc *desc, int part);
++struct efi_device_path *efi_dp_from_file(struct blk_desc *desc, int part,
++					 const char *path);
++struct efi_device_path *efi_dp_from_eth(void);
++void efi_dp_split_file_path(struct efi_device_path *full_path,
++			    struct efi_device_path **device_path,
++			    struct efi_device_path **file_path);
++
++#define EFI_DP_TYPE(_dp, _type, _subtype) \
++	(((_dp)->type == DEVICE_PATH_TYPE_##_type) && \
++	 ((_dp)->sub_type == DEVICE_PATH_SUB_TYPE_##_subtype))
++
+ /* Convert strings from normal C strings to uEFI strings */
+ static inline void ascii2unicode(u16 *unicode, const char *ascii)
+ {
+diff --git a/lib/efi_loader/Makefile b/lib/efi_loader/Makefile
+index 30bf343a36..f35e5ce8a8 100644
+--- a/lib/efi_loader/Makefile
++++ b/lib/efi_loader/Makefile
+@@ -15,7 +15,7 @@ always := $(efiprogs-y)
+ 
+ obj-$(CONFIG_CMD_BOOTEFI_HELLO) += helloworld_efi.o
+ obj-y += efi_image_loader.o efi_boottime.o efi_runtime.o efi_console.o
+-obj-y += efi_memory.o efi_device_path_to_text.o
++obj-y += efi_memory.o efi_device_path_to_text.o efi_device_path.o
+ obj-$(CONFIG_LCD) += efi_gop.o
+ obj-$(CONFIG_DM_VIDEO) += efi_gop.o
+ obj-$(CONFIG_PARTITIONS) += efi_disk.o
+diff --git a/lib/efi_loader/efi_boottime.c b/lib/efi_loader/efi_boottime.c
+index 43f32385fa..b962b62a97 100644
+--- a/lib/efi_loader/efi_boottime.c
++++ b/lib/efi_loader/efi_boottime.c
+@@ -665,8 +665,17 @@ static efi_status_t EFIAPI efi_locate_device_path(efi_guid_t *protocol,
+ 			struct efi_device_path **device_path,
+ 			efi_handle_t *device)
+ {
+-	EFI_ENTRY("%p, %p, %p", protocol, device_path, device);
+-	return EFI_EXIT(EFI_NOT_FOUND);
++	struct efi_object *efiobj;
++
++	EFI_ENTRY("%pUl, %p, %p", protocol, device_path, device);
++
++	efiobj = efi_dp_find_obj(*device_path, device_path);
++	if (!efiobj)
++		return EFI_EXIT(EFI_NOT_FOUND);
++
++	*device = efiobj->handle;
++
++	return EFI_EXIT(EFI_SUCCESS);
+ }
+ 
+ /* Collapses configuration table entries, removing index i */
+diff --git a/lib/efi_loader/efi_device_path.c b/lib/efi_loader/efi_device_path.c
+new file mode 100644
+index 0000000000..5d5c3b3464
+--- /dev/null
++++ b/lib/efi_loader/efi_device_path.c
+@@ -0,0 +1,563 @@
++/*
++ * EFI device path from u-boot device-model mapping
++ *
++ * (C) Copyright 2017 Rob Clark
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include <common.h>
++#include <blk.h>
++#include <dm.h>
++#include <usb.h>
++#include <mmc.h>
++#include <efi_loader.h>
++#include <inttypes.h>
++#include <part.h>
++
++/* template END node: */
++static const struct efi_device_path END = {
++	.type     = DEVICE_PATH_TYPE_END,
++	.sub_type = DEVICE_PATH_SUB_TYPE_END,
++	.length   = sizeof(END),
++};
++
++#define U_BOOT_GUID \
++	EFI_GUID(0xe61d73b9, 0xa384, 0x4acc, \
++		 0xae, 0xab, 0x82, 0xe8, 0x28, 0xf3, 0x62, 0x8b)
++
++/* template ROOT node: */
++static const struct efi_device_path_vendor ROOT = {
++	.dp = {
++		.type     = DEVICE_PATH_TYPE_HARDWARE_DEVICE,
++		.sub_type = DEVICE_PATH_SUB_TYPE_VENDOR,
++		.length   = sizeof(ROOT),
++	},
++	.guid = U_BOOT_GUID,
++};
++
++static void *dp_alloc(size_t sz)
++{
++	void *buf;
++
++	if (efi_allocate_pool(EFI_ALLOCATE_ANY_PAGES, sz, &buf) != EFI_SUCCESS)
++		return NULL;
++
++	return buf;
++}
++
++/*
++ * Iterate to next block in device-path, terminating (returning NULL)
++ * at /End* node.
++ */
++struct efi_device_path *efi_dp_next(const struct efi_device_path *dp)
++{
++	if (dp == NULL)
++		return NULL;
++	if (dp->type == DEVICE_PATH_TYPE_END)
++		return NULL;
++	dp = ((void *)dp) + dp->length;
++	if (dp->type == DEVICE_PATH_TYPE_END)
++		return NULL;
++	return (struct efi_device_path *)dp;
++}
++
++/*
++ * Compare two device-paths, stopping when the shorter of the two hits
++ * an End* node.  This is useful to, for example, compare a device-path
++ * representing a device with one representing a file on the device, or
++ * a device with a parent device.
++ */
++int efi_dp_match(struct efi_device_path *a, struct efi_device_path *b)
++{
++	while (1) {
++		int ret;
++
++		ret = memcmp(&a->length, &b->length, sizeof(a->length));
++		if (ret)
++			return ret;
++
++		ret = memcmp(a, b, a->length);
++		if (ret)
++			return ret;
++
++		a = efi_dp_next(a);
++		b = efi_dp_next(b);
++
++		if (!a || !b)
++			return 0;
++	}
++}
++
++
++/*
++ * See UEFI spec (section 3.1.2, about short-form device-paths..
++ * tl;dr: we can have a device-path that starts with a USB WWID
++ * or USB Class node, and a few other cases which don't encode
++ * the full device path with bus hierarchy:
++ *
++ *   - MESSAGING:USB_WWID
++ *   - MESSAGING:USB_CLASS
++ *   - MEDIA:FILE_PATH
++ *   - MEDIA:HARD_DRIVE
++ *   - MESSAGING:URI
++ */
++static struct efi_device_path *shorten_path(struct efi_device_path *dp)
++{
++	while (dp) {
++		/*
++		 * TODO: Add MESSAGING:USB_WWID and MESSAGING:URI..
++		 * in practice fallback.efi just uses MEDIA:HARD_DRIVE
++		 * so not sure when we would see these other cases.
++		 */
++		if (EFI_DP_TYPE(dp, MESSAGING_DEVICE, MSG_USB_CLASS) ||
++		    EFI_DP_TYPE(dp, MEDIA_DEVICE, HARD_DRIVE_PATH) ||
++		    EFI_DP_TYPE(dp, MEDIA_DEVICE, FILE_PATH))
++			return dp;
++
++		dp = efi_dp_next(dp);
++	}
++
++	return dp;
++}
++
++static struct efi_object *find_obj(struct efi_device_path *dp, bool short_path,
++				   struct efi_device_path **rem)
++{
++	struct efi_object *efiobj;
++
++	list_for_each_entry(efiobj, &efi_obj_list, link) {
++		int i;
++
++		for (i = 0; i < ARRAY_SIZE(efiobj->protocols); i++) {
++			struct efi_handler *handler = &efiobj->protocols[i];
++			struct efi_device_path *obj_dp;
++
++			if (!handler->guid)
++				break;
++
++			if (guidcmp(handler->guid, &efi_guid_device_path))
++				continue;
++
++			obj_dp = handler->protocol_interface;
++
++			do {
++				if (efi_dp_match(dp, obj_dp) == 0) {
++					if (rem) {
++						*rem = ((void *)dp) +
++							efi_dp_size(obj_dp);
++					}
++					return efiobj;
++				}
++
++				obj_dp = shorten_path(efi_dp_next(obj_dp));
++			} while (short_path && obj_dp);
++		}
++	}
++
++	return NULL;
++}
++
++
++/*
++ * Find an efiobj from device-path, if 'rem' is not NULL, returns the
++ * remaining part of the device path after the matched object.
++ */
++struct efi_object *efi_dp_find_obj(struct efi_device_path *dp,
++				   struct efi_device_path **rem)
++{
++	struct efi_object *efiobj;
++
++	efiobj = find_obj(dp, false, rem);
++
++	if (!efiobj)
++		efiobj = find_obj(dp, true, rem);
++
++	return efiobj;
++}
++
++/* return size not including End node: */
++unsigned efi_dp_size(const struct efi_device_path *dp)
++{
++	unsigned sz = 0;
++
++	while (dp) {
++		sz += dp->length;
++		dp = efi_dp_next(dp);
++	}
++
++	return sz;
++}
++
++struct efi_device_path *efi_dp_dup(const struct efi_device_path *dp)
++{
++	struct efi_device_path *ndp;
++	unsigned sz = efi_dp_size(dp) + sizeof(END);
++
++	if (!dp)
++		return NULL;
++
++	ndp = dp_alloc(sz);
++	memcpy(ndp, dp, sz);
++
++	return ndp;
++}
++
++struct efi_device_path *efi_dp_append(const struct efi_device_path *dp1,
++				      const struct efi_device_path *dp2)
++{
++	struct efi_device_path *ret;
++
++	if (!dp1) {
++		ret = efi_dp_dup(dp2);
++	} else if (!dp2) {
++		ret = efi_dp_dup(dp1);
++	} else {
++		/* both dp1 and dp2 are non-null */
++		unsigned sz1 = efi_dp_size(dp1);
++		unsigned sz2 = efi_dp_size(dp2);
++		void *p = dp_alloc(sz1 + sz2 + sizeof(END));
++		memcpy(p, dp1, sz1);
++		memcpy(p + sz1, dp2, sz2);
++		memcpy(p + sz1 + sz2, &END, sizeof(END));
++		ret = p;
++	}
++
++	return ret;
++}
++
++struct efi_device_path *efi_dp_append_node(const struct efi_device_path *dp,
++					   const struct efi_device_path *node)
++{
++	struct efi_device_path *ret;
++
++	if (!node && !dp) {
++		ret = efi_dp_dup(&END);
++	} else if (!node) {
++		ret = efi_dp_dup(dp);
++	} else if (!dp) {
++		unsigned sz = node->length;
++		void *p = dp_alloc(sz + sizeof(END));
++		memcpy(p, node, sz);
++		memcpy(p + sz, &END, sizeof(END));
++		ret = p;
++	} else {
++		/* both dp and node are non-null */
++		unsigned sz = efi_dp_size(dp);
++		void *p = dp_alloc(sz + node->length + sizeof(END));
++		memcpy(p, dp, sz);
++		memcpy(p + sz, node, node->length);
++		memcpy(p + sz + node->length, &END, sizeof(END));
++		ret = p;
++	}
++
++	return ret;
++}
++
++#ifdef CONFIG_DM
++/* size of device-path not including END node for device and all parents
++ * up to the root device.
++ */
++static unsigned dp_size(struct udevice *dev)
++{
++	if (!dev || !dev->driver)
++		return sizeof(ROOT);
++
++	switch (dev->driver->id) {
++	case UCLASS_ROOT:
++	case UCLASS_SIMPLE_BUS:
++		/* stop traversing parents at this point: */
++		return sizeof(ROOT);
++	case UCLASS_MMC:
++		return dp_size(dev->parent) +
++			sizeof(struct efi_device_path_sd_mmc_path);
++	case UCLASS_MASS_STORAGE:
++	case UCLASS_USB_HUB:
++		return dp_size(dev->parent) +
++			sizeof(struct efi_device_path_usb_class);
++	default:
++		/* just skip over unknown classes: */
++		return dp_size(dev->parent);
++	}
++}
++
++static void *dp_fill(void *buf, struct udevice *dev)
++{
++	if (!dev || !dev->driver)
++		return buf;
++
++	switch (dev->driver->id) {
++	case UCLASS_ROOT:
++	case UCLASS_SIMPLE_BUS: {
++		/* stop traversing parents at this point: */
++		struct efi_device_path_vendor *vdp = buf;
++		*vdp = ROOT;
++		return &vdp[1];
++	}
++#if defined(CONFIG_DM_MMC) && defined(CONFIG_MMC)
++	case UCLASS_MMC: {
++		struct efi_device_path_sd_mmc_path *sddp =
++			dp_fill(buf, dev->parent);
++		struct mmc *mmc = mmc_get_mmc_dev(dev);
++		struct blk_desc *desc = mmc_get_blk_desc(mmc);
++
++		sddp->dp.type     = DEVICE_PATH_TYPE_MESSAGING_DEVICE;
++		sddp->dp.sub_type = (desc->if_type == IF_TYPE_MMC) ?
++			DEVICE_PATH_SUB_TYPE_MSG_MMC :
++			DEVICE_PATH_SUB_TYPE_MSG_SD;
++		sddp->dp.length   = sizeof(*sddp);
++		sddp->slot_number = dev->seq;
++
++		return &sddp[1];
++	}
++#endif
++	case UCLASS_MASS_STORAGE:
++	case UCLASS_USB_HUB: {
++		struct efi_device_path_usb_class *udp =
++			dp_fill(buf, dev->parent);
++		struct usb_device *udev = dev_get_parent_priv(dev);
++		struct usb_device_descriptor *desc = &udev->descriptor;
++
++		udp->dp.type     = DEVICE_PATH_TYPE_MESSAGING_DEVICE;
++		udp->dp.sub_type = DEVICE_PATH_SUB_TYPE_MSG_USB_CLASS;
++		udp->dp.length   = sizeof(*udp);
++		udp->vendor_id   = desc->idVendor;
++		udp->product_id  = desc->idProduct;
++		udp->device_class    = desc->bDeviceClass;
++		udp->device_subclass = desc->bDeviceSubClass;
++		udp->device_protocol = desc->bDeviceProtocol;
++
++		return &udp[1];
++	}
++	default:
++		debug("unhandled device class: %s (%u)\n",
++		      dev->name, dev->driver->id);
++		return dp_fill(buf, dev->parent);
++	}
++}
++
++/* Construct a device-path from a device: */
++struct efi_device_path *efi_dp_from_dev(struct udevice *dev)
++{
++	void *buf, *start;
++
++	start = buf = dp_alloc(dp_size(dev) + sizeof(END));
++	buf = dp_fill(buf, dev);
++	*((struct efi_device_path *)buf) = END;
++
++	return start;
++}
++#endif
++
++static unsigned dp_part_size(struct blk_desc *desc, int part)
++{
++	unsigned dpsize;
++
++#ifdef CONFIG_BLK
++	dpsize = dp_size(desc->bdev->parent);
++#else
++	dpsize = sizeof(ROOT) + sizeof(struct efi_device_path_usb);
++#endif
++
++	if (part == 0) /* the actual disk, not a partition */
++		return dpsize;
++
++	if (desc->part_type == PART_TYPE_ISO)
++		dpsize += sizeof(struct efi_device_path_cdrom_path);
++	else
++		dpsize += sizeof(struct efi_device_path_hard_drive_path);
++
++	return dpsize;
++}
++
++static void *dp_part_fill(void *buf, struct blk_desc *desc, int part)
++{
++	disk_partition_t info;
++
++#ifdef CONFIG_BLK
++	buf = dp_fill(buf, desc->bdev->parent);
++#else
++	/*
++	 * We *could* make a more accurate path, by looking at if_type
++	 * and handling all the different cases like we do for non-
++	 * legacy (ie CONFIG_BLK=y) case.  But most important thing
++	 * is just to have a unique device-path for if_type+devnum.
++	 * So map things to a fictional USB device:
++	 */
++	struct efi_device_path_usb *udp;
++
++	memcpy(buf, &ROOT, sizeof(ROOT));
++	buf += sizeof(ROOT);
++
++	udp = buf;
++	udp->dp.type = DEVICE_PATH_TYPE_MESSAGING_DEVICE;
++	udp->dp.sub_type = DEVICE_PATH_SUB_TYPE_MSG_USB;
++	udp->dp.length = sizeof(*udp);
++	udp->parent_port_number = desc->if_type;
++	udp->usb_interface = desc->devnum;
++	buf = &udp[1];
++#endif
++
++	if (part == 0) /* the actual disk, not a partition */
++		return buf;
++
++	part_get_info(desc, part, &info);
++
++	if (desc->part_type == PART_TYPE_ISO) {
++		struct efi_device_path_cdrom_path *cddp = buf;
++
++		cddp->boot_entry = part - 1;
++		cddp->dp.type = DEVICE_PATH_TYPE_MEDIA_DEVICE;
++		cddp->dp.sub_type = DEVICE_PATH_SUB_TYPE_CDROM_PATH;
++		cddp->dp.length = sizeof(*cddp);
++		cddp->partition_start = info.start;
++		cddp->partition_end = info.size;
++
++		buf = &cddp[1];
++	} else {
++		struct efi_device_path_hard_drive_path *hddp = buf;
++
++		hddp->dp.type = DEVICE_PATH_TYPE_MEDIA_DEVICE;
++		hddp->dp.sub_type = DEVICE_PATH_SUB_TYPE_HARD_DRIVE_PATH;
++		hddp->dp.length = sizeof(*hddp);
++		hddp->partition_number = part - 1;
++		hddp->partition_start = info.start;
++		hddp->partition_end = info.size;
++		if (desc->part_type == PART_TYPE_EFI)
++			hddp->partmap_type = 2;
++		else
++			hddp->partmap_type = 1;
++		hddp->signature_type = desc->sig_type;
++		if (hddp->signature_type != 0)
++			memcpy(hddp->partition_signature, &desc->guid_sig,
++			       sizeof(hddp->partition_signature));
++
++		buf = &hddp[1];
++	}
++
++	return buf;
++}
++
++
++/* Construct a device-path from a partition on a blk device: */
++struct efi_device_path *efi_dp_from_part(struct blk_desc *desc, int part)
++{
++	void *buf, *start;
++
++	start = buf = dp_alloc(dp_part_size(desc, part) + sizeof(END));
++
++	buf = dp_part_fill(buf, desc, part);
++
++	*((struct efi_device_path *)buf) = END;
++
++	return start;
++}
++
++/* convert path to an UEFI style path (ie. DOS style backslashes and utf16) */
++static void path_to_uefi(u16 *uefi, const char *path)
++{
++	while (*path) {
++		char c = *(path++);
++		if (c == '/')
++			c = '\\';
++		*(uefi++) = c;
++	}
++	*uefi = '\0';
++}
++
++/*
++ * If desc is NULL, this creates a path with only the file component,
++ * otherwise it creates a full path with both device and file components
++ */
++struct efi_device_path *efi_dp_from_file(struct blk_desc *desc, int part,
++		const char *path)
++{
++	struct efi_device_path_file_path *fp;
++	void *buf, *start;
++	unsigned dpsize = 0, fpsize;
++
++	if (desc)
++		dpsize = dp_part_size(desc, part);
++
++	fpsize = sizeof(struct efi_device_path) + 2 * (strlen(path) + 1);
++	dpsize += fpsize;
++
++	start = buf = dp_alloc(dpsize + sizeof(END));
++
++	if (desc)
++		buf = dp_part_fill(buf, desc, part);
++
++	/* add file-path: */
++	fp = buf;
++	fp->dp.type = DEVICE_PATH_TYPE_MEDIA_DEVICE;
++	fp->dp.sub_type = DEVICE_PATH_SUB_TYPE_FILE_PATH;
++	fp->dp.length = fpsize;
++	path_to_uefi(fp->str, path);
++	buf += fpsize;
++
++	*((struct efi_device_path *)buf) = END;
++
++	return start;
++}
++
++#ifdef CONFIG_NET
++struct efi_device_path *efi_dp_from_eth(void)
++{
++	struct efi_device_path_mac_addr *ndp;
++	void *buf, *start;
++	unsigned dpsize = 0;
++
++	assert(eth_get_dev());
++
++#ifdef CONFIG_DM_ETH
++	dpsize += dp_size(eth_get_dev());
++#else
++	dpsize += sizeof(ROOT);
++#endif
++	dpsize += sizeof(*ndp);
++
++	start = buf = dp_alloc(dpsize + sizeof(END));
++
++#ifdef CONFIG_DM_ETH
++	buf = dp_fill(buf, eth_get_dev());
++#else
++	memcpy(buf, &ROOT, sizeof(ROOT));
++	buf += sizeof(ROOT);
++#endif
++
++	ndp = buf;
++	ndp->dp.type = DEVICE_PATH_TYPE_MESSAGING_DEVICE;
++	ndp->dp.sub_type = DEVICE_PATH_SUB_TYPE_MSG_MAC_ADDR;
++	ndp->dp.length = sizeof(*ndp);
++	memcpy(ndp->mac.addr, eth_get_ethaddr(), ARP_HLEN);
++	buf = &ndp[1];
++
++	*((struct efi_device_path *)buf) = END;
++
++	return start;
++}
++#endif
++
++/*
++ * Helper to split a full device path (containing both device and file
++ * parts) into it's constituent parts.
++ */
++void efi_dp_split_file_path(struct efi_device_path *full_path,
++			    struct efi_device_path **device_path,
++			    struct efi_device_path **file_path)
++{
++	struct efi_device_path *p, *dp, *fp;
++
++	dp = efi_dp_dup(full_path);
++	p = dp;
++	while (!EFI_DP_TYPE(p, MEDIA_DEVICE, FILE_PATH))
++		p = efi_dp_next(p);
++	fp = efi_dp_dup(p);
++
++	p->type = DEVICE_PATH_TYPE_END;
++	p->sub_type = DEVICE_PATH_SUB_TYPE_END;
++	p->length = sizeof(*p);
++
++	*device_path = dp;
++	*file_path = fp;
++}
+
+From patchwork Wed Sep 13 22:05:29 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v3,
+ 06/21] efi_loader: drop redundant efi_device_path_protocol
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813650
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-7-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>, Peter Jones <pjones@redhat.com>
+Date: Wed, 13 Sep 2017 18:05:29 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+This is really the same thing as the efi_device_path struct.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ include/efi_api.h                        | 12 ++----------
+ lib/efi_loader/efi_device_path_to_text.c | 13 ++++++++-----
+ 2 files changed, 10 insertions(+), 15 deletions(-)
+
+diff --git a/include/efi_api.h b/include/efi_api.h
+index 4e27c82129..ac58fd58de 100644
+--- a/include/efi_api.h
++++ b/include/efi_api.h
+@@ -487,22 +487,14 @@ struct efi_console_control_protocol
+ 	EFI_GUID(0x8b843e20, 0x8132, 0x4852, \
+ 		 0x90, 0xcc, 0x55, 0x1a, 0x4e, 0x4a, 0x7f, 0x1c)
+ 
+-struct efi_device_path_protocol
+-{
+-	uint8_t type;
+-	uint8_t sub_type;
+-	uint16_t length;
+-	uint8_t data[];
+-};
+-
+ struct efi_device_path_to_text_protocol
+ {
+ 	uint16_t *(EFIAPI *convert_device_node_to_text)(
+-			struct efi_device_path_protocol *device_node,
++			struct efi_device_path *device_node,
+ 			bool display_only,
+ 			bool allow_shortcuts);
+ 	uint16_t *(EFIAPI *convert_device_path_to_text)(
+-			struct efi_device_path_protocol *device_path,
++			struct efi_device_path *device_path,
+ 			bool display_only,
+ 			bool allow_shortcuts);
+ };
+diff --git a/lib/efi_loader/efi_device_path_to_text.c b/lib/efi_loader/efi_device_path_to_text.c
+index 4b2f43f0c8..f9d071ac50 100644
+--- a/lib/efi_loader/efi_device_path_to_text.c
++++ b/lib/efi_loader/efi_device_path_to_text.c
+@@ -16,7 +16,7 @@ const efi_guid_t efi_guid_device_path_to_text_protocol =
+ 		EFI_DEVICE_PATH_TO_TEXT_PROTOCOL_GUID;
+ 
+ static uint16_t *efi_convert_device_node_to_text(
+-		struct efi_device_path_protocol *device_node,
++		struct efi_device_path *device_node,
+ 		bool display_only,
+ 		bool allow_shortcuts)
+ {
+@@ -55,15 +55,18 @@ static uint16_t *efi_convert_device_node_to_text(
+ 		break;
+ 	case DEVICE_PATH_TYPE_MEDIA_DEVICE:
+ 		switch (device_node->sub_type) {
+-		case DEVICE_PATH_SUB_TYPE_FILE_PATH:
++		case DEVICE_PATH_SUB_TYPE_FILE_PATH: {
++			struct efi_device_path_file_path *fp =
++				(struct efi_device_path_file_path *)device_node;
+ 			buffer_size = device_node->length - 4;
+ 			r = efi_allocate_pool(EFI_ALLOCATE_ANY_PAGES,
+ 					      buffer_size, (void **) &buffer);
+ 			if (r != EFI_SUCCESS)
+ 				return NULL;
+-			memcpy(buffer, device_node->data, buffer_size);
++			memcpy(buffer, fp->str, buffer_size);
+ 			break;
+ 		}
++		}
+ 		break;
+ 	}
+ 
+@@ -89,7 +92,7 @@ static uint16_t *efi_convert_device_node_to_text(
+ }
+ 
+ static uint16_t EFIAPI *efi_convert_device_node_to_text_ext(
+-		struct efi_device_path_protocol *device_node,
++		struct efi_device_path *device_node,
+ 		bool display_only,
+ 		bool allow_shortcuts)
+ {
+@@ -105,7 +108,7 @@ static uint16_t EFIAPI *efi_convert_device_node_to_text_ext(
+ }
+ 
+ static uint16_t EFIAPI *efi_convert_device_path_to_text(
+-		struct efi_device_path_protocol *device_path,
++		struct efi_device_path *device_path,
+ 		bool display_only,
+ 		bool allow_shortcuts)
+ {
+
+From patchwork Wed Sep 13 22:05:30 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,07/21] efi_loader: flesh out device-path to text
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813658
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-8-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>, Peter Jones <pjones@redhat.com>
+Date: Wed, 13 Sep 2017 18:05:30 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+It needs to handle more device-path node types, and also multiple levels
+of path hierarchy.  To simplify this, initially construct utf8 string to
+a temporary buffer, and then allocate the real utf16 buffer that is
+returned.  This should be mostly for debugging or at least not critical-
+path so an extra copy won't hurt, and is saner than the alternative.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ include/efi_api.h                        |   1 +
+ include/efi_loader.h                     |   2 +
+ lib/efi_loader/efi_device_path_to_text.c | 241 +++++++++++++++++++++++--------
+ 3 files changed, 181 insertions(+), 63 deletions(-)
+
+diff --git a/include/efi_api.h b/include/efi_api.h
+index ac58fd58de..0c36122107 100644
+--- a/include/efi_api.h
++++ b/include/efi_api.h
+@@ -304,6 +304,7 @@ struct efi_device_path_vendor {
+ 
+ #define EFI_PNP_ID(ID)				(u32)(((ID) << 16) | 0x41D0)
+ #define EISA_PNP_ID(ID)				EFI_PNP_ID(ID)
++#define EISA_PNP_NUM(ID)			((ID) >> 16)
+ 
+ struct efi_device_path_acpi_path {
+ 	struct efi_device_path dp;
+diff --git a/include/efi_loader.h b/include/efi_loader.h
+index d052b03ab7..f39c2ee6da 100644
+--- a/include/efi_loader.h
++++ b/include/efi_loader.h
+@@ -59,6 +59,8 @@ extern struct efi_simple_input_interface efi_con_in;
+ extern const struct efi_console_control_protocol efi_console_control;
+ extern const struct efi_device_path_to_text_protocol efi_device_path_to_text;
+ 
++uint16_t *efi_dp_str(struct efi_device_path *dp);
++
+ extern const efi_guid_t efi_guid_console_control;
+ extern const efi_guid_t efi_guid_device_path;
+ extern const efi_guid_t efi_guid_loaded_image;
+diff --git a/lib/efi_loader/efi_device_path_to_text.c b/lib/efi_loader/efi_device_path_to_text.c
+index f9d071ac50..1a5ef3919b 100644
+--- a/lib/efi_loader/efi_device_path_to_text.c
++++ b/lib/efi_loader/efi_device_path_to_text.c
+@@ -15,82 +15,197 @@
+ const efi_guid_t efi_guid_device_path_to_text_protocol =
+ 		EFI_DEVICE_PATH_TO_TEXT_PROTOCOL_GUID;
+ 
+-static uint16_t *efi_convert_device_node_to_text(
+-		struct efi_device_path *device_node,
+-		bool display_only,
+-		bool allow_shortcuts)
++static char *dp_unknown(char *s, struct efi_device_path *dp)
+ {
+-	unsigned long buffer_size;
+-	efi_status_t r;
+-	uint16_t *buffer = NULL;
+-	int i;
++	s += sprintf(s, "/UNKNOWN(%04x,%04x)", dp->type, dp->sub_type);
++	return s;
++}
+ 
+-	switch (device_node->type) {
+-	case DEVICE_PATH_TYPE_END:
+-		return NULL;
+-	case DEVICE_PATH_TYPE_MESSAGING_DEVICE:
+-		switch (device_node->sub_type) {
+-		case DEVICE_PATH_SUB_TYPE_MSG_MAC_ADDR: {
+-			struct efi_device_path_mac_addr *dp =
+-				(struct efi_device_path_mac_addr *)device_node;
+-
+-			if (dp->if_type != 0 && dp->if_type != 1)
+-				break;
+-			r = efi_allocate_pool(EFI_ALLOCATE_ANY_PAGES,
+-					      2 * MAC_OUTPUT_LEN,
+-					      (void **)&buffer);
+-			if (r != EFI_SUCCESS)
+-				return NULL;
+-			sprintf((char *)buffer,
+-				"MAC(%02x%02x%02x%02x%02x%02x,0x%1x)",
+-				dp->mac.addr[0], dp->mac.addr[1],
+-				dp->mac.addr[2], dp->mac.addr[3],
+-				dp->mac.addr[4], dp->mac.addr[5],
+-				dp->if_type);
+-			for (i = MAC_OUTPUT_LEN - 1; i >= 0; --i)
+-				buffer[i] = ((uint8_t *)buffer)[i];
++static char *dp_hardware(char *s, struct efi_device_path *dp)
++{
++	switch (dp->sub_type) {
++	case DEVICE_PATH_SUB_TYPE_VENDOR: {
++		struct efi_device_path_vendor *vdp =
++			(struct efi_device_path_vendor *)dp;
++		s += sprintf(s, "/VenHw(%pUl)", &vdp->guid);
++		break;
++	}
++	default:
++		s = dp_unknown(s, dp);
++		break;
++	}
++	return s;
++}
++
++static char *dp_acpi(char *s, struct efi_device_path *dp)
++{
++	switch (dp->sub_type) {
++	case DEVICE_PATH_SUB_TYPE_ACPI_DEVICE: {
++		struct efi_device_path_acpi_path *adp =
++			(struct efi_device_path_acpi_path *)dp;
++		s += sprintf(s, "/Acpi(PNP%04x", EISA_PNP_NUM(adp->hid));
++		if (adp->uid)
++			s += sprintf(s, ",%d", adp->uid);
++		s += sprintf(s, ")");
++		break;
++	}
++	default:
++		s = dp_unknown(s, dp);
++		break;
++	}
++	return s;
++}
++
++static char *dp_msging(char *s, struct efi_device_path *dp)
++{
++	switch (dp->sub_type) {
++	case DEVICE_PATH_SUB_TYPE_MSG_USB: {
++		struct efi_device_path_usb *udp =
++			(struct efi_device_path_usb *)dp;
++		s += sprintf(s, "/Usb(0x%x,0x%x)", udp->parent_port_number,
++			     udp->usb_interface);
++		break;
++	}
++	case DEVICE_PATH_SUB_TYPE_MSG_MAC_ADDR: {
++		struct efi_device_path_mac_addr *mdp =
++			(struct efi_device_path_mac_addr *)dp;
++
++		if (mdp->if_type != 0 && mdp->if_type != 1)
+ 			break;
+-			}
+-		}
++
++		s += sprintf(s, "/MAC(%02x%02x%02x%02x%02x%02x,0x%1x)",
++			mdp->mac.addr[0], mdp->mac.addr[1],
++			mdp->mac.addr[2], mdp->mac.addr[3],
++			mdp->mac.addr[4], mdp->mac.addr[5],
++			mdp->if_type);
++
++		break;
++	}
++	case DEVICE_PATH_SUB_TYPE_MSG_USB_CLASS: {
++		struct efi_device_path_usb_class *ucdp =
++			(struct efi_device_path_usb_class *)dp;
++
++		s += sprintf(s, "/USBClass(%x,%x,%x,%x,%x)",
++			ucdp->vendor_id, ucdp->product_id,
++			ucdp->device_class, ucdp->device_subclass,
++			ucdp->device_protocol);
++
++		break;
++	}
++	case DEVICE_PATH_SUB_TYPE_MSG_SD:
++	case DEVICE_PATH_SUB_TYPE_MSG_MMC: {
++		const char *typename =
++			(dp->sub_type == DEVICE_PATH_SUB_TYPE_MSG_SD) ?
++					"SDCard" : "MMC";
++		struct efi_device_path_sd_mmc_path *sddp =
++			(struct efi_device_path_sd_mmc_path *)dp;
++		s += sprintf(s, "/%s(Slot%u)", typename, sddp->slot_number);
++		break;
++	}
++	default:
++		s = dp_unknown(s, dp);
+ 		break;
+-	case DEVICE_PATH_TYPE_MEDIA_DEVICE:
+-		switch (device_node->sub_type) {
+-		case DEVICE_PATH_SUB_TYPE_FILE_PATH: {
+-			struct efi_device_path_file_path *fp =
+-				(struct efi_device_path_file_path *)device_node;
+-			buffer_size = device_node->length - 4;
+-			r = efi_allocate_pool(EFI_ALLOCATE_ANY_PAGES,
+-					      buffer_size, (void **) &buffer);
+-			if (r != EFI_SUCCESS)
+-				return NULL;
+-			memcpy(buffer, fp->str, buffer_size);
++	}
++	return s;
++}
++
++static char *dp_media(char *s, struct efi_device_path *dp)
++{
++	switch (dp->sub_type) {
++	case DEVICE_PATH_SUB_TYPE_HARD_DRIVE_PATH: {
++		struct efi_device_path_hard_drive_path *hddp =
++			(struct efi_device_path_hard_drive_path *)dp;
++		void *sig = hddp->partition_signature;
++
++		switch (hddp->signature_type) {
++		case SIG_TYPE_MBR:
++			s += sprintf(s, "/HD(Part%d,Sig%08x)",
++				     hddp->partition_number,
++				     *(uint32_t *)sig);
+ 			break;
++		case SIG_TYPE_GUID:
++			s += sprintf(s, "/HD(Part%d,Sig%pUl)",
++				     hddp->partition_number, sig);
++		default:
++			s += sprintf(s, "/HD(Part%d,MBRType=%02x,SigType=%02x)",
++				     hddp->partition_number, hddp->partmap_type,
++				     hddp->signature_type);
+ 		}
+-		}
++
++		break;
++	}
++	case DEVICE_PATH_SUB_TYPE_CDROM_PATH: {
++		struct efi_device_path_cdrom_path *cddp =
++			(struct efi_device_path_cdrom_path *)dp;
++		s += sprintf(s, "/CDROM(0x%x)", cddp->boot_entry);
++		break;
++	}
++	case DEVICE_PATH_SUB_TYPE_FILE_PATH: {
++		struct efi_device_path_file_path *fp =
++			(struct efi_device_path_file_path *)dp;
++		int slen = (dp->length - sizeof(*dp)) / 2;
++		s += sprintf(s, "/%-*ls", slen, fp->str);
++		break;
++	}
++	default:
++		s = dp_unknown(s, dp);
+ 		break;
+ 	}
++	return s;
++}
+ 
+-	/*
+-	 * For all node types that we do not yet support return
+-	 * 'UNKNOWN(type,subtype)'.
+-	 */
+-	if (!buffer) {
+-		r = efi_allocate_pool(EFI_ALLOCATE_ANY_PAGES,
+-				      2 * UNKNOWN_OUTPUT_LEN,
+-				      (void **)&buffer);
+-		if (r != EFI_SUCCESS)
+-			return NULL;
+-		sprintf((char *)buffer,
+-			"UNKNOWN(%04x,%04x)",
+-			device_node->type,
+-			device_node->sub_type);
+-		for (i = UNKNOWN_OUTPUT_LEN - 1; i >= 0; --i)
+-			buffer[i] = ((uint8_t *)buffer)[i];
++static uint16_t *efi_convert_device_node_to_text(
++		struct efi_device_path *dp,
++		bool display_only,
++		bool allow_shortcuts)
++{
++	unsigned long len;
++	efi_status_t r;
++	char buf[512];  /* this ought be be big enough for worst case */
++	char *str = buf;
++	uint16_t *out;
++
++	while (dp) {
++		switch (dp->type) {
++		case DEVICE_PATH_TYPE_HARDWARE_DEVICE:
++			str = dp_hardware(str, dp);
++			break;
++		case DEVICE_PATH_TYPE_ACPI_DEVICE:
++			str = dp_acpi(str, dp);
++			break;
++		case DEVICE_PATH_TYPE_MESSAGING_DEVICE:
++			str = dp_msging(str, dp);
++			break;
++		case DEVICE_PATH_TYPE_MEDIA_DEVICE:
++			str = dp_media(str, dp);
++			break;
++		default:
++			str = dp_unknown(str, dp);
++		}
++
++		dp = efi_dp_next(dp);
+ 	}
+ 
+-	return buffer;
++	*str++ = '\0';
++
++	len = str - buf;
++	r = efi_allocate_pool(EFI_ALLOCATE_ANY_PAGES, 2 * len, (void **)&out);
++	if (r != EFI_SUCCESS)
++		return NULL;
++
++	ascii2unicode(out, buf);
++	out[len - 1] = 0;
++
++	return out;
+ }
+ 
++/* helper for debug prints.. efi_free_pool() the result. */
++uint16_t *efi_dp_str(struct efi_device_path *dp)
++{
++	return efi_convert_device_node_to_text(dp, true, true);
++}
++
++
+ static uint16_t EFIAPI *efi_convert_device_node_to_text_ext(
+ 		struct efi_device_path *device_node,
+ 		bool display_only,
+
+From patchwork Wed Sep 13 22:05:31 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,08/21] efi_loader: use proper device-paths for partitions
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813648
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-9-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Wed, 13 Sep 2017 18:05:31 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Also, create disk objects for the disk itself, in addition to the
+partitions.  (UEFI terminology is a bit confusing, a "disk" object is
+really a partition.)  This helps grub properly identify the boot device
+since it is trying to match up partition "disk" object with it's parent
+device.
+
+Now instead of seeing devices like:
+
+  /File(sdhci@07864000.blk)/EndEntire
+  /File(usb_mass_storage.lun0)/EndEntire
+
+You see:
+
+  /ACPI(133741d0,0)/UnknownMessaging(1d)/EndEntire
+  /ACPI(133741d0,0)/UnknownMessaging(1d)/HD(0,800,64000,dd904a8c00000000,1,1)/EndEntire
+  /ACPI(133741d0,0)/UnknownMessaging(1d)/HD(1,64800,200000,dd904a8c00000000,1,1)/EndEntire
+  /ACPI(133741d0,0)/UnknownMessaging(1d)/HD(2,264800,19a000,dd904a8c00000000,1,1)/EndEntire
+  /ACPI(133741d0,0)/USB(0,0)/USB(0,0)/USB(0,0)/EndEntire
+  /ACPI(133741d0,0)/USB(0,0)/USB(0,0)/USB(0,0)/HD(0,800,60000,38ca680200000000,1,1)/EndEntire
+  /ACPI(133741d0,0)/USB(0,0)/USB(0,0)/USB(0,0)/HD(1,61000,155000,38ca680200000000,1,1)/EndEntire
+  /ACPI(133741d0,0)/USB(0,0)/USB(0,0)/USB(0,0)/HD(2,20fa800,1bbf8800,38ca680200000000,1,1)/EndEntire
+  /ACPI(133741d0,0)/USB(0,0)/USB(0,0)/USB(0,0)/HD(3,1b6800,1f44000,38ca680200000000,1,1)/EndEntire
+
+This is on a board with single USB disk and single sd-card.  The
+UnknownMessaging(1d) node in the device-path is the MMC device,
+but grub_efi_print_device_path() hasn't been updated yet for some
+of the newer device-path sub-types.
+
+This patch is inspired by a patch originally from Peter Jones, but
+re-worked to use efi_device_path, so it doesn't much resemble the
+original.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ lib/efi_loader/efi_disk.c | 54 +++++++++++++++++++++++++++--------------------
+ 1 file changed, 31 insertions(+), 23 deletions(-)
+
+diff --git a/lib/efi_loader/efi_disk.c b/lib/efi_loader/efi_disk.c
+index ed06485e33..14f3e020c8 100644
+--- a/lib/efi_loader/efi_disk.c
++++ b/lib/efi_loader/efi_disk.c
+@@ -28,11 +28,13 @@ struct efi_disk_obj {
+ 	/* EFI Interface Media descriptor struct, referenced by ops */
+ 	struct efi_block_io_media media;
+ 	/* EFI device path to this block device */
+-	struct efi_device_path_file_path *dp;
++	struct efi_device_path *dp;
++	/* partition # */
++	unsigned part;
+ 	/* Offset into disk for simple partitions */
+ 	lbaint_t offset;
+ 	/* Internal block device */
+-	const struct blk_desc *desc;
++	struct blk_desc *desc;
+ };
+ 
+ static efi_status_t EFIAPI efi_disk_reset(struct efi_block_io *this,
+@@ -172,26 +174,26 @@ static const struct efi_block_io block_io_disk_template = {
+ 
+ static void efi_disk_add_dev(const char *name,
+ 			     const char *if_typename,
+-			     const struct blk_desc *desc,
++			     struct blk_desc *desc,
+ 			     int dev_index,
+-			     lbaint_t offset)
++			     lbaint_t offset,
++			     unsigned part)
+ {
+ 	struct efi_disk_obj *diskobj;
+-	struct efi_device_path_file_path *dp;
+-	int objlen = sizeof(*diskobj) + (sizeof(*dp) * 2);
+ 
+ 	/* Don't add empty devices */
+ 	if (!desc->lba)
+ 		return;
+ 
+-	diskobj = calloc(1, objlen);
++	diskobj = calloc(1, sizeof(*diskobj));
+ 
+ 	/* Fill in object data */
+-	dp = (void *)&diskobj[1];
++	diskobj->dp = efi_dp_from_part(desc, part);
++	diskobj->part = part;
+ 	diskobj->parent.protocols[0].guid = &efi_block_io_guid;
+ 	diskobj->parent.protocols[0].protocol_interface = &diskobj->ops;
+ 	diskobj->parent.protocols[1].guid = &efi_guid_device_path;
+-	diskobj->parent.protocols[1].protocol_interface = dp;
++	diskobj->parent.protocols[1].protocol_interface = diskobj->dp;
+ 	diskobj->parent.handle = diskobj;
+ 	diskobj->ops = block_io_disk_template;
+ 	diskobj->ifname = if_typename;
+@@ -207,17 +209,6 @@ static void efi_disk_add_dev(const char *name,
+ 	diskobj->media.last_block = desc->lba - offset;
+ 	diskobj->ops.media = &diskobj->media;
+ 
+-	/* Fill in device path */
+-	diskobj->dp = dp;
+-	dp[0].dp.type = DEVICE_PATH_TYPE_MEDIA_DEVICE;
+-	dp[0].dp.sub_type = DEVICE_PATH_SUB_TYPE_FILE_PATH;
+-	dp[0].dp.length = sizeof(*dp);
+-	ascii2unicode(dp[0].str, name);
+-
+-	dp[1].dp.type = DEVICE_PATH_TYPE_END;
+-	dp[1].dp.sub_type = DEVICE_PATH_SUB_TYPE_END;
+-	dp[1].dp.length = sizeof(*dp);
+-
+ 	/* Hook up to the device list */
+ 	list_add_tail(&diskobj->parent.link, &efi_obj_list);
+ }
+@@ -236,14 +227,18 @@ static int efi_disk_create_eltorito(struct blk_desc *desc,
+ 	if (desc->part_type != PART_TYPE_ISO)
+ 		return 0;
+ 
++	/* and devices for each partition: */
+ 	while (!part_get_info(desc, part, &info)) {
+ 		snprintf(devname, sizeof(devname), "%s:%d", pdevname,
+ 			 part);
+ 		efi_disk_add_dev(devname, if_typename, desc, diskid,
+-				 info.start);
++				 info.start, part);
+ 		part++;
+ 		disks++;
+ 	}
++
++	/* ... and add block device: */
++	efi_disk_add_dev(devname, if_typename, desc, diskid, 0, 0);
+ #endif
+ 
+ 	return disks;
+@@ -271,9 +266,22 @@ int efi_disk_register(void)
+ 	     uclass_next_device_check(&dev)) {
+ 		struct blk_desc *desc = dev_get_uclass_platdata(dev);
+ 		const char *if_typename = dev->driver->name;
++		disk_partition_t info;
++		int part = 1;
+ 
+ 		printf("Scanning disk %s...\n", dev->name);
+-		efi_disk_add_dev(dev->name, if_typename, desc, desc->devnum, 0);
++
++		/* add devices for each partition: */
++		while (!part_get_info(desc, part, &info)) {
++			efi_disk_add_dev(dev->name, if_typename, desc,
++					 desc->devnum, 0, part);
++			part++;
++		}
++
++		/* ... and add block device: */
++		efi_disk_add_dev(dev->name, if_typename, desc,
++				 desc->devnum, 0, 0);
++
+ 		disks++;
+ 
+ 		/*
+@@ -309,7 +317,7 @@ int efi_disk_register(void)
+ 
+ 			snprintf(devname, sizeof(devname), "%s%d",
+ 				 if_typename, i);
+-			efi_disk_add_dev(devname, if_typename, desc, i, 0);
++			efi_disk_add_dev(devname, if_typename, desc, i, 0, 0);
+ 			disks++;
+ 
+ 			/*
+
+From patchwork Wed Sep 13 22:05:32 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,09/21] efi_loader: use proper device-paths for net
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813640
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-10-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Wed, 13 Sep 2017 18:05:32 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ lib/efi_loader/efi_net.c | 19 ++-----------------
+ 1 file changed, 2 insertions(+), 17 deletions(-)
+
+diff --git a/lib/efi_loader/efi_net.c b/lib/efi_loader/efi_net.c
+index 0b949d86e8..aa0618fd3a 100644
+--- a/lib/efi_loader/efi_net.c
++++ b/lib/efi_loader/efi_net.c
+@@ -26,9 +26,6 @@ struct efi_net_obj {
+ 	/* EFI Interface callback struct for network */
+ 	struct efi_simple_network net;
+ 	struct efi_simple_network_mode net_mode;
+-	/* Device path to the network adapter */
+-	struct efi_device_path_mac_addr dp_mac;
+-	struct efi_device_path_file_path dp_end;
+ 	/* PXE struct to transmit dhcp data */
+ 	struct efi_pxe pxe;
+ 	struct efi_pxe_mode pxe_mode;
+@@ -213,16 +210,6 @@ void efi_net_set_dhcp_ack(void *pkt, int len)
+ int efi_net_register(void **handle)
+ {
+ 	struct efi_net_obj *netobj;
+-	struct efi_device_path_mac_addr dp_net = {
+-		.dp.type = DEVICE_PATH_TYPE_MESSAGING_DEVICE,
+-		.dp.sub_type = DEVICE_PATH_SUB_TYPE_MSG_MAC_ADDR,
+-		.dp.length = sizeof(dp_net),
+-	};
+-	struct efi_device_path_file_path dp_end = {
+-		.dp.type = DEVICE_PATH_TYPE_END,
+-		.dp.sub_type = DEVICE_PATH_SUB_TYPE_END,
+-		.dp.length = sizeof(dp_end),
+-	};
+ 
+ 	if (!eth_get_dev()) {
+ 		/* No eth device active, don't expose any */
+@@ -236,7 +223,8 @@ int efi_net_register(void **handle)
+ 	netobj->parent.protocols[0].guid = &efi_net_guid;
+ 	netobj->parent.protocols[0].protocol_interface = &netobj->net;
+ 	netobj->parent.protocols[1].guid = &efi_guid_device_path;
+-	netobj->parent.protocols[1].protocol_interface = &netobj->dp_mac;
++	netobj->parent.protocols[1].protocol_interface =
++		efi_dp_from_eth();
+ 	netobj->parent.protocols[2].guid = &efi_pxe_guid;
+ 	netobj->parent.protocols[2].protocol_interface = &netobj->pxe;
+ 	netobj->parent.handle = &netobj->net;
+@@ -255,9 +243,6 @@ int efi_net_register(void **handle)
+ 	netobj->net.receive = efi_net_receive;
+ 	netobj->net.mode = &netobj->net_mode;
+ 	netobj->net_mode.state = EFI_NETWORK_STARTED;
+-	netobj->dp_mac = dp_net;
+-	netobj->dp_end = dp_end;
+-	memcpy(netobj->dp_mac.mac.addr, eth_get_ethaddr(), 6);
+ 	memcpy(netobj->net_mode.current_address.mac_addr, eth_get_ethaddr(), 6);
+ 	netobj->net_mode.max_packet_size = PKTSIZE;
+ 
+
+From patchwork Wed Sep 13 22:05:33 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v3,
+ 10/21] efi_loader: refactor boot device and loaded_image handling
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813642
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-11-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Wed, 13 Sep 2017 18:05:33 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Get rid of the hacky fake boot-device and duplicate device-path
+constructing (which needs to match what efi_disk and efi_net do).
+Instead convert over to use efi_device_path helpers to construct
+device-paths, and use that to look up the actual boot device.
+
+Also, extract out a helper to plug things in properly to the
+loaded_image.  In a following patch we'll want to re-use this in
+efi_load_image() to handle the case of loading an image from a
+file_path.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ cmd/bootefi.c                 | 201 +++++++++++++-----------------------------
+ include/efi_loader.h          |   5 +-
+ lib/efi_loader/efi_boottime.c |  36 ++++++++
+ lib/efi_loader/efi_net.c      |   5 +-
+ 4 files changed, 100 insertions(+), 147 deletions(-)
+
+diff --git a/cmd/bootefi.c b/cmd/bootefi.c
+index 3196d86040..0980088668 100644
+--- a/cmd/bootefi.c
++++ b/cmd/bootefi.c
+@@ -22,97 +22,14 @@ DECLARE_GLOBAL_DATA_PTR;
+ 
+ static uint8_t efi_obj_list_initalized;
+ 
+-/*
+- * When booting using the "bootefi" command, we don't know which
+- * physical device the file came from. So we create a pseudo-device
+- * called "bootefi" with the device path /bootefi.
+- *
+- * In addition to the originating device we also declare the file path
+- * of "bootefi" based loads to be /bootefi.
+- */
+-static struct efi_device_path_file_path bootefi_image_path[] = {
+-	{
+-		.dp.type = DEVICE_PATH_TYPE_MEDIA_DEVICE,
+-		.dp.sub_type = DEVICE_PATH_SUB_TYPE_FILE_PATH,
+-		.dp.length = sizeof(bootefi_image_path[0]),
+-		.str = { 'b','o','o','t','e','f','i' },
+-	}, {
+-		.dp.type = DEVICE_PATH_TYPE_END,
+-		.dp.sub_type = DEVICE_PATH_SUB_TYPE_END,
+-		.dp.length = sizeof(bootefi_image_path[0]),
+-	}
+-};
+-
+-static struct efi_device_path_file_path bootefi_device_path[] = {
+-	{
+-		.dp.type = DEVICE_PATH_TYPE_MEDIA_DEVICE,
+-		.dp.sub_type = DEVICE_PATH_SUB_TYPE_FILE_PATH,
+-		.dp.length = sizeof(bootefi_image_path[0]),
+-		.str = { 'b','o','o','t','e','f','i' },
+-	}, {
+-		.dp.type = DEVICE_PATH_TYPE_END,
+-		.dp.sub_type = DEVICE_PATH_SUB_TYPE_END,
+-		.dp.length = sizeof(bootefi_image_path[0]),
+-	}
+-};
+-
+-/* The EFI loaded_image interface for the image executed via "bootefi" */
+-static struct efi_loaded_image loaded_image_info = {
+-	.device_handle = bootefi_device_path,
+-	.file_path = bootefi_image_path,
+-};
+-
+-/* The EFI object struct for the image executed via "bootefi" */
+-static struct efi_object loaded_image_info_obj = {
+-	.handle = &loaded_image_info,
+-	.protocols = {
+-		{
+-			/*
+-			 * When asking for the loaded_image interface, just
+-			 * return handle which points to loaded_image_info
+-			 */
+-			.guid = &efi_guid_loaded_image,
+-			.protocol_interface = &loaded_image_info,
+-		},
+-		{
+-			/*
+-			 * When asking for the device path interface, return
+-			 * bootefi_device_path
+-			 */
+-			.guid = &efi_guid_device_path,
+-			.protocol_interface = bootefi_device_path,
+-		},
+-		{
+-			.guid = &efi_guid_console_control,
+-			.protocol_interface = (void *) &efi_console_control
+-		},
+-		{
+-			.guid = &efi_guid_device_path_to_text_protocol,
+-			.protocol_interface = (void *) &efi_device_path_to_text
+-		},
+-	},
+-};
+-
+-/* The EFI object struct for the device the "bootefi" image was loaded from */
+-static struct efi_object bootefi_device_obj = {
+-	.handle = bootefi_device_path,
+-	.protocols = {
+-		{
+-			/* When asking for the device path interface, return
+-			 * bootefi_device_path */
+-			.guid = &efi_guid_device_path,
+-			.protocol_interface = bootefi_device_path
+-		}
+-	},
+-};
++static struct efi_device_path *bootefi_image_path;
++static struct efi_device_path *bootefi_device_path;
+ 
+ /* Initialize and populate EFI object list */
+ static void efi_init_obj_list(void)
+ {
+ 	efi_obj_list_initalized = 1;
+ 
+-	list_add_tail(&loaded_image_info_obj.link, &efi_obj_list);
+-	list_add_tail(&bootefi_device_obj.link, &efi_obj_list);
+ 	efi_console_register();
+ #ifdef CONFIG_PARTITIONS
+ 	efi_disk_register();
+@@ -121,13 +38,7 @@ static void efi_init_obj_list(void)
+ 	efi_gop_register();
+ #endif
+ #ifdef CONFIG_NET
+-	void *nethandle = loaded_image_info.device_handle;
+-	efi_net_register(&nethandle);
+-
+-	if (!memcmp(bootefi_device_path[0].str, "N\0e\0t", 6))
+-		loaded_image_info.device_handle = nethandle;
+-	else
+-		loaded_image_info.device_handle = bootefi_device_path;
++	efi_net_register();
+ #endif
+ #ifdef CONFIG_GENERATE_SMBIOS_TABLE
+ 	efi_smbios_register();
+@@ -210,14 +121,27 @@ static unsigned long efi_run_in_el2(asmlinkage ulong (*entry)(
+  * Load an EFI payload into a newly allocated piece of memory, register all
+  * EFI objects it would want to access and jump to it.
+  */
+-static unsigned long do_bootefi_exec(void *efi, void *fdt)
++static unsigned long do_bootefi_exec(void *efi, void *fdt,
++				     struct efi_device_path *device_path,
++				     struct efi_device_path *image_path)
+ {
++	struct efi_loaded_image loaded_image_info = {};
++	struct efi_object loaded_image_info_obj = {};
++	ulong ret;
++
+ 	ulong (*entry)(void *image_handle, struct efi_system_table *st)
+ 		asmlinkage;
+ 	ulong fdt_pages, fdt_size, fdt_start, fdt_end;
+ 	const efi_guid_t fdt_guid = EFI_FDT_GUID;
+ 	bootm_headers_t img = { 0 };
+ 
++	/* Initialize and populate EFI object list */
++	if (!efi_obj_list_initalized)
++		efi_init_obj_list();
++
++	efi_setup_loaded_image(&loaded_image_info, &loaded_image_info_obj,
++			       device_path, image_path);
++
+ 	/*
+ 	 * gd lives in a fixed register which may get clobbered while we execute
+ 	 * the payload. So save it here and restore it on every callback entry
+@@ -252,18 +176,18 @@ static unsigned long do_bootefi_exec(void *efi, void *fdt)
+ 
+ 	/* Load the EFI payload */
+ 	entry = efi_load_pe(efi, &loaded_image_info);
+-	if (!entry)
+-		return -ENOENT;
+-
+-	/* Initialize and populate EFI object list */
+-	if (!efi_obj_list_initalized)
+-		efi_init_obj_list();
++	if (!entry) {
++		ret = -ENOENT;
++		goto exit;
++	}
+ 
+ 	/* Call our payload! */
+ 	debug("%s:%d Jumping to 0x%lx\n", __func__, __LINE__, (long)entry);
+ 
+ 	if (setjmp(&loaded_image_info.exit_jmp)) {
+-		return loaded_image_info.exit_status;
++		ret = loaded_image_info.exit_status;
++		EFI_EXIT(ret);
++		goto exit;
+ 	}
+ 
+ #ifdef CONFIG_ARM64
+@@ -282,7 +206,13 @@ static unsigned long do_bootefi_exec(void *efi, void *fdt)
+ 	}
+ #endif
+ 
+-	return efi_do_enter(&loaded_image_info, &systab, entry);
++	ret = efi_do_enter(&loaded_image_info, &systab, entry);
++
++exit:
++	/* image has returned, loaded-image obj goes *poof*: */
++	list_del(&loaded_image_info_obj.link);
++
++	return ret;
+ }
+ 
+ 
+@@ -315,7 +245,8 @@ static int do_bootefi(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+ 	}
+ 
+ 	printf("## Starting EFI application at %08lx ...\n", addr);
+-	r = do_bootefi_exec((void *)addr, (void*)fdt_addr);
++	r = do_bootefi_exec((void *)addr, (void *)fdt_addr,
++			    bootefi_device_path, bootefi_image_path);
+ 	printf("## Application terminated, r = %lu\n",
+ 	       r & ~EFI_ERROR_MASK);
+ 
+@@ -344,58 +275,44 @@ U_BOOT_CMD(
+ 	bootefi_help_text
+ );
+ 
+-void efi_set_bootdev(const char *dev, const char *devnr, const char *path)
++static int parse_partnum(const char *devnr)
+ {
+-	__maybe_unused struct blk_desc *desc;
+-	char devname[32] = { 0 }; /* dp->str is u16[32] long */
+-	char *colon, *s;
+-
+-#if defined(CONFIG_BLK) || CONFIG_IS_ENABLED(ISO_PARTITION)
+-	desc = blk_get_dev(dev, simple_strtol(devnr, NULL, 10));
+-#endif
+-
+-#ifdef CONFIG_BLK
+-	if (desc) {
+-		snprintf(devname, sizeof(devname), "%s", desc->bdev->name);
+-	} else
+-#endif
+-
+-	{
+-		/* Assemble the condensed device name we use in efi_disk.c */
+-		snprintf(devname, sizeof(devname), "%s%s", dev, devnr);
++	const char *str = strchr(devnr, ':');
++	if (str) {
++		str++;
++		return simple_strtoul(str, NULL, 16);
+ 	}
++	return 0;
++}
+ 
+-	colon = strchr(devname, ':');
+-
+-#if CONFIG_IS_ENABLED(ISO_PARTITION)
+-	/* For ISOs we create partition block devices */
+-	if (desc && (desc->type != DEV_TYPE_UNKNOWN) &&
+-	    (desc->part_type == PART_TYPE_ISO)) {
+-		if (!colon)
+-			snprintf(devname, sizeof(devname), "%s:1", devname);
++void efi_set_bootdev(const char *dev, const char *devnr, const char *path)
++{
++	char filename[32] = { 0 }; /* dp->str is u16[32] long */
++	char *s;
+ 
+-		colon = NULL;
+-	}
+-#endif
++	if (strcmp(dev, "Net")) {
++		struct blk_desc *desc;
++		int part;
+ 
+-	if (colon)
+-		*colon = '\0';
++		desc = blk_get_dev(dev, simple_strtol(devnr, NULL, 10));
++		part = parse_partnum(devnr);
+ 
+-	/* Patch bootefi_device_path to the target device */
+-	memset(bootefi_device_path[0].str, 0, sizeof(bootefi_device_path[0].str));
+-	ascii2unicode(bootefi_device_path[0].str, devname);
++		bootefi_device_path = efi_dp_from_part(desc, part);
++	} else {
++#ifdef CONFIG_NET
++		bootefi_device_path = efi_dp_from_eth();
++#endif
++	}
+ 
+-	/* Patch bootefi_image_path to the target file path */
+-	memset(bootefi_image_path[0].str, 0, sizeof(bootefi_image_path[0].str));
+ 	if (strcmp(dev, "Net")) {
+ 		/* Add leading / to fs paths, because they're absolute */
+-		snprintf(devname, sizeof(devname), "/%s", path);
++		snprintf(filename, sizeof(filename), "/%s", path);
+ 	} else {
+-		snprintf(devname, sizeof(devname), "%s", path);
++		snprintf(filename, sizeof(filename), "%s", path);
+ 	}
+ 	/* DOS style file path: */
+-	s = devname;
++	s = filename;
+ 	while ((s = strchr(s, '/')))
+ 		*s++ = '\\';
+-	ascii2unicode(bootefi_image_path[0].str, devname);
++	bootefi_image_path = efi_dp_from_file(NULL, 0, filename);
+ }
+diff --git a/include/efi_loader.h b/include/efi_loader.h
+index f39c2ee6da..ec8803f588 100644
+--- a/include/efi_loader.h
++++ b/include/efi_loader.h
+@@ -136,7 +136,7 @@ int efi_disk_register(void);
+ /* Called by bootefi to make GOP (graphical) interface available */
+ int efi_gop_register(void);
+ /* Called by bootefi to make the network interface available */
+-int efi_net_register(void **handle);
++int efi_net_register(void);
+ /* Called by bootefi to make SMBIOS tables available */
+ void efi_smbios_register(void);
+ 
+@@ -193,6 +193,9 @@ uint64_t efi_add_memory_map(uint64_t start, uint64_t pages, int memory_type,
+ int efi_memory_init(void);
+ /* Adds new or overrides configuration table entry to the system table */
+ efi_status_t efi_install_configuration_table(const efi_guid_t *guid, void *table);
++void efi_setup_loaded_image(struct efi_loaded_image *info, struct efi_object *obj,
++			    struct efi_device_path *device_path,
++			    struct efi_device_path *file_path);
+ 
+ #ifdef CONFIG_EFI_LOADER_BOUNCE_BUFFER
+ extern void *efi_bounce_buffer;
+diff --git a/lib/efi_loader/efi_boottime.c b/lib/efi_loader/efi_boottime.c
+index b962b62a97..837e61d8fe 100644
+--- a/lib/efi_loader/efi_boottime.c
++++ b/lib/efi_loader/efi_boottime.c
+@@ -726,6 +726,42 @@ static efi_status_t EFIAPI efi_install_configuration_table_ext(efi_guid_t *guid,
+ 	return EFI_EXIT(efi_install_configuration_table(guid, table));
+ }
+ 
++/* Initialize a loaded_image_info + loaded_image_info object with correct
++ * protocols, boot-device, etc.
++ */
++void efi_setup_loaded_image(struct efi_loaded_image *info, struct efi_object *obj,
++			    struct efi_device_path *device_path,
++			    struct efi_device_path *file_path)
++{
++	obj->handle = info;
++
++	/*
++	 * When asking for the device path interface, return
++	 * bootefi_device_path
++	 */
++	obj->protocols[0].guid = &efi_guid_device_path;
++	obj->protocols[0].protocol_interface = device_path;
++
++	/*
++	 * When asking for the loaded_image interface, just
++	 * return handle which points to loaded_image_info
++	 */
++	obj->protocols[1].guid = &efi_guid_loaded_image;
++	obj->protocols[1].protocol_interface = info;
++
++	obj->protocols[2].guid = &efi_guid_console_control;
++	obj->protocols[2].protocol_interface = (void *)&efi_console_control;
++
++	obj->protocols[3].guid = &efi_guid_device_path_to_text_protocol;
++	obj->protocols[3].protocol_interface =
++		(void *)&efi_device_path_to_text;
++
++	info->file_path = file_path;
++	info->device_handle = efi_dp_find_obj(device_path, NULL);
++
++	list_add_tail(&obj->link, &efi_obj_list);
++}
++
+ static efi_status_t EFIAPI efi_load_image(bool boot_policy,
+ 					  efi_handle_t parent_image,
+ 					  struct efi_device_path *file_path,
+diff --git a/lib/efi_loader/efi_net.c b/lib/efi_loader/efi_net.c
+index aa0618fd3a..91f1e4a69e 100644
+--- a/lib/efi_loader/efi_net.c
++++ b/lib/efi_loader/efi_net.c
+@@ -207,7 +207,7 @@ void efi_net_set_dhcp_ack(void *pkt, int len)
+ }
+ 
+ /* This gets called from do_bootefi_exec(). */
+-int efi_net_register(void **handle)
++int efi_net_register(void)
+ {
+ 	struct efi_net_obj *netobj;
+ 
+@@ -253,8 +253,5 @@ int efi_net_register(void **handle)
+ 	/* Hook net up to the device list */
+ 	list_add_tail(&netobj->parent.link, &efi_obj_list);
+ 
+-	if (handle)
+-		*handle = &netobj->net;
+-
+ 	return 0;
+ }
+
+From patchwork Wed Sep 13 22:05:34 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,11/21] efi_loader: add file/filesys support
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813652
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-12-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>, Peter Jones <pjones@redhat.com>
+Date: Wed, 13 Sep 2017 18:05:34 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+fallback.efi (and probably other things) use UEFI's simple-file-system
+protocol and file support to search for OS's to boot.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ include/efi.h                     |   2 +
+ include/efi_api.h                 |  65 +++++
+ include/efi_loader.h              |  13 +
+ lib/efi_loader/Makefile           |   1 +
+ lib/efi_loader/efi_disk.c         |  32 +++
+ lib/efi_loader/efi_file.c         | 560 ++++++++++++++++++++++++++++++++++++++
+ lib/efi_loader/efi_image_loader.c |   3 +
+ 7 files changed, 676 insertions(+)
+ create mode 100644 lib/efi_loader/efi_file.c
+
+diff --git a/include/efi.h b/include/efi.h
+index 87b0b43f20..ddd2b96417 100644
+--- a/include/efi.h
++++ b/include/efi.h
+@@ -81,6 +81,8 @@ typedef struct {
+ #define EFI_IP_ADDRESS_CONFLICT		(EFI_ERROR_MASK | 34)
+ #define EFI_HTTP_ERROR			(EFI_ERROR_MASK | 35)
+ 
++#define EFI_WARN_DELETE_FAILURE	2
++
+ typedef unsigned long efi_status_t;
+ typedef u64 efi_physical_addr_t;
+ typedef u64 efi_virtual_addr_t;
+diff --git a/include/efi_api.h b/include/efi_api.h
+index 0c36122107..1aae96355f 100644
+--- a/include/efi_api.h
++++ b/include/efi_api.h
+@@ -666,4 +666,69 @@ struct efi_pxe {
+ 	struct efi_pxe_mode *mode;
+ };
+ 
++#define EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID \
++	EFI_GUID(0x964e5b22, 0x6459, 0x11d2, \
++		 0x8e, 0x39, 0x0, 0xa0, 0xc9, 0x69, 0x72, 0x3b)
++#define EFI_FILE_PROTOCOL_REVISION 0x00010000
++
++struct efi_file_handle {
++	u64 rev;
++	efi_status_t (EFIAPI *open)(struct efi_file_handle *file,
++			struct efi_file_handle **new_handle,
++			s16 *file_name, u64 open_mode, u64 attributes);
++	efi_status_t (EFIAPI *close)(struct efi_file_handle *file);
++	efi_status_t (EFIAPI *delete)(struct efi_file_handle *file);
++	efi_status_t (EFIAPI *read)(struct efi_file_handle *file,
++			u64 *buffer_size, void *buffer);
++	efi_status_t (EFIAPI *write)(struct efi_file_handle *file,
++			u64 *buffer_size, void *buffer);
++	efi_status_t (EFIAPI *getpos)(struct efi_file_handle *file,
++			u64 *pos);
++	efi_status_t (EFIAPI *setpos)(struct efi_file_handle *file,
++			u64 pos);
++	efi_status_t (EFIAPI *getinfo)(struct efi_file_handle *file,
++			efi_guid_t *info_type, u64 *buffer_size, void *buffer);
++	efi_status_t (EFIAPI *setinfo)(struct efi_file_handle *file,
++			efi_guid_t *info_type, u64 buffer_size, void *buffer);
++	efi_status_t (EFIAPI *flush)(struct efi_file_handle *file);
++};
++
++#define EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID \
++	EFI_GUID(0x964e5b22, 0x6459, 0x11d2, \
++		 0x8e, 0x39, 0x0, 0xa0, 0xc9, 0x69, 0x72, 0x3b)
++#define EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_REVISION 0x00010000
++
++struct efi_simple_file_system_protocol {
++	u64 rev;
++	efi_status_t (EFIAPI *open_volume)(struct efi_simple_file_system_protocol *this,
++			struct efi_file_handle **root);
++};
++
++#define EFI_FILE_INFO_GUID \
++	EFI_GUID(0x9576e92, 0x6d3f, 0x11d2, \
++		 0x8e, 0x39, 0x0, 0xa0, 0xc9, 0x69, 0x72, 0x3b)
++
++#define EFI_FILE_MODE_READ	0x0000000000000001
++#define EFI_FILE_MODE_WRITE	0x0000000000000002
++#define EFI_FILE_MODE_CREATE	0x8000000000000000
++
++#define EFI_FILE_READ_ONLY	0x0000000000000001
++#define EFI_FILE_HIDDEN		0x0000000000000002
++#define EFI_FILE_SYSTEM		0x0000000000000004
++#define EFI_FILE_RESERVED	0x0000000000000008
++#define EFI_FILE_DIRECTORY	0x0000000000000010
++#define EFI_FILE_ARCHIVE	0x0000000000000020
++#define EFI_FILE_VALID_ATTR	0x0000000000000037
++
++struct efi_file_info {
++	u64 size;
++	u64 file_size;
++	u64 physical_size;
++	struct efi_time create_time;
++	struct efi_time last_access_time;
++	struct efi_time modification_time;
++	u64 attribute;
++	s16 file_name[0];
++};
++
+ #endif
+diff --git a/include/efi_loader.h b/include/efi_loader.h
+index ec8803f588..b0c1e8fb78 100644
+--- a/include/efi_loader.h
++++ b/include/efi_loader.h
+@@ -65,6 +65,8 @@ extern const efi_guid_t efi_guid_console_control;
+ extern const efi_guid_t efi_guid_device_path;
+ extern const efi_guid_t efi_guid_loaded_image;
+ extern const efi_guid_t efi_guid_device_path_to_text_protocol;
++extern const efi_guid_t efi_simple_file_system_protocol_guid;
++extern const efi_guid_t efi_file_info_guid;
+ 
+ extern unsigned int __efi_runtime_start, __efi_runtime_stop;
+ extern unsigned int __efi_runtime_rel_start, __efi_runtime_rel_stop;
+@@ -140,6 +142,9 @@ int efi_net_register(void);
+ /* Called by bootefi to make SMBIOS tables available */
+ void efi_smbios_register(void);
+ 
++struct efi_simple_file_system_protocol *
++efi_fs_from_path(struct efi_device_path *fp);
++
+ /* Called by networking code to memorize the dhcp ack package */
+ void efi_net_set_dhcp_ack(void *pkt, int len);
+ 
+@@ -168,6 +173,14 @@ efi_status_t efi_set_timer(struct efi_event *event, enum efi_timer_delay type,
+ /* Call this to signal an event */
+ void efi_signal_event(struct efi_event *event);
+ 
++/* open file system: */
++struct efi_simple_file_system_protocol *efi_simple_file_system(
++		struct blk_desc *desc, int part, struct efi_device_path *dp);
++
++/* open file from device-path: */
++struct efi_file_handle *efi_file_from_path(struct efi_device_path *fp);
++
++
+ /* Generic EFI memory allocator, call this to get memory */
+ void *efi_alloc(uint64_t len, int memory_type);
+ /* More specific EFI memory allocator, called by EFI payloads */
+diff --git a/lib/efi_loader/Makefile b/lib/efi_loader/Makefile
+index f35e5ce8a8..cce92cfeb5 100644
+--- a/lib/efi_loader/Makefile
++++ b/lib/efi_loader/Makefile
+@@ -16,6 +16,7 @@ always := $(efiprogs-y)
+ obj-$(CONFIG_CMD_BOOTEFI_HELLO) += helloworld_efi.o
+ obj-y += efi_image_loader.o efi_boottime.o efi_runtime.o efi_console.o
+ obj-y += efi_memory.o efi_device_path_to_text.o efi_device_path.o
++obj-y += efi_file.o
+ obj-$(CONFIG_LCD) += efi_gop.o
+ obj-$(CONFIG_DM_VIDEO) += efi_gop.o
+ obj-$(CONFIG_PARTITIONS) += efi_disk.o
+diff --git a/lib/efi_loader/efi_disk.c b/lib/efi_loader/efi_disk.c
+index 14f3e020c8..9805585eb1 100644
+--- a/lib/efi_loader/efi_disk.c
++++ b/lib/efi_loader/efi_disk.c
+@@ -31,6 +31,8 @@ struct efi_disk_obj {
+ 	struct efi_device_path *dp;
+ 	/* partition # */
+ 	unsigned part;
++	/* handle to filesys proto (for partition objects) */
++	struct efi_simple_file_system_protocol *volume;
+ 	/* Offset into disk for simple partitions */
+ 	lbaint_t offset;
+ 	/* Internal block device */
+@@ -172,6 +174,28 @@ static const struct efi_block_io block_io_disk_template = {
+ 	.flush_blocks = &efi_disk_flush_blocks,
+ };
+ 
++/*
++ * Find filesystem from a device-path.  The passed in path 'p' probably
++ * contains one or more /File(name) nodes, so the comparison stops at
++ * the first /File() node, and returns the pointer to that via 'rp'.
++ * This is mostly intended to be a helper to map a device-path to an
++ * efi_file_handle object.
++ */
++struct efi_simple_file_system_protocol *
++efi_fs_from_path(struct efi_device_path *fp)
++{
++	struct efi_object *efiobj;
++	struct efi_disk_obj *diskobj;
++
++	efiobj = efi_dp_find_obj(fp, NULL);
++	if (!efiobj)
++		return NULL;
++
++	diskobj = container_of(efiobj, struct efi_disk_obj, parent);
++
++	return diskobj->volume;
++}
++
+ static void efi_disk_add_dev(const char *name,
+ 			     const char *if_typename,
+ 			     struct blk_desc *desc,
+@@ -194,6 +218,14 @@ static void efi_disk_add_dev(const char *name,
+ 	diskobj->parent.protocols[0].protocol_interface = &diskobj->ops;
+ 	diskobj->parent.protocols[1].guid = &efi_guid_device_path;
+ 	diskobj->parent.protocols[1].protocol_interface = diskobj->dp;
++	if (part >= 1) {
++		diskobj->volume = efi_simple_file_system(desc, part,
++							 diskobj->dp);
++		diskobj->parent.protocols[2].guid =
++			&efi_simple_file_system_protocol_guid;
++		diskobj->parent.protocols[2].protocol_interface =
++			diskobj->volume;
++	}
+ 	diskobj->parent.handle = diskobj;
+ 	diskobj->ops = block_io_disk_template;
+ 	diskobj->ifname = if_typename;
+diff --git a/lib/efi_loader/efi_file.c b/lib/efi_loader/efi_file.c
+new file mode 100644
+index 0000000000..5e1eee5a20
+--- /dev/null
++++ b/lib/efi_loader/efi_file.c
+@@ -0,0 +1,560 @@
++/*
++ *  EFI utils
++ *
++ *  Copyright (c) 2017 Rob Clark
++ *
++ *  SPDX-License-Identifier:     GPL-2.0+
++ */
++
++#include <common.h>
++#include <charset.h>
++#include <efi_loader.h>
++#include <malloc.h>
++#include <fs.h>
++
++struct file_system {
++	struct efi_simple_file_system_protocol base;
++	struct efi_device_path *dp;
++	struct blk_desc *desc;
++	int part;
++};
++#define to_fs(x) container_of(x, struct file_system, base)
++
++struct file_handle {
++	struct efi_file_handle base;
++	struct file_system *fs;
++	loff_t offset;       /* current file position/cursor */
++	int isdir;
++
++	/* for reading a directory: */
++	struct fs_dir_stream *dirs;
++	struct fs_dirent *dent;
++
++	char path[0];
++};
++#define to_fh(x) container_of(x, struct file_handle, base)
++
++static const struct efi_file_handle efi_file_handle_protocol;
++
++static char *basename(struct file_handle *fh)
++{
++	char *s = strrchr(fh->path, '/');
++	if (s)
++		return s + 1;
++	return fh->path;
++}
++
++static int set_blk_dev(struct file_handle *fh)
++{
++	return fs_set_blk_dev_with_part(fh->fs->desc, fh->fs->part);
++}
++
++static int is_dir(struct file_handle *fh)
++{
++	struct fs_dir_stream *dirs;
++
++	set_blk_dev(fh);
++	dirs = fs_opendir(fh->path);
++	if (!dirs)
++		return 0;
++
++	fs_closedir(dirs);
++
++	return 1;
++}
++
++/*
++ * Normalize a path which may include either back or fwd slashes,
++ * double slashes, . or .. entries in the path, etc.
++ */
++static int sanitize_path(char *path)
++{
++	char *p	;
++
++	/* backslash to slash: */
++	p = path;
++	while ((p = strchr(p, '\\')))
++		*p++ = '/';
++
++	/* handle double-slashes: */
++	p = path;
++	while ((p = strstr(p, "//"))) {
++		char *src = p + 1;
++		memmove(p, src, strlen(src) + 1);
++	}
++
++	/* handle extra /.'s */
++	p = path;
++	while ((p = strstr(p, "/."))) {
++		/*
++		 * You'd be tempted to do this *after* handling ".."s
++		 * below to avoid having to check if "/." is start of
++		 * a "/..", but that won't have the correct results..
++		 * for example, "/foo/./../bar" would get resolved to
++		 * "/foo/bar" if you did these two passes in the other
++		 * order
++		 */
++		if (p[2] == '.') {
++			p += 2;
++			continue;
++		}
++		char *src = p + 2;
++		memmove(p, src, strlen(src) + 1);
++	}
++
++	/* handle extra /..'s: */
++	p = path;
++	while ((p = strstr(p, "/.."))) {
++		char *src = p + 3;
++
++		p--;
++
++		/* find beginning of previous path entry: */
++		while (true) {
++			if (p < path)
++				return -1;
++			if (*p == '/')
++				break;
++			p--;
++		}
++
++		memmove(p, src, strlen(src) + 1);
++	}
++
++	return 0;
++}
++
++/* NOTE: despite what you would expect, 'file_name' is actually a path.
++ * With windoze style backlashes, ofc.
++ */
++static struct efi_file_handle *file_open(struct file_system *fs,
++		struct file_handle *parent, s16 *file_name, u64 mode)
++{
++	struct file_handle *fh;
++	char f0[MAX_UTF8_PER_UTF16] = {0};
++	int plen = 0;
++	int flen = 0;
++
++	if (file_name) {
++		utf16_to_utf8((u8 *)f0, (u16 *)file_name, 1);
++		flen = utf16_strlen((u16 *)file_name);
++	}
++
++	/* we could have a parent, but also an absolute path: */
++	if (f0[0] == '\\') {
++		plen = 0;
++	} else if (parent) {
++		plen = strlen(parent->path) + 1;
++	}
++
++	/* +2 is for null and '/' */
++	fh = calloc(1, sizeof(*fh) + plen + (flen * MAX_UTF8_PER_UTF16) + 2);
++
++	fh->base = efi_file_handle_protocol;
++	fh->fs = fs;
++
++	if (parent) {
++		char *p = fh->path;
++
++		if (plen > 0) {
++			strcpy(p, parent->path);
++			p += plen - 1;
++			*p++ = '/';
++		}
++
++		utf16_to_utf8((u8 *)p, (u16 *)file_name, flen);
++
++		if (sanitize_path(fh->path))
++			goto error;
++
++		/* check if file exists: */
++		if (set_blk_dev(fh))
++			goto error;
++
++		if (!((mode & EFI_FILE_MODE_CREATE) || fs_exists(fh->path)))
++			goto error;
++
++		/* figure out if file is a directory: */
++		fh->isdir = is_dir(fh);
++	} else {
++		fh->isdir = 1;
++		strcpy(fh->path, "");
++	}
++
++	return &fh->base;
++
++error:
++	free(fh);
++	return NULL;
++}
++
++static efi_status_t EFIAPI efi_file_open(struct efi_file_handle *file,
++		struct efi_file_handle **new_handle,
++		s16 *file_name, u64 open_mode, u64 attributes)
++{
++	struct file_handle *fh = to_fh(file);
++
++	EFI_ENTRY("%p, %p, \"%ls\", %llx, %llu", file, new_handle, file_name,
++		  open_mode, attributes);
++
++	*new_handle = file_open(fh->fs, fh, file_name, open_mode);
++	if (!*new_handle)
++		return EFI_EXIT(EFI_NOT_FOUND);
++
++	return EFI_EXIT(EFI_SUCCESS);
++}
++
++static efi_status_t file_close(struct file_handle *fh)
++{
++	fs_closedir(fh->dirs);
++	free(fh);
++	return EFI_SUCCESS;
++}
++
++static efi_status_t EFIAPI efi_file_close(struct efi_file_handle *file)
++{
++	struct file_handle *fh = to_fh(file);
++	EFI_ENTRY("%p", file);
++	return EFI_EXIT(file_close(fh));
++}
++
++static efi_status_t EFIAPI efi_file_delete(struct efi_file_handle *file)
++{
++	struct file_handle *fh = to_fh(file);
++	EFI_ENTRY("%p", file);
++	file_close(fh);
++	return EFI_EXIT(EFI_WARN_DELETE_FAILURE);
++}
++
++static efi_status_t file_read(struct file_handle *fh, u64 *buffer_size,
++		void *buffer)
++{
++	loff_t actread;
++
++	if (fs_read(fh->path, (ulong)buffer, fh->offset,
++		    *buffer_size, &actread))
++		return EFI_DEVICE_ERROR;
++
++	*buffer_size = actread;
++	fh->offset += actread;
++
++	return EFI_SUCCESS;
++}
++
++static efi_status_t dir_read(struct file_handle *fh, u64 *buffer_size,
++		void *buffer)
++{
++	struct efi_file_info *info = buffer;
++	struct fs_dirent *dent;
++	unsigned required_size;
++
++	if (!fh->dirs) {
++		assert(fh->offset == 0);
++		fh->dirs = fs_opendir(fh->path);
++		if (!fh->dirs)
++			return EFI_DEVICE_ERROR;
++	}
++
++	/*
++	 * So this is a bit awkward.  Since fs layer is stateful and we
++	 * can't rewind an entry, in the EFI_BUFFER_TOO_SMALL case below
++	 * we might have to return without consuming the dent.. so we
++	 * have to stash it for next call.
++	 */
++	if (fh->dent) {
++		dent = fh->dent;
++		fh->dent = NULL;
++	} else {
++		dent = fs_readdir(fh->dirs);
++	}
++
++
++	if (!dent) {
++		/* no more files in directory: */
++		/* workaround shim.efi bug/quirk.. as find_boot_csv()
++		 * loops through directory contents, it initially calls
++		 * read w/ zero length buffer to find out how much mem
++		 * to allocate for the EFI_FILE_INFO, then allocates,
++		 * and then calls a 2nd time.  If we return size of
++		 * zero the first time, it happily passes that to
++		 * AllocateZeroPool(), and when that returns NULL it
++		 * thinks it is EFI_OUT_OF_RESOURCES.  So on first
++		 * call return a non-zero size:
++		 */
++		if (*buffer_size == 0)
++			*buffer_size = sizeof(*info);
++		else
++			*buffer_size = 0;
++		return EFI_SUCCESS;
++	}
++
++	/* check buffer size: */
++	required_size = sizeof(*info) + 2 * (strlen(dent->name) + 1);
++	if (*buffer_size < required_size) {
++		*buffer_size = required_size;
++		fh->dent = dent;
++		return EFI_BUFFER_TOO_SMALL;
++	}
++
++	*buffer_size = required_size;
++	memset(info, 0, required_size);
++
++	info->size = required_size;
++	info->file_size = dent->size;
++	info->physical_size = dent->size;
++
++	if (dent->type == FS_DT_DIR)
++		info->attribute |= EFI_FILE_DIRECTORY;
++
++	ascii2unicode((u16 *)info->file_name, dent->name);
++
++	fh->offset++;
++
++	return EFI_SUCCESS;
++}
++
++static efi_status_t EFIAPI efi_file_read(struct efi_file_handle *file,
++		u64 *buffer_size, void *buffer)
++{
++	struct file_handle *fh = to_fh(file);
++	efi_status_t ret = EFI_SUCCESS;
++
++	EFI_ENTRY("%p, %p, %p", file, buffer_size, buffer);
++
++	if (set_blk_dev(fh)) {
++		ret = EFI_DEVICE_ERROR;
++		goto error;
++	}
++
++	if (fh->isdir)
++		ret = dir_read(fh, buffer_size, buffer);
++	else
++		ret = file_read(fh, buffer_size, buffer);
++
++error:
++	return EFI_EXIT(ret);
++}
++
++static efi_status_t EFIAPI efi_file_write(struct efi_file_handle *file,
++		u64 *buffer_size, void *buffer)
++{
++	struct file_handle *fh = to_fh(file);
++	efi_status_t ret = EFI_SUCCESS;
++	loff_t actwrite;
++
++	EFI_ENTRY("%p, %p, %p", file, buffer_size, buffer);
++
++	if (set_blk_dev(fh)) {
++		ret = EFI_DEVICE_ERROR;
++		goto error;
++	}
++
++	if (fs_write(fh->path, (ulong)buffer, fh->offset, *buffer_size,
++		     &actwrite)) {
++		ret = EFI_DEVICE_ERROR;
++		goto error;
++	}
++
++	*buffer_size = actwrite;
++	fh->offset += actwrite;
++
++error:
++	return EFI_EXIT(ret);
++}
++
++static efi_status_t EFIAPI efi_file_getpos(struct efi_file_handle *file,
++		u64 *pos)
++{
++	struct file_handle *fh = to_fh(file);
++	EFI_ENTRY("%p, %p", file, pos);
++	*pos = fh->offset;
++	return EFI_EXIT(EFI_SUCCESS);
++}
++
++static efi_status_t EFIAPI efi_file_setpos(struct efi_file_handle *file,
++		u64 pos)
++{
++	struct file_handle *fh = to_fh(file);
++	efi_status_t ret = EFI_SUCCESS;
++
++	EFI_ENTRY("%p, %llu", file, pos);
++
++	if (fh->isdir) {
++		if (pos != 0) {
++			ret = EFI_UNSUPPORTED;
++			goto error;
++		}
++		fs_closedir(fh->dirs);
++		fh->dirs = NULL;
++	}
++
++	if (pos == ~0ULL) {
++		loff_t file_size;
++
++		if (set_blk_dev(fh)) {
++			ret = EFI_DEVICE_ERROR;
++			goto error;
++		}
++
++		if (fs_size(fh->path, &file_size)) {
++			ret = EFI_DEVICE_ERROR;
++			goto error;
++		}
++
++		pos = file_size;
++	}
++
++	fh->offset = pos;
++
++error:
++	return EFI_EXIT(ret);
++}
++
++static efi_status_t EFIAPI efi_file_getinfo(struct efi_file_handle *file,
++		efi_guid_t *info_type, u64 *buffer_size, void *buffer)
++{
++	struct file_handle *fh = to_fh(file);
++	efi_status_t ret = EFI_SUCCESS;
++
++	EFI_ENTRY("%p, %p, %p, %p", file, info_type, buffer_size, buffer);
++
++	if (!guidcmp(info_type, &efi_file_info_guid)) {
++		struct efi_file_info *info = buffer;
++		char *filename = basename(fh);
++		unsigned required_size;
++		loff_t file_size;
++
++		/* check buffer size: */
++		required_size = sizeof(*info) + 2 * (strlen(filename) + 1);
++		if (*buffer_size < required_size) {
++			*buffer_size = required_size;
++			ret = EFI_BUFFER_TOO_SMALL;
++			goto error;
++		}
++
++		if (set_blk_dev(fh)) {
++			ret = EFI_DEVICE_ERROR;
++			goto error;
++		}
++
++		if (fs_size(fh->path, &file_size)) {
++			ret = EFI_DEVICE_ERROR;
++			goto error;
++		}
++
++		memset(info, 0, required_size);
++
++		info->size = required_size;
++		info->file_size = file_size;
++		info->physical_size = file_size;
++
++		if (fh->isdir)
++			info->attribute |= EFI_FILE_DIRECTORY;
++
++		ascii2unicode((u16 *)info->file_name, filename);
++	} else {
++		ret = EFI_UNSUPPORTED;
++	}
++
++error:
++	return EFI_EXIT(ret);
++}
++
++static efi_status_t EFIAPI efi_file_setinfo(struct efi_file_handle *file,
++		efi_guid_t *info_type, u64 buffer_size, void *buffer)
++{
++	EFI_ENTRY("%p, %p, %llu, %p", file, info_type, buffer_size, buffer);
++	return EFI_EXIT(EFI_UNSUPPORTED);
++}
++
++static efi_status_t EFIAPI efi_file_flush(struct efi_file_handle *file)
++{
++	EFI_ENTRY("%p", file);
++	return EFI_EXIT(EFI_SUCCESS);
++}
++
++static const struct efi_file_handle efi_file_handle_protocol = {
++	.rev = EFI_FILE_PROTOCOL_REVISION,
++	.open = efi_file_open,
++	.close = efi_file_close,
++	.delete = efi_file_delete,
++	.read = efi_file_read,
++	.write = efi_file_write,
++	.getpos = efi_file_getpos,
++	.setpos = efi_file_setpos,
++	.getinfo = efi_file_getinfo,
++	.setinfo = efi_file_setinfo,
++	.flush = efi_file_flush,
++};
++
++struct efi_file_handle *efi_file_from_path(struct efi_device_path *fp)
++{
++	struct efi_simple_file_system_protocol *v;
++	struct efi_file_handle *f;
++	efi_status_t ret;
++
++	v = efi_fs_from_path(fp);
++	if (!v)
++		return NULL;
++
++	EFI_CALL(ret = v->open_volume(v, &f));
++	if (ret != EFI_SUCCESS)
++		return NULL;
++
++	/* skip over device-path nodes before the file path: */
++	while (fp && !EFI_DP_TYPE(fp, MEDIA_DEVICE, FILE_PATH))
++		fp = efi_dp_next(fp);
++
++	while (fp) {
++		struct efi_device_path_file_path *fdp =
++			container_of(fp, struct efi_device_path_file_path, dp);
++		struct efi_file_handle *f2;
++
++		if (!EFI_DP_TYPE(fp, MEDIA_DEVICE, FILE_PATH)) {
++			printf("bad file path!\n");
++			f->close(f);
++			return NULL;
++		}
++
++		EFI_CALL(ret = f->open(f, &f2, (s16 *)fdp->str,
++				       EFI_FILE_MODE_READ, 0));
++		if (ret != EFI_SUCCESS)
++			return NULL;
++
++		fp = efi_dp_next(fp);
++
++		EFI_CALL(f->close(f));
++		f = f2;
++	}
++
++	return f;
++}
++
++static efi_status_t EFIAPI
++efi_open_volume(struct efi_simple_file_system_protocol *this,
++		struct efi_file_handle **root)
++{
++	struct file_system *fs = to_fs(this);
++
++	EFI_ENTRY("%p, %p", this, root);
++
++	*root = file_open(fs, NULL, NULL, 0);
++
++	return EFI_EXIT(EFI_SUCCESS);
++}
++
++struct efi_simple_file_system_protocol *
++efi_simple_file_system(struct blk_desc *desc, int part,
++		       struct efi_device_path *dp)
++{
++	struct file_system *fs;
++
++	fs = calloc(1, sizeof(*fs));
++	fs->base.rev = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_REVISION;
++	fs->base.open_volume = efi_open_volume;
++	fs->desc = desc;
++	fs->part = part;
++	fs->dp = dp;
++
++	return &fs->base;
++}
+diff --git a/lib/efi_loader/efi_image_loader.c b/lib/efi_loader/efi_image_loader.c
+index f961407f50..469acae082 100644
+--- a/lib/efi_loader/efi_image_loader.c
++++ b/lib/efi_loader/efi_image_loader.c
+@@ -17,6 +17,9 @@ DECLARE_GLOBAL_DATA_PTR;
+ 
+ const efi_guid_t efi_guid_device_path = DEVICE_PATH_GUID;
+ const efi_guid_t efi_guid_loaded_image = LOADED_IMAGE_GUID;
++const efi_guid_t efi_simple_file_system_protocol_guid =
++		EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
++const efi_guid_t efi_file_info_guid = EFI_FILE_INFO_GUID;
+ 
+ static efi_status_t efi_loader_relocate(const IMAGE_BASE_RELOCATION *rel,
+ 			unsigned long rel_size, void *efi_reloc)
+
+From patchwork Wed Sep 13 22:05:35 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,12/21] efi_loader: support load_image() from a file-path
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813656
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-13-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Wed, 13 Sep 2017 18:05:35 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Previously we only supported the case when the EFI application loaded
+the image into memory for us.  But fallback.efi does not do this.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ lib/efi_loader/efi_boottime.c | 85 +++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 70 insertions(+), 15 deletions(-)
+
+diff --git a/lib/efi_loader/efi_boottime.c b/lib/efi_loader/efi_boottime.c
+index 837e61d8fe..ec40f41bcb 100644
+--- a/lib/efi_loader/efi_boottime.c
++++ b/lib/efi_loader/efi_boottime.c
+@@ -762,6 +762,47 @@ void efi_setup_loaded_image(struct efi_loaded_image *info, struct efi_object *ob
+ 	list_add_tail(&obj->link, &efi_obj_list);
+ }
+ 
++static efi_status_t load_image_from_path(struct efi_device_path *file_path,
++					 void **buffer)
++{
++	struct efi_file_info *info = NULL;
++	struct efi_file_handle *f;
++	static efi_status_t ret;
++	uint64_t bs;
++
++	f = efi_file_from_path(file_path);
++	if (!f)
++		return EFI_DEVICE_ERROR;
++
++	bs = 0;
++	EFI_CALL(ret = f->getinfo(f, (efi_guid_t *)&efi_file_info_guid,
++				  &bs, info));
++	if (ret == EFI_BUFFER_TOO_SMALL) {
++		info = malloc(bs);
++		EFI_CALL(ret = f->getinfo(f, (efi_guid_t *)&efi_file_info_guid,
++					  &bs, info));
++	}
++	if (ret != EFI_SUCCESS)
++		goto error;
++
++	ret = efi_allocate_pool(EFI_LOADER_DATA, info->file_size, buffer);
++	if (ret)
++		goto error;
++
++	EFI_CALL(ret = f->read(f, &info->file_size, *buffer));
++
++error:
++	free(info);
++	EFI_CALL(f->close(f));
++
++	if (ret != EFI_SUCCESS) {
++		efi_free_pool(*buffer);
++		*buffer = NULL;
++	}
++
++	return ret;
++}
++
+ static efi_status_t EFIAPI efi_load_image(bool boot_policy,
+ 					  efi_handle_t parent_image,
+ 					  struct efi_device_path *file_path,
+@@ -769,25 +810,40 @@ static efi_status_t EFIAPI efi_load_image(bool boot_policy,
+ 					  unsigned long source_size,
+ 					  efi_handle_t *image_handle)
+ {
+-	static struct efi_object loaded_image_info_obj = {
+-		.protocols = {
+-			{
+-				.guid = &efi_guid_loaded_image,
+-			},
+-		},
+-	};
+ 	struct efi_loaded_image *info;
+ 	struct efi_object *obj;
+ 
+ 	EFI_ENTRY("%d, %p, %p, %p, %ld, %p", boot_policy, parent_image,
+ 		  file_path, source_buffer, source_size, image_handle);
+-	info = malloc(sizeof(*info));
+-	loaded_image_info_obj.protocols[0].protocol_interface = info;
+-	obj = malloc(sizeof(loaded_image_info_obj));
+-	memset(info, 0, sizeof(*info));
+-	memcpy(obj, &loaded_image_info_obj, sizeof(loaded_image_info_obj));
+-	obj->handle = info;
+-	info->file_path = file_path;
++
++	info = calloc(1, sizeof(*info));
++	obj = calloc(1, sizeof(*obj));
++
++	if (!source_buffer) {
++		struct efi_device_path *dp, *fp;
++		efi_status_t ret;
++
++		ret = load_image_from_path(file_path, &source_buffer);
++		if (ret != EFI_SUCCESS) {
++			free(info);
++			free(obj);
++			return EFI_EXIT(ret);
++		}
++
++		/*
++		 * split file_path which contains both the device and
++		 * file parts:
++		 */
++		efi_dp_split_file_path(file_path, &dp, &fp);
++
++		efi_setup_loaded_image(info, obj, dp, fp);
++	} else {
++		/* In this case, file_path is the "device" path, ie.
++		 * something like a HARDWARE_DEVICE:MEMORY_MAPPED
++		 */
++		efi_setup_loaded_image(info, obj, file_path, NULL);
++	}
++
+ 	info->reserved = efi_load_pe(source_buffer, info);
+ 	if (!info->reserved) {
+ 		free(info);
+@@ -796,7 +852,6 @@ static efi_status_t EFIAPI efi_load_image(bool boot_policy,
+ 	}
+ 
+ 	*image_handle = info;
+-	list_add_tail(&obj->link, &efi_obj_list);
+ 
+ 	return EFI_EXIT(EFI_SUCCESS);
+ }
+
+From patchwork Wed Sep 13 22:05:36 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v3,
+ 13/21] efi_loader: make pool allocations cacheline aligned
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813657
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-14-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Wed, 13 Sep 2017 18:05:36 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+This avoids printf() spam about file reads (such as loading an image)
+into unaligned buffers (and the associated memcpy()).  And generally
+seems like a good idea.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ lib/efi_loader/efi_memory.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/lib/efi_loader/efi_memory.c b/lib/efi_loader/efi_memory.c
+index 9e079f1fa3..1f0b9d0449 100644
+--- a/lib/efi_loader/efi_memory.c
++++ b/lib/efi_loader/efi_memory.c
+@@ -43,7 +43,7 @@ void *efi_bounce_buffer;
+  */
+ struct efi_pool_allocation {
+ 	u64 num_pages;
+-	char data[];
++	char data[] __attribute__((aligned(ARCH_DMA_MINALIGN)));
+ };
+ 
+ /*
+@@ -356,7 +356,8 @@ efi_status_t efi_allocate_pool(int pool_type, unsigned long size,
+ {
+ 	efi_status_t r;
+ 	efi_physical_addr_t t;
+-	u64 num_pages = (size + sizeof(u64) + EFI_PAGE_MASK) >> EFI_PAGE_SHIFT;
++	u64 num_pages = (size + sizeof(struct efi_pool_allocation) +
++			 EFI_PAGE_MASK) >> EFI_PAGE_SHIFT;
+ 
+ 	if (size == 0) {
+ 		*buffer = NULL;
+
+From patchwork Wed Sep 13 22:05:37 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,14/21] efi_loader: efi variable support
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813643
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-15-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Wed, 13 Sep 2017 18:05:37 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Add EFI variable support, mapping to u-boot environment variables.
+Variables are pretty important for setting up boot order, among other
+things.  If the board supports saveenv, then it will be called in
+ExitBootServices() to persist variables set by the efi payload.  (For
+example, fallback.efi configuring BootOrder and BootXXXX load-option
+variables.)
+
+Variables are *not* currently exposed at runtime, post ExitBootServices.
+On boards without a dedicated device for storage, which the loaded OS
+is not trying to also use, this is rather tricky.  One idea, at least
+for boards that can persist RAM across reboot, is to keep a "journal"
+of modified variables in RAM, and then turn halt into a reboot into
+u-boot, plus store variables, plus halt.  Whatever the solution, it
+likely involves some per-board support.
+
+Mapping between EFI variables and u-boot variables:
+
+  efi_$guid_$varname = {attributes}(type)value
+
+For example:
+
+  efi_8be4df61-93ca-11d2-aa0d-00e098032b8c_OsIndicationsSupported=
+     "{ro,boot,run}(blob)0000000000000000"
+  efi_8be4df61-93ca-11d2-aa0d-00e098032b8c_BootOrder=
+     "(blob)00010000"
+
+The attributes are a comma separated list of these possible
+attributes:
+
+  + ro   - read-only
+  + boot - boot-services access
+  + run  - runtime access
+
+NOTE: with current implementation, no variables are available after
+ExitBootServices, and all are persisted (if possible).
+
+If not specified, the attributes default to "{boot}".
+
+The required type is one of:
+
+  + utf8 - raw utf8 string
+  + blob - arbitrary length hex string
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ cmd/bootefi.c                 |   4 +
+ include/efi.h                 |  19 +++
+ include/efi_loader.h          |  10 ++
+ lib/efi_loader/Makefile       |   2 +-
+ lib/efi_loader/efi_boottime.c |   6 +
+ lib/efi_loader/efi_runtime.c  |  17 ++-
+ lib/efi_loader/efi_variable.c | 335 ++++++++++++++++++++++++++++++++++++++++++
+ 7 files changed, 388 insertions(+), 5 deletions(-)
+ create mode 100644 lib/efi_loader/efi_variable.c
+
+diff --git a/cmd/bootefi.c b/cmd/bootefi.c
+index 0980088668..d3ae33e25b 100644
+--- a/cmd/bootefi.c
++++ b/cmd/bootefi.c
+@@ -181,6 +181,10 @@ static unsigned long do_bootefi_exec(void *efi, void *fdt,
+ 		goto exit;
+ 	}
+ 
++	/* we don't support much: */
++	env_set("efi_8be4df61-93ca-11d2-aa0d-00e098032b8c_OsIndicationsSupported",
++		"{ro,boot}(blob)0000000000000000");
++
+ 	/* Call our payload! */
+ 	debug("%s:%d Jumping to 0x%lx\n", __func__, __LINE__, (long)entry);
+ 
+diff --git a/include/efi.h b/include/efi.h
+index ddd2b96417..04e83220b4 100644
+--- a/include/efi.h
++++ b/include/efi.h
+@@ -324,6 +324,25 @@ extern char image_base[];
+ /* Start and end of U-Boot image (for payload) */
+ extern char _binary_u_boot_bin_start[], _binary_u_boot_bin_end[];
+ 
++/*
++ * Variable Attributes
++ */
++#define EFI_VARIABLE_NON_VOLATILE       0x0000000000000001
++#define EFI_VARIABLE_BOOTSERVICE_ACCESS 0x0000000000000002
++#define EFI_VARIABLE_RUNTIME_ACCESS     0x0000000000000004
++#define EFI_VARIABLE_HARDWARE_ERROR_RECORD 0x0000000000000008
++#define EFI_VARIABLE_AUTHENTICATED_WRITE_ACCESS 0x0000000000000010
++#define EFI_VARIABLE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS 0x0000000000000020
++#define EFI_VARIABLE_APPEND_WRITE	0x0000000000000040
++
++#define EFI_VARIABLE_MASK	(EFI_VARIABLE_NON_VOLATILE | \
++				EFI_VARIABLE_BOOTSERVICE_ACCESS | \
++				EFI_VARIABLE_RUNTIME_ACCESS | \
++				EFI_VARIABLE_HARDWARE_ERROR_RECORD | \
++				EFI_VARIABLE_AUTHENTICATED_WRITE_ACCESS | \
++				EFI_VARIABLE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS | \
++				EFI_VARIABLE_APPEND_WRITE)
++
+ /**
+  * efi_get_sys_table() - Get access to the main EFI system table
+  *
+diff --git a/include/efi_loader.h b/include/efi_loader.h
+index b0c1e8fb78..9eee62dc9c 100644
+--- a/include/efi_loader.h
++++ b/include/efi_loader.h
+@@ -277,6 +277,16 @@ efi_status_t __efi_runtime EFIAPI efi_get_time(
+ 			struct efi_time_cap *capabilities);
+ void efi_get_time_init(void);
+ 
++efi_status_t EFIAPI efi_get_variable(s16 *variable_name,
++		efi_guid_t *vendor, u32 *attributes,
++		unsigned long *data_size, void *data);
++efi_status_t EFIAPI efi_get_next_variable(
++		unsigned long *variable_name_size,
++		s16 *variable_name, efi_guid_t *vendor);
++efi_status_t EFIAPI efi_set_variable(s16 *variable_name,
++		efi_guid_t *vendor, u32 attributes,
++		unsigned long data_size, void *data);
++
+ #else /* defined(EFI_LOADER) && !defined(CONFIG_SPL_BUILD) */
+ 
+ /* Without CONFIG_EFI_LOADER we don't have a runtime section, stub it out */
+diff --git a/lib/efi_loader/Makefile b/lib/efi_loader/Makefile
+index cce92cfeb5..f58cb13337 100644
+--- a/lib/efi_loader/Makefile
++++ b/lib/efi_loader/Makefile
+@@ -16,7 +16,7 @@ always := $(efiprogs-y)
+ obj-$(CONFIG_CMD_BOOTEFI_HELLO) += helloworld_efi.o
+ obj-y += efi_image_loader.o efi_boottime.o efi_runtime.o efi_console.o
+ obj-y += efi_memory.o efi_device_path_to_text.o efi_device_path.o
+-obj-y += efi_file.o
++obj-y += efi_file.o efi_variable.o
+ obj-$(CONFIG_LCD) += efi_gop.o
+ obj-$(CONFIG_DM_VIDEO) += efi_gop.o
+ obj-$(CONFIG_PARTITIONS) += efi_disk.o
+diff --git a/lib/efi_loader/efi_boottime.c b/lib/efi_loader/efi_boottime.c
+index ec40f41bcb..c406ff82ff 100644
+--- a/lib/efi_loader/efi_boottime.c
++++ b/lib/efi_loader/efi_boottime.c
+@@ -8,6 +8,7 @@
+ 
+ #include <common.h>
+ #include <efi_loader.h>
++#include <environment.h>
+ #include <malloc.h>
+ #include <asm/global_data.h>
+ #include <libfdt_env.h>
+@@ -942,6 +943,11 @@ static efi_status_t EFIAPI efi_exit_boot_services(void *image_handle,
+ {
+ 	EFI_ENTRY("%p, %ld", image_handle, map_key);
+ 
++#if defined(CONFIG_CMD_SAVEENV) && !defined(CONFIG_ENV_IS_NOWHERE)
++	/* save any EFI variables that have been written: */
++	env_save();
++#endif
++
+ 	board_quiesce_devices();
+ 
+ 	/* Fix up caches for EFI payloads if necessary */
+diff --git a/lib/efi_loader/efi_runtime.c b/lib/efi_loader/efi_runtime.c
+index ad7f3754bd..2f95c766ac 100644
+--- a/lib/efi_loader/efi_runtime.c
++++ b/lib/efi_loader/efi_runtime.c
+@@ -184,7 +184,16 @@ static const struct efi_runtime_detach_list_struct efi_runtime_detach_list[] = {
+ 		/* Clean up system table */
+ 		.ptr = &systab.boottime,
+ 		.patchto = NULL,
+-	},
++	}, {
++		.ptr = &efi_runtime_services.get_variable,
++		.patchto = &efi_device_error,
++	}, {
++		.ptr = &efi_runtime_services.get_next_variable,
++		.patchto = &efi_device_error,
++	}, {
++		.ptr = &efi_runtime_services.set_variable,
++		.patchto = &efi_device_error,
++	}
+ };
+ 
+ static bool efi_runtime_tobedetached(void *p)
+@@ -382,9 +391,9 @@ struct efi_runtime_services __efi_runtime_data efi_runtime_services = {
+ 	.set_wakeup_time = (void *)&efi_unimplemented,
+ 	.set_virtual_address_map = &efi_set_virtual_address_map,
+ 	.convert_pointer = (void *)&efi_invalid_parameter,
+-	.get_variable = (void *)&efi_device_error,
+-	.get_next_variable = (void *)&efi_device_error,
+-	.set_variable = (void *)&efi_device_error,
++	.get_variable = efi_get_variable,
++	.get_next_variable = efi_get_next_variable,
++	.set_variable = efi_set_variable,
+ 	.get_next_high_mono_count = (void *)&efi_device_error,
+ 	.reset_system = &efi_reset_system_boottime,
+ };
+diff --git a/lib/efi_loader/efi_variable.c b/lib/efi_loader/efi_variable.c
+new file mode 100644
+index 0000000000..5569b3d3f0
+--- /dev/null
++++ b/lib/efi_loader/efi_variable.c
+@@ -0,0 +1,335 @@
++/*
++ *  EFI utils
++ *
++ *  Copyright (c) 2017 Rob Clark
++ *
++ *  SPDX-License-Identifier:     GPL-2.0+
++ */
++
++#include <malloc.h>
++#include <charset.h>
++#include <efi_loader.h>
++
++#define READ_ONLY BIT(31)
++
++/*
++ * Mapping between EFI variables and u-boot variables:
++ *
++ *   efi_$guid_$varname = {attributes}(type)value
++ *
++ * For example:
++ *
++ *   efi_8be4df61-93ca-11d2-aa0d-00e098032b8c_OsIndicationsSupported=
++ *      "{ro,boot,run}(blob)0000000000000000"
++ *   efi_8be4df61-93ca-11d2-aa0d-00e098032b8c_BootOrder=
++ *      "(blob)00010000"
++ *
++ * The attributes are a comma separated list of these possible
++ * attributes:
++ *
++ *   + ro   - read-only
++ *   + boot - boot-services access
++ *   + run  - runtime access
++ *
++ * NOTE: with current implementation, no variables are available after
++ * ExitBootServices, and all are persisted (if possible).
++ *
++ * If not specified, the attributes default to "{boot}".
++ *
++ * The required type is one of:
++ *
++ *   + utf8 - raw utf8 string
++ *   + blob - arbitrary length hex string
++ *
++ * Maybe a utf16 type would be useful to for a string value to be auto
++ * converted to utf16?
++ */
++
++#define MAX_VAR_NAME 31
++#define MAX_NATIVE_VAR_NAME \
++	(strlen("efi_xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx_") + \
++		(MAX_VAR_NAME * MAX_UTF8_PER_UTF16))
++
++static int hex(unsigned char ch)
++{
++	if (ch >= 'a' && ch <= 'f')
++		return ch-'a'+10;
++	if (ch >= '0' && ch <= '9')
++		return ch-'0';
++	if (ch >= 'A' && ch <= 'F')
++		return ch-'A'+10;
++	return -1;
++}
++
++static const char *hex2mem(u8 *mem, const char *hexstr, int count)
++{
++	memset(mem, 0, count/2);
++
++	do {
++		int nibble;
++
++		*mem = 0;
++
++		if (!count || !*hexstr)
++			break;
++
++		nibble = hex(*hexstr);
++		if (nibble < 0)
++			break;
++
++		*mem = nibble;
++		count--;
++		hexstr++;
++
++		if (!count || !*hexstr)
++			break;
++
++		nibble = hex(*hexstr);
++		if (nibble < 0)
++			break;
++
++		*mem = (*mem << 4) | nibble;
++		count--;
++		hexstr++;
++		mem++;
++
++	} while (1);
++
++	if (*hexstr)
++		return hexstr;
++
++	return NULL;
++}
++
++static char *mem2hex(char *hexstr, const u8 *mem, int count)
++{
++	static const char hexchars[] = "0123456789abcdef";
++
++	while (count-- > 0) {
++		u8 ch = *mem++;
++		*hexstr++ = hexchars[ch >> 4];
++		*hexstr++ = hexchars[ch & 0xf];
++	}
++
++	return hexstr;
++}
++
++static efi_status_t efi_to_native(char *native, s16 *variable_name,
++		efi_guid_t *vendor)
++{
++	size_t len;
++
++	len = utf16_strlen((u16 *)variable_name);
++	if (len >= MAX_VAR_NAME)
++		return EFI_DEVICE_ERROR;
++
++	native += sprintf(native, "efi_%pUl_", vendor);
++	native  = (char *)utf16_to_utf8((u8 *)native, (u16 *)variable_name, len);
++	*native = '\0';
++
++	return EFI_SUCCESS;
++}
++
++static const char *prefix(const char *str, const char *prefix)
++{
++	size_t n = strlen(prefix);
++	if (!strncmp(prefix, str, n))
++		return str + n;
++	return NULL;
++}
++
++/* parse attributes part of variable value, if present: */
++static const char *parse_attr(const char *str, u32 *attrp)
++{
++	u32 attr = 0;
++	char sep = '{';
++
++	if (*str != '{') {
++		*attrp = EFI_VARIABLE_BOOTSERVICE_ACCESS;
++		return str;
++	}
++
++	while (*str == sep) {
++		const char *s;
++
++		str++;
++
++		if ((s = prefix(str, "ro"))) {
++			attr |= READ_ONLY;
++		} else if ((s = prefix(str, "boot"))) {
++			attr |= EFI_VARIABLE_BOOTSERVICE_ACCESS;
++		} else if ((s = prefix(str, "run"))) {
++			attr |= EFI_VARIABLE_RUNTIME_ACCESS;
++		} else {
++			printf("invalid attribute: %s\n", str);
++			break;
++		}
++
++		str = s;
++		sep = ',';
++	}
++
++	str++;
++
++	*attrp = attr;
++
++	return str;
++}
++
++/* http://wiki.phoenix.com/wiki/index.php/EFI_RUNTIME_SERVICES#GetVariable.28.29 */
++efi_status_t EFIAPI efi_get_variable(s16 *variable_name,
++		efi_guid_t *vendor, u32 *attributes,
++		unsigned long *data_size, void *data)
++{
++	char native_name[MAX_NATIVE_VAR_NAME + 1];
++	efi_status_t ret;
++	unsigned long in_size;
++	const char *val, *s;
++	u32 attr;
++
++	EFI_ENTRY("%p %p %p %p %p", variable_name, vendor, attributes,
++		  data_size, data);
++
++	if (!variable_name || !vendor || !data_size)
++		return EFI_EXIT(EFI_INVALID_PARAMETER);
++
++	ret = efi_to_native(native_name, variable_name, vendor);
++	if (ret)
++		return EFI_EXIT(ret);
++
++	debug("%s: get '%s'\n", __func__, native_name);
++
++	val = env_get(native_name);
++	if (!val)
++		return EFI_EXIT(EFI_NOT_FOUND);
++
++	val = parse_attr(val, &attr);
++
++	in_size = *data_size;
++
++	if ((s = prefix(val, "(blob)"))) {
++		unsigned len = strlen(s);
++
++		/* two characters per byte: */
++		len = DIV_ROUND_UP(len, 2);
++		*data_size = len;
++
++		if (in_size < len)
++			return EFI_EXIT(EFI_BUFFER_TOO_SMALL);
++
++		if (!data)
++			return EFI_EXIT(EFI_INVALID_PARAMETER);
++
++		if (hex2mem(data, s, len * 2))
++			return EFI_EXIT(EFI_DEVICE_ERROR);
++
++		debug("%s: got value: \"%s\"\n", __func__, s);
++	} else if ((s = prefix(val, "(utf8)"))) {
++		unsigned len = strlen(s) + 1;
++
++		*data_size = len;
++
++		if (in_size < len)
++			return EFI_EXIT(EFI_BUFFER_TOO_SMALL);
++
++		if (!data)
++			return EFI_EXIT(EFI_INVALID_PARAMETER);
++
++		memcpy(data, s, len);
++		((char *)data)[len] = '\0';
++
++		debug("%s: got value: \"%s\"\n", __func__, (char *)data);
++	} else {
++		debug("%s: invalid value: '%s'\n", __func__, val);
++		return EFI_EXIT(EFI_DEVICE_ERROR);
++	}
++
++	if (attributes)
++		*attributes = attr & EFI_VARIABLE_MASK;
++
++	return EFI_EXIT(EFI_SUCCESS);
++}
++
++/* http://wiki.phoenix.com/wiki/index.php/EFI_RUNTIME_SERVICES#GetNextVariableName.28.29 */
++efi_status_t EFIAPI efi_get_next_variable(
++		unsigned long *variable_name_size,
++		s16 *variable_name, efi_guid_t *vendor)
++{
++	EFI_ENTRY("%p %p %p", variable_name_size, variable_name, vendor);
++
++	return EFI_EXIT(EFI_DEVICE_ERROR);
++}
++
++/* http://wiki.phoenix.com/wiki/index.php/EFI_RUNTIME_SERVICES#SetVariable.28.29 */
++efi_status_t EFIAPI efi_set_variable(s16 *variable_name,
++		efi_guid_t *vendor, u32 attributes,
++		unsigned long data_size, void *data)
++{
++	char native_name[MAX_NATIVE_VAR_NAME + 1];
++	efi_status_t ret = EFI_SUCCESS;
++	char *val, *s;
++	u32 attr;
++
++	EFI_ENTRY("%p %p %x %lu %p", variable_name, vendor, attributes,
++		  data_size, data);
++
++	if (!variable_name || !vendor)
++		return EFI_EXIT(EFI_INVALID_PARAMETER);
++
++	ret = efi_to_native(native_name, variable_name, vendor);
++	if (ret)
++		return EFI_EXIT(ret);
++
++#define ACCESS_ATTR (EFI_VARIABLE_RUNTIME_ACCESS | EFI_VARIABLE_BOOTSERVICE_ACCESS)
++
++	if ((data_size == 0) || !(attributes & ACCESS_ATTR)) {
++		/* delete the variable: */
++		env_set(native_name, NULL);
++		return EFI_EXIT(EFI_SUCCESS);
++	}
++
++	val = env_get(native_name);
++	if (val) {
++		parse_attr(val, &attr);
++
++		if (attr & READ_ONLY)
++			return EFI_EXIT(EFI_WRITE_PROTECTED);
++	}
++
++	val = malloc(2 * data_size + strlen("{ro,run,boot}(blob)") + 1);
++	if (!val)
++		return EFI_EXIT(EFI_OUT_OF_RESOURCES);
++
++	s = val;
++
++	/* store attributes: */
++	attributes &= (EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS);
++	s += sprintf(s, "{");
++	while (attributes) {
++		u32 attr = 1 << (ffs(attributes) - 1);
++
++		if (attr == EFI_VARIABLE_BOOTSERVICE_ACCESS)
++			s += sprintf(s, "boot");
++		else if (attr == EFI_VARIABLE_RUNTIME_ACCESS)
++			s += sprintf(s, "run");
++
++		attributes &= ~attr;
++		if (attributes)
++			s += sprintf(s, ",");
++	}
++	s += sprintf(s, "}");
++
++	/* store payload: */
++	s += sprintf(s, "(blob)");
++	s = mem2hex(s, data, data_size);
++	*s = '\0';
++
++	debug("%s: setting: %s=%s\n", __func__, native_name, val);
++
++	if (env_set(native_name, val))
++		ret = EFI_DEVICE_ERROR;
++
++	free(val);
++
++	return EFI_EXIT(ret);
++}
+
+From patchwork Wed Sep 13 22:05:38 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,15/21] efi_loader: add bootmgr
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813660
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-16-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>, Peter Jones <pjones@redhat.com>
+Date: Wed, 13 Sep 2017 18:05:38 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Similar to a "real" UEFI implementation, the bootmgr looks at the
+BootOrder and BootXXXX variables to try to find an EFI payload to load
+and boot.  This is added as a sub-command of bootefi.
+
+The idea is that the distro bootcmd would first try loading a payload
+via the bootmgr, and then if that fails (ie. first boot or corrupted
+EFI variables) it would fallback to loading bootaa64.efi.  (Which
+would then load fallback.efi which would look for \EFI\*\boot.csv and
+populate BootOrder and BootXXXX based on what it found.)
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ cmd/bootefi.c                     |  48 +++++++++-
+ include/config_distro_bootcmd.h   |   5 ++
+ include/efi_api.h                 |   4 +
+ include/efi_loader.h              |   6 ++
+ lib/efi_loader/Makefile           |   2 +-
+ lib/efi_loader/efi_bootmgr.c      | 180 ++++++++++++++++++++++++++++++++++++++
+ lib/efi_loader/efi_boottime.c     |   6 +-
+ lib/efi_loader/efi_image_loader.c |   1 +
+ 8 files changed, 246 insertions(+), 6 deletions(-)
+ create mode 100644 lib/efi_loader/efi_bootmgr.c
+
+diff --git a/cmd/bootefi.c b/cmd/bootefi.c
+index d3ae33e25b..fcd8dbafc1 100644
+--- a/cmd/bootefi.c
++++ b/cmd/bootefi.c
+@@ -219,6 +219,36 @@ exit:
+ 	return ret;
+ }
+ 
++static int do_bootefi_bootmgr_exec(unsigned long fdt_addr)
++{
++	struct efi_device_path *device_path, *file_path;
++	void *addr;
++	efi_status_t r;
++
++	/* Initialize and populate EFI object list */
++	if (!efi_obj_list_initalized)
++		efi_init_obj_list();
++
++	/*
++	 * gd lives in a fixed register which may get clobbered while we execute
++	 * the payload. So save it here and restore it on every callback entry
++	 */
++	efi_save_gd();
++
++	addr = efi_bootmgr_load(&device_path, &file_path);
++	if (!addr)
++		return 1;
++
++	printf("## Starting EFI application at %p ...\n", addr);
++	r = do_bootefi_exec(addr, (void *)fdt_addr, device_path, file_path);
++	printf("## Application terminated, r = %lu\n",
++	       r & ~EFI_ERROR_MASK);
++
++	if (r != EFI_SUCCESS)
++		return 1;
++
++	return 0;
++}
+ 
+ /* Interpreter command to boot an arbitrary EFI image from memory */
+ static int do_bootefi(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+@@ -237,7 +267,14 @@ static int do_bootefi(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+ 		memcpy((char *)addr, __efi_hello_world_begin, size);
+ 	} else
+ #endif
+-	{
++	if (!strcmp(argv[1], "bootmgr")) {
++		unsigned long fdt_addr = 0;
++
++		if (argc > 2)
++			fdt_addr = simple_strtoul(argv[2], NULL, 16);
++
++		return do_bootefi_bootmgr_exec(fdt_addr);
++	} else {
+ 		saddr = argv[1];
+ 
+ 		addr = simple_strtoul(saddr, NULL, 16);
+@@ -270,7 +307,11 @@ static char bootefi_help_text[] =
+ 	"hello\n"
+ 	"  - boot a sample Hello World application stored within U-Boot"
+ #endif
+-	;
++	"bootmgr [fdt addr]\n"
++	"  - load and boot EFI payload based on BootOrder/BootXXXX variables.\n"
++	"\n"
++	"    If specified, the device tree located at <fdt address> gets\n"
++	"    exposed as EFI configuration table.\n";
+ #endif
+ 
+ U_BOOT_CMD(
+@@ -308,6 +349,9 @@ void efi_set_bootdev(const char *dev, const char *devnr, const char *path)
+ #endif
+ 	}
+ 
++	if (!path)
++		return;
++
+ 	if (strcmp(dev, "Net")) {
+ 		/* Add leading / to fs paths, because they're absolute */
+ 		snprintf(filename, sizeof(filename), "/%s", path);
+diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
+index 9ed6b9892c..e0d0034ed3 100644
+--- a/include/config_distro_bootcmd.h
++++ b/include/config_distro_bootcmd.h
+@@ -112,6 +112,11 @@
+ 
+ #define BOOTENV_SHARED_EFI                                                \
+ 	"boot_efi_binary="                                                \
++		"if fdt addr ${fdt_addr_r}; then "                        \
++			"bootefi bootmgr ${fdt_addr_r};"                  \
++		"else "                                                   \
++			"bootefi bootmgr ${fdtcontroladdr};"              \
++		"fi;"                                                     \
+ 		"load ${devtype} ${devnum}:${distro_bootpart} "           \
+ 			"${kernel_addr_r} efi/boot/"BOOTEFI_NAME"; "      \
+ 		"if fdt addr ${fdt_addr_r}; then "                        \
+diff --git a/include/efi_api.h b/include/efi_api.h
+index 1aae96355f..d0aefa8221 100644
+--- a/include/efi_api.h
++++ b/include/efi_api.h
+@@ -211,6 +211,10 @@ struct efi_runtime_services {
+ 	EFI_GUID(0x00000000, 0x0000, 0x0000, 0x00, 0x00, \
+ 		 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
+ 
++#define EFI_GLOBAL_VARIABLE_GUID \
++	EFI_GUID(0x8be4df61, 0x93ca, 0x11d2, 0xaa, 0x0d, \
++		 0x00, 0xe0, 0x98, 0x03, 0x2b, 0x8c)
++
+ #define LOADED_IMAGE_PROTOCOL_GUID \
+ 	EFI_GUID(0x5b1b31a1, 0x9562, 0x11d2, 0x8e, 0x3f, \
+ 		 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b)
+diff --git a/include/efi_loader.h b/include/efi_loader.h
+index 9eee62dc9c..adc0bcf609 100644
+--- a/include/efi_loader.h
++++ b/include/efi_loader.h
+@@ -61,6 +61,7 @@ extern const struct efi_device_path_to_text_protocol efi_device_path_to_text;
+ 
+ uint16_t *efi_dp_str(struct efi_device_path *dp);
+ 
++extern const efi_guid_t efi_global_variable_guid;
+ extern const efi_guid_t efi_guid_console_control;
+ extern const efi_guid_t efi_guid_device_path;
+ extern const efi_guid_t efi_guid_loaded_image;
+@@ -209,6 +210,8 @@ efi_status_t efi_install_configuration_table(const efi_guid_t *guid, void *table
+ void efi_setup_loaded_image(struct efi_loaded_image *info, struct efi_object *obj,
+ 			    struct efi_device_path *device_path,
+ 			    struct efi_device_path *file_path);
++efi_status_t efi_load_image_from_path(struct efi_device_path *file_path,
++				      void **buffer);
+ 
+ #ifdef CONFIG_EFI_LOADER_BOUNCE_BUFFER
+ extern void *efi_bounce_buffer;
+@@ -287,6 +290,9 @@ efi_status_t EFIAPI efi_set_variable(s16 *variable_name,
+ 		efi_guid_t *vendor, u32 attributes,
+ 		unsigned long data_size, void *data);
+ 
++void *efi_bootmgr_load(struct efi_device_path **device_path,
++		       struct efi_device_path **file_path);
++
+ #else /* defined(EFI_LOADER) && !defined(CONFIG_SPL_BUILD) */
+ 
+ /* Without CONFIG_EFI_LOADER we don't have a runtime section, stub it out */
+diff --git a/lib/efi_loader/Makefile b/lib/efi_loader/Makefile
+index f58cb13337..930c0e218e 100644
+--- a/lib/efi_loader/Makefile
++++ b/lib/efi_loader/Makefile
+@@ -16,7 +16,7 @@ always := $(efiprogs-y)
+ obj-$(CONFIG_CMD_BOOTEFI_HELLO) += helloworld_efi.o
+ obj-y += efi_image_loader.o efi_boottime.o efi_runtime.o efi_console.o
+ obj-y += efi_memory.o efi_device_path_to_text.o efi_device_path.o
+-obj-y += efi_file.o efi_variable.o
++obj-y += efi_file.o efi_variable.o efi_bootmgr.o
+ obj-$(CONFIG_LCD) += efi_gop.o
+ obj-$(CONFIG_DM_VIDEO) += efi_gop.o
+ obj-$(CONFIG_PARTITIONS) += efi_disk.o
+diff --git a/lib/efi_loader/efi_bootmgr.c b/lib/efi_loader/efi_bootmgr.c
+new file mode 100644
+index 0000000000..857d88a879
+--- /dev/null
++++ b/lib/efi_loader/efi_bootmgr.c
+@@ -0,0 +1,180 @@
++/*
++ *  EFI utils
++ *
++ *  Copyright (c) 2017 Rob Clark
++ *
++ *  SPDX-License-Identifier:     GPL-2.0+
++ */
++
++#include <common.h>
++#include <charset.h>
++#include <malloc.h>
++#include <efi_loader.h>
++
++static const struct efi_boot_services *bs;
++static const struct efi_runtime_services *rs;
++
++#define LOAD_OPTION_ACTIVE		0x00000001
++#define LOAD_OPTION_FORCE_RECONNECT	0x00000002
++#define LOAD_OPTION_HIDDEN		0x00000008
++
++/*
++ * bootmgr implements the logic of trying to find a payload to boot
++ * based on the BootOrder + BootXXXX variables, and then loading it.
++ *
++ * TODO detecting a special key held (f9?) and displaying a boot menu
++ * like you would get on a PC would be clever.
++ *
++ * TODO if we had a way to write and persist variables after the OS
++ * has started, we'd also want to check OsIndications to see if we
++ * should do normal or recovery boot.
++ */
++
++
++/*
++ * See section 3.1.3 in the v2.7 UEFI spec for more details on
++ * the layout of EFI_LOAD_OPTION.  In short it is:
++ *
++ *    typedef struct _EFI_LOAD_OPTION {
++ *        UINT32 Attributes;
++ *        UINT16 FilePathListLength;
++ *        // CHAR16 Description[];   <-- variable length, NULL terminated
++ *        // EFI_DEVICE_PATH_PROTOCOL FilePathList[];  <-- FilePathListLength bytes
++ *        // UINT8 OptionalData[];
++ *    } EFI_LOAD_OPTION;
++ */
++struct load_option {
++	u32 attributes;
++	u16 file_path_length;
++	u16 *label;
++	struct efi_device_path *file_path;
++	u8 *optional_data;
++};
++
++/* parse an EFI_LOAD_OPTION, as described above */
++static void parse_load_option(struct load_option *lo, void *ptr)
++{
++	lo->attributes = *(u32 *)ptr;
++	ptr += sizeof(u32);
++
++	lo->file_path_length = *(u16 *)ptr;
++	ptr += sizeof(u16);
++
++	lo->label = ptr;
++	ptr += (utf16_strlen(lo->label) + 1) * 2;
++
++	lo->file_path = ptr;
++	ptr += lo->file_path_length;
++
++	lo->optional_data = ptr;
++}
++
++/* free() the result */
++static void *get_var(u16 *name, const efi_guid_t *vendor,
++		     unsigned long *size)
++{
++	efi_guid_t *v = (efi_guid_t *)vendor;
++	efi_status_t ret;
++	void *buf = NULL;
++
++	*size = 0;
++	EFI_CALL(ret = rs->get_variable((s16 *)name, v, NULL, size, buf));
++	if (ret == EFI_BUFFER_TOO_SMALL) {
++		buf = malloc(*size);
++		EFI_CALL(ret = rs->get_variable((s16 *)name, v, NULL, size, buf));
++	}
++
++	if (ret != EFI_SUCCESS) {
++		free(buf);
++		*size = 0;
++		return NULL;
++	}
++
++	return buf;
++}
++
++/*
++ * Attempt to load load-option number 'n', returning device_path and file_path
++ * if successful.  This checks that the EFI_LOAD_OPTION is active (enabled)
++ * and that the specified file to boot exists.
++ */
++static void *try_load_entry(uint16_t n, struct efi_device_path **device_path,
++			    struct efi_device_path **file_path)
++{
++	struct load_option lo;
++	u16 varname[] = L"Boot0000";
++	u16 hexmap[] = L"0123456789ABCDEF";
++	void *load_option, *image = NULL;
++	unsigned long size;
++
++	varname[4] = hexmap[(n & 0xf000) >> 12];
++	varname[5] = hexmap[(n & 0x0f00) >> 8];
++	varname[6] = hexmap[(n & 0x00f0) >> 4];
++	varname[7] = hexmap[(n & 0x000f) >> 0];
++
++	load_option = get_var(varname, &efi_global_variable_guid, &size);
++	if (!load_option)
++		return NULL;
++
++	parse_load_option(&lo, load_option);
++
++	if (lo.attributes & LOAD_OPTION_ACTIVE) {
++		efi_status_t ret;
++		u16 *str = NULL;
++
++		debug("%s: trying to load \"%ls\" from: %ls\n", __func__,
++		      lo.label, (str = efi_dp_str(lo.file_path)));
++		efi_free_pool(str);
++
++		ret = efi_load_image_from_path(lo.file_path, &image);
++
++		if (ret != EFI_SUCCESS)
++			goto error;
++
++		printf("Booting: %ls\n", lo.label);
++		efi_dp_split_file_path(lo.file_path, device_path, file_path);
++	}
++
++error:
++	free(load_option);
++
++	return image;
++}
++
++/*
++ * Attempt to load, in the order specified by BootOrder EFI variable, the
++ * available load-options, finding and returning the first one that can
++ * be loaded successfully.
++ */
++void *efi_bootmgr_load(struct efi_device_path **device_path,
++		       struct efi_device_path **file_path)
++{
++	uint16_t *bootorder;
++	unsigned long size;
++	void *image = NULL;
++	int i, num;
++
++	__efi_entry_check();
++
++	bs = systab.boottime;
++	rs = systab.runtime;
++
++	bootorder = get_var(L"BootOrder", &efi_global_variable_guid, &size);
++	if (!bootorder)
++		goto error;
++
++	num = size / sizeof(uint16_t);
++	for (i = 0; i < num; i++) {
++		debug("%s: trying to load Boot%04X\n", __func__, bootorder[i]);
++		image = try_load_entry(bootorder[i], device_path, file_path);
++		if (image)
++			break;
++	}
++
++	free(bootorder);
++
++error:
++	__efi_exit_check();
++
++	return image;
++}
+diff --git a/lib/efi_loader/efi_boottime.c b/lib/efi_loader/efi_boottime.c
+index c406ff82ff..cea242cd49 100644
+--- a/lib/efi_loader/efi_boottime.c
++++ b/lib/efi_loader/efi_boottime.c
+@@ -763,8 +763,8 @@ void efi_setup_loaded_image(struct efi_loaded_image *info, struct efi_object *ob
+ 	list_add_tail(&obj->link, &efi_obj_list);
+ }
+ 
+-static efi_status_t load_image_from_path(struct efi_device_path *file_path,
+-					 void **buffer)
++efi_status_t efi_load_image_from_path(struct efi_device_path *file_path,
++				      void **buffer)
+ {
+ 	struct efi_file_info *info = NULL;
+ 	struct efi_file_handle *f;
+@@ -824,7 +824,7 @@ static efi_status_t EFIAPI efi_load_image(bool boot_policy,
+ 		struct efi_device_path *dp, *fp;
+ 		efi_status_t ret;
+ 
+-		ret = load_image_from_path(file_path, &source_buffer);
++		ret = efi_load_image_from_path(file_path, &source_buffer);
+ 		if (ret != EFI_SUCCESS) {
+ 			free(info);
+ 			free(obj);
+diff --git a/lib/efi_loader/efi_image_loader.c b/lib/efi_loader/efi_image_loader.c
+index 469acae082..242e6a504b 100644
+--- a/lib/efi_loader/efi_image_loader.c
++++ b/lib/efi_loader/efi_image_loader.c
+@@ -15,6 +15,7 @@
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
++const efi_guid_t efi_global_variable_guid = EFI_GLOBAL_VARIABLE_GUID;
+ const efi_guid_t efi_guid_device_path = DEVICE_PATH_GUID;
+ const efi_guid_t efi_guid_loaded_image = LOADED_IMAGE_GUID;
+ const efi_guid_t efi_simple_file_system_protocol_guid =
+
+From patchwork Wed Sep 13 22:05:39 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,16/21] efi_loader: file_path should be variable length
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813647
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-17-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>, Peter Jones <pjones@redhat.com>
+Date: Wed, 13 Sep 2017 18:05:39 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ include/efi_api.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/efi_api.h b/include/efi_api.h
+index d0aefa8221..604c5b7ec4 100644
+--- a/include/efi_api.h
++++ b/include/efi_api.h
+@@ -373,7 +373,7 @@ struct efi_device_path_cdrom_path {
+ 
+ struct efi_device_path_file_path {
+ 	struct efi_device_path dp;
+-	u16 str[32];
++	u16 str[];
+ } __packed;
+ 
+ #define BLOCK_IO_GUID \
+
+From patchwork Wed Sep 13 22:05:40 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v3,
+ 17/21] efi_loader: set loaded image code/data type properly
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813655
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-18-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Wed, 13 Sep 2017 18:05:40 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+These should be set according to the image type.  Shell.efi and SCT.efi
+use these fields to determine what sort of image they are loading.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ include/pe.h                      |  6 ++++++
+ lib/efi_loader/efi_image_loader.c | 22 ++++++++++++++++++++++
+ 2 files changed, 28 insertions(+)
+
+diff --git a/include/pe.h b/include/pe.h
+index deb35a0ea4..4ef3e92efa 100644
+--- a/include/pe.h
++++ b/include/pe.h
+@@ -62,6 +62,12 @@ typedef struct _IMAGE_DATA_DIRECTORY {
+ 
+ #define IMAGE_NUMBEROF_DIRECTORY_ENTRIES 16
+ 
++/* PE32+ Subsystem type for EFI images */
++#define IMAGE_SUBSYSTEM_EFI_APPLICATION         10
++#define IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER 11
++#define IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER      12
++#define IMAGE_SUBSYSTEM_SAL_RUNTIME_DRIVER      13
++
+ typedef struct _IMAGE_OPTIONAL_HEADER64 {
+ 	uint16_t Magic; /* 0x20b */
+ 	uint8_t  MajorLinkerVersion;
+diff --git a/lib/efi_loader/efi_image_loader.c b/lib/efi_loader/efi_image_loader.c
+index 242e6a504b..af29cc4f04 100644
+--- a/lib/efi_loader/efi_image_loader.c
++++ b/lib/efi_loader/efi_image_loader.c
+@@ -94,6 +94,7 @@ void *efi_load_pe(void *efi, struct efi_loaded_image *loaded_image_info)
+ 	unsigned long virt_size = 0;
+ 	bool can_run_nt64 = true;
+ 	bool can_run_nt32 = true;
++	uint16_t image_type;
+ 
+ #if defined(CONFIG_ARM64)
+ 	can_run_nt32 = false;
+@@ -139,6 +140,7 @@ void *efi_load_pe(void *efi, struct efi_loaded_image *loaded_image_info)
+ 		entry = efi_reloc + opt->AddressOfEntryPoint;
+ 		rel_size = opt->DataDirectory[rel_idx].Size;
+ 		rel = efi_reloc + opt->DataDirectory[rel_idx].VirtualAddress;
++		image_type = opt->Subsystem;
+ 	} else if (can_run_nt32 &&
+ 		   (nt->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC)) {
+ 		IMAGE_OPTIONAL_HEADER32 *opt = &nt->OptionalHeader;
+@@ -152,12 +154,32 @@ void *efi_load_pe(void *efi, struct efi_loaded_image *loaded_image_info)
+ 		entry = efi_reloc + opt->AddressOfEntryPoint;
+ 		rel_size = opt->DataDirectory[rel_idx].Size;
+ 		rel = efi_reloc + opt->DataDirectory[rel_idx].VirtualAddress;
++		image_type = opt->Subsystem;
+ 	} else {
+ 		printf("%s: Invalid optional header magic %x\n", __func__,
+ 		       nt->OptionalHeader.Magic);
+ 		return NULL;
+ 	}
+ 
++	switch (image_type) {
++	case IMAGE_SUBSYSTEM_EFI_APPLICATION:
++		loaded_image_info->image_code_type = EFI_LOADER_CODE;
++		loaded_image_info->image_data_type = EFI_LOADER_DATA;
++		break;
++	case IMAGE_SUBSYSTEM_EFI_BOOT_SERVICE_DRIVER:
++		loaded_image_info->image_code_type = EFI_BOOT_SERVICES_CODE;
++		loaded_image_info->image_data_type = EFI_BOOT_SERVICES_DATA;
++		break;
++	case IMAGE_SUBSYSTEM_EFI_RUNTIME_DRIVER:
++	case IMAGE_SUBSYSTEM_SAL_RUNTIME_DRIVER:
++		loaded_image_info->image_code_type = EFI_RUNTIME_SERVICES_CODE;
++		loaded_image_info->image_data_type = EFI_RUNTIME_SERVICES_DATA;
++		break;
++	default:
++		printf("%s: invalid image type: %u\n", __func__, image_type);
++		break;
++	}
++
+ 	/* Load sections into RAM */
+ 	for (i = num_sections - 1; i >= 0; i--) {
+ 		IMAGE_SECTION_HEADER *sec = &sections[i];
+
+From patchwork Wed Sep 13 22:05:41 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v3,18/21] efi_loader: print GUIDs
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 813646
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20170913220546.19560-19-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Wed, 13 Sep 2017 18:05:41 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Utilize printf GUID support to print GUIDs.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ lib/efi_loader/efi_boottime.c | 22 +++++++++++-----------
+ lib/efi_loader/efi_variable.c |  6 +++---
+ 2 files changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/lib/efi_loader/efi_boottime.c b/lib/efi_loader/efi_boottime.c
+index cea242cd49..b6f32c98d9 100644
+--- a/lib/efi_loader/efi_boottime.c
++++ b/lib/efi_loader/efi_boottime.c
+@@ -514,7 +514,7 @@ static efi_status_t EFIAPI efi_install_protocol_interface_ext(void **handle,
+ 			efi_guid_t *protocol, int protocol_interface_type,
+ 			void *protocol_interface)
+ {
+-	EFI_ENTRY("%p, %p, %d, %p", handle, protocol, protocol_interface_type,
++	EFI_ENTRY("%p, %pUl, %d, %p", handle, protocol, protocol_interface_type,
+ 		  protocol_interface);
+ 
+ 	return EFI_EXIT(efi_install_protocol_interface(handle, protocol,
+@@ -526,7 +526,7 @@ static efi_status_t EFIAPI efi_reinstall_protocol_interface(void *handle,
+ 			efi_guid_t *protocol, void *old_interface,
+ 			void *new_interface)
+ {
+-	EFI_ENTRY("%p, %p, %p, %p", handle, protocol, old_interface,
++	EFI_ENTRY("%p, %pUl, %p, %p", handle, protocol, old_interface,
+ 		  new_interface);
+ 	return EFI_EXIT(EFI_ACCESS_DENIED);
+ }
+@@ -575,7 +575,7 @@ out:
+ static efi_status_t EFIAPI efi_uninstall_protocol_interface_ext(void *handle,
+ 			efi_guid_t *protocol, void *protocol_interface)
+ {
+-	EFI_ENTRY("%p, %p, %p", handle, protocol, protocol_interface);
++	EFI_ENTRY("%p, %pUl, %p", handle, protocol, protocol_interface);
+ 
+ 	return EFI_EXIT(efi_uninstall_protocol_interface(handle, protocol,
+ 							 protocol_interface));
+@@ -585,7 +585,7 @@ static efi_status_t EFIAPI efi_register_protocol_notify(efi_guid_t *protocol,
+ 							struct efi_event *event,
+ 							void **registration)
+ {
+-	EFI_ENTRY("%p, %p, %p", protocol, event, registration);
++	EFI_ENTRY("%pUl, %p, %p", protocol, event, registration);
+ 	return EFI_EXIT(EFI_OUT_OF_RESOURCES);
+ }
+ 
+@@ -655,7 +655,7 @@ static efi_status_t EFIAPI efi_locate_handle_ext(
+ 			efi_guid_t *protocol, void *search_key,
+ 			unsigned long *buffer_size, efi_handle_t *buffer)
+ {
+-	EFI_ENTRY("%d, %p, %p, %p, %p", search_type, protocol, search_key,
++	EFI_ENTRY("%d, %pUl, %p, %p, %p", search_type, protocol, search_key,
+ 		  buffer_size, buffer);
+ 
+ 	return EFI_EXIT(efi_locate_handle(search_type, protocol, search_key,
+@@ -723,7 +723,7 @@ efi_status_t efi_install_configuration_table(const efi_guid_t *guid, void *table
+ static efi_status_t EFIAPI efi_install_configuration_table_ext(efi_guid_t *guid,
+ 							       void *table)
+ {
+-	EFI_ENTRY("%p, %p", guid, table);
++	EFI_ENTRY("%pUl, %p", guid, table);
+ 	return EFI_EXIT(efi_install_configuration_table(guid, table));
+ }
+ 
+@@ -1012,7 +1012,7 @@ static efi_status_t EFIAPI efi_close_protocol(void *handle,
+ 					      void *agent_handle,
+ 					      void *controller_handle)
+ {
+-	EFI_ENTRY("%p, %p, %p, %p", handle, protocol, agent_handle,
++	EFI_ENTRY("%p, %pUl, %p, %p", handle, protocol, agent_handle,
+ 		  controller_handle);
+ 	return EFI_EXIT(EFI_NOT_FOUND);
+ }
+@@ -1022,7 +1022,7 @@ static efi_status_t EFIAPI efi_open_protocol_information(efi_handle_t handle,
+ 			struct efi_open_protocol_info_entry **entry_buffer,
+ 			unsigned long *entry_count)
+ {
+-	EFI_ENTRY("%p, %p, %p, %p", handle, protocol, entry_buffer,
++	EFI_ENTRY("%p, %pUl, %p, %p", handle, protocol, entry_buffer,
+ 		  entry_count);
+ 	return EFI_EXIT(EFI_NOT_FOUND);
+ }
+@@ -1088,7 +1088,7 @@ static efi_status_t EFIAPI efi_locate_handle_buffer(
+ 	efi_status_t r;
+ 	unsigned long buffer_size = 0;
+ 
+-	EFI_ENTRY("%d, %p, %p, %p, %p", search_type, protocol, search_key,
++	EFI_ENTRY("%d, %pUl, %p, %p, %p", search_type, protocol, search_key,
+ 		  no_handles, buffer);
+ 
+ 	if (!no_handles || !buffer) {
+@@ -1120,7 +1120,7 @@ static efi_status_t EFIAPI efi_locate_protocol(efi_guid_t *protocol,
+ 	struct list_head *lhandle;
+ 	int i;
+ 
+-	EFI_ENTRY("%p, %p, %p", protocol, registration, protocol_interface);
++	EFI_ENTRY("%pUl, %p, %p", protocol, registration, protocol_interface);
+ 
+ 	if (!protocol || !protocol_interface)
+ 		return EFI_EXIT(EFI_INVALID_PARAMETER);
+@@ -1228,7 +1228,7 @@ static efi_status_t EFIAPI efi_open_protocol(
+ 	int i;
+ 	efi_status_t r = EFI_INVALID_PARAMETER;
+ 
+-	EFI_ENTRY("%p, %p, %p, %p, %p, 0x%x", handle, protocol,
++	EFI_ENTRY("%p, %pUl, %p, %p, %p, 0x%x", handle, protocol,
+ 		  protocol_interface, agent_handle, controller_handle,
+ 		  attributes);
+ 
+diff --git a/lib/efi_loader/efi_variable.c b/lib/efi_loader/efi_variable.c
+index 5569b3d3f0..6c177da3a6 100644
+--- a/lib/efi_loader/efi_variable.c
++++ b/lib/efi_loader/efi_variable.c
+@@ -187,7 +187,7 @@ efi_status_t EFIAPI efi_get_variable(s16 *variable_name,
+ 	const char *val, *s;
+ 	u32 attr;
+ 
+-	EFI_ENTRY("%p %p %p %p %p", variable_name, vendor, attributes,
++	EFI_ENTRY("\"%ls\" %pUl %p %p %p", variable_name, vendor, attributes,
+ 		  data_size, data);
+ 
+ 	if (!variable_name || !vendor || !data_size)
+@@ -255,7 +255,7 @@ efi_status_t EFIAPI efi_get_next_variable(
+ 		unsigned long *variable_name_size,
+ 		s16 *variable_name, efi_guid_t *vendor)
+ {
+-	EFI_ENTRY("%p %p %p", variable_name_size, variable_name, vendor);
++	EFI_ENTRY("%p \"%ls\" %pUl", variable_name_size, variable_name, vendor);
+ 
+ 	return EFI_EXIT(EFI_DEVICE_ERROR);
+ }
+@@ -270,7 +270,7 @@ efi_status_t EFIAPI efi_set_variable(s16 *variable_name,
+ 	char *val, *s;
+ 	u32 attr;
+ 
+-	EFI_ENTRY("%p %p %x %lu %p", variable_name, vendor, attributes,
++	EFI_ENTRY("\"%ls\" %pUl %x %lu %p", variable_name, vendor, attributes,
+ 		  data_size, data);
+ 
+ 	if (!variable_name || !vendor)
+

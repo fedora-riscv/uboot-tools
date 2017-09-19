@@ -1,0 +1,544 @@
+From 4a85663ec7eddd955d22f1b0f34a9708eac82314 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Sat, 9 Sep 2017 06:47:39 -0400
+Subject: [PATCH 002/105] kbuild: Enable -fshort-wchar
+
+EFI_LOADER really wants UTF-16 strings (ie. %ls and L"string" are 16bit
+chars instead of 32bit chars).  But rather than enabling -fshort-wchar
+conditionally if EFI_LOADER is enabled, it was deemed preferrable to
+globally switch.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+Acked-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+---
+ Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Makefile b/Makefile
+index 8086f3c93e..8250b3409a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -360,6 +360,7 @@ KBUILD_CPPFLAGS := -D__KERNEL__ -D__UBOOT__
+ KBUILD_CFLAGS   := -Wall -Wstrict-prototypes \
+ 		   -Wno-format-security \
+ 		   -fno-builtin -ffreestanding
++KBUILD_CFLAGS	+= -fshort-wchar
+ KBUILD_AFLAGS   := -D__ASSEMBLY__
+ 
+ # Read UBOOTRELEASE from include/config/uboot.release (if it exists)
+-- 
+2.13.5
+
+From 78178bb0c9dfe2a91a636a411291d8bab50e8a7d Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Sat, 9 Sep 2017 06:47:40 -0400
+Subject: [PATCH 003/105] lib: add some utf16 handling helpers
+
+We'll eventually want these in a few places in efi_loader, and also
+vsprintf.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ include/charset.h            |  65 ++++++++++++++++++++++++++++
+ lib/Makefile                 |   1 +
+ lib/charset.c                | 101 +++++++++++++++++++++++++++++++++++++++++++
+ lib/efi_loader/efi_console.c |  17 ++------
+ 4 files changed, 170 insertions(+), 14 deletions(-)
+ create mode 100644 include/charset.h
+ create mode 100644 lib/charset.c
+
+diff --git a/include/charset.h b/include/charset.h
+new file mode 100644
+index 0000000000..39279f746a
+--- /dev/null
++++ b/include/charset.h
+@@ -0,0 +1,65 @@
++/*
++ *  charset conversion utils
++ *
++ *  Copyright (c) 2017 Rob Clark
++ *
++ *  SPDX-License-Identifier:     GPL-2.0+
++ */
++
++#ifndef __CHARSET_H_
++#define __CHARSET_H_
++
++#define MAX_UTF8_PER_UTF16 4
++
++/**
++ * utf16_strlen() - Get the length of an utf16 string
++ *
++ * Returns the number of 16 bit characters in an utf16 string, not
++ * including the terminating NULL character.
++ *
++ * @in     the string to measure
++ * @return the string length
++ */
++size_t utf16_strlen(const uint16_t *in);
++
++/**
++ * utf16_strnlen() - Get the length of a fixed-size utf16 string.
++ *
++ * Returns the number of 16 bit characters in an utf16 string,
++ * not including the terminating NULL character, but at most
++ * 'count' number of characters.  In doing this, utf16_strnlen()
++ * looks at only the first 'count' characters.
++ *
++ * @in     the string to measure
++ * @count  the maximum number of characters to count
++ * @return the string length, up to a maximum of 'count'
++ */
++size_t utf16_strnlen(const uint16_t *in, size_t count);
++
++/**
++ * utf16_strcpy() - UTF16 equivalent of strcpy()
++ */
++uint16_t *utf16_strcpy(uint16_t *dest, const uint16_t *src);
++
++/**
++ * utf16_strdup() - UTF16 equivalent of strdup()
++ */
++uint16_t *utf16_strdup(const uint16_t *s);
++
++/**
++ * utf16_to_utf8() - Convert an utf16 string to utf8
++ *
++ * Converts 'size' characters of the utf16 string 'src' to utf8
++ * written to the 'dest' buffer.
++ *
++ * NOTE that a single utf16 character can generate up to 4 utf8
++ * characters.  See MAX_UTF8_PER_UTF16.
++ *
++ * @dest   the destination buffer to write the utf8 characters
++ * @src    the source utf16 string
++ * @size   the number of utf16 characters to convert
++ * @return the pointer to the first unwritten byte in 'dest'
++ */
++uint8_t *utf16_to_utf8(uint8_t *dest, const uint16_t *src, size_t size);
++
++#endif /* __CHARSET_H_ */
+diff --git a/lib/Makefile b/lib/Makefile
+index da6a11aca3..15bba9eac2 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -18,6 +18,7 @@ obj-$(CONFIG_OF_LIVE) += of_live.o
+ obj-$(CONFIG_CMD_DHRYSTONE) += dhry/
+ 
+ obj-$(CONFIG_AES) += aes.o
++obj-y += charset.o
+ obj-$(CONFIG_USB_TTY) += circbuf.o
+ obj-y += crc7.o
+ obj-y += crc8.o
+diff --git a/lib/charset.c b/lib/charset.c
+new file mode 100644
+index 0000000000..ff76e88c77
+--- /dev/null
++++ b/lib/charset.c
+@@ -0,0 +1,101 @@
++/*
++ *  charset conversion utils
++ *
++ *  Copyright (c) 2017 Rob Clark
++ *
++ *  SPDX-License-Identifier:     GPL-2.0+
++ */
++
++#include <common.h>
++#include <charset.h>
++#include <malloc.h>
++
++/*
++ * utf8/utf16 conversion mostly lifted from grub
++ */
++
++size_t utf16_strlen(const uint16_t *in)
++{
++	size_t i;
++	for (i = 0; in[i]; i++);
++	return i;
++}
++
++size_t utf16_strnlen(const uint16_t *in, size_t count)
++{
++	size_t i;
++	for (i = 0; count-- && in[i]; i++);
++	return i;
++}
++
++uint16_t *utf16_strcpy(uint16_t *dest, const uint16_t *src)
++{
++	uint16_t *tmp = dest;
++
++	while ((*dest++ = *src++) != '\0')
++		/* nothing */;
++	return tmp;
++
++}
++
++uint16_t *utf16_strdup(const uint16_t *s)
++{
++	uint16_t *new;
++	if (!s || !(new = malloc((utf16_strlen(s) + 1) * 2)))
++		return NULL;
++	utf16_strcpy(new, s);
++	return new;
++}
++
++/* Convert UTF-16 to UTF-8.  */
++uint8_t *utf16_to_utf8(uint8_t *dest, const uint16_t *src, size_t size)
++{
++	uint32_t code_high = 0;
++
++	while (size--) {
++		uint32_t code = *src++;
++
++		if (code_high) {
++			if (code >= 0xDC00 && code <= 0xDFFF) {
++				/* Surrogate pair.  */
++				code = ((code_high - 0xD800) << 10) + (code - 0xDC00) + 0x10000;
++
++				*dest++ = (code >> 18) | 0xF0;
++				*dest++ = ((code >> 12) & 0x3F) | 0x80;
++				*dest++ = ((code >> 6) & 0x3F) | 0x80;
++				*dest++ = (code & 0x3F) | 0x80;
++			} else {
++				/* Error...  */
++				*dest++ = '?';
++				/* *src may be valid. Don't eat it.  */
++				src--;
++			}
++
++			code_high = 0;
++		} else {
++			if (code <= 0x007F) {
++				*dest++ = code;
++			} else if (code <= 0x07FF) {
++				*dest++ = (code >> 6) | 0xC0;
++				*dest++ = (code & 0x3F) | 0x80;
++			} else if (code >= 0xD800 && code <= 0xDBFF) {
++				code_high = code;
++				continue;
++			} else if (code >= 0xDC00 && code <= 0xDFFF) {
++				/* Error... */
++				*dest++ = '?';
++			} else if (code < 0x10000) {
++				*dest++ = (code >> 12) | 0xE0;
++				*dest++ = ((code >> 6) & 0x3F) | 0x80;
++				*dest++ = (code & 0x3F) | 0x80;
++			} else {
++				*dest++ = (code >> 18) | 0xF0;
++				*dest++ = ((code >> 12) & 0x3F) | 0x80;
++				*dest++ = ((code >> 6) & 0x3F) | 0x80;
++				*dest++ = (code & 0x3F) | 0x80;
++			}
++		}
++	}
++
++	return dest;
++}
+diff --git a/lib/efi_loader/efi_console.c b/lib/efi_loader/efi_console.c
+index 5ebce4b544..3fc82b8726 100644
+--- a/lib/efi_loader/efi_console.c
++++ b/lib/efi_loader/efi_console.c
+@@ -7,6 +7,7 @@
+  */
+ 
+ #include <common.h>
++#include <charset.h>
+ #include <efi_loader.h>
+ 
+ static bool console_size_queried;
+@@ -138,20 +139,8 @@ static efi_status_t EFIAPI efi_cout_reset(
+ 
+ static void print_unicode_in_utf8(u16 c)
+ {
+-	char utf8[4] = { 0 };
+-	char *b = utf8;
+-
+-	if (c < 0x80) {
+-		*(b++) = c;
+-	} else if (c < 0x800) {
+-		*(b++) = 192 + c / 64;
+-		*(b++) = 128 + c % 64;
+-	} else {
+-		*(b++) = 224 + c / 4096;
+-		*(b++) = 128 + c / 64 % 64;
+-		*(b++) = 128 + c % 64;
+-	}
+-
++	char utf8[MAX_UTF8_PER_UTF16] = { 0 };
++	utf16_to_utf8((u8 *)utf8, &c, 1);
+ 	puts(utf8);
+ }
+ 
+-- 
+2.13.5
+
+From 274325c50951dd16ad2a6f45e79dc062ad47011b Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Sat, 9 Sep 2017 06:47:41 -0400
+Subject: [PATCH 004/105] vsprintf.c: add UTF-16 string (%ls) support
+
+This is convenient for efi_loader which deals a lot with UTF-16.  Only
+enabled with CC_SHORT_WCHAR, leaving room to add a UTF-32 version when
+CC_SHORT_WCHAR is not enabled.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+ examples/api/Makefile |  1 +
+ lib/vsprintf.c        | 30 ++++++++++++++++++++++++++++--
+ 2 files changed, 29 insertions(+), 2 deletions(-)
+
+diff --git a/examples/api/Makefile b/examples/api/Makefile
+index dab6398bab..87c15d0f68 100644
+--- a/examples/api/Makefile
++++ b/examples/api/Makefile
+@@ -34,6 +34,7 @@ EXT_COBJ-y += lib/div64.o
+ EXT_COBJ-y += lib/string.o
+ EXT_COBJ-y += lib/time.o
+ EXT_COBJ-y += lib/vsprintf.o
++EXT_COBJ-y += lib/charset.o
+ EXT_SOBJ-$(CONFIG_PPC) += arch/powerpc/lib/ppcstring.o
+ ifeq ($(ARCH),arm)
+ EXT_SOBJ-$(CONFIG_USE_ARCH_MEMSET) += arch/arm/lib/memset.o
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 874a2951f7..97bed9d36d 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -17,6 +17,7 @@
+ #include <linux/ctype.h>
+ 
+ #include <common.h>
++#include <charset.h>
+ 
+ #include <div64.h>
+ #define noinline __attribute__((noinline))
+@@ -270,6 +271,26 @@ static char *string(char *buf, char *end, char *s, int field_width,
+ 	return buf;
+ }
+ 
++static char *string16(char *buf, char *end, u16 *s, int field_width,
++		int precision, int flags)
++{
++	u16 *str = s ? s : L"<NULL>";
++	int utf16_len = utf16_strnlen(str, precision);
++	u8 utf8[utf16_len * MAX_UTF8_PER_UTF16];
++	int utf8_len, i;
++
++	utf8_len = utf16_to_utf8(utf8, str, utf16_len) - utf8;
++
++	if (!(flags & LEFT))
++		while (utf8_len < field_width--)
++			ADDCH(buf, ' ');
++	for (i = 0; i < utf8_len; ++i)
++		ADDCH(buf, utf8[i]);
++	while (utf8_len < field_width--)
++		ADDCH(buf, ' ');
++	return buf;
++}
++
+ #ifdef CONFIG_CMD_NET
+ static const char hex_asc[] = "0123456789abcdef";
+ #define hex_asc_lo(x)	hex_asc[((x) & 0x0f)]
+@@ -528,8 +549,13 @@ repeat:
+ 			continue;
+ 
+ 		case 's':
+-			str = string(str, end, va_arg(args, char *),
+-				     field_width, precision, flags);
++			if (qualifier == 'l' && !IS_ENABLED(CONFIG_SPL_BUILD)) {
++				str = string16(str, end, va_arg(args, u16 *),
++					       field_width, precision, flags);
++			} else {
++				str = string(str, end, va_arg(args, char *),
++					     field_width, precision, flags);
++			}
+ 			continue;
+ 
+ 		case 'p':
+-- 
+2.13.5
+
+From 22ada0c8e6d50281af72176eecdfc356c794639c Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Sat, 9 Sep 2017 06:47:42 -0400
+Subject: [PATCH 005/105] vsprintf.c: add GUID printing
+
+This works (roughly) the same way as linux's, but we currently always
+print lower-case (ie. we just keep %pUB and %pUL for compat with linux),
+mostly just because that is what uuid_bin_to_str() supports.
+
+  %pUb:   01020304-0506-0708-090a-0b0c0d0e0f10
+  %pUl:   04030201-0605-0807-090a-0b0c0d0e0f10
+
+It will be used by a later efi_loader paths for efi variables and for
+device-path-to-text protocol, and also quite useful for debug prints
+of protocol GUIDs.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+Tested-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+ examples/api/Makefile      |  1 +
+ include/config_fallbacks.h |  1 +
+ lib/vsprintf.c             | 46 ++++++++++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 46 insertions(+), 2 deletions(-)
+
+diff --git a/examples/api/Makefile b/examples/api/Makefile
+index 87c15d0f68..899527267d 100644
+--- a/examples/api/Makefile
++++ b/examples/api/Makefile
+@@ -35,6 +35,7 @@ EXT_COBJ-y += lib/string.o
+ EXT_COBJ-y += lib/time.o
+ EXT_COBJ-y += lib/vsprintf.o
+ EXT_COBJ-y += lib/charset.o
++EXT_COBJ-$(CONFIG_LIB_UUID) += lib/uuid.o
+ EXT_SOBJ-$(CONFIG_PPC) += arch/powerpc/lib/ppcstring.o
+ ifeq ($(ARCH),arm)
+ EXT_SOBJ-$(CONFIG_USE_ARCH_MEMSET) += arch/arm/lib/memset.o
+diff --git a/include/config_fallbacks.h b/include/config_fallbacks.h
+index 46b7a2a6f2..2c4d43d672 100644
+--- a/include/config_fallbacks.h
++++ b/include/config_fallbacks.h
+@@ -58,6 +58,7 @@
+ 
+ #if (CONFIG_IS_ENABLED(PARTITION_UUIDS) || \
+ 	CONFIG_IS_ENABLED(EFI_PARTITION) || \
++	CONFIG_IS_ENABLED(EFI_LOADER) || \
+ 	defined(CONFIG_RANDOM_UUID) || \
+ 	defined(CONFIG_CMD_UUID) || \
+ 	defined(CONFIG_BOOTP_PXE)) && \
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 97bed9d36d..dd572d2868 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -18,6 +18,7 @@
+ 
+ #include <common.h>
+ #include <charset.h>
++#include <uuid.h>
+ 
+ #include <div64.h>
+ #define noinline __attribute__((noinline))
+@@ -366,6 +367,40 @@ static char *ip4_addr_string(char *buf, char *end, u8 *addr, int field_width,
+ }
+ #endif
+ 
++#ifdef CONFIG_LIB_UUID
++/*
++ * This works (roughly) the same way as linux's, but we currently always
++ * print lower-case (ie. we just keep %pUB and %pUL for compat with linux),
++ * mostly just because that is what uuid_bin_to_str() supports.
++ *
++ *   %pUb:   01020304-0506-0708-090a-0b0c0d0e0f10
++ *   %pUl:   04030201-0605-0807-090a-0b0c0d0e0f10
++ */
++static char *uuid_string(char *buf, char *end, u8 *addr, int field_width,
++			 int precision, int flags, const char *fmt)
++{
++	char uuid[UUID_STR_LEN + 1];
++	int str_format = UUID_STR_FORMAT_STD;
++
++	switch (*(++fmt)) {
++	case 'L':
++	case 'l':
++		str_format = UUID_STR_FORMAT_GUID;
++		break;
++	case 'B':
++	case 'b':
++		/* this is the default */
++		break;
++	default:
++		break;
++	}
++
++	uuid_bin_to_str(addr, uuid, str_format);
++
++	return string(buf, end, uuid, field_width, precision, flags);
++}
++#endif
++
+ /*
+  * Show a '%p' thing.  A kernel extension is that the '%p' is followed
+  * by an extra set of alphanumeric characters that are extended format
+@@ -399,8 +434,8 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr,
+ 			      flags);
+ #endif
+ 
+-#ifdef CONFIG_CMD_NET
+ 	switch (*fmt) {
++#ifdef CONFIG_CMD_NET
+ 	case 'a':
+ 		flags |= SPECIAL | ZEROPAD;
+ 
+@@ -430,8 +465,15 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr,
+ 					       precision, flags);
+ 		flags &= ~SPECIAL;
+ 		break;
+-	}
+ #endif
++#ifdef CONFIG_LIB_UUID
++	case 'U':
++		return uuid_string(buf, end, ptr, field_width, precision,
++				   flags, fmt);
++#endif
++	default:
++		break;
++	}
+ 	flags |= SMALL;
+ 	if (field_width == -1) {
+ 		field_width = 2*sizeof(void *);
+-- 
+2.13.5
+
+From 7e3e20560784b048ff19e90cd36b6680626b1ab3 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Sat, 9 Sep 2017 06:47:43 -0400
+Subject: [PATCH 006/105] examples: add fallback memcpy
+
+Solves build issue:
+
+  Building current source for 134 boards (12 threads, 1 job per thread)
+         arm:  +   lsxhl
+  +examples/api/vsprintf.o: In function `string16':
+  +lib/vsprintf.c:278: undefined reference to `memcpy'
+  +examples/api/uuid.o: In function `uuid_bin_to_str':
+  +lib/uuid.c:197: undefined reference to `memcpy'
+  +lib/uuid.c:199: undefined reference to `memcpy'
+  +make[3]: *** [examples/api/demo] Error 1
+  +make[2]: *** [examples/api] Error 2
+  +make[1]: *** [examples] Error 2
+  +make: *** [sub-make] Error 2
+    133    0    1 /134    sheevaplug
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ examples/api/glue.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/examples/api/glue.c b/examples/api/glue.c
+index 8aabf32c89..575c1e55f3 100644
+--- a/examples/api/glue.c
++++ b/examples/api/glue.c
+@@ -416,3 +416,15 @@ void ub_display_clear(void)
+ {
+ 	syscall(API_DISPLAY_CLEAR, NULL);
+ }
++
++__weak void *memcpy(void *dest, const void *src, size_t size)
++{
++	unsigned char *dptr = dest;
++	const unsigned char *ptr = src;
++	const unsigned char *end = src + size;
++
++	while (ptr < end)
++		*dptr++ = *ptr++;
++
++	return dest;
++}
+-- 
+2.13.5
+

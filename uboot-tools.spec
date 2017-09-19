@@ -1,8 +1,8 @@
-%global candidate rc4
+#global candidate rc4
 
 Name:      uboot-tools
 Version:   2017.09
-Release:   0.6%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -14,19 +14,17 @@ Source3:   aarch64-boards
 Source4:   aarch64-chromebooks
 
 # Fedoraisms patches, general fixes
-Patch1:    uefi-use-Fedora-specific-path-name.patch
-Patch2:    uefi-fixes.patch
-Patch3:    env-Fix-out-of-tree-building-of-tools-all.patch
+Patch1:    uefi-vsprintf.patch
+Patch2:    uefi-improve-fat.patch
+Patch3:    uefi-efi_loader-enough-UEFI-for-standard-distro-boot.patch
+Patch4:    uefi-use-Fedora-specific-path-name.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
-Patch11:   rpi-Revert-dm-Drop-CONFIG_OF_EMBED.patch
-Patch12:   qemu-machine-virt-ARM.patch
-Patch13:   sti-STiH410-B2260-support.patch
-
+Patch11:   qemu-machine-virt-ARM.patch
+Patch12:   sti-STiH410-B2260-support.patch
+Patch13:   mvebu-enable-generic-distro-boot-config.patch
 # Patch15:   mx6-Initial-Hummingboard-2-support.patch
-# Patch16:   sunxi-dm-pine64.patch
-# Patch17:   mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -278,6 +276,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Sep 18 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-1
+- 2017.09
+
 * Tue Sep 12 2017 Than Ngo <than@redhat.com> - 2017.09-0.6.rc4
 - fixed the check for rockchip rk3368 boards
 
