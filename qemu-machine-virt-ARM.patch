@@ -1,15 +1,422 @@
-From patchwork Wed Aug 30 08:31:34 2017
+From patchwork Tue Sep 19 20:18:03 2017
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,
- 1/2] PCI: Add driver for a 'pci-host-ecam-generic' host controller
+Subject: [U-Boot, v2,
+ 1/6] pci: Add helper for implementing memory-mapped config space
+ accesses
 X-Patchwork-Submitter: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
-X-Patchwork-Id: 807714
-Message-Id: <20170830083135.9183-2-tuomas.tynkkynen@iki.fi>
+X-Patchwork-Id: 815808
+Message-Id: <20170919201808.11433-2-tuomas.tynkkynen@iki.fi>
 To: u-boot@lists.denx.de
 Cc: Tom Rini <trini@konsulko.com>
-Date: Wed, 30 Aug 2017 11:31:34 +0300
+Date: Tue, 19 Sep 2017 23:18:03 +0300
+From: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+This sort of pattern for implementing memory-mapped PCI config space
+accesses appears in U-Boot twice already, and a third user is coming up.
+So add helper functions to avoid code duplication, similar to how Linux
+has pci_generic_config_write and pci_generic_config_read.
+
+Signed-off-by: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
+Reviewed-by: Bin Meng <bmeng.cn@gmail.com>
+---
+ drivers/pci/pci-uclass.c | 58 ++++++++++++++++++++++++++++++++++++++++++++++++
+ include/pci.h            | 51 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 109 insertions(+)
+
+diff --git a/drivers/pci/pci-uclass.c b/drivers/pci/pci-uclass.c
+index 86df141d60..5a24eb6428 100644
+--- a/drivers/pci/pci-uclass.c
++++ b/drivers/pci/pci-uclass.c
+@@ -518,6 +518,64 @@ int pci_auto_config_devices(struct udevice *bus)
+ 	return sub_bus;
+ }
+ 
++int pci_generic_mmap_write_config(
++	struct udevice *bus,
++	int (*addr_f)(struct udevice *bus, pci_dev_t bdf, uint offset, void **addrp),
++	pci_dev_t bdf,
++	uint offset,
++	ulong value,
++	enum pci_size_t size)
++{
++	void *address;
++
++	if (addr_f(bus, bdf, offset, &address) < 0)
++		return 0;
++
++	switch (size) {
++	case PCI_SIZE_8:
++		writeb(value, address);
++		return 0;
++	case PCI_SIZE_16:
++		writew(value, address);
++		return 0;
++	case PCI_SIZE_32:
++		writel(value, address);
++		return 0;
++	default:
++		return -EINVAL;
++	}
++}
++
++int pci_generic_mmap_read_config(
++	struct udevice *bus,
++	int (*addr_f)(struct udevice *bus, pci_dev_t bdf, uint offset, void **addrp),
++	pci_dev_t bdf,
++	uint offset,
++	ulong *valuep,
++	enum pci_size_t size)
++{
++	void *address;
++
++	if (addr_f(bus, bdf, offset, &address) < 0) {
++		*valuep = pci_get_ff(size);
++		return 0;
++	}
++
++	switch (size) {
++	case PCI_SIZE_8:
++		*valuep = readb(address);
++		return 0;
++	case PCI_SIZE_16:
++		*valuep = readw(address);
++		return 0;
++	case PCI_SIZE_32:
++		*valuep = readl(address);
++		return 0;
++	default:
++		return -EINVAL;
++	}
++}
++
+ int dm_pci_hose_probe_bus(struct udevice *bus)
+ {
+ 	int sub_bus;
+diff --git a/include/pci.h b/include/pci.h
+index c8ef997d0d..7adc04301c 100644
+--- a/include/pci.h
++++ b/include/pci.h
+@@ -1086,6 +1086,57 @@ int pci_read_config32(pci_dev_t pcidev, int offset, u32 *valuep);
+ int pci_read_config16(pci_dev_t pcidev, int offset, u16 *valuep);
+ int pci_read_config8(pci_dev_t pcidev, int offset, u8 *valuep);
+ 
++/**
++ * pci_generic_mmap_write_config() - Generic helper for writing to
++ * memory-mapped PCI configuration space.
++ * @bus: Pointer to the PCI bus
++ * @addr_f: Callback for calculating the config space address
++ * @bdf: Identifies the PCI device to access
++ * @offset: The offset into the device's configuration space
++ * @value: The value to write
++ * @size: Indicates the size of access to perform
++ *
++ * Write the value @value of size @size from offset @offset within the
++ * configuration space of the device identified by the bus, device & function
++ * numbers in @bdf on the PCI bus @bus. The callback function @addr_f is
++ * responsible for calculating the CPU address of the respective configuration
++ * space offset.
++ *
++ * Return: 0 on success, else -EINVAL
++ */
++int pci_generic_mmap_write_config(
++	struct udevice *bus,
++	int (*addr_f)(struct udevice *bus, pci_dev_t bdf, uint offset, void **addrp),
++	pci_dev_t bdf,
++	uint offset,
++	ulong value,
++	enum pci_size_t size);
++
++/**
++ * pci_generic_mmap_read_config() - Generic helper for reading from
++ * memory-mapped PCI configuration space.
++ * @bus: Pointer to the PCI bus
++ * @addr_f: Callback for calculating the config space address
++ * @bdf: Identifies the PCI device to access
++ * @offset: The offset into the device's configuration space
++ * @valuep: A pointer at which to store the read value
++ * @size: Indicates the size of access to perform
++ *
++ * Read a value of size @size from offset @offset within the configuration
++ * space of the device identified by the bus, device & function numbers in @bdf
++ * on the PCI bus @bus. The callback function @addr_f is responsible for
++ * calculating the CPU address of the respective configuration space offset.
++ *
++ * Return: 0 on success, else -EINVAL
++ */
++int pci_generic_mmap_read_config(
++	struct udevice *bus,
++	int (*addr_f)(struct udevice *bus, pci_dev_t bdf, uint offset, void **addrp),
++	pci_dev_t bdf,
++	uint offset,
++	ulong *valuep,
++	enum pci_size_t size);
++
+ #ifdef CONFIG_DM_PCI_COMPAT
+ /* Compatibility with old naming */
+ static inline int pci_write_config_dword(pci_dev_t pcidev, int offset,
+
+From patchwork Tue Sep 19 20:18:04 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v2, 2/6] pci: xilinx: Use pci_generic_mmap_{read,
+ write}_config()
+X-Patchwork-Submitter: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
+X-Patchwork-Id: 815813
+Message-Id: <20170919201808.11433-3-tuomas.tynkkynen@iki.fi>
+To: u-boot@lists.denx.de
+Cc: Tom Rini <trini@konsulko.com>
+Date: Tue, 19 Sep 2017 23:18:04 +0300
+From: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Use the new helper function to avoid boilerplate in the driver.
+
+Note that this changes __raw_writel et al. to writel. AFAICT this is
+no problem because:
+
+- The Linux driver for the same hardware uses the non-__raw variants as
+  well (via pci_generic_config_write()).
+- This driver seems to be used only on MIPS so far, where the __raw and
+  non-__raw accessors are the same.
+
+Signed-off-by: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
+Reviewed-by: Bin Meng <bmeng.cn@gmail.com>
+---
+ drivers/pci/pcie_xilinx.c | 53 +++++++----------------------------------------
+ 1 file changed, 7 insertions(+), 46 deletions(-)
+
+diff --git a/drivers/pci/pcie_xilinx.c b/drivers/pci/pcie_xilinx.c
+index 08e2e93445..d788552fed 100644
+--- a/drivers/pci/pcie_xilinx.c
++++ b/drivers/pci/pcie_xilinx.c
+@@ -43,7 +43,7 @@ static bool pcie_xilinx_link_up(struct xilinx_pcie *pcie)
+ 
+ /**
+  * pcie_xilinx_config_address() - Calculate the address of a config access
+- * @pcie: Pointer to the PCI controller state
++ * @udev: Pointer to the PCI bus
+  * @bdf: Identifies the PCIe device to access
+  * @offset: The offset into the device's configuration space
+  * @paddress: Pointer to the pointer to write the calculates address to
+@@ -57,9 +57,10 @@ static bool pcie_xilinx_link_up(struct xilinx_pcie *pcie)
+  *
+  * Return: 0 on success, else -ENODEV
+  */
+-static int pcie_xilinx_config_address(struct xilinx_pcie *pcie, pci_dev_t bdf,
++static int pcie_xilinx_config_address(struct udevice *udev, pci_dev_t bdf,
+ 				      uint offset, void **paddress)
+ {
++	struct xilinx_pcie *pcie = dev_get_priv(udev);
+ 	unsigned int bus = PCI_BUS(bdf);
+ 	unsigned int dev = PCI_DEV(bdf);
+ 	unsigned int func = PCI_FUNC(bdf);
+@@ -103,29 +104,8 @@ static int pcie_xilinx_read_config(struct udevice *bus, pci_dev_t bdf,
+ 				   uint offset, ulong *valuep,
+ 				   enum pci_size_t size)
+ {
+-	struct xilinx_pcie *pcie = dev_get_priv(bus);
+-	void *address;
+-	int err;
+-
+-	err = pcie_xilinx_config_address(pcie, bdf, offset, &address);
+-	if (err < 0) {
+-		*valuep = pci_get_ff(size);
+-		return 0;
+-	}
+-
+-	switch (size) {
+-	case PCI_SIZE_8:
+-		*valuep = __raw_readb(address);
+-		return 0;
+-	case PCI_SIZE_16:
+-		*valuep = __raw_readw(address);
+-		return 0;
+-	case PCI_SIZE_32:
+-		*valuep = __raw_readl(address);
+-		return 0;
+-	default:
+-		return -EINVAL;
+-	}
++	return pci_generic_mmap_read_config(bus, pcie_xilinx_config_address,
++					    bdf, offset, valuep, size);
+ }
+ 
+ /**
+@@ -146,27 +126,8 @@ static int pcie_xilinx_write_config(struct udevice *bus, pci_dev_t bdf,
+ 				    uint offset, ulong value,
+ 				    enum pci_size_t size)
+ {
+-	struct xilinx_pcie *pcie = dev_get_priv(bus);
+-	void *address;
+-	int err;
+-
+-	err = pcie_xilinx_config_address(pcie, bdf, offset, &address);
+-	if (err < 0)
+-		return 0;
+-
+-	switch (size) {
+-	case PCI_SIZE_8:
+-		__raw_writeb(value, address);
+-		return 0;
+-	case PCI_SIZE_16:
+-		__raw_writew(value, address);
+-		return 0;
+-	case PCI_SIZE_32:
+-		__raw_writel(value, address);
+-		return 0;
+-	default:
+-		return -EINVAL;
+-	}
++	return pci_generic_mmap_write_config(bus, pcie_xilinx_config_address,
++					     bdf, offset, value, size);
+ }
+ 
+ /**
+
+From patchwork Tue Sep 19 20:18:05 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v2, 3/6] pci: layerscape: Use pci_generic_mmap_{read,
+ write}_config
+X-Patchwork-Submitter: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
+X-Patchwork-Id: 815814
+Message-Id: <20170919201808.11433-4-tuomas.tynkkynen@iki.fi>
+To: u-boot@lists.denx.de
+Cc: Tom Rini <trini@konsulko.com>
+Date: Tue, 19 Sep 2017 23:18:05 +0300
+From: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Use the new helpers to avoid boilerplate in the driver.
+
+Signed-off-by: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
+Reviewed-by: Bin Meng <bmeng.cn@gmail.com>
+---
+ drivers/pci/pcie_layerscape.c | 68 +++++++++++--------------------------------
+ 1 file changed, 17 insertions(+), 51 deletions(-)
+
+diff --git a/drivers/pci/pcie_layerscape.c b/drivers/pci/pcie_layerscape.c
+index 610f85c4e8..0cb7f6d564 100644
+--- a/drivers/pci/pcie_layerscape.c
++++ b/drivers/pci/pcie_layerscape.c
+@@ -241,14 +241,19 @@ static int ls_pcie_addr_valid(struct ls_pcie *pcie, pci_dev_t bdf)
+ 	return 0;
+ }
+ 
+-void *ls_pcie_conf_address(struct ls_pcie *pcie, pci_dev_t bdf,
+-				   int offset)
++int ls_pcie_conf_address(struct udevice *bus, pci_dev_t bdf,
++			 uint offset, void **paddress)
+ {
+-	struct udevice *bus = pcie->bus;
++	struct ls_pcie *pcie = dev_get_priv(bus);
+ 	u32 busdev;
+ 
+-	if (PCI_BUS(bdf) == bus->seq)
+-		return pcie->dbi + offset;
++	if (ls_pcie_addr_valid(pcie, bdf))
++		return -EINVAL;
++
++	if (PCI_BUS(bdf) == bus->seq) {
++		*paddress = pcie->dbi + offset;
++		return 0;
++	}
+ 
+ 	busdev = PCIE_ATU_BUS(PCI_BUS(bdf)) |
+ 		 PCIE_ATU_DEV(PCI_DEV(bdf)) |
+@@ -256,67 +261,28 @@ void *ls_pcie_conf_address(struct ls_pcie *pcie, pci_dev_t bdf,
+ 
+ 	if (PCI_BUS(bdf) == bus->seq + 1) {
+ 		ls_pcie_cfg0_set_busdev(pcie, busdev);
+-		return pcie->cfg0 + offset;
++		*paddress = pcie->cfg0 + offset;
+ 	} else {
+ 		ls_pcie_cfg1_set_busdev(pcie, busdev);
+-		return pcie->cfg1 + offset;
++		*paddress = pcie->cfg1 + offset;
+ 	}
++	return 0;
+ }
+ 
+ static int ls_pcie_read_config(struct udevice *bus, pci_dev_t bdf,
+ 			       uint offset, ulong *valuep,
+ 			       enum pci_size_t size)
+ {
+-	struct ls_pcie *pcie = dev_get_priv(bus);
+-	void *address;
+-
+-	if (ls_pcie_addr_valid(pcie, bdf)) {
+-		*valuep = pci_get_ff(size);
+-		return 0;
+-	}
+-
+-	address = ls_pcie_conf_address(pcie, bdf, offset);
+-
+-	switch (size) {
+-	case PCI_SIZE_8:
+-		*valuep = readb(address);
+-		return 0;
+-	case PCI_SIZE_16:
+-		*valuep = readw(address);
+-		return 0;
+-	case PCI_SIZE_32:
+-		*valuep = readl(address);
+-		return 0;
+-	default:
+-		return -EINVAL;
+-	}
++	return pci_generic_mmap_read_config(bus, ls_pcie_conf_address,
++					    bdf, offset, valuep, size);
+ }
+ 
+ static int ls_pcie_write_config(struct udevice *bus, pci_dev_t bdf,
+ 				uint offset, ulong value,
+ 				enum pci_size_t size)
+ {
+-	struct ls_pcie *pcie = dev_get_priv(bus);
+-	void *address;
+-
+-	if (ls_pcie_addr_valid(pcie, bdf))
+-		return 0;
+-
+-	address = ls_pcie_conf_address(pcie, bdf, offset);
+-
+-	switch (size) {
+-	case PCI_SIZE_8:
+-		writeb(value, address);
+-		return 0;
+-	case PCI_SIZE_16:
+-		writew(value, address);
+-		return 0;
+-	case PCI_SIZE_32:
+-		writel(value, address);
+-		return 0;
+-	default:
+-		return -EINVAL;
+-	}
++	return pci_generic_mmap_write_config(bus, ls_pcie_conf_address,
++					     bdf, offset, value, size);
+ }
+ 
+ /* Clear multi-function bit */
+
+From patchwork Tue Sep 19 20:18:06 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v2,
+ 4/6] PCI: Add driver for a 'pci-host-ecam-generic' host controller
+X-Patchwork-Submitter: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
+X-Patchwork-Id: 815817
+Message-Id: <20170919201808.11433-5-tuomas.tynkkynen@iki.fi>
+To: u-boot@lists.denx.de
+Cc: Tom Rini <trini@konsulko.com>
+Date: Tue, 19 Sep 2017 23:18:06 +0300
 From: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -17,21 +424,23 @@ QEMU emulates such a device with '-machine virt,highmem=off' on ARM.
 The 'highmem=off' part is required for things to work as the PCI code
 in U-Boot doesn't seem to support 64-bit BARs.
 
-This driver is basically a copy-paste of the Xilinx PCIE driver with the
-Xilinx-specific bits removed and compatible string changed... The
-generic code should probably be extracted into some sort of library
-functions instead of duplicating them before committing this driver.
-
 Signed-off-by: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
+Reviewed-by: Bin Meng <bmeng.cn@gmail.com>
 ---
- drivers/pci/Kconfig             |   8 ++
+v2:
+ - no 'default n'
+ - remove unnecessary non-DM struct field (inherited from the Xilinx driver)
+ - fix doc comment problems (inherited from the Xilinx driver)
+ - use the new generic memory mapped config space helpers
+---
+ drivers/pci/Kconfig             |   8 +++
  drivers/pci/Makefile            |   1 +
- drivers/pci/pcie_ecam_generic.c | 193 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 202 insertions(+)
+ drivers/pci/pcie_ecam_generic.c | 143 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 152 insertions(+)
  create mode 100644 drivers/pci/pcie_ecam_generic.c
 
 diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
-index e2a1c0a409..745161fb9f 100644
+index e2a1c0a409..648dff7543 100644
 --- a/drivers/pci/Kconfig
 +++ b/drivers/pci/Kconfig
 @@ -33,6 +33,14 @@ config PCI_PNP
@@ -39,12 +448,12 @@ index e2a1c0a409..745161fb9f 100644
  	  Enable PCI memory and I/O space resource allocation and assignment.
  
 +config PCIE_ECAM_GENERIC
-+	bool "Generic PCI-E ECAM support"
++	bool "Generic ECAM-based PCI host controller support"
 +	default n
 +	depends on DM_PCI
 +	help
 +	  Say Y here if you want to enable support for generic ECAM-based
-+	  PCIe controllers, such as the one emulated by QEMU.
++	  PCIe host controllers, such as the one emulated by QEMU.
 +
  config PCIE_DW_MVEBU
  	bool "Enable Armada-8K PCIe driver (DesignWare core)"
@@ -63,10 +472,10 @@ index ad44e83996..5eb12efbf5 100644
  obj-$(CONFIG_PCI_GT64120) += pci_gt64120.o
 diff --git a/drivers/pci/pcie_ecam_generic.c b/drivers/pci/pcie_ecam_generic.c
 new file mode 100644
-index 0000000000..039e378cb0
+index 0000000000..2758f90de1
 --- /dev/null
 +++ b/drivers/pci/pcie_ecam_generic.c
-@@ -0,0 +1,193 @@
+@@ -0,0 +1,143 @@
 +/*
 + * Generic PCIE host provided by e.g. QEMU
 + *
@@ -85,17 +494,15 @@ index 0000000000..039e378cb0
 +
 +/**
 + * struct generic_ecam_pcie - generic_ecam PCIe controller state
-+ * @hose: The parent classes PCI controller state
 + * @cfg_base: The base address of memory mapped configuration space
 + */
 +struct generic_ecam_pcie {
-+	struct pci_controller hose;
 +	void *cfg_base;
 +};
 +
 +/**
-+ * pcie_generic_ecam_config_address() - Calculate the address of a config access
-+ * @pcie: Pointer to the PCI controller state
++ * pci_generic_ecam_conf_address() - Calculate the address of a config access
++ * @bus: Pointer to the PCI bus
 + * @bdf: Identifies the PCIe device to access
 + * @offset: The offset into the device's configuration space
 + * @paddress: Pointer to the pointer to write the calculates address to
@@ -106,21 +513,17 @@ index 0000000000..039e378cb0
 + * access to the device is not valid then the function will return an error
 + * code. Otherwise the address to access will be written to the pointer pointed
 + * to by @paddress.
-+ *
-+ * Return: 0 on success, else -ENODEV
 + */
-+static int pcie_generic_ecam_config_address(struct generic_ecam_pcie *pcie, pci_dev_t bdf,
-+				      uint offset, void **paddress)
++static int pci_generic_ecam_conf_address(struct udevice *bus, pci_dev_t bdf,
++					    uint offset, void **paddress)
 +{
-+	unsigned int bus = PCI_BUS(bdf);
-+	unsigned int dev = PCI_DEV(bdf);
-+	unsigned int func = PCI_FUNC(bdf);
++	struct generic_ecam_pcie *pcie = dev_get_priv(bus);
 +	void *addr;
 +
 +	addr = pcie->cfg_base;
-+	addr += bus << 20;
-+	addr += dev << 15;
-+	addr += func << 12;
++	addr += PCI_BUS(bdf) << 20;
++	addr += PCI_DEV(bdf) << 15;
++	addr += PCI_FUNC(bdf) << 12;
 +	addr += offset;
 +	*paddress = addr;
 +
@@ -128,8 +531,8 @@ index 0000000000..039e378cb0
 +}
 +
 +/**
-+ * pcie_generic_ecam_read_config() - Read from configuration space
-+ * @pcie: Pointer to the PCI controller state
++ * pci_generic_ecam_read_config() - Read from configuration space
++ * @bus: Pointer to the PCI bus
 + * @bdf: Identifies the PCIe device to access
 + * @offset: The offset into the device's configuration space
 + * @valuep: A pointer at which to store the read value
@@ -138,41 +541,18 @@ index 0000000000..039e378cb0
 + * Read a value of size @size from offset @offset within the configuration
 + * space of the device identified by the bus, device & function numbers in @bdf
 + * on the PCI bus @bus.
-+ *
-+ * Return: 0 on success, else -ENODEV or -EINVAL
 + */
-+static int pcie_generic_ecam_read_config(struct udevice *bus, pci_dev_t bdf,
++static int pci_generic_ecam_read_config(struct udevice *bus, pci_dev_t bdf,
 +				   uint offset, ulong *valuep,
 +				   enum pci_size_t size)
 +{
-+	struct generic_ecam_pcie *pcie = dev_get_priv(bus);
-+	void *address;
-+	int err;
-+
-+	err = pcie_generic_ecam_config_address(pcie, bdf, offset, &address);
-+	if (err < 0) {
-+		*valuep = pci_get_ff(size);
-+		return 0;
-+	}
-+
-+	switch (size) {
-+	case PCI_SIZE_8:
-+		*valuep = __raw_readb(address);
-+		return 0;
-+	case PCI_SIZE_16:
-+		*valuep = __raw_readw(address);
-+		return 0;
-+	case PCI_SIZE_32:
-+		*valuep = __raw_readl(address);
-+		return 0;
-+	default:
-+		return -EINVAL;
-+	}
++	return pci_generic_mmap_read_config(bus, pci_generic_ecam_conf_address,
++					    bdf, offset, valuep, size);
 +}
 +
 +/**
-+ * pcie_generic_ecam_write_config() - Write to configuration space
-+ * @pcie: Pointer to the PCI controller state
++ * pci_generic_ecam_write_config() - Write to configuration space
++ * @bus: Pointer to the PCI bus
 + * @bdf: Identifies the PCIe device to access
 + * @offset: The offset into the device's configuration space
 + * @value: The value to write
@@ -181,38 +561,17 @@ index 0000000000..039e378cb0
 + * Write the value @value of size @size from offset @offset within the
 + * configuration space of the device identified by the bus, device & function
 + * numbers in @bdf on the PCI bus @bus.
-+ *
-+ * Return: 0 on success, else -ENODEV or -EINVAL
 + */
-+static int pcie_generic_ecam_write_config(struct udevice *bus, pci_dev_t bdf,
++static int pci_generic_ecam_write_config(struct udevice *bus, pci_dev_t bdf,
 +				    uint offset, ulong value,
 +				    enum pci_size_t size)
 +{
-+	struct generic_ecam_pcie *pcie = dev_get_priv(bus);
-+	void *address;
-+	int err;
-+
-+	err = pcie_generic_ecam_config_address(pcie, bdf, offset, &address);
-+	if (err < 0)
-+		return 0;
-+
-+	switch (size) {
-+	case PCI_SIZE_8:
-+		__raw_writeb(value, address);
-+		return 0;
-+	case PCI_SIZE_16:
-+		__raw_writew(value, address);
-+		return 0;
-+	case PCI_SIZE_32:
-+		__raw_writel(value, address);
-+		return 0;
-+	default:
-+		return -EINVAL;
-+	}
++	return pci_generic_mmap_write_config(bus, pci_generic_ecam_conf_address,
++					     bdf, offset, value, size);
 +}
 +
 +/**
-+ * pcie_generic_ecam_ofdata_to_platdata() - Translate from DT to device state
++ * pci_generic_ecam_ofdata_to_platdata() - Translate from DT to device state
 + * @dev: A pointer to the device being operated on
 + *
 + * Translate relevant data from the device tree pertaining to device @dev into
@@ -221,7 +580,7 @@ index 0000000000..039e378cb0
 + *
 + * Return: 0 on success, else -EINVAL
 + */
-+static int pcie_generic_ecam_ofdata_to_platdata(struct udevice *dev)
++static int pci_generic_ecam_ofdata_to_platdata(struct udevice *dev)
 +{
 +	struct generic_ecam_pcie *pcie = dev_get_priv(dev);
 +	struct fdt_resource reg_res;
@@ -242,36 +601,37 @@ index 0000000000..039e378cb0
 +	return 0;
 +}
 +
-+static const struct dm_pci_ops pcie_generic_ecam_ops = {
-+	.read_config	= pcie_generic_ecam_read_config,
-+	.write_config	= pcie_generic_ecam_write_config,
++static const struct dm_pci_ops pci_generic_ecam_ops = {
++	.read_config	= pci_generic_ecam_read_config,
++	.write_config	= pci_generic_ecam_write_config,
 +};
 +
-+static const struct udevice_id pcie_generic_ecam_ids[] = {
++static const struct udevice_id pci_generic_ecam_ids[] = {
 +	{ .compatible = "pci-host-ecam-generic" },
 +	{ }
 +};
 +
-+U_BOOT_DRIVER(pcie_generic_ecam) = {
-+	.name			= "pcie_generic_ecam",
++U_BOOT_DRIVER(pci_generic_ecam) = {
++	.name			= "pci_generic_ecam",
 +	.id			= UCLASS_PCI,
-+	.of_match		= pcie_generic_ecam_ids,
-+	.ops			= &pcie_generic_ecam_ops,
-+	.ofdata_to_platdata	= pcie_generic_ecam_ofdata_to_platdata,
++	.of_match		= pci_generic_ecam_ids,
++	.ops			= &pci_generic_ecam_ops,
++	.ofdata_to_platdata	= pci_generic_ecam_ofdata_to_platdata,
 +	.priv_auto_alloc_size	= sizeof(struct generic_ecam_pcie),
 +};
 
-From patchwork Wed Aug 30 08:31:35 2017
+From patchwork Tue Sep 19 20:18:07 2017
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,2/2] ARM: Add a new arch + board for QEMU's 'virt' machine
+Subject: [U-Boot, v2,
+ 5/6] ARM: Add a new arch + board for QEMU's 'virt' machine
 X-Patchwork-Submitter: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
-X-Patchwork-Id: 807716
-Message-Id: <20170830083135.9183-3-tuomas.tynkkynen@iki.fi>
+X-Patchwork-Id: 815816
+Message-Id: <20170919201808.11433-6-tuomas.tynkkynen@iki.fi>
 To: u-boot@lists.denx.de
 Cc: Tom Rini <trini@konsulko.com>
-Date: Wed, 30 Aug 2017 11:31:35 +0300
+Date: Tue, 19 Sep 2017 23:18:07 +0300
 From: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -293,30 +653,41 @@ PCI to work in U-Boot.) This command line enables the following:
 Additionally, QEMU allows plugging a bunch of useful peripherals to the PCI bus.
 The following ones are supported by both U-Boot and Linux:
 
-- To enable a Serial ATA disk via an Intel ICH9 AHCI controller, pass e.g.:
+- To add a Serial ATA disk via an Intel ICH9 AHCI controller, pass e.g.:
     -drive if=none,file=disk.img,id=mydisk -device ich9-ahci,id=ahci -device ide-drive,drive=mydisk,bus=ahci.0
-- To enable an Intel E1000 network adapter, pass e.g.:
+- To add an Intel E1000 network adapter, pass e.g.:
     -net nic,model=e1000 -net user
 - To add an EHCI-compliant USB host controller, pass e.g.:
     -device usb-ehci,id=ehci
+- To add a NVMe disk, pass e.g.:
+    -drive if=none,file=disk.img,id=mydisk -device nvme,drive=mydisk,serial=foo
 
 Signed-off-by: Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
 ---
- arch/arm/Kconfig           | 10 ++++++++
- arch/arm/mach-qemu/Kconfig |  9 +++++++
- board/qemu-arm/Makefile    |  5 ++++
- board/qemu-arm/qemu-arm.c  | 35 ++++++++++++++++++++++++++
- configs/qemu_arm_defconfig | 27 ++++++++++++++++++++
- include/configs/qemu-arm.h | 63 ++++++++++++++++++++++++++++++++++++++++++++++
- 6 files changed, 149 insertions(+)
+v2:
+- enable CONFIG_NVME
+- alphasort correctly
+- remove unnecessary gd declaration
+- move board under board/emulation
+- add MAINTAINERS
+---
+ arch/arm/Kconfig                     | 10 +++++++
+ arch/arm/mach-qemu/Kconfig           | 12 ++++++++
+ board/emulation/qemu-arm/MAINTAINERS |  6 ++++
+ board/emulation/qemu-arm/Makefile    |  5 ++++
+ board/emulation/qemu-arm/qemu-arm.c  | 33 ++++++++++++++++++++
+ configs/qemu_arm_defconfig           | 28 +++++++++++++++++
+ include/configs/qemu-arm.h           | 58 ++++++++++++++++++++++++++++++++++++
+ 7 files changed, 152 insertions(+)
  create mode 100644 arch/arm/mach-qemu/Kconfig
- create mode 100644 board/qemu-arm/Makefile
- create mode 100644 board/qemu-arm/qemu-arm.c
+ create mode 100644 board/emulation/qemu-arm/MAINTAINERS
+ create mode 100644 board/emulation/qemu-arm/Makefile
+ create mode 100644 board/emulation/qemu-arm/qemu-arm.c
  create mode 100644 configs/qemu_arm_defconfig
  create mode 100644 include/configs/qemu-arm.h
 
 diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 53d0831935..0d01ba1b73 100644
+index 53eae8953e..1de5be7a72 100644
 --- a/arch/arm/Kconfig
 +++ b/arch/arm/Kconfig
 @@ -630,6 +630,14 @@ config ARCH_MX5
@@ -334,22 +705,25 @@ index 53d0831935..0d01ba1b73 100644
  config ARCH_RMOBILE
  	bool "Renesas ARM SoCs"
  	select DM
-@@ -1149,6 +1157,8 @@ source "arch/arm/mach-stm32/Kconfig"
+@@ -1142,6 +1150,8 @@ source "arch/arm/mach-rmobile/Kconfig"
  
- source "arch/arm/mach-sunxi/Kconfig"
+ source "arch/arm/mach-meson/Kconfig"
  
 +source "arch/arm/mach-qemu/Kconfig"
 +
- source "arch/arm/mach-tegra/Kconfig"
+ source "arch/arm/mach-rockchip/Kconfig"
  
- source "arch/arm/mach-uniphier/Kconfig"
+ source "arch/arm/mach-s5pc1xx/Kconfig"
 diff --git a/arch/arm/mach-qemu/Kconfig b/arch/arm/mach-qemu/Kconfig
 new file mode 100644
-index 0000000000..89d2a36719
+index 0000000000..3500b56cb0
 --- /dev/null
 +++ b/arch/arm/mach-qemu/Kconfig
-@@ -0,0 +1,9 @@
+@@ -0,0 +1,12 @@
 +if ARCH_QEMU
++
++config SYS_VENDOR
++	default "emulation"
 +
 +config SYS_BOARD
 +	default "qemu-arm"
@@ -358,23 +732,35 @@ index 0000000000..89d2a36719
 +	default "qemu-arm"
 +
 +endif
-diff --git a/board/qemu-arm/Makefile b/board/qemu-arm/Makefile
+diff --git a/board/emulation/qemu-arm/MAINTAINERS b/board/emulation/qemu-arm/MAINTAINERS
 new file mode 100644
-index 0000000000..3e9907d983
+index 0000000000..a803061ff4
 --- /dev/null
-+++ b/board/qemu-arm/Makefile
++++ b/board/emulation/qemu-arm/MAINTAINERS
+@@ -0,0 +1,6 @@
++QEMU ARM 'VIRT' BOARD
++M:	Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
++S:	Maintained
++F:	board/emulation/qemu-arm/
++F:	include/configs/qemu-arm.h
++F:	configs/qemu_arm_defconfig
+diff --git a/board/emulation/qemu-arm/Makefile b/board/emulation/qemu-arm/Makefile
+new file mode 100644
+index 0000000000..716a6e9c28
+--- /dev/null
++++ b/board/emulation/qemu-arm/Makefile
 @@ -0,0 +1,5 @@
 +#
-+# SPDX-License-Identifier:	GPL-2.0
++# SPDX-License-Identifier:	GPL-2.0+
 +#
 +
 +obj-y	+= qemu-arm.o
-diff --git a/board/qemu-arm/qemu-arm.c b/board/qemu-arm/qemu-arm.c
+diff --git a/board/emulation/qemu-arm/qemu-arm.c b/board/emulation/qemu-arm/qemu-arm.c
 new file mode 100644
-index 0000000000..90d7badbf4
+index 0000000000..e29ba4630f
 --- /dev/null
-+++ b/board/qemu-arm/qemu-arm.c
-@@ -0,0 +1,35 @@
++++ b/board/emulation/qemu-arm/qemu-arm.c
+@@ -0,0 +1,33 @@
 +/*
 + * Copyright (c) 2017 Tuomas Tynkkynen
 + *
@@ -382,8 +768,6 @@ index 0000000000..90d7badbf4
 + */
 +#include <common.h>
 +#include <fdtdec.h>
-+
-+DECLARE_GLOBAL_DATA_PTR;
 +
 +int board_init(void)
 +{
@@ -412,10 +796,10 @@ index 0000000000..90d7badbf4
 +}
 diff --git a/configs/qemu_arm_defconfig b/configs/qemu_arm_defconfig
 new file mode 100644
-index 0000000000..d34512dd0d
+index 0000000000..2a8594d472
 --- /dev/null
 +++ b/configs/qemu_arm_defconfig
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,28 @@
 +CONFIG_ARM=y
 +CONFIG_ARM_SMCCC=y
 +CONFIG_ARCH_QEMU=y
@@ -432,6 +816,7 @@ index 0000000000..d34512dd0d
 +# CONFIG_MMC is not set
 +CONFIG_DM_ETH=y
 +CONFIG_E1000=y
++CONFIG_NVME=y
 +CONFIG_PCI=y
 +CONFIG_DM_PCI=y
 +CONFIG_PCIE_ECAM_GENERIC=y
@@ -445,10 +830,10 @@ index 0000000000..d34512dd0d
 +CONFIG_USB_EHCI_PCI=y
 diff --git a/include/configs/qemu-arm.h b/include/configs/qemu-arm.h
 new file mode 100644
-index 0000000000..2bcc0efad0
+index 0000000000..4376a24787
 --- /dev/null
 +++ b/include/configs/qemu-arm.h
-@@ -0,0 +1,63 @@
+@@ -0,0 +1,58 @@
 +/*
 + * Copyright (c) 2017 Tuomas Tynkkynen
 + *
@@ -480,15 +865,8 @@ index 0000000000..2bcc0efad0
 +#define CONFIG_SYS_HZ                       1000
 +#define CONFIG_SYS_HZ_CLOCK                 62500000
 +
-+/* Command prompt options */
-+#define CONFIG_SYS_CBSIZE		512	/* Console I/O Buffer Size */
-+#define CONFIG_SYS_PBSIZE		(CONFIG_SYS_CBSIZE + \
-+					sizeof(CONFIG_SYS_PROMPT) + 16)
-+#define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
-+#define CONFIG_SYS_MAXARGS		64	/* max command args */
-+
 +/* For block devices, QEMU emulates an ICH9 AHCI controller over PCI */
-+#define CONFIG_SYS_SCSI_MAX_SCSI_ID 8
++#define CONFIG_SYS_SCSI_MAX_SCSI_ID 6
 +#define CONFIG_SCSI_AHCI
 +#define CONFIG_LIBATA
 +
@@ -504,6 +882,8 @@ index 0000000000..2bcc0efad0
 +
 +#define CONFIG_PREBOOT "pci enum"
 +#define CONFIG_EXTRA_ENV_SETTINGS \
++	"fdt_high=0xffffffff\0" \
++	"initrd_high=0xffffffff\0" \
 +	"fdt_addr=0x40000000\0" \
 +	"scriptaddr=0x40200000\0" \
 +	"pxefile_addr_r=0x40300000\0" \
@@ -512,3 +892,4 @@ index 0000000000..2bcc0efad0
 +	BOOTENV
 +
 +#endif /* __CONFIG_H */
+
