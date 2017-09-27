@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.09
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -18,12 +18,14 @@ Patch1:    uefi-vsprintf.patch
 Patch2:    uefi-improve-fat.patch
 Patch3:    uefi-efi_loader-enough-UEFI-for-standard-distro-boot.patch
 Patch4:    uefi-use-Fedora-specific-path-name.patch
+Patch5:    dm-video-enhancements-for-Shell.efi.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
 Patch11:   qemu-machine-virt-ARM.patch
 Patch12:   sti-STiH410-B2260-support.patch
-# Patch13:   mvebu-enable-generic-distro-boot-config.patch
+Patch13:   mx6-Avoid-calling-setup_display-from-SPL-code.patch
+# Patch14:   mvebu-enable-generic-distro-boot-config.patch
 # Patch15:   mx6-Initial-Hummingboard-2-support.patch
 
 BuildRequires:  bc
@@ -276,6 +278,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Sep 27 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-2
+- Add patch to fix some uEFI console output
+- Minor other tweaks
+
 * Mon Sep 18 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-1
 - 2017.09
 
