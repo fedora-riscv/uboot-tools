@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.09
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Release:   3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -12,6 +12,7 @@ Source1:   arm-boards
 Source2:   arm-chromebooks
 Source3:   aarch64-boards
 Source4:   aarch64-chromebooks
+Source5:   10-devicetree.install
 
 # Fedoraisms patches, general fixes
 Patch1:    uefi-vsprintf.patch
@@ -19,12 +20,16 @@ Patch2:    uefi-improve-fat.patch
 Patch3:    uefi-efi_loader-enough-UEFI-for-standard-distro-boot.patch
 Patch4:    uefi-use-Fedora-specific-path-name.patch
 Patch5:    dm-video-enhancements-for-Shell.efi.patch
+Patch6:    usb-kbd-fixes.patch
+Patch7:    disk-part_dos-Use-the-original-allocation-scheme-for-the-SPL-case.patch
+Patch8:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
 Patch11:   qemu-machine-virt-ARM.patch
 Patch12:   sti-STiH410-B2260-support.patch
-Patch13:   mx6-Avoid-calling-setup_display-from-SPL-code.patch
+Patch13:   bcm283x-device-tree-sources-to-Linux-4.14-state.patch
+Patch14:   sunxi-A83T-improvements.patch
 # Patch14:   mvebu-enable-generic-distro-boot-config.patch
 # Patch15:   mx6-Initial-Hummingboard-2-support.patch
 
@@ -46,6 +51,7 @@ BuildRequires:  arm-trusted-firmware-armv8
 %endif
 
 Requires:       dtc
+Requires:       systemd
 
 %description
 This package contains a few U-Boot utilities - mkimage for creating boot images
@@ -233,6 +239,10 @@ install -p -m 0755 builds/tools/env/fw_printenv $RPM_BUILD_ROOT%{_bindir}
 
 install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 
+# systemd kernel-install script for device tree
+mkdir -p $RPM_BUILD_ROOT/lib/kernel/install.d/
+install -p -m 0755 %{SOURCE5} $RPM_BUILD_ROOT/lib/kernel/install.d/
+
 # Copy sone useful docs over
 mkdir -p builds/docs
 cp -p board/amlogic/odroid-c2/README builds/docs/README.odroid-c2
@@ -257,6 +267,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %doc doc/README.chromium builds/docs/*
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
+/lib/kernel/install.d/10-devicetree.install
 %dir %{_datadir}/uboot/
 %config(noreplace) %{_sysconfdir}/fw_env.config
 
@@ -278,6 +289,12 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Oct  5 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-3
+- Fix regression in i.MX6 and omap4 devices
+- Improve DT detection support on aarch64
+- uEFI fixes and improvements
+- ENable Sinovoip BPI devices
+
 * Wed Sep 27 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-2
 - Add patch to fix some uEFI console output
 - Minor other tweaks
@@ -393,138 +410,3 @@ cp -p board/warp7/README builds/docs/README.warp7
 
 * Tue Jan 10 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.01-1
 - 2017.01
-
-* Tue Jan  3 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.01-0.4.rc3
-- Enable new devices
-
-* Tue Jan  3 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.01-0.3.rc3
-- 2017.01 RC3
-
-* Tue Dec 20 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2017.01-0.2.rc2
-- 2017.01 RC2
-
-* Wed Dec  7 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2017.01-0.1.rc1
-- 2017.01 RC1
-
-* Tue Nov 29 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.11-2
-- Add upstream patch to support UDOO Neo
-
-* Mon Nov 14 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.11-1
-- Update to 2016.11 GA
-
-* Mon Oct 31 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.11-0.3.rc3
-- 2016.11 RC3
-
-* Tue Oct 18 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.11-0.2.rc2
-- 2016.11 RC2
-
-* Sat Oct  8 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.11-0.1.rc1
-- 2016.11 RC1
-
-* Tue Sep 20 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.09.01-1
-- Update to 2016.09.01 GA
-
-* Mon Sep 12 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.09-3
-- Update to 2016.09 GA
-- Add qemu elf binaries to new subpackage
-
-* Tue Aug 23 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.09-2rc2
-- 2016.09 RC2
-
-* Wed Jul 27 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.09-1rc1
-- 2016.09 RC1
-
-* Tue Jul 12 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.07-1
-- Update to 2016.07 GA
-
-* Thu Jul  7 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.07-0.4rc3
-- Minor updates and cleanups
-
-* Tue Jul  5 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.07-0.3rc3
-- 2016.07 RC3
-
-* Tue Jun 21 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.07-0.2rc2
-- 2016.07 RC2
-
-* Tue Jun  7 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.07-0.1rc1
-- 2016.07 RC1
-- Build new aarch64 devices: odroid-c2
-- Build new ARMv7 devices: chromebook-jerry
-
-* Mon May 23 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-3
-- Ship SPL for rockchips devices
-
-* Thu May 19 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-2
-- Fix distro boot on clearfog
-- arm64 EFI boot fixes
-
-* Mon May 16 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-1
-- Update to 2016.05 GA
-
-* Thu May 12 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-0.5rc3
-- Add USB storage support to CHIP
-- Enhanced PINE64 support
-
-* Thu Apr 28 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-0.4rc3
-- Upstream fix for i.MX6 breakage
-- Rebase mvebu distro boot patch
-
-* Wed Apr 27 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-0.3rc3
-- Add work around for imx6 and renable devices
-
-* Tue Apr 26 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-0.2rc3
-- 2016.05 RC3
-- Add some useful device READMEs that contain locations of needed firmware blobs etc
-- Enable Jetson TX1
-- i.MX6 still disabled
-
-* Thu Apr 21 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.05-0.1rc1
-- 2016.05 RC1
-- Build aarch64 u-boot for HiKey, DragonBoard, PINE64
-- Build new ARMv7 devices
-- Temp disable some i.MX6 devices as build broken
-
-* Tue Apr 19 2016 Dennis Gilmore <dennis@ausil.us> - 2016.03-6
-- drop using the fedora logos for now rhbz#1328505
-
-* Sat Apr  9 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-5
-- Add upstream fix for ARMv7 cache issues preventing some devices from booting
-
-* Tue Mar 22 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-4
-- Add a better fix for network issue which caused follow on issues
-
-* Mon Mar 21 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-3
-- Add a work around for ggc6 issue on some ARMv7 devices
-- Add fixes for AllWinner USB and some fixes for OrangePi devices
-
-* Fri Mar 18 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-2
-- Add upstream patches to fix some issues on some AllWinner devices
-
-* Mon Mar 14 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-1
-- Update to 2016.03 GA
-
-* Sun Mar  6 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-0.4rc3
-- Minor cleanups and new devices
-
-* Tue Mar  1 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-0.3rc3
-- Update to 2016.03 RC3
-
-* Tue Feb 16 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-0.2rc2
-- Update to 2016.03 RC2
-- Enable SolidRun Clearfog
-
-* Wed Feb  3 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.03-0.1rc1
-- Update to 2016.03 RC1
-
-* Wed Jan 20 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.01-3
-- Fix PXE boot on Wandboard (rhbz #1299957)
-
-* Tue Jan 19 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.01-2
-- Add patch to fix PCI-e on Jetson TK1
-- Add patch fo serial junk on BeagleBone
-
-* Tue Jan 12 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.01-1
-- Update to 2016.01 GA
-
-* Sun Jan 10 2016 Peter Robinson <pbrobinson@fedoraproject.org> 2016.01-0.4rc4
-- Update to 2016.01 RC4

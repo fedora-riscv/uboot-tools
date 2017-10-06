@@ -1,0 +1,70 @@
+From patchwork Wed Oct  4 16:29:57 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] disk: part_dos: Use the original allocation scheme for the
+ SPL case
+X-Patchwork-Submitter: Fabio Estevam <fabio.estevam@nxp.com>
+X-Patchwork-Id: 821393
+Message-Id: <1507134597-6831-1-git-send-email-fabio.estevam@nxp.com>
+To: <trini@konsulko.com>
+Cc: u-boot@lists.denx.de, pjones@redhat.com,
+ Fabio Estevam <fabio.estevam@nxp.com>
+Date: Wed, 4 Oct 2017 13:29:57 -0300
+From: Fabio Estevam <fabio.estevam@nxp.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Since commit ff98cb90514d ("part: extract MBR signature from partitions")
+SPL boot on i.MX6 starts to fail:
+
+U-Boot SPL 2017.09-00221-g0d6ab32 (Oct 02 2017 - 15:13:19)
+Trying to boot from MMC1
+(keep in loop)
+
+Use the original allocation scheme for the SPL case, so that MX6 boards
+can boot again.
+
+This is a temporary solution to avoid the boot regression.
+
+Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
+Acked-by: Rob Clark <robdclark@gmail.com>
+---
+Hi Tom,
+
+I do not have time this week to further investigate and narrow down 
+this problem.
+
+Using the old allocation scheme fixes the mx6 SPL boot problem.
+
+
+ disk/part_dos.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/disk/part_dos.c b/disk/part_dos.c
+index 1a36be0..6dd2c2d 100644
+--- a/disk/part_dos.c
++++ b/disk/part_dos.c
+@@ -89,6 +89,7 @@ static int test_block_type(unsigned char *buffer)
+ 
+ static int part_test_dos(struct blk_desc *dev_desc)
+ {
++#ifndef CONFIG_SPL_BUILD
+ 	ALLOC_CACHE_ALIGN_BUFFER(legacy_mbr, mbr, dev_desc->blksz);
+ 
+ 	if (blk_dread(dev_desc, 0, 1, (ulong *)mbr) != 1)
+@@ -102,6 +103,15 @@ static int part_test_dos(struct blk_desc *dev_desc)
+ 		dev_desc->sig_type = SIG_TYPE_MBR;
+ 		dev_desc->mbr_sig = mbr->unique_mbr_signature;
+ 	}
++#else
++	ALLOC_CACHE_ALIGN_BUFFER(unsigned char, buffer, dev_desc->blksz);
++
++	if (blk_dread(dev_desc, 0, 1, (ulong *)buffer) != 1)
++		return -1;
++
++	if (test_block_type(buffer) != DOS_MBR)
++		return -1;
++#endif
+ 
+ 	return 0;
+ }

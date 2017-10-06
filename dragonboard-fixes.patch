@@ -642,51 +642,6 @@ index d9dc639aeb..626dff8dcd 100644
 -- 
 2.13.3
 
-From 76fba480e6ee494e2e01c19bb8952f42a3b6a710 Mon Sep 17 00:00:00 2001
-From: Rob Clark <robdclark@gmail.com>
-Date: Mon, 3 Jul 2017 09:15:44 -0400
-Subject: [PATCH 12/23] usb: kbd: don't fail with iomux
-
-stdin might not be set, which would cause iomux_doenv() to fail
-therefore causing probe_usb_keyboard() to fail.  Furthermore if we do
-have iomux enabled, the sensible thing (in terms of user experience)
-would be to simply add ourselves to the list of stdin devices.
-
-Signed-off-by: Rob Clark <robdclark@gmail.com>
----
- common/usb_kbd.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
-
-diff --git a/common/usb_kbd.c b/common/usb_kbd.c
-index d2d29cc98f..703dd748f5 100644
---- a/common/usb_kbd.c
-+++ b/common/usb_kbd.c
-@@ -517,7 +517,22 @@
- 
- 	stdinname = env_get("stdin");
- #if CONFIG_IS_ENABLED(CONSOLE_MUX)
-+	char *devname = DEVNAME;
-+	/*
-+	 * stdin might not be set yet.. either way, with console-mux the
-+	 * sensible thing to do is add ourselves to the list of stdio
-+	 * devices:
-+	 */
-+	if (stdinname && !strstr(stdinname, DEVNAME)) {
-+		char *newstdin = malloc(strlen(stdinname) + strlen(","DEVNAME) + 1);
-+		sprintf(newstdin, "%s,"DEVNAME, stdinname);
-+		stdinname = newstdin;
-+	} else if (!stdinname) {
-+		stdinname = devname;
-+	}
- 	error = iomux_doenv(stdin, stdinname);
-+	if (stdinname != devname)
-+		free(stdinname);
- 	if (error)
- 		return error;
- #else
---
-2.13.3
-
 From 2bf6ff0703fa92755469d8f218a75b07008e9768 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Mon, 18 Sep 2017 09:34:30 +0100
