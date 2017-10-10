@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.09
-Release:   3%{?candidate:.%{candidate}}%{?dist}
+Release:   4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -23,6 +23,7 @@ Patch5:    dm-video-enhancements-for-Shell.efi.patch
 Patch6:    usb-kbd-fixes.patch
 Patch7:    disk-part_dos-Use-the-original-allocation-scheme-for-the-SPL-case.patch
 Patch8:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+Patch9:    uefi-efi_loader-Fix-disk-dp-s-for-pre-DM-legacy-devices.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
@@ -289,6 +290,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Oct 10 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-4
+- Improve uEFI partition detection for some devices
+
 * Thu Oct  5 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-3
 - Fix regression in i.MX6 and omap4 devices
 - Improve DT detection support on aarch64

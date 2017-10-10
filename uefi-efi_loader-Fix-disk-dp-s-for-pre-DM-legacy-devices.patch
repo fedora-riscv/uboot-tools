@@ -1,0 +1,185 @@
+From patchwork Sun Oct  8 15:33:08 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] efi_loader: Fix disk dp's for pre-DM/legacy devices
+X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
+X-Patchwork-Id: 823012
+Message-Id: <20171008153310.25350-1-robdclark@gmail.com>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>, =?utf-8?q?Andreas_F=C3=A4rbe?=
+ =?utf-8?q?r?= <afaerber@suse.de>
+Date: Sun,  8 Oct 2017 11:33:08 -0400
+From: Rob Clark <robdclark@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+This fixes an issue with OpenBSD's bootloader, and I think should also
+fix a similar issue with grub2 on legacy devices.  In the legacy case
+we were creating disk objects for the partitions, but not also the
+parent device.
+
+Reported-by: Jonathan Gray <jsg@jsg.id.au>
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ lib/efi_loader/efi_disk.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/lib/efi_loader/efi_disk.c b/lib/efi_loader/efi_disk.c
+index eb9ce772d1..47b487aa30 100644
+--- a/lib/efi_loader/efi_disk.c
++++ b/lib/efi_loader/efi_disk.c
+@@ -340,6 +340,8 @@ int efi_disk_register(void)
+ 		for (i = 0; i < 4; i++) {
+ 			struct blk_desc *desc;
+ 			char devname[32] = { 0 }; /* dp->str is u16[32] long */
++			disk_partition_t info;
++			int part = 1;
+ 
+ 			desc = blk_get_devnum_by_type(if_type, i);
+ 			if (!desc)
+@@ -349,6 +351,15 @@ int efi_disk_register(void)
+ 
+ 			snprintf(devname, sizeof(devname), "%s%d",
+ 				 if_typename, i);
++
++			/* add devices for each partition: */
++			while (!part_get_info(desc, part, &info)) {
++				efi_disk_add_dev(devname, if_typename, desc,
++						 i, 0, part);
++				part++;
++			}
++
++			/* ... and add block device: */
+ 			efi_disk_add_dev(devname, if_typename, desc, i, 0, 0);
+ 			disks++;
+ 
+From patchwork Tue Oct 10 02:55:26 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] efi_loader: search all possible disk partitions
+X-Patchwork-Submitter: Jonathan Gray <jsg@jsg.id.au>
+X-Patchwork-Id: 823664
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20171010025526.85329-1-jsg@jsg.id.au>
+To: u-boot@lists.denx.de
+Date: Tue, 10 Oct 2017 13:55:26 +1100
+From: Jonathan Gray <jsg@jsg.id.au>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+When searching for partitions don't stop if a partition is not present
+for a given partition number as there may be valid partitions after.
+
+Search for up to MAX_SEARCH_PARTITIONS matching the other callers of
+part_get_info().
+
+This allows OpenBSD to boot via the efi_loader on rpi_3 again after
+changes made after U-Boot 2017.09.  With MBR partitioning OpenBSD will
+by default use the fourth partition for the 0xA6 (OpenBSD) partition.
+
+Signed-off-by: Jonathan Gray <jsg@jsg.id.au>
+---
+ lib/efi_loader/efi_disk.c | 20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/lib/efi_loader/efi_disk.c b/lib/efi_loader/efi_disk.c
+index 47b487aa30..6b192701a8 100644
+--- a/lib/efi_loader/efi_disk.c
++++ b/lib/efi_loader/efi_disk.c
+@@ -254,18 +254,19 @@ static int efi_disk_create_eltorito(struct blk_desc *desc,
+ #if CONFIG_IS_ENABLED(ISO_PARTITION)
+ 	char devname[32] = { 0 }; /* dp->str is u16[32] long */
+ 	disk_partition_t info;
+-	int part = 1;
++	int part;
+ 
+ 	if (desc->part_type != PART_TYPE_ISO)
+ 		return 0;
+ 
+ 	/* and devices for each partition: */
+-	while (!part_get_info(desc, part, &info)) {
++	for (part = 1; part <= MAX_SEARCH_PARTITIONS; part++) {
++		if (part_get_info(desc, part, &info))
++			continue;
+ 		snprintf(devname, sizeof(devname), "%s:%d", pdevname,
+ 			 part);
+ 		efi_disk_add_dev(devname, if_typename, desc, diskid,
+ 				 info.start, part);
+-		part++;
+ 		disks++;
+ 	}
+ 
+@@ -299,15 +300,16 @@ int efi_disk_register(void)
+ 		struct blk_desc *desc = dev_get_uclass_platdata(dev);
+ 		const char *if_typename = dev->driver->name;
+ 		disk_partition_t info;
+-		int part = 1;
++		int part;
+ 
+ 		printf("Scanning disk %s...\n", dev->name);
+ 
+ 		/* add devices for each partition: */
+-		while (!part_get_info(desc, part, &info)) {
++		for (part = 1; part <= MAX_SEARCH_PARTITIONS; part++) {
++			if (part_get_info(desc, part, &info))
++				continue;
+ 			efi_disk_add_dev(dev->name, if_typename, desc,
+ 					 desc->devnum, 0, part);
+-			part++;
+ 		}
+ 
+ 		/* ... and add block device: */
+@@ -341,7 +343,7 @@ int efi_disk_register(void)
+ 			struct blk_desc *desc;
+ 			char devname[32] = { 0 }; /* dp->str is u16[32] long */
+ 			disk_partition_t info;
+-			int part = 1;
++			int part;
+ 
+ 			desc = blk_get_devnum_by_type(if_type, i);
+ 			if (!desc)
+@@ -353,7 +355,9 @@ int efi_disk_register(void)
+ 				 if_typename, i);
+ 
+ 			/* add devices for each partition: */
+-			while (!part_get_info(desc, part, &info)) {
++			for (part = 1; part <= MAX_SEARCH_PARTITIONS; part++) {
++				if (part_get_info(desc, part, &info))
++					continue;
+ 				efi_disk_add_dev(devname, if_typename, desc,
+ 						 i, 0, part);
+ 				part++;
+From patchwork Tue Oct 10 10:32:29 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] efi_loader: don't increment part twice per loop
+X-Patchwork-Submitter: Jonathan Gray <jsg@jsg.id.au>
+X-Patchwork-Id: 823787
+Message-Id: <20171010103229.71768-1-jsg@jsg.id.au>
+To: u-boot@lists.denx.de
+Date: Tue, 10 Oct 2017 21:32:29 +1100
+From: Jonathan Gray <jsg@jsg.id.au>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Correct a mistake in the part number handling of
+16a73b249d138fedeb188710533902ed7aac1ddc and only increment part once
+per loop.
+
+Signed-off-by: Jonathan Gray <jsg@jsg.id.au>
+---
+ lib/efi_loader/efi_disk.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/lib/efi_loader/efi_disk.c b/lib/efi_loader/efi_disk.c
+index 6b192701a8..e61dbc8058 100644
+--- a/lib/efi_loader/efi_disk.c
++++ b/lib/efi_loader/efi_disk.c
+@@ -360,7 +360,6 @@ int efi_disk_register(void)
+ 					continue;
+ 				efi_disk_add_dev(devname, if_typename, desc,
+ 						 i, 0, part);
+-				part++;
+ 			}
+ 
+ 			/* ... and add block device: */
