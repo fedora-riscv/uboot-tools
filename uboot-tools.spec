@@ -24,7 +24,6 @@ Patch3:    usb-kbd-fixes.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
-Patch15:   rockchips-3399-atf.patch
 # Patch14:   mvebu-enable-generic-distro-boot-config.patch
 # Patch15:   mx6-Initial-Hummingboard-2-support.patch
 
