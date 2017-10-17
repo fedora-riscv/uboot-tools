@@ -1,0 +1,159 @@
+From 03569f3ef44fd1208a68030c1740d7347bcf3fa3 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Fri, 23 Jun 2017 15:36:33 -0400
+Subject: [PATCH 03/23] dm: core: also parse chosen node
+
+This is the node that would contain, for example, the framebuffer setup
+by an earlier stage.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ drivers/core/root.c | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/core/root.c b/drivers/core/root.c
+index d691d6ff94..5e6b2da248 100644
+--- a/drivers/core/root.c
++++ b/drivers/core/root.c
+@@ -266,6 +266,26 @@ static int dm_scan_fdt_node(struct udevice *parent, const void *blob,
+        for (offset = fdt_first_subnode(blob, offset);
+             offset > 0;
+             offset = fdt_next_subnode(blob, offset)) {
++               ofnode node = offset_to_ofnode(offset);
++
++               /* "chosen" node isn't a device itself but may contain some: */
++               if (strcmp(ofnode_get_name(node), "chosen") == 0) {
++                       dm_dbg("parsing subnodes of \"chosen\"\n");
++
++                       for (node = ofnode_first_subnode(node);
++                            ofnode_valid(node);
++                            node = ofnode_next_subnode(node)) {
++                               dm_dbg("subnode: %s\n", ofnode_get_name(node));
++                               err = lists_bind_fdt(parent, node, NULL);
++                               if (err && !ret) {
++                                       ret = err;
++                                       dm_dbg("%s: ret=%d\n", ofnode_get_name(node), ret);
++                               }
++                       }
++
++                       continue;
++               }
++
+                if (pre_reloc_only &&
+                    !dm_fdt_pre_reloc(blob, offset))
+                        continue;
+@@ -273,7 +293,7 @@ static int dm_scan_fdt_node(struct udevice *parent, const void *blob,
+                        pr_debug("   - ignoring disabled device\n");
+                        continue;
+                }
+-               err = lists_bind_fdt(parent, offset_to_ofnode(offset), NULL);
++               err = lists_bind_fdt(parent, node, NULL);
+                if (err && !ret) {
+                        ret = err;
+                        debug("%s: ret=%d\n", fdt_get_name(blob, offset, NULL),
+-- 
+2.13.3
+
+From d031c039a18b3a76a4ef16fb4ff8581a79f42fe3 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Thu, 3 Aug 2017 09:52:14 -0400
+Subject: [PATCH 06/23] fdtdec: allow board to provide fdt for
+ CONFIG_OF_SEPARATE
+
+Similar to CONFIG_OF_BOARD, but in this case the fdt is still built by
+u-boot build.  This allows the board to patch the fdt, etc.
+
+In the specific case of dragonboard 410c, we pass the u-boot generated
+fdt to the previous stage of bootloader (by embedding it in the
+u-boot.img that is loaded by lk/aboot), which patches the fdt and passes
+it back to u-boot.
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ include/fdtdec.h |  3 ++-
+ lib/fdtdec.c     | 45 ++++++++++++++++++++++++++-------------------
+ 2 files changed, 28 insertions(+), 20 deletions(-)
+
+diff --git a/include/fdtdec.h b/include/fdtdec.h
+index 4a0947c626..b9acec735a 100644
+--- a/include/fdtdec.h
++++ b/include/fdtdec.h
+@@ -988,7 +988,8 @@ int fdtdec_setup(void);
+ 
+ /**
+  * Board-specific FDT initialization. Returns the address to a device tree blob.
+- * Called when CONFIG_OF_BOARD is defined.
++ * Called when CONFIG_OF_BOARD is defined, or if CONFIG_OF_SEPARATE is defined
++ * and the board implements it.
+  */
+ void *board_fdt_blob_setup(void);
+ 
+diff --git a/lib/fdtdec.c b/lib/fdtdec.c
+index d2dbd0f122..07c458673c 100644
+--- a/lib/fdtdec.c
++++ b/lib/fdtdec.c
+@@ -1203,34 +1203,41 @@ int fdtdec_setup_memory_banksize(void)
+ }
+ #endif
+ 
+-int fdtdec_setup(void)
++#ifdef CONFIG_OF_SEPARATE
++/*
++ * For CONFIG_OF_SEPARATE, the board may optionally implement this to
++ * provide and/or fixup the fdt.
++ */
++__weak void *board_fdt_blob_setup(void)
+ {
+-#if CONFIG_IS_ENABLED(OF_CONTROL)
+-# ifdef CONFIG_OF_EMBED
+-	/* Get a pointer to the FDT */
+-	gd->fdt_blob = __dtb_dt_begin;
+-# elif defined CONFIG_OF_SEPARATE
+-#  ifdef CONFIG_SPL_BUILD
++	void *fdt_blob = NULL;
++#ifdef CONFIG_SPL_BUILD
+ 	/* FDT is at end of BSS unless it is in a different memory region */
+ 	if (IS_ENABLED(CONFIG_SPL_SEPARATE_BSS))
+-		gd->fdt_blob = (ulong *)&_image_binary_end;
++		fdt_blob = (ulong *)&_image_binary_end;
+ 	else
+-		gd->fdt_blob = (ulong *)&__bss_end;
++		fdt_blob = (ulong *)&__bss_end;
+ 
+-#  elif defined CONFIG_FIT_EMBED
+-	gd->fdt_blob = locate_dtb_in_fit(&_end);
++#elif defined CONFIG_FIT_EMBED
++	fdt_blob = locate_dtb_in_fit(&_end);
+ 
+-	if (gd->fdt_blob == NULL || gd->fdt_blob <= ((void *)&_end)) {
++	if (fdt_blob == NULL || fdt_blob <= ((void *)&_end))
+ 		puts("Failed to find proper dtb in embedded FIT Image\n");
+-		return -1;
+-	}
+-
+-#  else
++#else
+ 	/* FDT is at end of image */
+-	gd->fdt_blob = (ulong *)&_end;
++	fdt_blob = (ulong *)&_end;
+ #  endif
+-# elif defined(CONFIG_OF_BOARD)
+-	/* Allow the board to override the fdt address. */
++	return fdt_blob;
++}
++#endif
++
++int fdtdec_setup(void)
++{
++#if CONFIG_IS_ENABLED(OF_CONTROL)
++# ifdef CONFIG_OF_EMBED
++	/* Get a pointer to the FDT */
++	gd->fdt_blob = __dtb_dt_begin;
++# elif defined(CONFIG_OF_SEPARATE) || defined(CONFIG_OF_BOARD)
+ 	gd->fdt_blob = board_fdt_blob_setup();
+ # elif defined(CONFIG_OF_HOSTFILE)
+ 	if (sandbox_read_fdt_from_file()) {
+-- 
+2.13.3
+
+
