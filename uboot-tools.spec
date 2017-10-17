@@ -1,8 +1,8 @@
-#global candidate rc4
+%global candidate rc2
 
 Name:      uboot-tools
-Version:   2017.09
-Release:   4%{?candidate:.%{candidate}}%{?dist}
+Version:   2017.11
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -14,23 +14,17 @@ Source3:   aarch64-boards
 Source4:   aarch64-chromebooks
 Source5:   10-devicetree.install
 
-# Fedoraisms patches, general fixes
-Patch1:    uefi-vsprintf.patch
-Patch2:    uefi-improve-fat.patch
-Patch3:    uefi-efi_loader-enough-UEFI-for-standard-distro-boot.patch
-Patch4:    uefi-use-Fedora-specific-path-name.patch
-Patch5:    dm-video-enhancements-for-Shell.efi.patch
-Patch6:    usb-kbd-fixes.patch
-Patch7:    disk-part_dos-Use-the-original-allocation-scheme-for-the-SPL-case.patch
-Patch8:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
-Patch9:    uefi-efi_loader-Fix-disk-dp-s-for-pre-DM-legacy-devices.patch
+# Fedoraisms patches
+Patch1:    uefi-use-Fedora-specific-path-name.patch
+
+# general fixes
+Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+Patch3:    usb-kbd-fixes.patch
+# Patch4:    fdt-fixes.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
-Patch11:   qemu-machine-virt-ARM.patch
-Patch12:   sti-STiH410-B2260-support.patch
-Patch13:   bcm283x-device-tree-sources-to-Linux-4.14-state.patch
-Patch14:   sunxi-A83T-improvements.patch
+Patch15:   rockchips-3399-atf.patch
 # Patch14:   mvebu-enable-generic-distro-boot-config.patch
 # Patch15:   mx6-Initial-Hummingboard-2-support.patch
 
@@ -290,6 +284,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Oct 17 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-0.1.rc2
+- 2017.11 RC2
+
 * Tue Oct 10 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-4
 - Improve uEFI partition detection for some devices
 

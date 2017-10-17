@@ -182,3 +182,29 @@ index 4c3ad95fca..82ad93f6ca 100644
  }
  
  #ifndef CONFIG_DM_USB
+
+From 47f22a41df082c62411389ab5bf6e9ae26d93083 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Wed, 19 Jul 2017 10:39:12 -0400
+Subject: [PATCH 13/23] usb: kbd: add missing \n
+
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ common/usb_kbd.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/common/usb_kbd.c b/common/usb_kbd.c
+index 703dd748f5..92d5e96d01 100644
+--- a/common/usb_kbd.c
++++ b/common/usb_kbd.c
+@@ -655,7 +655,7 @@ static int usb_kbd_remove(struct udevice *dev)
+ 
+ 	return 0;
+ err:
+-	printf("%s: warning, ret=%d", __func__, ret);
++	printf("%s: warning, ret=%d\n", __func__, ret);
+ 	return ret;
+ }
+ 
+-- 
+2.13.3
