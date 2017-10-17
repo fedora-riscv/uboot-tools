@@ -1,64 +1,91 @@
-From 03569f3ef44fd1208a68030c1740d7347bcf3fa3 Mon Sep 17 00:00:00 2001
+From 6a09f5e80038570b15f81fdb1e5bde897e01868a Mon Sep 17 00:00:00 2001
 From: Rob Clark <robdclark@gmail.com>
 Date: Fri, 23 Jun 2017 15:36:33 -0400
-Subject: [PATCH 03/23] dm: core: also parse chosen node
+Subject: [PATCH] dm: core: also parse chosen node
 
 This is the node that would contain, for example, the framebuffer setup
 by an earlier stage.
 
 Signed-off-by: Rob Clark <robdclark@gmail.com>
 ---
- drivers/core/root.c | 22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
+ arch/sandbox/dts/test.dts |  7 +++++++
+ drivers/core/root.c       | 12 ++++++++++++
+ test/dm/bus.c             |  2 +-
+ test/dm/test-fdt.c        |  2 +-
+ 4 files changed, 21 insertions(+), 2 deletions(-)
 
+diff --git a/arch/sandbox/dts/test.dts b/arch/sandbox/dts/test.dts
+index e67d428eb2..3f9e788e6c 100644
+--- a/arch/sandbox/dts/test.dts
++++ b/arch/sandbox/dts/test.dts
+@@ -478,6 +478,13 @@
+ 	wdt0: wdt@0 {
+ 		compatible = "sandbox,wdt";
+ 	};
++
++	chosen {
++		chosen-test {
++			compatible = "denx,u-boot-fdt-test";
++			reg = <9 1>;
++		};
++	};
+ };
+ 
+ #include "sandbox_pmic.dtsi"
 diff --git a/drivers/core/root.c b/drivers/core/root.c
-index d691d6ff94..5e6b2da248 100644
+index 976e2c4fdd..5a1c5994f6 100644
 --- a/drivers/core/root.c
 +++ b/drivers/core/root.c
-@@ -266,6 +266,26 @@ static int dm_scan_fdt_node(struct udevice *parent, const void *blob,
-        for (offset = fdt_first_subnode(blob, offset);
-             offset > 0;
-             offset = fdt_next_subnode(blob, offset)) {
-+               ofnode node = offset_to_ofnode(offset);
+@@ -266,6 +266,18 @@ static int dm_scan_fdt_node(struct udevice *parent, const void *blob,
+ 	for (offset = fdt_first_subnode(blob, offset);
+ 	     offset > 0;
+ 	     offset = fdt_next_subnode(blob, offset)) {
 +
-+               /* "chosen" node isn't a device itself but may contain some: */
-+               if (strcmp(ofnode_get_name(node), "chosen") == 0) {
-+                       dm_dbg("parsing subnodes of \"chosen\"\n");
++		/* "chosen" node isn't a device itself but may contain some: */
++		if (!strcmp(fdt_get_name(blob, offset, NULL), "chosen")) {
++			pr_debug("parsing subnodes of \"chosen\"\n");
 +
-+                       for (node = ofnode_first_subnode(node);
-+                            ofnode_valid(node);
-+                            node = ofnode_next_subnode(node)) {
-+                               dm_dbg("subnode: %s\n", ofnode_get_name(node));
-+                               err = lists_bind_fdt(parent, node, NULL);
-+                               if (err && !ret) {
-+                                       ret = err;
-+                                       dm_dbg("%s: ret=%d\n", ofnode_get_name(node), ret);
-+                               }
-+                       }
++			err = dm_scan_fdt_node(parent, blob, offset,
++					       pre_reloc_only);
++			if (err && !ret)
++				ret = err;
++			continue;
++		}
 +
-+                       continue;
-+               }
-+
-                if (pre_reloc_only &&
-                    !dm_fdt_pre_reloc(blob, offset))
-                        continue;
-@@ -273,7 +293,7 @@ static int dm_scan_fdt_node(struct udevice *parent, const void *blob,
-                        pr_debug("   - ignoring disabled device\n");
-                        continue;
-                }
--               err = lists_bind_fdt(parent, offset_to_ofnode(offset), NULL);
-+               err = lists_bind_fdt(parent, node, NULL);
-                if (err && !ret) {
-                        ret = err;
-                        debug("%s: ret=%d\n", fdt_get_name(blob, offset, NULL),
--- 
-2.13.3
+ 		if (pre_reloc_only &&
+ 		    !dm_fdt_pre_reloc(blob, offset))
+ 			continue;
+diff --git a/test/dm/bus.c b/test/dm/bus.c
+index 7006d4163d..1da398ae3a 100644
+--- a/test/dm/bus.c
++++ b/test/dm/bus.c
+@@ -105,7 +105,7 @@ UCLASS_DRIVER(testbus) = {
+ /* Test that we can probe for children */
+ static int dm_test_bus_children(struct unit_test_state *uts)
+ {
+-	int num_devices = 6;
++	int num_devices = 7;
+ 	struct udevice *bus;
+ 	struct uclass *uc;
+ 
+diff --git a/test/dm/test-fdt.c b/test/dm/test-fdt.c
+index dcc2ef8b65..920ccbf016 100644
+--- a/test/dm/test-fdt.c
++++ b/test/dm/test-fdt.c
+@@ -167,7 +167,7 @@ int dm_check_devices(struct unit_test_state *uts, int num_devices)
+ /* Test that FDT-based binding works correctly */
+ static int dm_test_fdt(struct unit_test_state *uts)
+ {
+-	const int num_devices = 6;
++	const int num_devices = 7;
+ 	struct udevice *dev;
+ 	struct uclass *uc;
+ 	int ret;
 
-From d031c039a18b3a76a4ef16fb4ff8581a79f42fe3 Mon Sep 17 00:00:00 2001
+From 310feda7f7f40afbb26a158183e16c2c46eea28a Mon Sep 17 00:00:00 2001
 From: Rob Clark <robdclark@gmail.com>
 Date: Thu, 3 Aug 2017 09:52:14 -0400
-Subject: [PATCH 06/23] fdtdec: allow board to provide fdt for
- CONFIG_OF_SEPARATE
+Subject: [PATCH] fdtdec: allow board to provide fdt for CONFIG_OF_SEPARATE
 
 Similar to CONFIG_OF_BOARD, but in this case the fdt is still built by
 u-boot build.  This allows the board to patch the fdt, etc.
@@ -71,11 +98,11 @@ it back to u-boot.
 Signed-off-by: Rob Clark <robdclark@gmail.com>
 ---
  include/fdtdec.h |  3 ++-
- lib/fdtdec.c     | 45 ++++++++++++++++++++++++++-------------------
- 2 files changed, 28 insertions(+), 20 deletions(-)
+ lib/fdtdec.c     | 35 +++++++++++++++++++++++------------
+ 2 files changed, 25 insertions(+), 13 deletions(-)
 
 diff --git a/include/fdtdec.h b/include/fdtdec.h
-index 4a0947c626..b9acec735a 100644
+index 1ba02be8e1..c5acb8dae1 100644
 --- a/include/fdtdec.h
 +++ b/include/fdtdec.h
 @@ -988,7 +988,8 @@ int fdtdec_setup(void);
@@ -89,71 +116,56 @@ index 4a0947c626..b9acec735a 100644
  void *board_fdt_blob_setup(void);
  
 diff --git a/lib/fdtdec.c b/lib/fdtdec.c
-index d2dbd0f122..07c458673c 100644
+index 45f3fe7baf..15bd9b2572 100644
 --- a/lib/fdtdec.c
 +++ b/lib/fdtdec.c
-@@ -1203,34 +1203,41 @@ int fdtdec_setup_memory_banksize(void)
- }
+@@ -1258,6 +1258,28 @@ static int uncompress_blob(const void *src, ulong sz_src, void **dstp)
+ # endif
  #endif
  
--int fdtdec_setup(void)
 +#ifdef CONFIG_OF_SEPARATE
 +/*
 + * For CONFIG_OF_SEPARATE, the board may optionally implement this to
 + * provide and/or fixup the fdt.
 + */
 +__weak void *board_fdt_blob_setup(void)
- {
--#if CONFIG_IS_ENABLED(OF_CONTROL)
--# ifdef CONFIG_OF_EMBED
--	/* Get a pointer to the FDT */
--	gd->fdt_blob = __dtb_dt_begin;
--# elif defined CONFIG_OF_SEPARATE
--#  ifdef CONFIG_SPL_BUILD
++{
 +	void *fdt_blob = NULL;
 +#ifdef CONFIG_SPL_BUILD
- 	/* FDT is at end of BSS unless it is in a different memory region */
- 	if (IS_ENABLED(CONFIG_SPL_SEPARATE_BSS))
--		gd->fdt_blob = (ulong *)&_image_binary_end;
++	/* FDT is at end of BSS unless it is in a different memory region */
++	if (IS_ENABLED(CONFIG_SPL_SEPARATE_BSS))
 +		fdt_blob = (ulong *)&_image_binary_end;
- 	else
--		gd->fdt_blob = (ulong *)&__bss_end;
++	else
 +		fdt_blob = (ulong *)&__bss_end;
- 
--#  elif defined CONFIG_FIT_EMBED
--	gd->fdt_blob = locate_dtb_in_fit(&_end);
-+#elif defined CONFIG_FIT_EMBED
-+	fdt_blob = locate_dtb_in_fit(&_end);
- 
--	if (gd->fdt_blob == NULL || gd->fdt_blob <= ((void *)&_end)) {
-+	if (fdt_blob == NULL || fdt_blob <= ((void *)&_end))
- 		puts("Failed to find proper dtb in embedded FIT Image\n");
--		return -1;
--	}
--
--#  else
 +#else
- 	/* FDT is at end of image */
--	gd->fdt_blob = (ulong *)&_end;
++	/* FDT is at end of image */
 +	fdt_blob = (ulong *)&_end;
- #  endif
--# elif defined(CONFIG_OF_BOARD)
--	/* Allow the board to override the fdt address. */
++#endif
 +	return fdt_blob;
 +}
 +#endif
 +
-+int fdtdec_setup(void)
-+{
-+#if CONFIG_IS_ENABLED(OF_CONTROL)
-+# ifdef CONFIG_OF_EMBED
-+	/* Get a pointer to the FDT */
-+	gd->fdt_blob = __dtb_dt_begin;
+ int fdtdec_setup(void)
+ {
+ #if CONFIG_IS_ENABLED(OF_CONTROL)
+@@ -1267,18 +1289,7 @@ int fdtdec_setup(void)
+ # ifdef CONFIG_OF_EMBED
+ 	/* Get a pointer to the FDT */
+ 	gd->fdt_blob = __dtb_dt_begin;
+-# elif defined CONFIG_OF_SEPARATE
+-#  ifdef CONFIG_SPL_BUILD
+-	/* FDT is at end of BSS unless it is in a different memory region */
+-	if (IS_ENABLED(CONFIG_SPL_SEPARATE_BSS))
+-		gd->fdt_blob = (ulong *)&_image_binary_end;
+-	else
+-		gd->fdt_blob = (ulong *)&__bss_end;
+-#  else
+-	/* FDT is at end of image */
+-	gd->fdt_blob = (ulong *)&_end;
+-#  endif
+-# elif defined(CONFIG_OF_BOARD)
 +# elif defined(CONFIG_OF_SEPARATE) || defined(CONFIG_OF_BOARD)
+ 	/* Allow the board to override the fdt address. */
  	gd->fdt_blob = board_fdt_blob_setup();
  # elif defined(CONFIG_OF_HOSTFILE)
- 	if (sandbox_read_fdt_from_file()) {
--- 
-2.13.3
-
 

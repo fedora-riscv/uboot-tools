@@ -20,7 +20,7 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 # general fixes
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
-# Patch4:    fdt-fixes.patch
+Patch4:    fdt-fixes.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
