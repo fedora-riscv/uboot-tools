@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2017.11
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -21,6 +21,7 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
 Patch4:    fdt-fixes.patch
+Patch5:    arm64-support-running-at-addr-other-than-linked-to.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
@@ -283,6 +284,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sat Nov  4 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-0.3.rc3
+- 2017.11 RC3
+
 * Tue Oct 17 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-0.2.rc2
 - Update / rebase a couple of patches
 
