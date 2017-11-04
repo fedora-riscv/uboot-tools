@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# set -x
+
 COMMAND="$1"
 KERNEL_VERSION="$2"
 #BOOT_DIR_ABS="$3"
@@ -17,33 +19,36 @@ KERNEL_VERSION="$2"
 # device progresses, it should never make backward incompatible changes.
 # So it should always be safe to use a newer dtb with an older kernel.
 
-list_dtb_versions() {
-    excluded_version="$1"
-    for dtbdir in /boot/dtb-*; do
-        dtbver=${dtbdir#*-}
-	if [ "$dtbver" != "$excluded_version" ]; then
-	    echo $dtbver
-	fi
-    done
-}
+if [[ "$(uname -m)" == arm* || "$(uname -m)" == aarch64 ]]; then
 
-setup_dtb_link() {
-    ver=`list_dtb_versions $1 | sort -r --sort=version | head -1`
-    if [ -h /boot/dtb ]; then
-        rm -f /boot/dtb
-    fi
-    ln -s dtb-$ver /boot/dtb
-}
+    list_dtb_versions() {
+        excluded_version="$1"
+        for dtbdir in /boot/dtb-*; do
+            dtbver=${dtbdir#*-}
+            if [ "$dtbver" != "$excluded_version" ]; then
+                echo $dtbver
+            fi
+        done
+    }
 
-ret=0
-case "$COMMAND" in
-    add)
-        setup_dtb_link
-        ret=$?
-	;;
-    remove)
-        setup_dtb_link $KERNEL_VERSION
-        ret=$?
-	;;
-esac
-exit $ret
+    setup_dtb_link() {
+        ver=`list_dtb_versions $1 | sort -r --sort=version | head -1`
+        if [ -h /boot/dtb ]; then
+            rm -f /boot/dtb
+        fi
+        ln -s dtb-$ver /boot/dtb
+    }
+
+    ret=0
+    case "$COMMAND" in
+        add)
+            setup_dtb_link
+            ret=$?
+	    ;;
+        remove)
+            setup_dtb_link $KERNEL_VERSION
+            ret=$?
+	    ;;
+    esac
+    exit $ret
+fi
