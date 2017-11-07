@@ -1,8 +1,8 @@
-%global candidate rc3
+%global candidate rc4
 
 Name:      uboot-tools
 Version:   2017.11
-Release:   0.3%{?candidate:.%{candidate}}%{?dist}
+Release:   0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -284,6 +284,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Nov  7 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-0.4.rc4
+- 2017.11 RC4
+
 * Sat Nov  4 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-0.3.rc3
 - 2017.11 RC3
 
