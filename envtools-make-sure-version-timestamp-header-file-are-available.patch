@@ -1,0 +1,48 @@
+From patchwork Tue Nov 14 14:47:18 2017
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] envtools: make sure version/timestamp header file are
+ available
+X-Patchwork-Submitter: Stefan Agner <stefan@agner.ch>
+X-Patchwork-Id: 837888
+X-Patchwork-Delegate: trini@ti.com
+Message-Id: <20171114144718.10213-1-stefan@agner.ch>
+To: u-boot@lists.denx.de,
+	trini@konsulko.com
+Cc: Stefan Agner <stefan.agner@toradex.com>,
+ Marcel Ziswiler <marcel.ziswiler@toradex.com>,
+ Max Krummenacher <max.krummenacher@toradex.com>
+Date: Tue, 14 Nov 2017 15:47:18 +0100
+From: Stefan Agner <stefan@agner.ch>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+From: Stefan Agner <stefan.agner@toradex.com>
+
+With commit 84d46e7e8948 ("tools: env: allow to print U-Boot version")
+the fw_env utilities need the version.h header file. Building only
+the envtools in a pristine build directory will fail due to missing
+header files.
+
+Make sure the header files are a dependency of the envtools target.
+
+Fixes: 84d46e7e8948 ("tools: env: allow to print U-Boot version")
+Signed-off-by: Stefan Agner <stefan.agner@toradex.com>
+---
+
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 67f01ad7e4..b93c2fb05b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1460,7 +1460,7 @@ checkarmreloc: u-boot
+ 		false; \
+ 	fi
+ 
+-envtools: scripts_basic
++envtools: scripts_basic $(version_h) $(timestamp_h)
+ 	$(Q)$(MAKE) $(build)=tools/env
+ 
+ tools-only: scripts_basic $(version_h) $(timestamp_h)

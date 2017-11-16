@@ -22,6 +22,7 @@ Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
 Patch4:    fdt-fixes.patch
 Patch5:    arm64-support-running-at-addr-other-than-linked-to.patch
+Patch6:    envtools-make-sure-version-timestamp-header-file-are-available.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
