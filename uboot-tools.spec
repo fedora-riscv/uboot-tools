@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2017.11
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Release:   3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -24,6 +24,7 @@ Patch4:    fdt-fixes.patch
 Patch5:    arm64-support-running-at-addr-other-than-linked-to.patch
 Patch6:    envtools-make-sure-version-timestamp-header-file-are-available.patch
 Patch7:    efi_loader-initialise-partition_signature-memory.patch
+Patch8:    omap2-set-the-ethaddr-as-well-as-the-usbethaddr-env-.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
@@ -286,6 +287,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Nov 23 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-3
+- Newer EFI loader fix patch
+- Fix static MAC on omap3/omap4 devices
+
 * Tue Nov 21 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-2
 - Add EFI loader fix
 
