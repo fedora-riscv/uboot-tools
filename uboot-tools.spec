@@ -24,13 +24,15 @@ Patch6:    usb-kbd-fixes.patch
 Patch7:    disk-part_dos-Use-the-original-allocation-scheme-for-the-SPL-case.patch
 Patch8:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch9:    uefi-efi_loader-Fix-disk-dp-s-for-pre-DM-legacy-devices.patch
+Patch10:   efi_loader-initialise-partition_signature-memory.patch
 
 # Board fixes and enablement
-Patch10:   dragonboard-fixes.patch
-Patch11:   qemu-machine-virt-ARM.patch
+Patch11:   dragonboard-fixes.patch
 Patch12:   sti-STiH410-B2260-support.patch
 Patch13:   bcm283x-device-tree-sources-to-Linux-4.14-state.patch
 Patch14:   sunxi-A83T-improvements.patch
+Patch15:   qemu-machine-virt-ARM.patch
+Patch16:   omap2-set-the-ethaddr-as-well-as-the-usbethaddr-env-.patch
 # Patch14:   mvebu-enable-generic-distro-boot-config.patch
 # Patch15:   mx6-Initial-Hummingboard-2-support.patch
 
@@ -290,6 +292,11 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Nov 28 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-5
+- Devicetree script should just exit on non DT platforms
+- Fix MAC address on OMAP Platforms to be static
+- Minor uEFI fix
+
 * Tue Oct 10 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-4
 - Improve uEFI partition detection for some devices
 

@@ -1,0 +1,34 @@
+From 7c704eb7a615e35fe74bc8ff4ff2e5c71f1473b3 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Thu, 23 Nov 2017 12:44:51 +0000
+Subject: [PATCH] omap2: set the ethaddr as well as the usbethaddr env var to
+ ensure static MAC
+
+The kernel gets the ethernet MAC from the ethaddr variable, the omap boards for
+devices with USB based eth adapters just set the usbethaddr which doesn't appear
+to get passed to the kernel. The same Raspberry Pi code sets both ethaddr and
+usbethaddr so lets do that so linux (tested 4.13 and 4.14) get a static rather
+than a random MAC address, while not regressing users of usbethaddr.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ arch/arm/mach-omap2/utils.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/arm/mach-omap2/utils.c b/arch/arm/mach-omap2/utils.c
+index 2e8778043b..95f168fee3 100644
+--- a/arch/arm/mach-omap2/utils.c
++++ b/arch/arm/mach-omap2/utils.c
+@@ -215,6 +215,9 @@ void omap_die_id_usbethaddr(void)
+ 		mac[5] = (die_id[0] >> 8) & 0xff;
+ 
+ 		eth_env_set_enetaddr("usbethaddr", mac);
++
++		if (!env_get("ethaddr"))
++			eth_env_set_enetaddr("ethaddr", mac);
+ 	}
+ }
+ 
+-- 
+2.14.3
+
