@@ -19,8 +19,8 @@ KERNEL_VERSION="$2"
 # device progresses, it should never make backward incompatible changes.
 # So it should always be safe to use a newer dtb with an older kernel.
 
-if [[ "$(uname -m)" == arm* || "$(uname -m)" == aarch64 ]]; then
-
+if [[ "$(uname -m)" == arm* || "$(uname -m)" == aarch64 ]]
+then
     list_dtb_versions() {
         excluded_version="$1"
         for dtbdir in /boot/dtb-*; do
@@ -51,4 +51,7 @@ if [[ "$(uname -m)" == arm* || "$(uname -m)" == aarch64 ]]; then
 	    ;;
     esac
     exit $ret
+else
+    # Just exit on non ARM
+    exit 0
 fi
