@@ -1,8 +1,8 @@
-#global candidate rc4
+%global candidate rc2
 
 Name:      uboot-tools
-Version:   2017.11
-Release:   3%{?candidate:.%{candidate}}%{?dist}
+Version:   2018.01
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -20,14 +20,10 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 # general fixes
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
-Patch4:    fdt-fixes.patch
-Patch5:    arm64-support-running-at-addr-other-than-linked-to.patch
-Patch6:    envtools-make-sure-version-timestamp-header-file-are-available.patch
-Patch7:    efi_loader-initialise-partition_signature-memory.patch
-Patch8:    omap2-set-the-ethaddr-as-well-as-the-usbethaddr-env-.patch
+#Patch4:    fdt-fixes.patch
 
 # Board fixes and enablement
-Patch10:   dragonboard-fixes.patch
+#Patch10:   dragonboard-fixes.patch
 # Patch14:   mvebu-enable-generic-distro-boot-config.patch
 # Patch15:   mx6-Initial-Hummingboard-2-support.patch
 
@@ -287,6 +283,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Dec 19 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2018.01-0.1.rc2
+- 2018.01 RC2
+
 * Thu Nov 23 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-3
 - Newer EFI loader fix patch
 - Fix static MAC on omap3/omap4 devices

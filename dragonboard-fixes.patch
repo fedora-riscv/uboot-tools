@@ -1,90 +1,43 @@
-From patchwork Tue Jun 20 21:55:25 2017
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,2/2] board/db410c: fix fdt address
-From: Rob Clark <robdclark@gmail.com>
-X-Patchwork-Id: 778516
-Message-Id: <20170620215525.10430-2-robdclark@gmail.com>
-To: U-Boot Mailing List <u-boot@lists.denx.de>
-Cc: Nicolas Dechesne <nicolas.dechesne@linaro.org>,
- Stephen Boyd <sboyd@codeaurora.org>
-Date: Tue, 20 Jun 2017 17:55:25 -0400
+From ce71ddd50a6752b805974893464a88a0f145fe42 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Wed, 20 Dec 2017 08:22:08 +0000
+Subject: [PATCH] Dragonboard fixes
 
-Signed-off-by: Rob Clark <robdclark@gmail.com>
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
-Maybe there is a better way to not hardcode this?  But at least with
-the build of lk that I have, the fdt table is at 0x81e00000.  I guess
-there must be a more robust way to do this, since presumably lk when
-booting the linux kernel directly somehow passes the fdt address.
-
- include/configs/dragonboard410c.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/include/configs/dragonboard410c.h b/include/configs/dragonboard410c.h
-index 11c842d..3b9932d 100644
---- a/include/configs/dragonboard410c.h
-+++ b/include/configs/dragonboard410c.h
-@@ -105,7 +105,7 @@ REFLASH(dragonboard/u-boot.img, 8)\
- 	"linux_image=Image\0" \
- 	"kernel_addr_r=0x81000000\0"\
- 	"fdtfile=apq8016-sbc.dtb\0" \
--	"fdt_addr_r=0x83000000\0"\
-+	"fdt_addr_r=0x81e00000\0"\
- 	"ramdisk_addr_r=0x84000000\0"\
- 	"scriptaddr=0x90000000\0"\
- 	"pxefile_addr_r=0x90100000\0"\
-From a2782063c8daf9000d131e85200bc631a16450b4 Mon Sep 17 00:00:00 2001
-From: Rob Clark <robdclark@gmail.com>
-Date: Wed, 21 Jun 2017 14:21:15 -0400
-Subject: [PATCH 01/23] WIP: fix usb
-
----
- common/usb_storage.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/common/usb_storage.c b/common/usb_storage.c
-index df0b057308..b2a3ab49ec 100644
---- a/common/usb_storage.c
-+++ b/common/usb_storage.c
-@@ -996,7 +996,7 @@ static int usb_request_sense(struct scsi_cmd *srb, struct us_data *ss)
- 
- static int usb_test_unit_ready(struct scsi_cmd *srb, struct us_data *ss)
- {
--	int retries = 10;
-+	int retries = 20;
- 
- 	do {
- 		memset(&srb->cmd[0], 0, 12);
-@@ -1019,7 +1019,7 @@ static int usb_test_unit_ready(struct scsi_cmd *srb, struct us_data *ss)
- 		if ((srb->sense_buf[2] == 0x02) &&
- 		    (srb->sense_buf[12] == 0x3a))
- 			return -1;
--		mdelay(100);
-+		mdelay(250);
- 	} while (retries--);
- 
- 	return -1;
--- 
-2.13.3
-
-From 40b06f8d422efc1d9674f081ef22445904c01f4f Mon Sep 17 00:00:00 2001
-From: Rob Clark <robdclark@gmail.com>
-Date: Mon, 3 Jul 2017 08:34:37 -0400
-Subject: [PATCH 02/23] HACK: disable emmc
-
-Hitting some timeout which makes boot take much longer.  And
-uefi/boot/rootfs partitions will be on sd-card or usb disk, etc,
-so we can just ignore emmc.
----
- arch/arm/dts/dragonboard410c.dts | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm/dts/dragonboard410c.dts                 |  9 +++++-
+ board/qualcomm/dragonboard410c/Makefile          |  1 +
+ board/qualcomm/dragonboard410c/dragonboard410c.c |  8 ++++++
+ board/qualcomm/dragonboard410c/lowlevel_init.S   | 36 ++++++++++++++++++++++++
+ common/usb_storage.c                             |  4 +--
+ configs/dragonboard410c_defconfig                | 11 ++++++++
+ include/configs/dragonboard410c.h                |  4 +--
+ 7 files changed, 68 insertions(+), 5 deletions(-)
+ create mode 100644 board/qualcomm/dragonboard410c/lowlevel_init.S
 
 diff --git a/arch/arm/dts/dragonboard410c.dts b/arch/arm/dts/dragonboard410c.dts
-index 7746622dda..0d3b7a35f4 100644
+index 7746622dda..a47b95264c 100644
 --- a/arch/arm/dts/dragonboard410c.dts
 +++ b/arch/arm/dts/dragonboard410c.dts
-@@ -67,6 +67,7 @@
+@@ -23,11 +23,16 @@
+ 		reg = <0 0x80000000 0 0x3da00000>;
+ 	};
+ 
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++	};
++
+ 	chosen {
+ 		stdout-path = "/soc/serial@78b0000";
+ 	};
+ 
+-
+ 	soc {
+ 		#address-cells = <0x1>;
+ 		#size-cells = <0x1>;
+@@ -67,6 +72,7 @@
  			reg = <0x78d9000 0x400>;
  		};
  
@@ -92,7 +45,7 @@ index 7746622dda..0d3b7a35f4 100644
  		sdhci@07824000 {
  			compatible = "qcom,sdhci-msm-v4";
  			reg = <0x7824900 0x11c 0x7824000 0x800>;
-@@ -76,6 +77,7 @@
+@@ -76,6 +82,7 @@
  			clock = <&clkc 0>;
  			clock-frequency = <100000000>;
  		};
@@ -100,26 +53,6 @@ index 7746622dda..0d3b7a35f4 100644
  
  		sdhci@07864000 {
  			compatible = "qcom,sdhci-msm-v4";
--- 
-2.13.3
-
-From 7f0491168cf31c9935dede6fb1f560ef33cfb739 Mon Sep 17 00:00:00 2001
-From: Rob Clark <robdclark@gmail.com>
-Date: Fri, 23 Jun 2017 07:52:08 -0400
-Subject: [PATCH 07/23] db410c: use fdt passed from lk
-
-lk patches the fdt to set some device's MAC addresses and more
-importantly to patch in the simple-framebuffer node that we want u-boot
-to see.
-
-Signed-off-by: Rob Clark <robdclark@gmail.com>
----
- board/qualcomm/dragonboard410c/Makefile          |  1 +
- board/qualcomm/dragonboard410c/dragonboard410c.c |  8 ++++++
- board/qualcomm/dragonboard410c/lowlevel_init.S   | 36 ++++++++++++++++++++++++
- 3 files changed, 45 insertions(+)
- create mode 100644 board/qualcomm/dragonboard410c/lowlevel_init.S
-
 diff --git a/board/qualcomm/dragonboard410c/Makefile b/board/qualcomm/dragonboard410c/Makefile
 index cd678088fa..5082383be4 100644
 --- a/board/qualcomm/dragonboard410c/Makefile
@@ -131,7 +64,7 @@ index cd678088fa..5082383be4 100644
 +obj-y	+= lowlevel_init.o
  extra-y += head.o
 diff --git a/board/qualcomm/dragonboard410c/dragonboard410c.c b/board/qualcomm/dragonboard410c/dragonboard410c.c
-index 37d0b85e0e..1fa4dc1b15 100644
+index 848e27848b..da1cd2cbc9 100644
 --- a/board/qualcomm/dragonboard410c/dragonboard410c.c
 +++ b/board/qualcomm/dragonboard410c/dragonboard410c.c
 @@ -27,6 +27,14 @@ int dram_init_banksize(void)
@@ -191,88 +124,30 @@ index 0000000000..cdbd8e14db
 +
 +	/* Returns */
 +	b	save_boot_params_ret
--- 
-2.13.3
-
-From 9999019fa74908218fd85a51f8c4b45231f9489a Mon Sep 17 00:00:00 2001
-From: Rob Clark <robdclark@gmail.com>
-Date: Wed, 19 Jul 2017 11:40:15 -0400
-Subject: [PATCH 08/23] db410c: add reserved-memory node to dts
-
-If lk lights up display and populates simple-framebuffer node, it will
-also setup a reserved-memory node (needed by simplefb on linux).  But
-it isn't clever enough to cope when the reserved-memory node is not
-present.
-
-Signed-off-by: Rob Clark <robdclark@gmail.com>
----
- arch/arm/dts/dragonboard410c.dts | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/dts/dragonboard410c.dts b/arch/arm/dts/dragonboard410c.dts
-index 0d3b7a35f4..a47b95264c 100644
---- a/arch/arm/dts/dragonboard410c.dts
-+++ b/arch/arm/dts/dragonboard410c.dts
-@@ -23,11 +23,16 @@
- 		reg = <0 0x80000000 0 0x3da00000>;
- 	};
+diff --git a/common/usb_storage.c b/common/usb_storage.c
+index a91b1c0d2f..caea87a09f 100644
+--- a/common/usb_storage.c
++++ b/common/usb_storage.c
+@@ -1018,7 +1018,7 @@ static int usb_request_sense(struct scsi_cmd *srb, struct us_data *ss)
  
-+	reserved-memory {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
-+	};
-+
- 	chosen {
- 		stdout-path = "/soc/serial@78b0000";
- 	};
+ static int usb_test_unit_ready(struct scsi_cmd *srb, struct us_data *ss)
+ {
+-	int retries = 10;
++	int retries = 20;
  
--
- 	soc {
- 		#address-cells = <0x1>;
- 		#size-cells = <0x1>;
--- 
-2.13.3
-
-From 54997f67cc935704cab36025d98d27eaf5a4aa7c Mon Sep 17 00:00:00 2001
-From: Rob Clark <robdclark@gmail.com>
-Date: Mon, 26 Jun 2017 10:29:40 -0400
-Subject: [PATCH 09/23] db410c: on aarch64 the fdtfile is in per-vendor
- subdirectory
-
-Signed-off-by: Rob Clark <robdclark@gmail.com>
----
- include/configs/dragonboard410c.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/include/configs/dragonboard410c.h b/include/configs/dragonboard410c.h
-index d9dc639aeb..626dff8dcd 100644
---- a/include/configs/dragonboard410c.h
-+++ b/include/configs/dragonboard410c.h
-@@ -104,7 +104,7 @@
- 	"initrd_high=0xffffffffffffffff\0" \
- 	"linux_image=Image\0" \
- 	"kernel_addr_r=0x81000000\0"\
--	"fdtfile=apq8016-sbc.dtb\0" \
-+	"fdtfile=qcom/apq8016-sbc.dtb\0" \
- 	"fdt_addr_r=0x81e00000\0"\
- 	"ramdisk_addr_r=0x84000000\0"\
- 	"scriptaddr=0x90000000\0"\
--- 
-2.13.3
-
-From 2bf6ff0703fa92755469d8f218a75b07008e9768 Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Mon, 18 Sep 2017 09:34:30 +0100
-Subject: [PATCH] db410c: config updates
-
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
----
- configs/dragonboard410c_defconfig | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
+ 	do {
+ 		memset(&srb->cmd[0], 0, 12);
+@@ -1041,7 +1041,7 @@ static int usb_test_unit_ready(struct scsi_cmd *srb, struct us_data *ss)
+ 		if ((srb->sense_buf[2] == 0x02) &&
+ 		    (srb->sense_buf[12] == 0x3a))
+ 			return -1;
+-		mdelay(100);
++		mdelay(250);
+ 	} while (retries--);
+ 
+ 	return -1;
 diff --git a/configs/dragonboard410c_defconfig b/configs/dragonboard410c_defconfig
-index 2224b3850a..32efdfa46b 100644
+index b71bff7592..4738f3a08b 100644
 --- a/configs/dragonboard410c_defconfig
 +++ b/configs/dragonboard410c_defconfig
 @@ -9,6 +9,7 @@ CONFIG_BOOTARGS="console=ttyMSM0,115200n8"
@@ -283,7 +158,7 @@ index 2224b3850a..32efdfa46b 100644
  CONFIG_CMD_MD5SUM=y
  CONFIG_CMD_MEMINFO=y
  CONFIG_CMD_GPIO=y
-@@ -20,6 +21,8 @@ CONFIG_CMD_TIMER=y
+@@ -21,6 +22,8 @@ CONFIG_ENV_IS_IN_MMC=y
  CONFIG_CLK=y
  CONFIG_MSM_GPIO=y
  CONFIG_PM8916_GPIO=y
@@ -292,7 +167,7 @@ index 2224b3850a..32efdfa46b 100644
  CONFIG_LED=y
  CONFIG_LED_GPIO=y
  CONFIG_DM_MMC=y
-@@ -36,10 +39,18 @@ CONFIG_USB_EHCI_HCD=y
+@@ -37,10 +40,18 @@ CONFIG_USB_EHCI_HCD=y
  CONFIG_USB_EHCI_MSM=y
  CONFIG_USB_ULPI_VIEWPORT=y
  CONFIG_USB_ULPI=y
@@ -311,5 +186,21 @@ index 2224b3850a..32efdfa46b 100644
 +CONFIG_VIDEO_SIMPLE=y
 +CONFIG_FAT_WRITE=y
  CONFIG_OF_LIBFDT_OVERLAY=y
+diff --git a/include/configs/dragonboard410c.h b/include/configs/dragonboard410c.h
+index d2447b27d8..5dbd4dcaa1 100644
+--- a/include/configs/dragonboard410c.h
++++ b/include/configs/dragonboard410c.h
+@@ -92,8 +92,8 @@ REFLASH(dragonboard/u-boot.img, 8)\
+ 	"initrd_high=0xffffffffffffffff\0" \
+ 	"linux_image=Image\0" \
+ 	"kernel_addr_r=0x81000000\0"\
+-	"fdtfile=apq8016-sbc.dtb\0" \
+-	"fdt_addr_r=0x83000000\0"\
++	"fdtfile=qcom/apq8016-sbc.dtb\0" \
++	"fdt_addr_r=0x81e00000\0"\
+ 	"ramdisk_addr_r=0x84000000\0"\
+ 	"scriptaddr=0x90000000\0"\
+ 	"pxefile_addr_r=0x90100000\0"\
 -- 
-2.13.5
+2.14.3
+

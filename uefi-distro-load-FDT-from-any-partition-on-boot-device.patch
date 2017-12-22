@@ -1,7 +1,7 @@
-From 0e68eb4f6fe96edcde4a39ba6e99ac330529b039 Mon Sep 17 00:00:00 2001
+From 3ab824aea2ad90cd980986a32c4523fcce778a03 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Thu, 5 Oct 2017 08:40:22 +0100
-Subject: [PATCH] distro: load FDT from any partition on boot device
+Date: Tue, 5 Dec 2017 00:11:08 +0000
+Subject: [PATCH 2/5] distro: load FDT from any partition on boot device
 
 In the EFI_LOADER boot path, we were only checking the FAT partition
 containing the EFI payload for dtb files.  But this is somewhat of a
@@ -20,15 +20,16 @@ can load the FDT based on selected kernel version location (which grub
 knows) and SoC/board specific ${fdtfile} (which grub does not know).
 
 Signed-off-by: Rob Clark <robdclark@gmail.com>
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
  include/config_distro_bootcmd.h | 34 +++++++++++++++++++++++-----------
  1 file changed, 23 insertions(+), 11 deletions(-)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index 18da4ff737..63c7bbe29c 100644
+index c2822b4d06..b91f2eabe3 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
-@@ -126,25 +126,37 @@
+@@ -130,25 +130,37 @@
  		"fi\0"                                                    \
  	\
  	"load_efi_dtb="                                                   \
@@ -78,5 +79,5 @@ index 18da4ff737..63c7bbe29c 100644
  		"fi; "                                                    \
  		"setenv efi_fdtfile\0"
 -- 
-2.14.2
+2.14.3
 

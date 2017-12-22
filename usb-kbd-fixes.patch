@@ -1,43 +1,19 @@
-From patchwork Wed Sep 27 01:19:37 2017
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [U-Boot] usb: kbd: Don't fail with iomux
-X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
-X-Patchwork-Id: 818881
-X-Patchwork-Delegate: marek.vasut@gmail.com
-Message-Id: <20170927011939.6610-1-robdclark@gmail.com>
-To: U-Boot Mailing List <u-boot@lists.denx.de>
-Date: Tue, 26 Sep 2017 21:19:37 -0400
-From: Rob Clark <robdclark@gmail.com>
-List-Id: U-Boot discussion <u-boot.lists.denx.de>
+From 1a8fa60aedff8a2368ac357a51dc15357065fabe Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Tue, 5 Dec 2017 00:11:54 +0000
+Subject: [PATCH 3/5] usb kbd fixes
 
-stdin might not be set, which would cause iomux_doenv() to fail
-therefore causing probe_usb_keyboard() to fail.  Furthermore if we do
-have iomux enabled, the sensible thing (in terms of user experience)
-would be to simply add ourselves to the list of stdin devices.
-
-This fixes an issue with usbkbd on dragonboard410c with distro-
-bootcmd, where stdin is not set (so stdinname is null).
-
-Signed-off-by: Rob Clark <robdclark@gmail.com>
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
-Somehow this patch was dropped on the floor.  I don't remember
-which version # this is up to, search the list if you care.  But
-this is the latest.  I only noticed it was missing because u-boot
-crashes when you boot with usb-keyboard plugged in (at least on
-db410c) without it.  So someone please apply this patch before it
-gets lost again.
-
- common/usb_kbd.c  | 46 +++++++++++++++++++++++++++++++---------------
+ common/usb_kbd.c  | 66 +++++++++++++++++++++++++++++++++++++++++--------------
  include/console.h |  2 --
- 2 files changed, 31 insertions(+), 17 deletions(-)
+ 2 files changed, 50 insertions(+), 18 deletions(-)
 
 diff --git a/common/usb_kbd.c b/common/usb_kbd.c
-index a323d72a36..4c3ad95fca 100644
+index 8cbdba6ac2..82ad93f6ca 100644
 --- a/common/usb_kbd.c
 +++ b/common/usb_kbd.c
-@@ -516,23 +516,39 @@ static int probe_usb_keyboard(struct usb_device *dev)
+@@ -516,25 +516,59 @@ static int probe_usb_keyboard(struct usb_device *dev)
  		return error;
  
  	stdinname = env_get("stdin");
@@ -68,18 +44,22 @@ index a323d72a36..4c3ad95fca 100644
 +		error = iomux_doenv(stdin, stdinname);
 +		free(newstdin);
 +		if (error)
-+			return error;
++			goto unregister_stdio;
 +	} else {
 +		/* Check if this is the standard input device. */
-+		if (strcmp(stdinname, DEVNAME))
-+			return 1;
++		if (strcmp(stdinname, DEVNAME)) {
++			error = -1;
++			goto unregister_stdio;
++		}
  
 -	/* Reassign the console */
 -	if (overwrite_console())
 -		return 1;
 +		/* Reassign the console */
-+		if (overwrite_console())
-+			return 1;
++		if (overwrite_console()) {
++			error = -1;
++			goto unregister_stdio;
++		}
  
 -	error = console_assign(stdin, DEVNAME);
 -	if (error)
@@ -87,11 +67,36 @@ index a323d72a36..4c3ad95fca 100644
 -#endif
 +		error = console_assign(stdin, DEVNAME);
 +		if (error)
-+			return error;
++			goto unregister_stdio;
 +	}
++
++	return 0;
+ 
++unregister_stdio:
++	/*
++	 * If probe fails, the device will be removed.. leaving dangling
++	 * pointers if the stdio device is not unregistered.  If u-boot
++	 * is built without stdio_deregister(), just pretend to succeed
++	 * in order to avoid dangling pointers.
++	 */
++#if CONFIG_IS_ENABLED(SYS_STDIO_DEREGISTER)
++	stdio_deregister(DEVNAME, 1);
++	return error;
++#else
+ 	return 0;
++#endif
+ }
+ 
+ #ifndef CONFIG_DM_USB
+@@ -640,7 +674,7 @@ static int usb_kbd_remove(struct udevice *dev)
  
  	return 0;
+ err:
+-	printf("%s: warning, ret=%d", __func__, ret);
++	printf("%s: warning, ret=%d\n", __func__, ret);
+ 	return ret;
  }
+ 
 diff --git a/include/console.h b/include/console.h
 index cea29ed6dc..7dfd36d7d1 100644
 --- a/include/console.h
@@ -105,106 +110,6 @@ index cea29ed6dc..7dfd36d7d1 100644
 -#endif
  
  #endif
-From patchwork Tue Oct  3 17:31:14 2017
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [U-Boot] usb: kbd: Fix dangling pointers on probe fail
-X-Patchwork-Submitter: Rob Clark <robdclark@gmail.com>
-X-Patchwork-Id: 820970
-Message-Id: <20171003173118.32645-1-robdclark@gmail.com>
-To: U-Boot Mailing List <u-boot@lists.denx.de>
-Date: Tue,  3 Oct 2017 13:31:14 -0400
-From: Rob Clark <robdclark@gmail.com>
-List-Id: U-Boot discussion <u-boot.lists.denx.de>
-
-If probe fails, we should unregister the stdio device, else we leave
-dangling pointers to the parent 'struct usb_device'.
-
-Signed-off-by: Rob Clark <robdclark@gmail.com>
----
-I finally got around to debugging why things explode so badly without
-fixing usb_kbd vs. iomux[1] (which this patch applies on top of).
-
-[1] https://patchwork.ozlabs.org/patch/818881/
-
- common/usb_kbd.c | 30 ++++++++++++++++++++++++------
- 1 file changed, 24 insertions(+), 6 deletions(-)
-
-diff --git a/common/usb_kbd.c b/common/usb_kbd.c
-index 4c3ad95fca..82ad93f6ca 100644
---- a/common/usb_kbd.c
-+++ b/common/usb_kbd.c
-@@ -535,22 +535,40 @@ static int probe_usb_keyboard(struct usb_device *dev)
- 		error = iomux_doenv(stdin, stdinname);
- 		free(newstdin);
- 		if (error)
--			return error;
-+			goto unregister_stdio;
- 	} else {
- 		/* Check if this is the standard input device. */
--		if (strcmp(stdinname, DEVNAME))
--			return 1;
-+		if (strcmp(stdinname, DEVNAME)) {
-+			error = -1;
-+			goto unregister_stdio;
-+		}
- 
- 		/* Reassign the console */
--		if (overwrite_console())
--			return 1;
-+		if (overwrite_console()) {
-+			error = -1;
-+			goto unregister_stdio;
-+		}
- 
- 		error = console_assign(stdin, DEVNAME);
- 		if (error)
--			return error;
-+			goto unregister_stdio;
- 	}
- 
- 	return 0;
-+
-+unregister_stdio:
-+	/*
-+	 * If probe fails, the device will be removed.. leaving dangling
-+	 * pointers if the stdio device is not unregistered.  If u-boot
-+	 * is built without stdio_deregister(), just pretend to succeed
-+	 * in order to avoid dangling pointers.
-+	 */
-+#if CONFIG_IS_ENABLED(SYS_STDIO_DEREGISTER)
-+	stdio_deregister(DEVNAME, 1);
-+	return error;
-+#else
-+	return 0;
-+#endif
- }
- 
- #ifndef CONFIG_DM_USB
-
-From 47f22a41df082c62411389ab5bf6e9ae26d93083 Mon Sep 17 00:00:00 2001
-From: Rob Clark <robdclark@gmail.com>
-Date: Wed, 19 Jul 2017 10:39:12 -0400
-Subject: [PATCH 13/23] usb: kbd: add missing \n
-
-Signed-off-by: Rob Clark <robdclark@gmail.com>
----
- common/usb_kbd.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/common/usb_kbd.c b/common/usb_kbd.c
-index 703dd748f5..92d5e96d01 100644
---- a/common/usb_kbd.c
-+++ b/common/usb_kbd.c
-@@ -655,7 +655,7 @@ static int usb_kbd_remove(struct udevice *dev)
- 
- 	return 0;
- err:
--	printf("%s: warning, ret=%d", __func__, ret);
-+	printf("%s: warning, ret=%d\n", __func__, ret);
- 	return ret;
- }
- 
 -- 
-2.13.3
+2.14.3
+

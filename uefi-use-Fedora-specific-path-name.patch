@@ -1,7 +1,7 @@
-From 0b10d2ebcaf9244eba57790ede30fed6bc6c4223 Mon Sep 17 00:00:00 2001
+From 74a8239f40092900d83dd5c9632b5652b242e158 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Mon, 18 Sep 2017 09:24:37 +0100
-Subject: [PATCH] use Fedora specific EFI path/name
+Date: Tue, 5 Dec 2017 00:10:22 +0000
+Subject: [PATCH 1/5] use Fedora specific EFI path/name
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
  1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index e0d0034ed3..18da4ff737 100644
+index 5c469a23fa..c2822b4d06 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
 @@ -88,7 +88,7 @@
@@ -20,8 +20,8 @@ index e0d0034ed3..18da4ff737 100644
 +#define BOOTEFI_NAME "grubaa64.efi"
  #elif defined(CONFIG_ARM)
  #define BOOTEFI_NAME "bootarm.efi"
- #endif
-@@ -118,7 +118,7 @@
+ #elif defined(CONFIG_X86_RUN_32BIT)
+@@ -122,7 +122,7 @@
  			"bootefi bootmgr ${fdtcontroladdr};"              \
  		"fi;"                                                     \
  		"load ${devtype} ${devnum}:${distro_bootpart} "           \
@@ -30,7 +30,7 @@ index e0d0034ed3..18da4ff737 100644
  		"if fdt addr ${fdt_addr_r}; then "                        \
  			"bootefi ${kernel_addr_r} ${fdt_addr_r};"         \
  		"else "                                                    \
-@@ -141,9 +141,9 @@
+@@ -145,9 +145,9 @@
  			"fi;"                                             \
  		"done;"                                                   \
  		"if test -e ${devtype} ${devnum}:${distro_bootpart} "     \
@@ -43,5 +43,5 @@ index e0d0034ed3..18da4ff737 100644
  				"echo EFI LOAD FAILED: continuing...; "   \
  		"fi; "                                                    \
 -- 
-2.13.5
+2.14.3
 
