@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2018.01
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -283,6 +283,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Jan  2 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.01-0.2.rc3
+- 2018.01 RC3
+
 * Tue Dec 19 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2018.01-0.1.rc2
 - 2018.01 RC2
 
