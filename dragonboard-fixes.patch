@@ -1,134 +1,17 @@
-From ce71ddd50a6752b805974893464a88a0f145fe42 Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Wed, 20 Dec 2017 08:22:08 +0000
-Subject: [PATCH] Dragonboard fixes
+From a2782063c8daf9000d131e85200bc631a16450b4 Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Wed, 21 Jun 2017 14:21:15 -0400
+Subject: [PATCH 01/23] WIP: fix usb
 
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- arch/arm/dts/dragonboard410c.dts                 |  9 +++++-
- board/qualcomm/dragonboard410c/Makefile          |  1 +
- board/qualcomm/dragonboard410c/dragonboard410c.c |  8 ++++++
- board/qualcomm/dragonboard410c/lowlevel_init.S   | 36 ++++++++++++++++++++++++
- common/usb_storage.c                             |  4 +--
- configs/dragonboard410c_defconfig                | 11 ++++++++
- include/configs/dragonboard410c.h                |  4 +--
- 7 files changed, 68 insertions(+), 5 deletions(-)
- create mode 100644 board/qualcomm/dragonboard410c/lowlevel_init.S
+ common/usb_storage.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/dts/dragonboard410c.dts b/arch/arm/dts/dragonboard410c.dts
-index 7746622dda..a47b95264c 100644
---- a/arch/arm/dts/dragonboard410c.dts
-+++ b/arch/arm/dts/dragonboard410c.dts
-@@ -23,11 +23,16 @@
- 		reg = <0 0x80000000 0 0x3da00000>;
- 	};
- 
-+	reserved-memory {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
-+	};
-+
- 	chosen {
- 		stdout-path = "/soc/serial@78b0000";
- 	};
- 
--
- 	soc {
- 		#address-cells = <0x1>;
- 		#size-cells = <0x1>;
-@@ -67,6 +72,7 @@
- 			reg = <0x78d9000 0x400>;
- 		};
- 
-+/*
- 		sdhci@07824000 {
- 			compatible = "qcom,sdhci-msm-v4";
- 			reg = <0x7824900 0x11c 0x7824000 0x800>;
-@@ -76,6 +82,7 @@
- 			clock = <&clkc 0>;
- 			clock-frequency = <100000000>;
- 		};
-+*/
- 
- 		sdhci@07864000 {
- 			compatible = "qcom,sdhci-msm-v4";
-diff --git a/board/qualcomm/dragonboard410c/Makefile b/board/qualcomm/dragonboard410c/Makefile
-index cd678088fa..5082383be4 100644
---- a/board/qualcomm/dragonboard410c/Makefile
-+++ b/board/qualcomm/dragonboard410c/Makefile
-@@ -5,4 +5,5 @@
- #
- 
- obj-y	:= dragonboard410c.o
-+obj-y	+= lowlevel_init.o
- extra-y += head.o
-diff --git a/board/qualcomm/dragonboard410c/dragonboard410c.c b/board/qualcomm/dragonboard410c/dragonboard410c.c
-index 848e27848b..da1cd2cbc9 100644
---- a/board/qualcomm/dragonboard410c/dragonboard410c.c
-+++ b/board/qualcomm/dragonboard410c/dragonboard410c.c
-@@ -27,6 +27,14 @@ int dram_init_banksize(void)
- 	return 0;
- }
- 
-+extern unsigned long fw_dtb_pointer;
-+
-+void *board_fdt_blob_setup(void)
-+{
-+	if (fdt_magic(fw_dtb_pointer) != FDT_MAGIC)
-+		return NULL;
-+	return (void *)fw_dtb_pointer;
-+}
- 
- int board_prepare_usb(enum usb_init_type type)
- {
-diff --git a/board/qualcomm/dragonboard410c/lowlevel_init.S b/board/qualcomm/dragonboard410c/lowlevel_init.S
-new file mode 100644
-index 0000000000..cdbd8e14db
---- /dev/null
-+++ b/board/qualcomm/dragonboard410c/lowlevel_init.S
-@@ -0,0 +1,36 @@
-+/*
-+ * (C) Copyright 2016
-+ * Cédric Schieli <cschieli@gmail.com>
-+ *
-+ * SPDX-License-Identifier:	GPL-2.0+
-+ */
-+
-+#include <config.h>
-+
-+.align 8
-+.global fw_dtb_pointer
-+fw_dtb_pointer:
-+#ifdef CONFIG_ARM64
-+	.dword 0x0
-+#else
-+	.word 0x0
-+#endif
-+
-+/*
-+ * Routine: save_boot_params (called after reset from start.S)
-+ * Description: save ATAG/FDT address provided by the firmware at boot time
-+ */
-+
-+.global save_boot_params
-+save_boot_params:
-+
-+	/* The firmware provided ATAG/FDT address can be found in r2/x0 */
-+#ifdef CONFIG_ARM64
-+	adr	x8, fw_dtb_pointer
-+	str	x0, [x8]
-+#else
-+	str	r2, fw_dtb_pointer
-+#endif
-+
-+	/* Returns */
-+	b	save_boot_params_ret
 diff --git a/common/usb_storage.c b/common/usb_storage.c
-index a91b1c0d2f..caea87a09f 100644
+index df0b057308..b2a3ab49ec 100644
 --- a/common/usb_storage.c
 +++ b/common/usb_storage.c
-@@ -1018,7 +1018,7 @@ static int usb_request_sense(struct scsi_cmd *srb, struct us_data *ss)
+@@ -996,7 +996,7 @@ static int usb_request_sense(struct scsi_cmd *srb, struct us_data *ss)
  
  static int usb_test_unit_ready(struct scsi_cmd *srb, struct us_data *ss)
  {
@@ -137,7 +20,7 @@ index a91b1c0d2f..caea87a09f 100644
  
  	do {
  		memset(&srb->cmd[0], 0, 12);
-@@ -1041,7 +1041,7 @@ static int usb_test_unit_ready(struct scsi_cmd *srb, struct us_data *ss)
+@@ -1019,7 +1019,7 @@ static int usb_test_unit_ready(struct scsi_cmd *srb, struct us_data *ss)
  		if ((srb->sense_buf[2] == 0x02) &&
  		    (srb->sense_buf[12] == 0x3a))
  			return -1;
@@ -146,61 +29,116 @@ index a91b1c0d2f..caea87a09f 100644
  	} while (retries--);
  
  	return -1;
+-- 
+2.13.3
+
+From 40b06f8d422efc1d9674f081ef22445904c01f4f Mon Sep 17 00:00:00 2001
+From: Rob Clark <robdclark@gmail.com>
+Date: Mon, 3 Jul 2017 08:34:37 -0400
+Subject: [PATCH 02/23] HACK: disable emmc
+
+Hitting some timeout which makes boot take much longer.  And
+uefi/boot/rootfs partitions will be on sd-card or usb disk, etc,
+so we can just ignore emmc.
+---
+ arch/arm/dts/dragonboard410c.dts | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/dts/dragonboard410c.dts b/arch/arm/dts/dragonboard410c.dts
+index 7746622dda..0d3b7a35f4 100644
+--- a/arch/arm/dts/dragonboard410c.dts
++++ b/arch/arm/dts/dragonboard410c.dts
+@@ -67,6 +67,7 @@
+ 			reg = <0x78d9000 0x400>;
+ 		};
+ 
++/*
+ 		sdhci@07824000 {
+ 			compatible = "qcom,sdhci-msm-v4";
+ 			reg = <0x7824900 0x11c 0x7824000 0x800>;
+@@ -76,6 +77,7 @@
+ 			clock = <&clkc 0>;
+ 			clock-frequency = <100000000>;
+ 		};
++*/
+ 
+ 		sdhci@07864000 {
+ 			compatible = "qcom,sdhci-msm-v4";
+-- 
+2.13.3
+From 7f9d2f7d2ba72cbf62bdabaa98c489b514dc136c Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Tue, 16 Jan 2018 03:16:35 +0000
+Subject: [PATCH 1/2] db410c: config updates
+
+Enable USB keyboards and video output, VFAT writes (useful for EFI boot)
+and a common USB eth adapter
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ configs/dragonboard410c_defconfig | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
 diff --git a/configs/dragonboard410c_defconfig b/configs/dragonboard410c_defconfig
-index b71bff7592..4738f3a08b 100644
+index 4389f52b5c..9dcadb938c 100644
 --- a/configs/dragonboard410c_defconfig
 +++ b/configs/dragonboard410c_defconfig
-@@ -9,6 +9,7 @@ CONFIG_BOOTARGS="console=ttyMSM0,115200n8"
- # CONFIG_DISPLAY_BOARDINFO is not set
- CONFIG_SYS_PROMPT="dragonboard410c => "
- # CONFIG_CMD_IMI is not set
-+CONFIG_CMD_POWEROFF=y
- CONFIG_CMD_MD5SUM=y
- CONFIG_CMD_MEMINFO=y
- CONFIG_CMD_GPIO=y
-@@ -21,6 +22,8 @@ CONFIG_ENV_IS_IN_MMC=y
- CONFIG_CLK=y
- CONFIG_MSM_GPIO=y
- CONFIG_PM8916_GPIO=y
-+CONFIG_DM_KEYBOARD=y
-+CONFIG_DM_ETH=y
- CONFIG_LED=y
- CONFIG_LED_GPIO=y
- CONFIG_DM_MMC=y
-@@ -37,10 +40,18 @@ CONFIG_USB_EHCI_HCD=y
- CONFIG_USB_EHCI_MSM=y
- CONFIG_USB_ULPI_VIEWPORT=y
- CONFIG_USB_ULPI=y
-+CONFIG_USB_KEYBOARD=y
- CONFIG_USB_STORAGE=y
- CONFIG_USB_HOST_ETHER=y
+@@ -41,10 +41,20 @@ CONFIG_USB_HOST_ETHER=y
  CONFIG_USB_ETHER_ASIX=y
  CONFIG_USB_ETHER_ASIX88179=y
  CONFIG_USB_ETHER_MCS7830=y
 +CONFIG_USB_ETHER_RTL8152=y
  CONFIG_USB_ETHER_SMSC95XX=y
++CONFIG_DM_ETH=y
+ CONFIG_OF_LIBFDT_OVERLAY=y
+ CONFIG_OF_CONTROL=y
+ CONFIG_ENV_IS_IN_MMC=y
+ CONFIG_OF_BOARD_SETUP=y
+ CONFIG_PSCI_RESET=y
+ CONFIG_OF_SEPARATE=y
++CONFIG_DM_KEYBOARD=y
++CONFIG_USB_KEYBOARD=y
 +CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
 +CONFIG_DM_VIDEO=y
-+# CONFIG_VIDEO_BPP8 is not set
++# CONFG_VIDEO_BPP8 is not set
 +CONFIG_NO_FB_CLEAR=y
 +CONFIG_VIDEO_SIMPLE=y
 +CONFIG_FAT_WRITE=y
- CONFIG_OF_LIBFDT_OVERLAY=y
-diff --git a/include/configs/dragonboard410c.h b/include/configs/dragonboard410c.h
-index d2447b27d8..5dbd4dcaa1 100644
---- a/include/configs/dragonboard410c.h
-+++ b/include/configs/dragonboard410c.h
-@@ -92,8 +92,8 @@ REFLASH(dragonboard/u-boot.img, 8)\
- 	"initrd_high=0xffffffffffffffff\0" \
- 	"linux_image=Image\0" \
- 	"kernel_addr_r=0x81000000\0"\
--	"fdtfile=apq8016-sbc.dtb\0" \
--	"fdt_addr_r=0x83000000\0"\
-+	"fdtfile=qcom/apq8016-sbc.dtb\0" \
-+	"fdt_addr_r=0x81e00000\0"\
- 	"ramdisk_addr_r=0x84000000\0"\
- 	"scriptaddr=0x90000000\0"\
- 	"pxefile_addr_r=0x90100000\0"\
+-- 
+2.14.3
+
+From 5d4690815f188a46a2eebad023403819fe4d053a Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Tue, 16 Jan 2018 03:23:07 +0000
+Subject: [PATCH 2/2] db820c: config updates
+
+Enable LEDs, FAT write, and various DT functionality
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ configs/dragonboard820c_defconfig | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/configs/dragonboard820c_defconfig b/configs/dragonboard820c_defconfig
+index 8af54aa3c4..dcec65d212 100644
+--- a/configs/dragonboard820c_defconfig
++++ b/configs/dragonboard820c_defconfig
+@@ -35,9 +35,15 @@ CONFIG_DM_GPIO=y
+ CONFIG_DM_PMIC=y
+ CONFIG_PMIC_PM8916=y
+ CONFIG_PM8916_GPIO=y
++CONFIG_LED=y
++CONFIG_LED_GPIO=y
+ CONFIG_CLK=y
+ CONFIG_PSCI_RESET=y
+ CONFIG_ENV_IS_IN_EXT4=y
+ CONFIG_ENV_EXT4_INTERFACE="mmc"
+ CONFIG_ENV_EXT4_DEVICE_AND_PART="0:1"
+ CONFIG_ENV_EXT4_FILE="/uboot.env"
++CONFIG_FAT_WRITE=y
++CONFIG_OF_LIBFDT_OVERLAY=y
++CONFIG_OF_CONTROL=y
++CONFIG_OF_SEPARATE=y
 -- 
 2.14.3
 
