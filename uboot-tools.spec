@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2018.03
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -15,10 +15,10 @@ Source4:   aarch64-chromebooks
 Source5:   10-devicetree.install
 
 # Fedoraisms patches
-#Patch1:    uefi-use-Fedora-specific-path-name.patch
+Patch1:    uefi-use-Fedora-specific-path-name.patch
 
 # general fixes
-#Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
 
 # Board fixes and enablement
@@ -287,6 +287,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Feb  7 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-0.2.rc1
+- Update uEFI patches
+
 * Tue Jan 30 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-0.1.rc1
 - 2018.03 RC1
 
