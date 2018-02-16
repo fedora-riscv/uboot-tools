@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2018.03
-Release:   0.4%{?candidate:.%{candidate}}%{?dist}
+Release:   0.5%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -21,6 +21,9 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
 Patch4:    Add-fix-for-Pine64-gigabit-throughput-issues.patch
+Patch5:    imx-spl-Partially-revert-spl-eMMC-SD-Provide.patch
+Patch6:    fdt-Fixup-only-valid-memory-banks.patch
+Patch7:    mmc-Fix-uninitialised-priv-member.patch
 
 # Board fixes and enablement
 #Patch10:   db-generic-fixes.patch
@@ -288,6 +291,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Fri Feb 15 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-0.5.rc2
+- A few upstream fixes
+
 * Thu Feb 14 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-0.4.rc2
 - Fix for GBps network on some AllWinner devices
 

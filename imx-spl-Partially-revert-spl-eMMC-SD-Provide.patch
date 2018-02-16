@@ -1,0 +1,72 @@
+From patchwork Thu Feb 15 14:41:40 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,
+ v3] imx: spl: Partially revert "spl: eMMC/SD: Provide one __weak
+ spl_boot_mode() function"
+X-Patchwork-Submitter: Fabio Estevam <fabio.estevam@nxp.com>
+X-Patchwork-Id: 874073
+Message-Id: <1518705700-9402-1-git-send-email-fabio.estevam@nxp.com>
+To: <sbabic@denx.de>
+Cc: trini@konsulko.com, u-boot@lists.denx.de, jsg@jsg.id.au,
+ Fabio Estevam <fabio.estevam@nxp.com>
+Date: Thu, 15 Feb 2018 12:41:40 -0200
+From: Fabio Estevam <fabio.estevam@nxp.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Commit d695d6627803 ("spl: eMMC/SD: Provide one __weak spl_boot_mode()
+function") breaks the boot on several i.MX6 boards,
+such as cuboxi and wandboard:
+
+U-Boot SPL 2018.03-rc1-00212-g48914fc119 (Feb 10 2018 - 11:04:33 +1300)
+Trying to boot from MMC1
+Failed to mount ext2 filesystem...
+spl_load_image_ext: ext4fs mount err - 0
+
+Partially revert it so that we can boot U-Boot again on these
+i.MX6 platforms.
+
+Reported-by: Jonathan Gray <jsg@jsg.id.au>
+Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
+---
+Changes since v2:
+- Do a partiall revert instead of full revert (Lukasz)
+
+ arch/arm/mach-imx/spl.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/arch/arm/mach-imx/spl.c b/arch/arm/mach-imx/spl.c
+index a9079fc..b2521b2 100644
+--- a/arch/arm/mach-imx/spl.c
++++ b/arch/arm/mach-imx/spl.c
+@@ -132,6 +132,29 @@ int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
+ }
+ #endif
+ 
++#if defined(CONFIG_SPL_MMC_SUPPORT)
++/* called from spl_mmc to see type of boot mode for storage (RAW or FAT) */
++u32 spl_boot_mode(const u32 boot_device)
++{
++	switch (spl_boot_device()) {
++	/* for MMC return either RAW or FAT mode */
++	case BOOT_DEVICE_MMC1:
++	case BOOT_DEVICE_MMC2:
++#if defined(CONFIG_SPL_FAT_SUPPORT)
++		return MMCSD_MODE_FS;
++#elif defined(CONFIG_SUPPORT_EMMC_BOOT)
++		return MMCSD_MODE_EMMCBOOT;
++#else
++		return MMCSD_MODE_RAW;
++#endif
++		break;
++	default:
++		puts("spl: ERROR:  unsupported device\n");
++		hang();
++	}
++}
++#endif
++
+ #if defined(CONFIG_SECURE_BOOT)
+ 
+ /*
