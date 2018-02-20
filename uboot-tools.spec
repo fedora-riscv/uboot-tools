@@ -1,4 +1,4 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2018.03
@@ -22,8 +22,6 @@ Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
 Patch4:    Add-fix-for-Pine64-gigabit-throughput-issues.patch
 Patch5:    imx-spl-Partially-revert-spl-eMMC-SD-Provide.patch
-Patch6:    fdt-Fixup-only-valid-memory-banks.patch
-Patch7:    mmc-Fix-uninitialised-priv-member.patch
 
 # Board fixes and enablement
 #Patch10:   db-generic-fixes.patch
@@ -291,6 +289,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Feb 20 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-0.6.rc3
+- 2018.03 RC3
+
 * Fri Feb 15 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-0.5.rc2
 - A few upstream fixes
 
