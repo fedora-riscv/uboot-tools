@@ -1,0 +1,33 @@
+From 5245a38260ff414e054d2f987907710f46e5a2e0 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Sun, 25 Feb 2018 19:15:39 +0000
+Subject: [PATCH] config: evb-rk3399: enable make itb
+
+Similar to firefly 3399 enable the ability to create a FIT image
+with combined arm-trusted-firmware.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ configs/evb-rk3399_defconfig | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/configs/evb-rk3399_defconfig b/configs/evb-rk3399_defconfig
+index b5ae073224..bf81b2f93a 100644
+--- a/configs/evb-rk3399_defconfig
++++ b/configs/evb-rk3399_defconfig
+@@ -11,9 +11,12 @@ CONFIG_DEFAULT_DEVICE_TREE="rk3399-evb"
+ CONFIG_DEBUG_UART=y
+ CONFIG_FIT=y
+ CONFIG_SPL_LOAD_FIT=y
++CONFIG_SPL_FIT_GENERATOR="arch/arm/mach-rockchip/make_fit_atf.py"
+ # CONFIG_DISPLAY_CPUINFO is not set
+ CONFIG_SPL_STACK_R=y
+ CONFIG_SPL_STACK_R_MALLOC_SIMPLE_LEN=0x4000
++CONFIG_SPL_ATF=y
++CONFIG_SPL_ATF_NO_PLATFORM_PARAM=y
+ CONFIG_CMD_BOOTZ=y
+ CONFIG_CMD_GPT=y
+ CONFIG_CMD_MMC=y
+-- 
+2.14.3
+
