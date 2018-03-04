@@ -292,6 +292,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %changelog
 * Sun Mar  4 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-0.8.rc3
 - Add support for SoM rev 1.5 to mx6cuboxi
+- Rebuild for new ATF 1.5 rc0 release
 
 * Sun Feb 25 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-0.7.rc3
 - Build 64 bit Rockchips FIT images with ARM Trusted Firmware
