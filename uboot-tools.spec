@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2018.03
-Release:   0.7%{?candidate:.%{candidate}}%{?dist}
+Release:   0.8%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -24,16 +24,14 @@ Patch4:    Add-fix-for-Pine64-gigabit-throughput-issues.patch
 Patch5:    imx-spl-Partially-revert-spl-eMMC-SD-Provide.patch
 Patch6:    rk33xx-make_fit_atf-fix.patch
 Patch7:    rk33xx-enable-make-itb.patch
+Patch8:    mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
 
 # Board fixes and enablement
 #Patch10:   db-generic-fixes.patch
 #Patch11:   db410c-fixes.patch
 #Patch12:   db820c-support.patch
 #Patch13:   dragonboard-fixes.patch
-#Patch14:   Rpi-Add-support-for-second-sd-host-controller.patch
-#Patch15:   RPi-Properly-handle-dynamic-serial-configuration.patch
 # Patch14:   mvebu-enable-generic-distro-boot-config.patch
-# Patch15:   mx6-Initial-Hummingboard-2-support.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -292,6 +290,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Mar  4 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-0.8.rc3
+- Add support for SoM rev 1.5 to mx6cuboxi
+
 * Sun Feb 25 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-0.7.rc3
 - Build 64 bit Rockchips FIT images with ARM Trusted Firmware
 
