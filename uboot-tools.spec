@@ -21,19 +21,20 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
 Patch4:    Add-fix-for-Pine64-gigabit-throughput-issues.patch
-Patch5:    imx-spl-Partially-revert-spl-eMMC-SD-Provide.patch
+Patch5:    rpi-Drain-RX-queue-on-setbrg.patch
 Patch6:    rk33xx-make_fit_atf-fix.patch
 Patch7:    rk33xx-enable-make-itb.patch
 Patch8:    mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
-# Patch11:   mvebu-enable-generic-distro-boot-config.patch
+Patch11:   BeagleBoard.org-PocketBeagle.patch
+# Patch19:   mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
-BuildRequires:  gcc
-BuildRequires:  git
+BuildRequires:  gcc make
+BuildRequires:  git-core
 BuildRequires:  openssl-devel
 BuildRequires:  python2-devel
 BuildRequires:  python2-setuptools
@@ -287,8 +288,11 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Tue Mar  6 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-0.9.rc4
+* Wed Mar  7 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-0.9.rc4
 - 2018.03 RC4
+- Fixes for Raspberry Pi 3 boot
+- Minor kernel install fixes
+- Enable am335x_evm_usbspl for Beagle Pocket
 - DragonBoard patch rebase
 
 * Sun Mar  4 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-0.8.rc3
