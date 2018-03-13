@@ -21,10 +21,9 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
 Patch4:    Add-fix-for-Pine64-gigabit-throughput-issues.patch
-Patch5:    rpi-Drain-RX-queue-on-setbrg.patch
-Patch6:    rk33xx-make_fit_atf-fix.patch
-Patch7:    rk33xx-enable-make-itb.patch
-Patch8:    mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
+Patch5:    rk33xx-make_fit_atf-fix.patch
+Patch6:    rk33xx-enable-make-itb.patch
+Patch7:    mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
