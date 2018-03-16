@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2018.03
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -23,11 +23,13 @@ Patch3:    usb-kbd-fixes.patch
 Patch4:    Add-fix-for-Pine64-gigabit-throughput-issues.patch
 Patch5:    rk33xx-make_fit_atf-fix.patch
 Patch6:    rk33xx-enable-make-itb.patch
-Patch7:    mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
+Patch7:    net-Only-access-network-devices-after-init.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
 Patch11:   BeagleBoard.org-PocketBeagle.patch
+Patch12:   mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
+Patch13:   rpi-3-plus-support.patch
 # Patch19:   mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
@@ -287,6 +289,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Fri Mar 16 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-2
+- Add support for Raspberry Pi 3+
+
 * Tue Mar 13 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-1
 - 2018.03 GA
 
