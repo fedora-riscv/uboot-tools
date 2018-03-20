@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2018.03
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Release:   3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -30,6 +30,7 @@ Patch10:   dragonboard-fixes.patch
 Patch11:   BeagleBoard.org-PocketBeagle.patch
 Patch12:   mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
 Patch13:   rpi-3-plus-support.patch
+Patch14:   mmc-use-core-clock-frequency-in-bcm2835-sdhost.patch
 # Patch19:   mvebu-enable-generic-distro-boot-config.patch
 
 BuildRequires:  bc
@@ -289,6 +290,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Mar 20 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-3
+- Fix issue with certain MMC cards on Raspberry Pi
+
 * Fri Mar 16 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-2
 - Add support for Raspberry Pi 3+
 
