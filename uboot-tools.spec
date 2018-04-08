@@ -1,8 +1,8 @@
-#global candidate rc4
+%global candidate rc1
 
 Name:      uboot-tools
-Version:   2018.03
-Release:   4%{?candidate:.%{candidate}}%{?dist}
+Version:   2018.05
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -20,19 +20,14 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 # general fixes
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
-Patch4:    Add-fix-for-Pine64-gigabit-throughput-issues.patch
-Patch5:    rk33xx-make_fit_atf-fix.patch
-Patch6:    rk33xx-enable-make-itb.patch
-Patch7:    net-Only-access-network-devices-after-init.patch
+Patch4:    rk33xx-make_fit_atf-fix.patch
+Patch5:    rk33xx-enable-make-itb.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
 Patch11:   BeagleBoard.org-PocketBeagle.patch
 Patch12:   mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
-Patch13:   rpi-3-plus-support.patch
-Patch14:   rpi-Allow-to-boot-without-serial.patch
-Patch15:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-Patch16:   mmc-use-core-clock-frequency-in-bcm2835-sdhost.patch
+Patch13:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch19:   mmc-mv_sdhci-zero-out-sdhci_host-structure.patch
 Patch20:   mvneta-support-setting-hardware-address.patch
 Patch21:   sunxi-improve-throughput-in-the-sunxi_mmc-driver.patch
@@ -296,6 +291,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Apr  8 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.1
+- 2018.05 RC1
+
 * Fri Apr  6 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-4
 - Improvements for Raspberry Pi, AllWinner MMC perf, mvebu devices
 
