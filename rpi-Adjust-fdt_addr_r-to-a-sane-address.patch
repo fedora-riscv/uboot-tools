@@ -1,0 +1,40 @@
+From patchwork Fri Apr 13 15:49:00 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] rpi: Adjust fdt_addr_r to a sane address
+X-Patchwork-Submitter: Alexander Graf <agraf@suse.de>
+X-Patchwork-Id: 898002
+X-Patchwork-Delegate: agraf@suse.de
+Message-Id: <20180413154900.84208-1-agraf@suse.de>
+To: u-boot@lists.denx.de
+Date: Fri, 13 Apr 2018 17:49:00 +0200
+From: Alexander Graf <agraf@suse.de>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Back in the old days, 0x100 was used as the address to pass the device tree
+from firmware into the kernel. This has since changed to a more dynamic
+location, so using 0x100 actually breaks more things than it helps with.
+
+Let's move the device tree default location for distro boot to a more sane
+place that gives us enough head room in low memory.
+
+Reported-by: Tuomas Tynkkynen <tuomas@tuxera.com>
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ include/configs/rpi.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/configs/rpi.h b/include/configs/rpi.h
+index 325e52a019..fcf7e0976b 100644
+--- a/include/configs/rpi.h
++++ b/include/configs/rpi.h
+@@ -124,7 +124,7 @@
+ #define ENV_MEM_LAYOUT_SETTINGS \
+ 	"fdt_high=ffffffff\0" \
+ 	"initrd_high=ffffffff\0" \
+-	"fdt_addr_r=0x00000100\0" \
++	"fdt_addr_r=0x01f00000\0" \
+ 	"pxefile_addr_r=0x00100000\0" \
+ 	"kernel_addr_r=0x01000000\0" \
+ 	"scriptaddr=0x02000000\0" \

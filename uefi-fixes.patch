@@ -1,0 +1,84 @@
+From patchwork Thu Mar 15 16:33:38 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] efi_loader: Fix network DP with DM_ETH
+X-Patchwork-Submitter: Alexander Graf <agraf@suse.de>
+X-Patchwork-Id: 886355
+Message-Id: <20180315163338.77456-1-agraf@suse.de>
+To: u-boot@lists.denx.de
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Thu, 15 Mar 2018 17:33:38 +0100
+From: Alexander Graf <agraf@suse.de>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+When CONFIG_DM_ETH is set, we assemble the device path properly with a
+full device hierarchy. Our helper function dp_fill() even put the MAC
+node itself in it for us.
+
+However, for non-DM compatibility we also have code in that added the
+MAC node manually. That code now runs on top of the existing MAC node:
+
+  Handle 0x3db2f6b0
+    /HardwareVendor(e61d73b9-a384-4acc-aeab-82e828f3628b)[0: ]
+    /USBClass(0,0,9,0,0)/USBClass(424,9514,9,0,2)/MacAddr(b8:27:eb:e1:81:47,1)
+    /MacAddr(b8:27:eb:e1:81:47,57)/EndEntire
+
+We obviously don't need the additional node and in fact, grub chokes on
+it and fails to match the DP against the ethernet device node. So this
+patch moves the additional MAC node into the non-DM code path:
+
+  Handle 0x3db3fde0
+    /HardwareVendor(e61d73b9-a384-4acc-aeab-82e828f3628b)[0: ]
+    /USBClass(0,0,9,0,0)/USBClass(424,9514,9,0,2)/MacAddr(b8:27:eb:e1:81:47,1)
+    /EndEntire
+
+While at it, we also mark the non-DM MAC node as ethernet.
+
+Fixes: b66c60dde9d ("efi_loader: add device-path utils")
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ lib/efi_loader/efi_device_path.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/lib/efi_loader/efi_device_path.c b/lib/efi_loader/efi_device_path.c
+index 3c735e60d3..22627824f0 100644
+--- a/lib/efi_loader/efi_device_path.c
++++ b/lib/efi_loader/efi_device_path.c
+@@ -749,7 +749,9 @@ struct efi_device_path *efi_dp_from_file(struct blk_desc *desc, int part,
+ #ifdef CONFIG_CMD_NET
+ struct efi_device_path *efi_dp_from_eth(void)
+ {
++#ifndef CONFIG_DM_ETH
+ 	struct efi_device_path_mac_addr *ndp;
++#endif
+ 	void *buf, *start;
+ 	unsigned dpsize = 0;
+ 
+@@ -759,8 +761,8 @@ struct efi_device_path *efi_dp_from_eth(void)
+ 	dpsize += dp_size(eth_get_dev());
+ #else
+ 	dpsize += sizeof(ROOT);
+-#endif
+ 	dpsize += sizeof(*ndp);
++#endif
+ 
+ 	start = buf = dp_alloc(dpsize + sizeof(END));
+ 	if (!buf)
+@@ -771,14 +773,15 @@ struct efi_device_path *efi_dp_from_eth(void)
+ #else
+ 	memcpy(buf, &ROOT, sizeof(ROOT));
+ 	buf += sizeof(ROOT);
+-#endif
+ 
+ 	ndp = buf;
+ 	ndp->dp.type = DEVICE_PATH_TYPE_MESSAGING_DEVICE;
+ 	ndp->dp.sub_type = DEVICE_PATH_SUB_TYPE_MSG_MAC_ADDR;
+ 	ndp->dp.length = sizeof(*ndp);
++	ndp->if_type = 1; /* Ethernet */
+ 	memcpy(ndp->mac.addr, eth_get_ethaddr(), ARP_HLEN);
+ 	buf = &ndp[1];
++#endif
+ 
+ 	*((struct efi_device_path *)buf) = END;
+ 
