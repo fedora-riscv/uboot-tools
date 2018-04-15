@@ -1,0 +1,122 @@
+From b2735176dd5378e4279449100673c83b0675e443 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Sun, 15 Apr 2018 13:20:05 +0100
+Subject: [PATCH 3/3] sunxi: A64/H5 devices: enable usb keyboard support
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ configs/a64-olinuxino_defconfig       | 2 ++
+ configs/bananapi_m64_defconfig        | 2 ++
+ configs/nanopi_a64_defconfig          | 2 ++
+ configs/nanopi_neo2_defconfig         | 2 ++
+ configs/nanopi_neo_plus2_defconfig    | 2 ++
+ configs/orangepi_pc2_defconfig        | 2 ++
+ configs/orangepi_win_defconfig        | 2 ++
+ configs/orangepi_zero_plus2_defconfig | 2 ++
+ configs/pine64_plus_defconfig         | 2 ++
+ configs/sopine_baseboard_defconfig    | 2 ++
+ 10 files changed, 20 insertions(+)
+
+diff --git a/configs/a64-olinuxino_defconfig b/configs/a64-olinuxino_defconfig
+index cabbba7484..0df218a216 100644
+--- a/configs/a64-olinuxino_defconfig
++++ b/configs/a64-olinuxino_defconfig
+@@ -14,3 +14,5 @@ CONFIG_SPL=y
+ CONFIG_SUN8I_EMAC=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
++CONFIG_DM_KEYBOARD=y
++CONFIG_USB_KEYBOARD=y
+diff --git a/configs/bananapi_m64_defconfig b/configs/bananapi_m64_defconfig
+index 8679ff5bf4..169c423b6f 100644
+--- a/configs/bananapi_m64_defconfig
++++ b/configs/bananapi_m64_defconfig
+@@ -15,3 +15,5 @@ CONFIG_SPL=y
+ CONFIG_SUN8I_EMAC=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
++CONFIG_DM_KEYBOARD=y
++CONFIG_USB_KEYBOARD=y
+diff --git a/configs/nanopi_a64_defconfig b/configs/nanopi_a64_defconfig
+index 76a86594f2..58a5bc60dd 100644
+--- a/configs/nanopi_a64_defconfig
++++ b/configs/nanopi_a64_defconfig
+@@ -13,3 +13,5 @@ CONFIG_SPL=y
+ CONFIG_SUN8I_EMAC=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
++CONFIG_DM_KEYBOARD=y
++CONFIG_USB_KEYBOARD=y
+diff --git a/configs/nanopi_neo2_defconfig b/configs/nanopi_neo2_defconfig
+index 0d6926e9ab..af37f4bee9 100644
+--- a/configs/nanopi_neo2_defconfig
++++ b/configs/nanopi_neo2_defconfig
+@@ -14,3 +14,5 @@ CONFIG_SPL=y
+ CONFIG_SUN8I_EMAC=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
++CONFIG_DM_KEYBOARD=y
++CONFIG_USB_KEYBOARD=y
+diff --git a/configs/nanopi_neo_plus2_defconfig b/configs/nanopi_neo_plus2_defconfig
+index 975321825c..3e891ab5e8 100644
+--- a/configs/nanopi_neo_plus2_defconfig
++++ b/configs/nanopi_neo_plus2_defconfig
+@@ -15,3 +15,5 @@ CONFIG_SPL=y
+ # CONFIG_SPL_EFI_PARTITION is not set
+ CONFIG_SUN8I_EMAC=y
+ CONFIG_USB_EHCI_HCD=y
++CONFIG_DM_KEYBOARD=y
++CONFIG_USB_KEYBOARD=y
+diff --git a/configs/orangepi_pc2_defconfig b/configs/orangepi_pc2_defconfig
+index a6777ac4d7..13406ae1d1 100644
+--- a/configs/orangepi_pc2_defconfig
++++ b/configs/orangepi_pc2_defconfig
+@@ -16,3 +16,5 @@ CONFIG_SPL_SPI_SUNXI=y
+ CONFIG_SUN8I_EMAC=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
++CONFIG_DM_KEYBOARD=y
++CONFIG_USB_KEYBOARD=y
+diff --git a/configs/orangepi_win_defconfig b/configs/orangepi_win_defconfig
+index f21ea328ae..3d5422e63c 100644
+--- a/configs/orangepi_win_defconfig
++++ b/configs/orangepi_win_defconfig
+@@ -14,3 +14,5 @@ CONFIG_SPL_SPI_SUNXI=y
+ CONFIG_SUN8I_EMAC=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
++CONFIG_DM_KEYBOARD=y
++CONFIG_USB_KEYBOARD=y
+diff --git a/configs/orangepi_zero_plus2_defconfig b/configs/orangepi_zero_plus2_defconfig
+index f8b626e70b..6a4b1992a0 100644
+--- a/configs/orangepi_zero_plus2_defconfig
++++ b/configs/orangepi_zero_plus2_defconfig
+@@ -16,3 +16,5 @@ CONFIG_SPL=y
+ CONFIG_SUN8I_EMAC=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
++CONFIG_DM_KEYBOARD=y
++CONFIG_USB_KEYBOARD=y
+diff --git a/configs/pine64_plus_defconfig b/configs/pine64_plus_defconfig
+index 520bd21f44..3564816139 100644
+--- a/configs/pine64_plus_defconfig
++++ b/configs/pine64_plus_defconfig
+@@ -16,3 +16,5 @@ CONFIG_USB_EHCI_HCD=y
+ CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
+ CONFIG_PHY_REALTEK=y
+ CONFIG_RTL8211E_PINE64_GIGABIT_FIX=y
++CONFIG_DM_KEYBOARD=y
++CONFIG_USB_KEYBOARD=y
+diff --git a/configs/sopine_baseboard_defconfig b/configs/sopine_baseboard_defconfig
+index 8ca43a6eac..fb623a079f 100644
+--- a/configs/sopine_baseboard_defconfig
++++ b/configs/sopine_baseboard_defconfig
+@@ -20,3 +20,5 @@ CONFIG_SPL_SPI_SUNXI=y
+ CONFIG_SUN8I_EMAC=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
++CONFIG_DM_KEYBOARD=y
++CONFIG_USB_KEYBOARD=y
+-- 
+2.17.0
+

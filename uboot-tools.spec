@@ -20,11 +20,10 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 # general fixes
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
-Patch4:    Add-fix-for-Pine64-gigabit-throughput-issues.patch
-Patch5:    rk33xx-make_fit_atf-fix.patch
-Patch6:    rk33xx-enable-make-itb.patch
-Patch7:    net-Only-access-network-devices-after-init.patch
-Patch8:    uefi-fixes.patch
+Patch4:    rk33xx-make_fit_atf-fix.patch
+Patch5:    rk33xx-enable-make-itb.patch
+Patch6:    net-Only-access-network-devices-after-init.patch
+Patch7:    uefi-fixes.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
@@ -36,6 +35,8 @@ Patch16:   mmc-use-core-clock-frequency-in-bcm2835-sdhost.patch
 Patch19:   mmc-mv_sdhci-zero-out-sdhci_host-structure.patch
 Patch20:   mvneta-support-setting-hardware-address.patch
 Patch21:   sunxi-improve-throughput-in-the-sunxi_mmc-driver.patch
+Patch22:   sunxi-Add-fix-for-Pine64-gigabit-throughput-issues.patch
+Patch23:   sunxi-A64-H5-devices-enable-usb-keyboard-support.patch
 
 # Patch99:   mvebu-enable-generic-distro-boot-config.patch
 
