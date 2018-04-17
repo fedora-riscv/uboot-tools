@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2018.05
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -26,7 +26,7 @@ Patch4:    rk33xx-make_fit_atf-fix.patch
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
 Patch12:   mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
-#Patch13:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+Patch13:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch19:   mmc-mv_sdhci-zero-out-sdhci_host-structure.patch
 Patch21:   sunxi-improve-throughput-in-the-sunxi_mmc-driver.patch
 
@@ -289,7 +289,12 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Sun Apr  8 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.1
+* Tue Apr 17 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.2-rc2
+- 2018.05 RC2
+- Enable Raspberry Pi option to use firmware DT
+- Enable Xilinx zcu100 (Ultra96)
+
+* Sun Apr  8 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.1-rc1
 - 2018.05 RC1
 
 * Fri Apr  6 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-4
