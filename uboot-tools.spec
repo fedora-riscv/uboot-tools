@@ -1,4 +1,4 @@
-%global candidate rc1
+%global candidate rc2
 
 Name:      uboot-tools
 Version:   2018.05
@@ -21,15 +21,13 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
 Patch4:    rk33xx-make_fit_atf-fix.patch
-Patch5:    rk33xx-enable-make-itb.patch
+#Patch5:    rk33xx-enable-make-itb.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
-Patch11:   BeagleBoard.org-PocketBeagle.patch
 Patch12:   mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
-Patch13:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+#Patch13:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch19:   mmc-mv_sdhci-zero-out-sdhci_host-structure.patch
-Patch20:   mvneta-support-setting-hardware-address.patch
 Patch21:   sunxi-improve-throughput-in-the-sunxi_mmc-driver.patch
 
 # Patch99:   mvebu-enable-generic-distro-boot-config.patch
@@ -265,7 +263,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 
 %files
 %doc README doc/README.imximage doc/README.kwbimage doc/README.distro doc/README.gpt
-%doc doc/README.odroid doc/README.rockchip doc/README.efi doc/uImage.FIT doc/README.arm64
+%doc doc/README.odroid doc/README.rockchip doc/README.uefi doc/uImage.FIT doc/README.arm64
 %doc doc/README.chromium builds/docs/*
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
