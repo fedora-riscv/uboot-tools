@@ -292,7 +292,6 @@ cp -p board/warp7/README builds/docs/README.warp7
 * Tue Apr 17 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.2-rc2
 - 2018.05 RC2
 - Enable Raspberry Pi option to use firmware DT
-- Enable Xilinx zcu100 (Ultra96)
 
 * Sun Apr  8 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.1-rc1
 - 2018.05 RC1
