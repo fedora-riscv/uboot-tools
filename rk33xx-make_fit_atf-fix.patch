@@ -1,4 +1,4 @@
-From 319f90eb72054efc5022cc2183496fd7801a4e1e Mon Sep 17 00:00:00 2001
+From 72ba581632c53ad16d1b7174ac507fb7b0ee47c1 Mon Sep 17 00:00:00 2001
 From: Patrick Uiterwijk <patrick@puiterwijk.org>
 Date: Wed, 14 Feb 2018 01:29:42 +0100
 Subject: [PATCH 1/2] arm: rockchip: make_fit_atf: remove unneeded imports
@@ -25,4 +25,5 @@ index 7c6dd57678..9a404d1d32 100755
  ELF_SEG_P_TYPE='p_type'
  ELF_SEG_P_PADDR='p_paddr'
 -- 
-2.14.3
+2.17.0
+

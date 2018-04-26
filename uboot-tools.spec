@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2018.05
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -20,15 +20,18 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 # general fixes
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
-Patch4:    rk33xx-make_fit_atf-fix.patch
-#Patch5:    rk33xx-enable-make-itb.patch
+Patch4:    uefi-upstream-test.patch
 
 # Board fixes and enablement
-Patch10:   dragonboard-fixes.patch
-Patch12:   mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
-Patch13:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-Patch19:   mmc-mv_sdhci-zero-out-sdhci_host-structure.patch
-Patch21:   sunxi-improve-throughput-in-the-sunxi_mmc-driver.patch
+Patch11:   mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
+Patch12:   dragonboard-fixes.patch
+#Patch13:   pi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+Patch14:   rk33xx-make_fit_atf-fix.patch
+Patch15:   rk33xx-enable-make-itb.patch
+Patch16:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
+Patch17:   mmc-mv_sdhci-zero-out-sdhci_host-structure.patch
+Patch18:   sunxi-improve-throughput-in-the-sunxi_mmc-driver.patch
+Patch19:   tegra186-jetson-tx2-disable-onboard-emmc.patch
 
 # Patch99:   mvebu-enable-generic-distro-boot-config.patch
 
@@ -130,6 +133,8 @@ do
   if [[ " ${rk33xx[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk33xx"
     make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" u-boot.itb V=1 O=builds/$(echo $board)/
+    builds/$(echo $board)/tools/mkimage -n rk3399 -T rksd  -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_sd.img
+    builds/$(echo $board)/tools/mkimage -n rk3399 -T rkspi -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_spi.img
   fi
 done
 
@@ -192,7 +197,7 @@ done
 for board in $(cat %{_arch}-boards)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
- for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/smdkv310-spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin
+ for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/smdkv310-spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin spl_sd.img spl_spi.img
  do
   if [ -f builds/$(echo $board)/$(echo $file) ]; then
     install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
@@ -289,6 +294,11 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Apr 26 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.3-rc2
+- uEFI improvements
+- Fixes for Rockchips rk33xx 64 bit devices
+- Build AllWinner 64 bit devices against new ATF
+
 * Tue Apr 17 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.2-rc2
 - 2018.05 RC2
 - Enable Raspberry Pi option to use firmware DT
