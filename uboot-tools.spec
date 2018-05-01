@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2018.05
-Release:   0.3%{?candidate:.%{candidate}}%{?dist}
+Release:   0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -20,18 +20,13 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 # general fixes
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
-Patch4:    uefi-upstream-test.patch
 
 # Board fixes and enablement
 Patch11:   mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
 Patch12:   dragonboard-fixes.patch
-#Patch13:   pi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-Patch14:   rk33xx-make_fit_atf-fix.patch
-Patch15:   rk33xx-enable-make-itb.patch
-Patch16:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
-Patch17:   mmc-mv_sdhci-zero-out-sdhci_host-structure.patch
-Patch18:   sunxi-improve-throughput-in-the-sunxi_mmc-driver.patch
-Patch19:   tegra186-jetson-tx2-disable-onboard-emmc.patch
+Patch13:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
+Patch14:   tegra186-jetson-tx2-disable-onboard-emmc.patch
+#Patch15:   pi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
 # Patch99:   mvebu-enable-generic-distro-boot-config.patch
 
@@ -294,6 +289,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue May  1 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.4-rc3
+- 2018.05 RC3
+
 * Thu Apr 26 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.3-rc2
 - uEFI improvements
 - Fixes for Rockchips rk33xx 64 bit devices
