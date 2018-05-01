@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2018.03
-Release:   5%{?candidate:.%{candidate}}%{?dist}
+Release:   6%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -37,6 +37,7 @@ Patch20:   mvneta-support-setting-hardware-address.patch
 Patch21:   sunxi-improve-throughput-in-the-sunxi_mmc-driver.patch
 Patch22:   sunxi-Add-fix-for-Pine64-gigabit-throughput-issues.patch
 Patch23:   sunxi-A64-H5-devices-enable-usb-keyboard-support.patch
+Patch24:   sunxi-fix-eMMC-stability-issues-on-A64.patch
 
 # Patch99:   mvebu-enable-generic-distro-boot-config.patch
 
@@ -297,6 +298,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Apr 30 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-6
+- Patch to improve MMC on AllWinner A64 SoCs
+
 * Sun Apr 15 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-5
 - Raspberry Pi fixes
 - Enable a few AllWinner Tablets
