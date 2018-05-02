@@ -27,7 +27,8 @@ Patch11:   mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
 Patch12:   dragonboard-fixes.patch
 Patch13:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
 Patch14:   tegra186-jetson-tx2-disable-onboard-emmc.patch
-#Patch15:   pi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+Patch15:   sunxi-fix-eMMC-stability-issues-on-A64.patch
+#Patch19:   pi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
 # Patch99:   mvebu-enable-generic-distro-boot-config.patch
 
