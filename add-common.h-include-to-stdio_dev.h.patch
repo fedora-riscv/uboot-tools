@@ -1,0 +1,30 @@
+From e366fc5f30e23cff40e25c9160dd46d07f921cd9 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Wed, 2 May 2018 10:32:27 +0100
+Subject: [PATCH] add common.h include to stdio_dev.h
+
+stdio_dev.h references uchar which is defined in common.h and causes build
+failures on toolchains which have tightened build flags such as Fedora 28. This
+was causing build failures on devices such as Xilinx zynqmp targets which
+include stdio_dev.h via FPGA drivers.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ include/stdio_dev.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/stdio_dev.h b/include/stdio_dev.h
+index 3164fa2a55..eed4385100 100644
+--- a/include/stdio_dev.h
++++ b/include/stdio_dev.h
+@@ -8,6 +8,7 @@
+ #ifndef _STDIO_DEV_H_
+ #define _STDIO_DEV_H_
+ 
++#include <common.h>
+ #include <linux/list.h>
+ 
+ /*
+-- 
+2.17.0
+
