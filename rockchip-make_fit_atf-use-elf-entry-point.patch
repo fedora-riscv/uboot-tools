@@ -1,0 +1,81 @@
+From patchwork Wed May 16 16:44:33 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] rockchip: make_fit_atf: use elf entry point
+X-Patchwork-Submitter: Mian Yousaf Kaukab <yousaf.kaukab@suse.com>
+X-Patchwork-Id: 914901
+Message-Id: <20180516164433.30998-1-yousaf.kaukab@suse.com>
+To: u-boot@lists.denx.de
+Cc: Mian Yousaf Kaukab <yousaf.kaukab@suse.com>
+Date: Wed, 16 May 2018 18:44:33 +0200
+From: Mian Yousaf Kaukab <yousaf.kaukab@suse.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+make_fit_atf.py uses physical address of first segment as the
+entry point to bl31. It is incorrect and causes following abort
+when bl31_entry() is called:
+
+U-Boot SPL board initTrying to boot from MMC1
+"Synchronous Abort" handler, esr 0x02000000
+elr: 0000000000000000 lr : 00000000ff8c7e8c
+x 0: 00000000ff8e0000 x 1: 0000000000000000
+x 2: 0000000000000000 x 3: 00000000ff8e0180
+x 4: 0000000000000000 x 5: 0000000000000000
+x 6: 0000000000000030 x 7: 00000000ff8e0188
+x 8: 00000000000001e0 x 9: 0000000000000000
+x10: 000000000007fcdc x11: 00000000002881b8
+x12: 00000000000001a2 x13: 0000000000000198
+x14: 000000000007fdcc x15: 00000000002881b8
+x16: 00000000003c0724 x17: 00000000003c0718
+x18: 000000000007fe80 x19: 00000000ff8e0000
+x20: 0000000000200000 x21: 00000000ff8e0000
+x22: 0000000000000000 x23: 000000000007fe30
+x24: 00000000ff8d1c3c x25: 00000000ff8d5000
+x26: 00000000deadbeef x27: 00000000000004a0
+x28: 000000000000009c x29: 000000000007fd90
+
+Fix it by using the entry point from the elf header.
+
+Signed-off-by: Mian Yousaf Kaukab <yousaf.kaukab@suse.com>
+---
+ arch/arm/mach-rockchip/make_fit_atf.py | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/mach-rockchip/make_fit_atf.py b/arch/arm/mach-rockchip/make_fit_atf.py
+index 6b3d9201c9..b88a5e1f16 100755
+--- a/arch/arm/mach-rockchip/make_fit_atf.py
++++ b/arch/arm/mach-rockchip/make_fit_atf.py
+@@ -53,7 +53,7 @@ DT_END="""
+ };
+ """
+ 
+-def append_atf_node(file, atf_index, phy_addr):
++def append_atf_node(file, atf_index, phy_addr, elf_entry):
+     """
+     Append ATF DT node to input FIT dts file.
+     """
+@@ -67,7 +67,7 @@ def append_atf_node(file, atf_index, phy_addr):
+     print >> file, '\t\t\tcompression = "none";'
+     print >> file, '\t\t\tload = <0x%08x>;' % phy_addr
+     if atf_index == 1:
+-        print >> file, '\t\t\tentry = <0x%08x>;' % phy_addr
++        print >> file, '\t\t\tentry = <0x%08x>;' % elf_entry
+     print >> file, '\t\t};'
+     print >> file, ''
+ 
+@@ -141,12 +141,13 @@ def generate_atf_fit_dts(fit_file_name, bl31_file_name, uboot_file_name, dtbs_fi
+ 
+     with open(bl31_file_name) as bl31_file:
+         bl31 = ELFFile(bl31_file)
++        elf_entry = bl31.header['e_entry']
+         for i in range(bl31.num_segments()):
+             seg = bl31.get_segment(i)
+             if ('PT_LOAD' == seg.__getitem__(ELF_SEG_P_TYPE)):
+                 paddr = seg.__getitem__(ELF_SEG_P_PADDR)
+                 p= seg.__getitem__(ELF_SEG_P_PADDR)
+-                append_atf_node(fit_file, i+1, paddr)
++                append_atf_node(fit_file, i+1, paddr, elf_entry)
+     atf_cnt = i+1
+     append_fdt_node(fit_file, dtbs_file_name)
+     print >> fit_file, '%s' % DT_IMAGES_NODE_END
