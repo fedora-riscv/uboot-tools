@@ -1,8 +1,8 @@
-#global candidate rc3
+%global candidate rc1
 
 Name:      uboot-tools
-Version:   2018.05
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Version:   2018.07
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -27,6 +27,8 @@ Patch12:   dragonboard-fixes.patch
 Patch13:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
 Patch14:   tegra186-jetson-tx2-disable-onboard-emmc.patch
 Patch15:   sunxi-fix-eMMC-stability-issues-on-A64.patch
+Patch16:   rockchip-make_fit_atf-use-elf-entry-point.patch
+#Patch17:   tegra-nyan-big-Update-CONFIG_SYS_TEXT-to-the-default.patch
 #Patch19:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
 # Patch99:   mvebu-enable-generic-distro-boot-config.patch
@@ -34,6 +36,7 @@ Patch15:   sunxi-fix-eMMC-stability-issues-on-A64.patch
 BuildRequires:  bc
 BuildRequires:  dtc
 BuildRequires:  gcc make
+BuildRequires:  flex bison
 BuildRequires:  git-core
 BuildRequires:  openssl-devel
 BuildRequires:  python2-devel
@@ -290,6 +293,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Jun  5 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-0.1-rc1
+- 2018.07 RC1
+- Enable Turris Mox, BananaPi m2 Berry, some Libretech boards
+
 * Mon May  7 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-1
 - 2018.05 GA
 
@@ -363,44 +370,3 @@ cp -p board/warp7/README builds/docs/README.warp7
 
 * Tue Jan  9 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.01-1
 - 2018.01
-
-* Tue Jan  2 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.01-0.2.rc3
-- 2018.01 RC3
-
-* Tue Dec 19 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2018.01-0.1.rc2
-- 2018.01 RC2
-
-* Thu Nov 23 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-3
-- Newer EFI loader fix patch
-- Fix static MAC on omap3/omap4 devices
-
-* Tue Nov 21 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-2
-- Add EFI loader fix
-
-* Wed Nov 15 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-1
-- 2017.11
-
-* Tue Nov  7 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-0.4.rc4
-- 2017.11 RC4
-
-* Sat Nov  4 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-0.3.rc3
-- 2017.11 RC3
-
-* Tue Oct 17 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-0.2.rc2
-- Update / rebase a couple of patches
-
-* Tue Oct 17 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.11-0.1.rc2
-- 2017.11 RC2
-
-* Tue Oct 10 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-4
-- Improve uEFI partition detection for some devices
-
-* Thu Oct  5 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-3
-- Fix regression in i.MX6 and omap4 devices
-- Improve DT detection support on aarch64
-- uEFI fixes and improvements
-- ENable Sinovoip BPI devices
-
-* Wed Sep 27 2017 Peter Robinson <pbrobinson@fedoraproject.org> 2017.09-2
-- Add patch to fix some uEFI console output
-- Minor other tweaks

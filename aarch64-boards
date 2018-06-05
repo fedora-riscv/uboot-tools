@@ -9,6 +9,7 @@ geekbox
 hikey
 khadas-vim
 libretech-cc
+libretech_all_h3_cc_h5
 mvebu_espressobin-88f3720
 mvebu_mcbin-88f8040
 nanopi_neo2
@@ -24,6 +25,7 @@ pine64_plus
 poplar
 rpi_3
 sopine_baseboard
+turris_mox
 vexpress_aemv8a_dram
 vexpress_aemv8a_juno
 vexpress_aemv8a_semi
