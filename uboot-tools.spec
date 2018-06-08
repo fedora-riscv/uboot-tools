@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2018.07
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -22,13 +22,13 @@ Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
 
 # Board fixes and enablement
-Patch11:   mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
+Patch10:   sunxi-fix-eMMC-stability-issues-on-A64.patch
+Patch11:   mx6cuboxi-consolidate-board-detection-and-add-som-revision-checking.patch
 Patch12:   dragonboard-fixes.patch
 Patch13:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
-Patch14:   tegra186-jetson-tx2-disable-onboard-emmc.patch
-Patch15:   sunxi-fix-eMMC-stability-issues-on-A64.patch
-Patch16:   rockchip-make_fit_atf-use-elf-entry-point.patch
-#Patch17:   tegra-nyan-big-Update-CONFIG_SYS_TEXT-to-the-default.patch
+Patch14:   rockchip-make_fit_atf-use-elf-entry-point.patch
+Patch15:   tegra186-jetson-tx2-disable-onboard-emmc.patch
+Patch16:   tegra-nyan-big-Update-CONFIG_SYS_TEXT-to-the-default.patch
 #Patch19:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
 # Patch99:   mvebu-enable-generic-distro-boot-config.patch
@@ -293,6 +293,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Fri Jun  8 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-0.2-rc1
+- Update sunxi MMC patch series, Tegra Nyan patch, SolidRun i.MX6 SoM rev 1.5 patch
+
 * Tue Jun  5 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-0.1-rc1
 - 2018.07 RC1
 - Enable Turris Mox, BananaPi m2 Berry, some Libretech boards

@@ -1,0 +1,108 @@
+From b3133b61450e648cdd5f12c9556378c880932494 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Fri, 8 Jun 2018 04:31:10 +0100
+Subject: [PATCH] tegra: nyan-big: Update CONFIG_SYS_TEXT to the default in
+ README.chromium
+
+To build u-boot on a Nyan Big Chromebook the docs outline adjusting the Tegra124
+defined CONFIG_SYS_TEXT_BASE but this has since been moved to individual config
+files. We should have the default required for u-boot chain loading on the
+chromebook as the default CONFIG_SYS_TEXT_BASE and update the docs to remove
+this now non required step.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ configs/nyan-big_defconfig |  2 +-
+ doc/README.chromium        | 27 +++++++--------------------
+ 2 files changed, 8 insertions(+), 21 deletions(-)
+
+diff --git a/configs/nyan-big_defconfig b/configs/nyan-big_defconfig
+index 8868d1f9e10..3b64c643716 100644
+--- a/configs/nyan-big_defconfig
++++ b/configs/nyan-big_defconfig
+@@ -1,6 +1,6 @@
+ CONFIG_ARM=y
+ CONFIG_TEGRA=y
+-CONFIG_SYS_TEXT_BASE=0x80110000
++CONFIG_SYS_TEXT_BASE=0x81000100
+ CONFIG_DEBUG_UART_BASE=0x70006000
+ CONFIG_DEBUG_UART_CLOCK=408000000
+ CONFIG_TEGRA124=y
+diff --git a/doc/README.chromium b/doc/README.chromium
+index 7bf4d874474..45eaeced2da 100644
+--- a/doc/README.chromium
++++ b/doc/README.chromium
+@@ -43,26 +43,13 @@ https://git.collabora.com/cgit/user/tomeu/u-boot.git/commit/?h=nyan-big
+ https://lists.denx.de/pipermail/u-boot/2017-May/289491.html
+ https://github.com/chromeos-nvidia-androidtv/gnu-linux-on-acer-chromebook-13#copy-data-to-the-sd-card
+ 
+-1. Patch U-Boot
+-
+-Open include/configs/tegra124-common.h
+-
+-Change:
+-
+-#define CONFIG_SYS_TEXT_BASE	0x80110000
+-
+-to:
+-
+-#define CONFIG_SYS_TEXT_BASE	0x81000100
+-
+-
+-2. Build U-Boot
++1. Build U-Boot
+ 
+    mkdir b
+    make -j8 O=b/nyan-big CROSS_COMPILE=arm-linux-gnueabi- nyan-big_defconfig all
+ 
+ 
+-3. Select a .its file
++2. Select a .its file
+ 
+ Select something from doc/chromium which matches your board, or create your
+ own.
+@@ -72,7 +59,7 @@ used by U-Boot. This is because the Chromebook expects to pass it to the
+ kernel, and crashes if it is not present.
+ 
+ 
+-4. Build and sign an image
++3. Build and sign an image
+ 
+    ./b/nyan-big/tools/mkimage -f doc/chromium/nyan-big.its u-boot-chromium.fit
+    echo test >dummy.txt
+@@ -82,7 +69,7 @@ kernel, and crashes if it is not present.
+ 	--bootloader dummy.txt --pack u-boot.kpart
+ 
+ 
+-5. Prepare an SD card
++4. Prepare an SD card
+ 
+    DISK=/dev/sdc   # Replace with your actual SD card device
+    sudo cgpt create $DISK
+@@ -91,12 +78,12 @@ kernel, and crashes if it is not present.
+    sudo gdisk $DISK   # Enter command 'w' to write a protective MBR to the disk
+ 
+ 
+-6. Write U-Boot to the SD card
++5. Write U-Boot to the SD card
+ 
+    sudo dd if=u-boot.kpart of=/dev/sdc1; sync
+ 
+ 
+-7. Start it up
++6. Start it up
+ 
+ Reboot the device in dev mode. Make sure that you have USB booting enabled. To
+ do this, login as root (via Ctrl-Alt-forward_arrow) and type
+@@ -115,7 +102,7 @@ mode screen. It should show something like the following on the display:
+    Tegra124 (Nyan-big) #
+ 
+ 
+-8. Known problems
++7. Known problems
+ 
+ On the serial console the word MMC is chopped at the start of the line:
+ 
+-- 
+2.17.1
+
