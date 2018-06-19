@@ -1,0 +1,45 @@
+From patchwork Mon Jun 18 18:56:06 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,1/1] dwc2 USB controller hangs with lan78xx
+X-Patchwork-Submitter: Andrew Thomas <andrew.thomas@oracle.com>
+X-Patchwork-Id: 931158
+Message-Id: <1529348166-130059-2-git-send-email-andrew.thomas@oracle.com>
+To: u-boot@lists.denx.de
+Cc: Andrew Thomas <andrew.thomas@oracle.com>
+Date: Mon, 18 Jun 2018 11:56:06 -0700
+From: Andrew Thomas <andrew.thomas@oracle.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+This bug is the combination of dwc2 USB controller and lan78xx
+USB ethernet controller, which is the combination in use on
+the Raspberry Pi Model 3 B+.
+
+When the host attempts to receive a packet, but a packet has not
+arrived, the lan78xx controller responds by setting BIR
+(Bulk-In Empty Response) to NAK. Unfortunately, this hangs
+the USB controller and requires the USB controller to
+be reset.
+
+The fix proposed is to have the lan78xx controller respond
+by setting BIR to ZLP.
+
+Signed-off-by: Andrew Thomas <andrew.thomas@oracle.com>
+---
+ drivers/usb/eth/lan78xx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/eth/lan78xx.c b/drivers/usb/eth/lan78xx.c
+index c5ff379..e8ee665 100644
+--- a/drivers/usb/eth/lan78xx.c
++++ b/drivers/usb/eth/lan78xx.c
+@@ -296,7 +296,7 @@ static int lan78xx_basic_reset(struct usb_device *udev,
+ 	ret = lan7x_read_reg(udev, LAN78XX_USB_CFG0, &val);
+ 	if (ret)
+ 		return ret;
+-	val |= LAN78XX_USB_CFG0_BIR;
++	val &= ~LAN78XX_USB_CFG0_BIR;
+ 	return lan7x_write_reg(udev, LAN78XX_USB_CFG0, val);
+ }
+ 

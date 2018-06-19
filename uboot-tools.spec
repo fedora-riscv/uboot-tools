@@ -24,6 +24,7 @@ Patch4:    rk33xx-make_fit_atf-fix.patch
 Patch5:    rk33xx-enable-make-itb.patch
 Patch6:    net-Only-access-network-devices-after-init.patch
 Patch7:    uefi-fixes.patch
+Patch8:    uefi-efi_loader-Fix-GOP-32bpp-exposure.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
@@ -31,15 +32,12 @@ Patch11:   BeagleBoard.org-PocketBeagle.patch
 Patch12:   mx6cuboxi-add-support-for-detecting-Revision-1.5-SoM.patch
 Patch13:   rpi-3-plus-support.patch
 Patch14:   rpi-Adjust-fdt_addr_r-to-a-sane-address.patch
+Patch15:   dwc2-USB-controller-hangs-with-lan78xx.patch
 Patch16:   mmc-use-core-clock-frequency-in-bcm2835-sdhost.patch
-Patch19:   mmc-mv_sdhci-zero-out-sdhci_host-structure.patch
-Patch20:   mvneta-support-setting-hardware-address.patch
-Patch21:   sunxi-improve-throughput-in-the-sunxi_mmc-driver.patch
-Patch22:   sunxi-Add-fix-for-Pine64-gigabit-throughput-issues.patch
-Patch23:   sunxi-A64-H5-devices-enable-usb-keyboard-support.patch
-Patch24:   sunxi-fix-eMMC-stability-issues-on-A64.patch
-
-# Patch99:   mvebu-enable-generic-distro-boot-config.patch
+Patch17:   mmc-mv_sdhci-zero-out-sdhci_host-structure.patch
+Patch18:   mvneta-support-setting-hardware-address.patch
+Patch19:   sunxi-Add-fix-for-Pine64-gigabit-throughput-issues.patch
+Patch20:   sunxi-fix-eMMC-stability-issues-on-A64.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -298,8 +296,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Mon Apr 30 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-6
+* Tue Jun 19 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-6
 - Patch to improve MMC on AllWinner A64 SoCs
+- Patch to fix RPi3B+ network errors (rhbz 1573261)
+- Fix incorrect colours in uEFI console in Linux
 
 * Sun Apr 15 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-5
 - Raspberry Pi fixes

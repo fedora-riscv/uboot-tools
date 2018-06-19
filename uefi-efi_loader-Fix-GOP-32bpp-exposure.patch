@@ -1,0 +1,37 @@
+From patchwork Tue Jun 19 11:47:01 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] efi_loader: Fix GOP 32bpp exposure
+X-Patchwork-Submitter: Alexander Graf <agraf@suse.de>
+X-Patchwork-Id: 931555
+Message-Id: <20180619114701.87820-1-agraf@suse.de>
+To: u-boot@lists.denx.de
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>, Fabian Vogt <fvogt@suse.com>
+Date: Tue, 19 Jun 2018 13:47:01 +0200
+From: Alexander Graf <agraf@suse.de>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+We store pixels as BGRA in memory, as can be seen from struct efi_gop_pixel.
+So we need to expose the same format to UEFI payloads to actually have them
+use the correct colors.
+
+Reported-by: Fabian Vogt <fvogt@suse.com>
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ lib/efi_loader/efi_gop.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/efi_loader/efi_gop.c b/lib/efi_loader/efi_gop.c
+index 1afe8418e1..3a36bbcbfa 100644
+--- a/lib/efi_loader/efi_gop.c
++++ b/lib/efi_loader/efi_gop.c
+@@ -472,7 +472,7 @@ efi_status_t efi_gop_register(void)
+ 	gopobj->info.version = 0;
+ 	gopobj->info.width = col;
+ 	gopobj->info.height = row;
+-	gopobj->info.pixel_format = EFI_GOT_RGBA8;
++	gopobj->info.pixel_format = EFI_GOT_BGRA8;
+ 	gopobj->info.pixels_per_scanline = col;
+ 
+ 	gopobj->bpix = bpix;
