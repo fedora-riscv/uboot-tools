@@ -24,7 +24,6 @@ Patch4:    usb_kbd-with-DM-enabled.patch
 
 # Board fixes and enablement
 Patch11:   sunxi-Fix-MMC-driver-crashes.patch
-Patch12:   mx6cuboxi-consolidate-board-detection-and-add-som-revision-checking.patch
 Patch13:   dragonboard-fixes.patch
 Patch14:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
 Patch15:   rockchip-make_fit_atf-use-elf-entry-point.patch
