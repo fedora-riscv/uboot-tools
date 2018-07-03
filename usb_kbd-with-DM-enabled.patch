@@ -1,0 +1,95 @@
+From patchwork Wed Jun 27 13:10:20 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,1/2] usb_kbd: Add support for watchdog
+X-Patchwork-Submitter: Michal Simek <michal.simek@xilinx.com>
+X-Patchwork-Id: 935475
+X-Patchwork-Delegate: marek.vasut@gmail.com
+Message-Id: <a516b2c1dc35c203a7a356d7a3d84fae53bdb91e.1530105018.git.michal.simek@xilinx.com>
+To: u-boot@lists.denx.de,
+	hdegoede@redhat.com
+Date: Wed, 27 Jun 2018 15:10:20 +0200
+From: Michal Simek <michal.simek@xilinx.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+There is need to service watchdog in while loop or system will be
+restarted when idlying.
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+
+ common/usb_kbd.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/common/usb_kbd.c b/common/usb_kbd.c
+index 4c394d5613d1..20255dcf951f 100644
+--- a/common/usb_kbd.c
++++ b/common/usb_kbd.c
+@@ -16,6 +16,7 @@
+ #include <malloc.h>
+ #include <memalign.h>
+ #include <stdio_dev.h>
++#include <watchdog.h>
+ #include <asm/byteorder.h>
+ 
+ #include <usb.h>
+@@ -398,8 +399,10 @@ static int usb_kbd_getc(struct stdio_dev *sdev)
+ 	usb_kbd_dev = (struct usb_device *)dev->priv;
+ 	data = usb_kbd_dev->privptr;
+ 
+-	while (data->usb_in_pointer == data->usb_out_pointer)
++	while (data->usb_in_pointer == data->usb_out_pointer) {
++		WATCHDOG_RESET();
+ 		usb_kbd_poll_for_event(usb_kbd_dev);
++	}
+ 
+ 	if (data->usb_out_pointer == USB_KBD_BUFFER_LEN - 1)
+ 		data->usb_out_pointer = 0;
+
+From patchwork Wed Jun 27 13:10:21 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,2/2] usb_kdb: Get stdio_dev directly from sdev pointer
+X-Patchwork-Submitter: Michal Simek <michal.simek@xilinx.com>
+X-Patchwork-Id: 935476
+X-Patchwork-Delegate: marek.vasut@gmail.com
+Message-Id: <7aa2914cadf0f509fd67fb1b6ae0793408855a8e.1530105018.git.michal.simek@xilinx.com>
+To: u-boot@lists.denx.de,
+	hdegoede@redhat.com
+Date: Wed, 27 Jun 2018 15:10:21 +0200
+From: Michal Simek <michal.simek@xilinx.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Driver supports only one instance of usb keyboard.
+Remove the first dependency on generic usbkbd DEVNAME.
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+
+ common/usb_kbd.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/common/usb_kbd.c b/common/usb_kbd.c
+index 20255dcf951f..ce8cdc20fac5 100644
+--- a/common/usb_kbd.c
++++ b/common/usb_kbd.c
+@@ -372,7 +372,7 @@ static int usb_kbd_testc(struct stdio_dev *sdev)
+ 		return 0;
+ 	kbd_testc_tms = get_timer(0);
+ #endif
+-	dev = stdio_get_by_name(DEVNAME);
++	dev = stdio_get_by_name(sdev->name);
+ 	usb_kbd_dev = (struct usb_device *)dev->priv;
+ 	data = usb_kbd_dev->privptr;
+ 
+@@ -395,7 +395,7 @@ static int usb_kbd_getc(struct stdio_dev *sdev)
+ 	struct usb_device *usb_kbd_dev;
+ 	struct usb_kbd_pdata *data;
+ 
+-	dev = stdio_get_by_name(DEVNAME);
++	dev = stdio_get_by_name(sdev->name);
+ 	usb_kbd_dev = (struct usb_device *)dev->priv;
+ 	data = usb_kbd_dev->privptr;
+ 

@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2018.07
-Release:   0.3%{?candidate:.%{candidate}}%{?dist}
+Release:   0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -20,15 +20,16 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 # general fixes
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
+Patch4:    usb_kbd-with-DM-enabled.patch
 
 # Board fixes and enablement
-Patch10:   sunxi-fix-eMMC-stability-issues-on-A64.patch
-Patch11:   mx6cuboxi-consolidate-board-detection-and-add-som-revision-checking.patch
-Patch12:   dragonboard-fixes.patch
-Patch13:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
-Patch14:   rockchip-make_fit_atf-use-elf-entry-point.patch
-Patch15:   tegra186-jetson-tx2-disable-onboard-emmc.patch
-Patch16:   tegra-nyan-big-Update-CONFIG_SYS_TEXT-to-the-default.patch
+Patch11:   sunxi-Fix-MMC-driver-crashes.patch
+Patch12:   mx6cuboxi-consolidate-board-detection-and-add-som-revision-checking.patch
+Patch13:   dragonboard-fixes.patch
+Patch14:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
+Patch15:   rockchip-make_fit_atf-use-elf-entry-point.patch
+Patch16:   tegra186-jetson-tx2-disable-onboard-emmc.patch
+Patch17:   tegra-nyan-big-Update-CONFIG_SYS_TEXT-to-the-default.patch
 #Patch19:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
 # Patch99:   mvebu-enable-generic-distro-boot-config.patch
@@ -293,6 +294,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Jul  3 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-0.4-rc3
+- 2018.07 RC3
+
 * Wed Jun 20 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-0.3-rc2
 - 2018.07 RC2
 - Enable Helios4
