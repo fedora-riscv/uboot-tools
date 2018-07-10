@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate rc3
 
 Name:      uboot-tools
 Version:   2018.07
-Release:   0.4%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -23,12 +23,11 @@ Patch3:    usb-kbd-fixes.patch
 Patch4:    usb_kbd-with-DM-enabled.patch
 
 # Board fixes and enablement
-Patch11:   sunxi-Fix-MMC-driver-crashes.patch
-Patch13:   dragonboard-fixes.patch
-Patch14:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
-Patch15:   rockchip-make_fit_atf-use-elf-entry-point.patch
-Patch16:   tegra186-jetson-tx2-disable-onboard-emmc.patch
-Patch17:   tegra-nyan-big-Update-CONFIG_SYS_TEXT-to-the-default.patch
+Patch10:   dragonboard-fixes.patch
+Patch11:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
+Patch12:   rockchip-make_fit_atf-use-elf-entry-point.patch
+Patch13:   tegra186-jetson-tx2-disable-onboard-emmc.patch
+Patch14:   tegra-p2771-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
 #Patch19:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
 # Patch99:   mvebu-enable-generic-distro-boot-config.patch
@@ -39,6 +38,7 @@ BuildRequires:  gcc make
 BuildRequires:  flex bison
 BuildRequires:  git-core
 BuildRequires:  openssl-devel
+BuildRequires:  python-unversioned-command
 BuildRequires:  python2-devel
 BuildRequires:  python2-setuptools
 BuildRequires:  python2-libfdt
@@ -293,6 +293,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Jul  9 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-1
+- 2018.07
+
 * Tue Jul  3 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-0.4-rc3
 - 2018.07 RC3
 

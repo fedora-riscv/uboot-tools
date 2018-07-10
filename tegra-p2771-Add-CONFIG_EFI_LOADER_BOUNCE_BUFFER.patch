@@ -1,0 +1,41 @@
+From 836e1d7534b5d06f9bf17aaa33ce8863eab43530 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Fri, 6 Jul 2018 11:05:52 +0100
+Subject: [PATCH] tegra: p2771: Add CONFIG_EFI_LOADER_BOUNCE_BUFFER
+
+The Jetson TX2 needs EFI loader bounce buffer enabled otherwise grub doesn't see
+the storage when it loads.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ configs/p2771-0000-000_defconfig | 1 +
+ configs/p2771-0000-500_defconfig | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/configs/p2771-0000-000_defconfig b/configs/p2771-0000-000_defconfig
+index 29e1edcd68f..7ed036dc4ce 100644
+--- a/configs/p2771-0000-000_defconfig
++++ b/configs/p2771-0000-000_defconfig
+@@ -4,6 +4,7 @@ CONFIG_SYS_TEXT_BASE=0x80080000
+ CONFIG_TEGRA186=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra186-p2771-0000-000"
+ CONFIG_OF_SYSTEM_SETUP=y
++CONFIG_EFI_LOADER_BOUNCE_BUFFER=y
+ CONFIG_CONSOLE_MUX=y
+ CONFIG_SYS_STDIO_DEREGISTER=y
+ CONFIG_SYS_PROMPT="Tegra186 (P2771-0000-000) # "
+diff --git a/configs/p2771-0000-500_defconfig b/configs/p2771-0000-500_defconfig
+index cc10669608f..9ae61263b5d 100644
+--- a/configs/p2771-0000-500_defconfig
++++ b/configs/p2771-0000-500_defconfig
+@@ -4,6 +4,7 @@ CONFIG_SYS_TEXT_BASE=0x80080000
+ CONFIG_TEGRA186=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra186-p2771-0000-500"
+ CONFIG_OF_SYSTEM_SETUP=y
++CONFIG_EFI_LOADER_BOUNCE_BUFFER=y
+ CONFIG_CONSOLE_MUX=y
+ CONFIG_SYS_STDIO_DEREGISTER=y
+ CONFIG_SYS_PROMPT="Tegra186 (P2771-0000-500) # "
+-- 
+2.17.1
+
