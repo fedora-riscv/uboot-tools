@@ -1,8 +1,8 @@
-#global candidate rc3
+%global candidate rc1
 
 Name:      uboot-tools
-Version:   2018.07
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Version:   2018.09
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -20,7 +20,6 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 # general fixes
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
-Patch4:    usb_kbd-with-DM-enabled.patch
 
 # Board fixes and enablement
 Patch10:   dragonboard-fixes.patch
@@ -293,45 +292,48 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Jul 31 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.09-0.1.rc1
+- 2018.09 RC1
+
 * Sat Jul 14 2018 Fedora Release Engineering <releng@fedoraproject.org> - 2018.07-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
 
 * Mon Jul  9 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-1
 - 2018.07
 
-* Tue Jul  3 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-0.4-rc3
+* Tue Jul  3 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-0.4.rc3
 - 2018.07 RC3
 
-* Wed Jun 20 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-0.3-rc2
+* Wed Jun 20 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-0.3.rc2
 - 2018.07 RC2
 - Enable Helios4
 
-* Fri Jun  8 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-0.2-rc1
+* Fri Jun  8 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-0.2.rc1
 - Update sunxi MMC patch series, Tegra Nyan patch, SolidRun i.MX6 SoM rev 1.5 patch
 
-* Tue Jun  5 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-0.1-rc1
+* Tue Jun  5 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.07-0.1.rc1
 - 2018.07 RC1
 - Enable Turris Mox, BananaPi m2 Berry, some Libretech boards
 
 * Mon May  7 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-1
 - 2018.05 GA
 
-* Wed May  2 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.5-rc3
+* Wed May  2 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.5.rc3
 - Build Xilnix ZynqMP zcu100 (96boards Ultra96)
 
-* Tue May  1 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.4-rc3
+* Tue May  1 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.4.rc3
 - 2018.05 RC3
 
-* Thu Apr 26 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.3-rc2
+* Thu Apr 26 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.3.rc2
 - uEFI improvements
 - Fixes for Rockchips rk33xx 64 bit devices
 - Build AllWinner 64 bit devices against new ATF
 
-* Tue Apr 17 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.2-rc2
+* Tue Apr 17 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.2.rc2
 - 2018.05 RC2
 - Enable Raspberry Pi option to use firmware DT
 
-* Sun Apr  8 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.1-rc1
+* Sun Apr  8 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.05-0.1.rc1
 - 2018.05 RC1
 
 * Fri Apr  6 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.03-4
