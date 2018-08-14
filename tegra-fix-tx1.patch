@@ -1,0 +1,1722 @@
+From 7ef8ffa604feae44e08c7a65f66eb76c9e64cfef Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Wed, 1 Aug 2018 10:32:16 +0100
+Subject: [PATCH 1/7] Revert "efi_loader: efi_allocate_pages is too
+ restrictive"
+
+This reverts commit aa909462d01866354f4cd4534db5f571c2cf1fbb.
+---
+ lib/efi_loader/efi_memory.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/efi_loader/efi_memory.c b/lib/efi_loader/efi_memory.c
+index 967c3f733e4..4b6269f35e1 100644
+--- a/lib/efi_loader/efi_memory.c
++++ b/lib/efi_loader/efi_memory.c
+@@ -305,7 +305,7 @@ efi_status_t efi_allocate_pages(int type, int memory_type,
+ 	switch (type) {
+ 	case EFI_ALLOCATE_ANY_PAGES:
+ 		/* Any page */
+-		addr = efi_find_free_memory(len, -1ULL);
++		addr = efi_find_free_memory(len, gd->start_addr_sp);
+ 		if (!addr) {
+ 			r = EFI_NOT_FOUND;
+ 			break;
+-- 
+2.17.1
+
+From f213c8b5d051dadf0b776828f846d064a55dd03e Mon Sep 17 00:00:00 2001
+From: Stephen Warren <swarren@nvidia.com>
+Date: Tue, 31 Jul 2018 12:39:07 -0600
+Subject: [PATCH 2/7] ARM: tegra: avoid more operations in non-secure world
+
+A secure monitor that runs before U-Boot, and hence causes U-Boot to run
+in non-secure world, must implement a few operations that U-Boot
+otherwise implements when running in secure world. Fix U-Boot to skip
+these operations when running in non-secure world. In particular:
+
+- The secure monitor must provide the LP0 resume code and own LP0
+  configuration in order to maintain security, so must initialize all
+  the PMC scratch registers used by the boot ROM during LP0 resume.
+  Consequently, U-Boot should not attempt to clear those registers,
+  since the register accesses will fail or cause an error.
+
+- The secure monitor owns system security, and so is responsible for
+  configuring security-related items such as the VPR.
+
+Signed-off-by: Stephen Warren <swarren@nvidia.com>
+---
+ arch/arm/mach-tegra/ap.c  |  9 +++++++--
+ arch/arm/mach-tegra/gpu.c | 18 ++++++++++++------
+ 2 files changed, 19 insertions(+), 8 deletions(-)
+
+diff --git a/arch/arm/mach-tegra/ap.c b/arch/arm/mach-tegra/ap.c
+index bf8001d9db0..84c20a48ad4 100644
+--- a/arch/arm/mach-tegra/ap.c
++++ b/arch/arm/mach-tegra/ap.c
+@@ -155,8 +155,13 @@ static void init_pmc_scratch(void)
+ 	int i;
+ 
+ 	/* SCRATCH0 is initialized by the boot ROM and shouldn't be cleared */
+-	for (i = 0; i < 23; i++)
+-		writel(0, &pmc->pmc_scratch1+i);
++#if defined(CONFIG_TEGRA_SUPPORT_NON_SECURE)
++	if (!tegra_cpu_is_non_secure())
++#endif
++	{
++		for (i = 0; i < 23; i++)
++			writel(0, &pmc->pmc_scratch1 + i);
++	}
+ 
+ 	/* ODMDATA is for kernel use to determine RAM size, LP config, etc. */
+ 	odmdata = get_odmdata();
+diff --git a/arch/arm/mach-tegra/gpu.c b/arch/arm/mach-tegra/gpu.c
+index 2e203f735bf..e047f678211 100644
+--- a/arch/arm/mach-tegra/gpu.c
++++ b/arch/arm/mach-tegra/gpu.c
+@@ -9,6 +9,7 @@
+ #include <asm/io.h>
+ #include <asm/arch/tegra.h>
+ #include <asm/arch/mc.h>
++#include <asm/arch-tegra/ap.h>
+ 
+ #include <fdt_support.h>
+ 
+@@ -18,12 +19,17 @@ void tegra_gpu_config(void)
+ {
+ 	struct mc_ctlr *mc = (struct mc_ctlr *)NV_PA_MC_BASE;
+ 
+-	/* Turn VPR off */
+-	writel(0, &mc->mc_video_protect_size_mb);
+-	writel(TEGRA_MC_VIDEO_PROTECT_REG_WRITE_ACCESS_DISABLED,
+-	       &mc->mc_video_protect_reg_ctrl);
+-	/* read back to ensure the write went through */
+-	readl(&mc->mc_video_protect_reg_ctrl);
++#if defined(CONFIG_TEGRA_SUPPORT_NON_SECURE)
++	if (!tegra_cpu_is_non_secure())
++#endif
++	{
++		/* Turn VPR off */
++		writel(0, &mc->mc_video_protect_size_mb);
++		writel(TEGRA_MC_VIDEO_PROTECT_REG_WRITE_ACCESS_DISABLED,
++		       &mc->mc_video_protect_reg_ctrl);
++		/* read back to ensure the write went through */
++		readl(&mc->mc_video_protect_reg_ctrl);
++	}
+ 
+ 	debug("configured VPR\n");
+ 
+-- 
+2.17.1
+
+From 5d62affed1f0feb49f99cad200301b8ab1e0d2b7 Mon Sep 17 00:00:00 2001
+From: Stephen Warren <swarren@nvidia.com>
+Date: Tue, 31 Jul 2018 13:44:12 -0600
+Subject: [PATCH 3/7] efi_loader: don't allocate unusable RAM
+
+Some boards define a maximum usable RAM top that's more restrictive than
+the ranges defined by U-Boot's memory bank definitions[1]. In this case,
+the unusable RAM isn't mapped in the page tables, and so the EFI code must
+not attempt to allocate RAM from outside the usable regions. Fix
+efi_find_free_memory() to detect when max_addr is unconstrained or out of
+range, and substitue a valid value.
+
+[1] For example, when some peripherals can't access RAM above 4GiB, it's
+simplest to force U-Boot's ram_top to a smaller value to avoid dealing
+with this issue more explicitly. However, the RAM bank definitions still
+describe the unusable RAM so that the booted OS has access to it, since
+the OS can typically deal with such restrictions in a more complex
+manner.
+
+Fixes: aa909462d018 "efi_loader: efi_allocate_pages is too restrictive"
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Cc: Alexander Graf <agraf@suse.de>
+Signed-off-by: Stephen Warren <swarren@nvidia.com>
+---
+ lib/efi_loader/efi_memory.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/lib/efi_loader/efi_memory.c b/lib/efi_loader/efi_memory.c
+index 4b6269f35e1..a078f75b0df 100644
+--- a/lib/efi_loader/efi_memory.c
++++ b/lib/efi_loader/efi_memory.c
+@@ -251,6 +251,9 @@ static uint64_t efi_find_free_memory(uint64_t len, uint64_t max_addr)
+ {
+ 	struct list_head *lhandle;
+ 
++	if ((max_addr == -1ULL) || (max_addr > gd->ram_top))
++		max_addr = gd->ram_top;
++
+ 	list_for_each(lhandle, &efi_mem) {
+ 		struct efi_mem_list *lmem = list_entry(lhandle,
+ 			struct efi_mem_list, link);
+-- 
+2.17.1
+
+From f288753c36391c7f216d906cde757e793a44fd70 Mon Sep 17 00:00:00 2001
+From: Aaron Kling <webgeek1234@gmail.com>
+Date: Tue, 31 Jul 2018 11:34:50 -0500
+Subject: [PATCH 4/7] T210 devices now chainload from cboot using the kernel
+ address
+
+---
+ configs/p2371-0000_defconfig | 2 +-
+ configs/p2371-2180_defconfig | 2 +-
+ configs/p2571_defconfig      | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/configs/p2371-0000_defconfig b/configs/p2371-0000_defconfig
+index 62333574105..b63811784f1 100644
+--- a/configs/p2371-0000_defconfig
++++ b/configs/p2371-0000_defconfig
+@@ -1,6 +1,6 @@
+ CONFIG_ARM=y
+ CONFIG_TEGRA=y
+-CONFIG_SYS_TEXT_BASE=0x80110000
++CONFIG_SYS_TEXT_BASE=0x80080000
+ CONFIG_TEGRA210=y
+ CONFIG_TARGET_P2371_0000=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra210-p2371-0000"
+diff --git a/configs/p2371-2180_defconfig b/configs/p2371-2180_defconfig
+index 34262c559a0..289d88b31e5 100644
+--- a/configs/p2371-2180_defconfig
++++ b/configs/p2371-2180_defconfig
+@@ -1,6 +1,6 @@
+ CONFIG_ARM=y
+ CONFIG_TEGRA=y
+-CONFIG_SYS_TEXT_BASE=0x80110000
++CONFIG_SYS_TEXT_BASE=0x80080000
+ CONFIG_TEGRA210=y
+ CONFIG_TARGET_P2371_2180=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra210-p2371-2180"
+diff --git a/configs/p2571_defconfig b/configs/p2571_defconfig
+index 50675544a7b..a34b191691c 100644
+--- a/configs/p2571_defconfig
++++ b/configs/p2571_defconfig
+@@ -1,6 +1,6 @@
+ CONFIG_ARM=y
+ CONFIG_TEGRA=y
+-CONFIG_SYS_TEXT_BASE=0x80110000
++CONFIG_SYS_TEXT_BASE=0x80080000
+ CONFIG_TEGRA210=y
+ CONFIG_TARGET_P2571=y
+ CONFIG_DEFAULT_DEVICE_TREE="tegra210-p2571"
+-- 
+2.17.1
+
+From 9179fd51afdcd67851d8e387481ad87185019d7d Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Wed, 1 Aug 2018 11:08:54 +0100
+Subject: [PATCH 5/7] Cboot logic path now used by t210
+
+---
+ arch/arm/mach-tegra/board.c                  |   4 +-
+ arch/arm/mach-tegra/board2.c                 |   6 +
+ arch/arm/mach-tegra/dt-setup.c               |   5 +-
+ arch/arm/mach-tegra/gpu.c                    |   2 +
+ arch/arm/mach-tegra/tegra186/Makefile        |   6 +-
+ arch/arm/mach-tegra/tegra186/nvtboot_board.c | 332 -------------------
+ arch/arm/mach-tegra/tegra186/nvtboot_ll.S    |  20 --
+ arch/arm/mach-tegra/tegra186/nvtboot_mem.c   | 173 ----------
+ arch/arm/mach-tegra/tegra210/Makefile        |   3 +
+ 9 files changed, 19 insertions(+), 532 deletions(-)
+ delete mode 100644 arch/arm/mach-tegra/tegra186/nvtboot_board.c
+ delete mode 100644 arch/arm/mach-tegra/tegra186/nvtboot_ll.S
+ delete mode 100644 arch/arm/mach-tegra/tegra186/nvtboot_mem.c
+
+diff --git a/arch/arm/mach-tegra/board.c b/arch/arm/mach-tegra/board.c
+index f8fc042a1dc..ddef2288317 100644
+--- a/arch/arm/mach-tegra/board.c
++++ b/arch/arm/mach-tegra/board.c
+@@ -35,7 +35,7 @@ enum {
+ 
+ static bool from_spl __attribute__ ((section(".data")));
+ 
+-#ifndef CONFIG_SPL_BUILD
++#if !defined(CONFIG_SPL_BUILD) && !defined(CONFIG_TEGRA210)
+ void save_boot_params(u32 r0, u32 r1, u32 r2, u32 r3)
+ {
+ 	from_spl = r0 != UBOOT_NOT_LOADED_FROM_SPL;
+@@ -66,6 +66,7 @@ bool tegra_cpu_is_non_secure(void)
+ }
+ #endif
+ 
++#if !defined(CONFIG_ARM64)
+ /* Read the RAM size directly from the memory controller */
+ static phys_size_t query_sdram_size(void)
+ {
+@@ -122,6 +123,7 @@ int dram_init(void)
+ 	gd->ram_size = query_sdram_size();
+ 	return 0;
+ }
++#endif
+ 
+ static int uart_configs[] = {
+ #if defined(CONFIG_TEGRA20)
+diff --git a/arch/arm/mach-tegra/board2.c b/arch/arm/mach-tegra/board2.c
+index 421a71b3014..301fd16af61 100644
+--- a/arch/arm/mach-tegra/board2.c
++++ b/arch/arm/mach-tegra/board2.c
+@@ -220,9 +220,14 @@ int board_late_init(void)
+ #endif
+ 	start_cpu_fan();
+ 
++#if defined(CONFIG_TEGRA210)
++	tegra_soc_board_init_late();
++#endif
++
+ 	return 0;
+ }
+ 
++#ifndef CONFIG_TEGRA210
+ /*
+  * In some SW environments, a memory carve-out exists to house a secure
+  * monitor, a trusted OS, and/or various statically allocated media buffers.
+@@ -348,3 +353,4 @@ ulong board_get_usable_ram_top(ulong total_size)
+ {
+ 	return CONFIG_SYS_SDRAM_BASE + usable_ram_size_below_4g();
+ }
++#endif
+diff --git a/arch/arm/mach-tegra/dt-setup.c b/arch/arm/mach-tegra/dt-setup.c
+index 8ac723f41e4..a961fab20f6 100644
+--- a/arch/arm/mach-tegra/dt-setup.c
++++ b/arch/arm/mach-tegra/dt-setup.c
+@@ -12,12 +12,10 @@
+  */
+ int ft_system_setup(void *blob, bd_t *bd)
+ {
++#if !defined(CONFIG_ARM64)
+ 	const char *gpu_compats[] = {
+ #if defined(CONFIG_TEGRA124)
+ 		"nvidia,gk20a",
+-#endif
+-#if defined(CONFIG_TEGRA210)
+-		"nvidia,gm20b",
+ #endif
+ 	};
+ 	int i, ret;
+@@ -28,6 +26,7 @@ int ft_system_setup(void *blob, bd_t *bd)
+ 		if (ret)
+ 			return ret;
+ 	}
++#endif
+ 
+ 	return 0;
+ }
+diff --git a/arch/arm/mach-tegra/gpu.c b/arch/arm/mach-tegra/gpu.c
+index e047f678211..3b8c1a04342 100644
+--- a/arch/arm/mach-tegra/gpu.c
++++ b/arch/arm/mach-tegra/gpu.c
+@@ -17,6 +17,7 @@ static bool _configured;
+ 
+ void tegra_gpu_config(void)
+ {
++#if !defined(CONFIG_ARM64)
+ 	struct mc_ctlr *mc = (struct mc_ctlr *)NV_PA_MC_BASE;
+ 
+ #if defined(CONFIG_TEGRA_SUPPORT_NON_SECURE)
+@@ -34,6 +35,7 @@ void tegra_gpu_config(void)
+ 	debug("configured VPR\n");
+ 
+ 	_configured = true;
++#endif
+ }
+ 
+ #if defined(CONFIG_OF_LIBFDT)
+diff --git a/arch/arm/mach-tegra/tegra186/Makefile b/arch/arm/mach-tegra/tegra186/Makefile
+index 56f3378ecea..1a43ef7a455 100644
+--- a/arch/arm/mach-tegra/tegra186/Makefile
++++ b/arch/arm/mach-tegra/tegra186/Makefile
+@@ -4,6 +4,6 @@
+ 
+ obj-y += ../board186.o
+ obj-y += cache.o
+-obj-y += nvtboot_board.o
+-obj-y += nvtboot_ll.o
+-obj-y += nvtboot_mem.o
++obj-y += ../nvtboot_board.o
++obj-y += ../nvtboot_ll.o
++obj-y += ../nvtboot_mem.o
+diff --git a/arch/arm/mach-tegra/tegra186/nvtboot_board.c b/arch/arm/mach-tegra/tegra186/nvtboot_board.c
+deleted file mode 100644
+index 83c0e931ea2..00000000000
+--- a/arch/arm/mach-tegra/tegra186/nvtboot_board.c
++++ /dev/null
+@@ -1,332 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0+
+-/*
+- * Copyright (c) 2016-2018, NVIDIA CORPORATION.
+- */
+-
+-#include <stdlib.h>
+-#include <common.h>
+-#include <fdt_support.h>
+-#include <fdtdec.h>
+-#include <asm/arch/tegra.h>
+-#include <asm/armv8/mmu.h>
+-
+-extern unsigned long nvtboot_boot_x0;
+-
+-/*
+- * The following few functions run late during the boot process and dynamically
+- * calculate the load address of various binaries. To keep track of multiple
+- * allocations, some writable list of RAM banks must be used. tegra_mem_map[]
+- * is used for this purpose to avoid making yet another copy of the list of RAM
+- * banks. This is safe because tegra_mem_map[] is only used once during very
+- * early boot to create U-Boot's page tables, long before this code runs. If
+- * this assumption becomes invalid later, we can just fix the code to copy the
+- * list of RAM banks into some private data structure before running.
+- */
+-
+-extern struct mm_region tegra_mem_map[];
+-
+-static char *gen_varname(const char *var, const char *ext)
+-{
+-	size_t len_var = strlen(var);
+-	size_t len_ext = strlen(ext);
+-	size_t len = len_var + len_ext + 1;
+-	char *varext = malloc(len);
+-
+-	if (!varext)
+-		return 0;
+-	strcpy(varext, var);
+-	strcpy(varext + len_var, ext);
+-	return varext;
+-}
+-
+-static void mark_ram_allocated(int bank, u64 allocated_start, u64 allocated_end)
+-{
+-	u64 bank_start = tegra_mem_map[bank].virt;
+-	u64 bank_size = tegra_mem_map[bank].size;
+-	u64 bank_end = bank_start + bank_size;
+-	bool keep_front = allocated_start != bank_start;
+-	bool keep_tail = allocated_end != bank_end;
+-
+-	if (keep_front && keep_tail) {
+-		/*
+-		 * There are CONFIG_NR_DRAM_BANKS DRAM entries in the array,
+-		 * starting at index 1 (index 0 is MMIO). So, we are at DRAM
+-		 * entry "bank" not "bank - 1" as for a typical 0-base array.
+-		 * The number of remaining DRAM entries is therefore
+-		 * "CONFIG_NR_DRAM_BANKS - bank". We want to duplicate the
+-		 * current entry and shift up the remaining entries, dropping
+-		 * the last one. Thus, we must copy one fewer entry than the
+-		 * number remaining.
+-		 */
+-		memmove(&tegra_mem_map[bank + 1], &tegra_mem_map[bank],
+-			CONFIG_NR_DRAM_BANKS - bank - 1);
+-		tegra_mem_map[bank].size = allocated_start - bank_start;
+-		bank++;
+-		tegra_mem_map[bank].virt = allocated_end;
+-		tegra_mem_map[bank].phys = allocated_end;
+-		tegra_mem_map[bank].size = bank_end - allocated_end;
+-	} else if (keep_front) {
+-		tegra_mem_map[bank].size = allocated_start - bank_start;
+-	} else if (keep_tail) {
+-		tegra_mem_map[bank].virt = allocated_end;
+-		tegra_mem_map[bank].phys = allocated_end;
+-		tegra_mem_map[bank].size = bank_end - allocated_end;
+-	} else {
+-		/*
+-		 * We could move all subsequent banks down in the array but
+-		 * that's not necessary for subsequent allocations to work, so
+-		 * we skip doing so.
+-		 */
+-		tegra_mem_map[bank].size = 0;
+-	}
+-}
+-
+-static void reserve_ram(u64 start, u64 size)
+-{
+-	int bank;
+-	u64 end = start + size;
+-
+-	for (bank = 1; bank <= CONFIG_NR_DRAM_BANKS; bank++) {
+-		u64 bank_start = tegra_mem_map[bank].virt;
+-		u64 bank_size = tegra_mem_map[bank].size;
+-		u64 bank_end = bank_start + bank_size;
+-
+-		if (end <= bank_start || start > bank_end)
+-			continue;
+-		mark_ram_allocated(bank, start, end);
+-		break;
+-	}
+-}
+-
+-static u64 alloc_ram(u64 size, u64 align, u64 offset)
+-{
+-	int bank;
+-
+-	for (bank = 1; bank <= CONFIG_NR_DRAM_BANKS; bank++) {
+-		u64 bank_start = tegra_mem_map[bank].virt;
+-		u64 bank_size = tegra_mem_map[bank].size;
+-		u64 bank_end = bank_start + bank_size;
+-		u64 allocated = ROUND(bank_start, align) + offset;
+-		u64 allocated_end = allocated + size;
+-
+-		if (allocated_end > bank_end)
+-			continue;
+-		mark_ram_allocated(bank, allocated, allocated_end);
+-		return allocated;
+-	}
+-	return 0;
+-}
+-
+-static void set_calculated_aliases(char *aliases, u64 address)
+-{
+-	char *tmp, *alias;
+-	int err;
+-
+-	aliases = strdup(aliases);
+-	if (!aliases) {
+-		pr_err("strdup(aliases) failed");
+-		return;
+-	}
+-
+-	tmp = aliases;
+-	while (true) {
+-		alias = strsep(&tmp, " ");
+-		if (!alias)
+-			break;
+-		debug("%s: alias: %s\n", __func__, alias);
+-		err = env_set_hex(alias, address);
+-		if (err)
+-			pr_err("Could not set %s\n", alias);
+-	}
+-
+-	free(aliases);
+-}
+-
+-static void set_calculated_env_var(const char *var)
+-{
+-	char *var_size;
+-	char *var_align;
+-	char *var_offset;
+-	char *var_aliases;
+-	u64 size;
+-	u64 align;
+-	u64 offset;
+-	char *aliases;
+-	u64 address;
+-	int err;
+-
+-	var_size = gen_varname(var, "_size");
+-	if (!var_size)
+-		return;
+-	var_align = gen_varname(var, "_align");
+-	if (!var_align)
+-		goto out_free_var_size;
+-	var_offset = gen_varname(var, "_offset");
+-	if (!var_offset)
+-		goto out_free_var_align;
+-	var_aliases = gen_varname(var, "_aliases");
+-	if (!var_aliases)
+-		goto out_free_var_offset;
+-
+-	size = env_get_hex(var_size, 0);
+-	if (!size) {
+-		pr_err("%s not set or zero\n", var_size);
+-		goto out_free_var_aliases;
+-	}
+-	align = env_get_hex(var_align, 1);
+-	/* Handle extant variables, but with a value of 0 */
+-	if (!align)
+-		align = 1;
+-	offset = env_get_hex(var_offset, 0);
+-	aliases = env_get(var_aliases);
+-
+-	debug("%s: Calc var %s; size=%llx, align=%llx, offset=%llx\n",
+-	      __func__, var, size, align, offset);
+-	if (aliases)
+-		debug("%s: Aliases: %s\n", __func__, aliases);
+-
+-	address = alloc_ram(size, align, offset);
+-	if (!address) {
+-		pr_err("Could not allocate %s\n", var);
+-		goto out_free_var_aliases;
+-	}
+-	debug("%s: Address %llx\n", __func__, address);
+-
+-	err = env_set_hex(var, address);
+-	if (err)
+-		pr_err("Could not set %s\n", var);
+-	if (aliases)
+-		set_calculated_aliases(aliases, address);
+-
+-out_free_var_aliases:
+-	free(var_aliases);
+-out_free_var_offset:
+-	free(var_offset);
+-out_free_var_align:
+-	free(var_align);
+-out_free_var_size:
+-	free(var_size);
+-}
+-
+-#ifdef DEBUG
+-static void dump_ram_banks(void)
+-{
+-	int bank;
+-
+-	for (bank = 1; bank <= CONFIG_NR_DRAM_BANKS; bank++) {
+-		u64 bank_start = tegra_mem_map[bank].virt;
+-		u64 bank_size = tegra_mem_map[bank].size;
+-		u64 bank_end = bank_start + bank_size;
+-
+-		if (!bank_size)
+-			continue;
+-		printf("%d: %010llx..%010llx (+%010llx)\n", bank - 1,
+-		       bank_start, bank_end, bank_size);
+-	}
+-}
+-#endif
+-
+-static void set_calculated_env_vars(void)
+-{
+-	char *vars, *tmp, *var;
+-
+-#ifdef DEBUG
+-	printf("RAM banks before any calculated env. var.s:\n");
+-	dump_ram_banks();
+-#endif
+-
+-	reserve_ram(nvtboot_boot_x0, fdt_totalsize(nvtboot_boot_x0));
+-
+-#ifdef DEBUG
+-	printf("RAM after reserving cboot DTB:\n");
+-	dump_ram_banks();
+-#endif
+-
+-	vars = env_get("calculated_vars");
+-	if (!vars) {
+-		debug("%s: No env var calculated_vars\n", __func__);
+-		return;
+-	}
+-
+-	vars = strdup(vars);
+-	if (!vars) {
+-		pr_err("strdup(calculated_vars) failed");
+-		return;
+-	}
+-
+-	tmp = vars;
+-	while (true) {
+-		var = strsep(&tmp, " ");
+-		if (!var)
+-			break;
+-		debug("%s: var: %s\n", __func__, var);
+-		set_calculated_env_var(var);
+-#ifdef DEBUG
+-		printf("RAM banks affter allocating %s:\n", var);
+-		dump_ram_banks();
+-#endif
+-	}
+-
+-	free(vars);
+-}
+-
+-static int set_fdt_addr(void)
+-{
+-	int ret;
+-
+-	ret = env_set_hex("fdt_addr", nvtboot_boot_x0);
+-	if (ret) {
+-		printf("Failed to set fdt_addr to point at DTB: %d\n", ret);
+-		return ret;
+-	}
+-
+-	return 0;
+-}
+-
+-/*
+- * Attempt to use /chosen/nvidia,ether-mac in the nvtboot DTB to U-Boot's
+- * ethaddr environment variable if possible.
+- */
+-static int set_ethaddr_from_nvtboot(void)
+-{
+-	const void *nvtboot_blob = (void *)nvtboot_boot_x0;
+-	int ret, node, len;
+-	const u32 *prop;
+-
+-	/* Already a valid address in the environment? If so, keep it */
+-	if (env_get("ethaddr"))
+-		return 0;
+-
+-	node = fdt_path_offset(nvtboot_blob, "/chosen");
+-	if (node < 0) {
+-		printf("Can't find /chosen node in nvtboot DTB\n");
+-		return node;
+-	}
+-	prop = fdt_getprop(nvtboot_blob, node, "nvidia,ether-mac", &len);
+-	if (!prop) {
+-		printf("Can't find nvidia,ether-mac property in nvtboot DTB\n");
+-		return -ENOENT;
+-	}
+-
+-	ret = env_set("ethaddr", (void *)prop);
+-	if (ret) {
+-		printf("Failed to set ethaddr from nvtboot DTB: %d\n", ret);
+-		return ret;
+-	}
+-
+-	return 0;
+-}
+-
+-int tegra_soc_board_init_late(void)
+-{
+-	set_calculated_env_vars();
+-	/*
+-	 * Ignore errors here; the value may not be used depending on
+-	 * extlinux.conf or boot script content.
+-	 */
+-	set_fdt_addr();
+-	/* Ignore errors here; not all cases care about Ethernet addresses */
+-	set_ethaddr_from_nvtboot();
+-
+-	return 0;
+-}
+diff --git a/arch/arm/mach-tegra/tegra186/nvtboot_ll.S b/arch/arm/mach-tegra/tegra186/nvtboot_ll.S
+deleted file mode 100644
+index aa7a863d970..00000000000
+--- a/arch/arm/mach-tegra/tegra186/nvtboot_ll.S
++++ /dev/null
+@@ -1,20 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0+ */
+-/*
+- * Save nvtboot-related boot-time CPU state
+- *
+- * (C) Copyright 2015-2016 NVIDIA Corporation <www.nvidia.com>
+- */
+-
+-#include <config.h>
+-#include <linux/linkage.h>
+-
+-.align 8
+-.globl	nvtboot_boot_x0
+-nvtboot_boot_x0:
+-	.dword 0
+-
+-ENTRY(save_boot_params)
+-	adr	x8, nvtboot_boot_x0
+-	str	x0, [x8]
+-	b	save_boot_params_ret
+-ENDPROC(save_boot_params)
+diff --git a/arch/arm/mach-tegra/tegra186/nvtboot_mem.c b/arch/arm/mach-tegra/tegra186/nvtboot_mem.c
+deleted file mode 100644
+index 5c9467bfe8b..00000000000
+--- a/arch/arm/mach-tegra/tegra186/nvtboot_mem.c
++++ /dev/null
+@@ -1,173 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0+
+-/*
+- * Copyright (c) 2016-2018, NVIDIA CORPORATION.
+- */
+-
+-#include <common.h>
+-#include <fdt_support.h>
+-#include <fdtdec.h>
+-#include <asm/arch/tegra.h>
+-#include <asm/armv8/mmu.h>
+-
+-#define SZ_4G 0x100000000ULL
+-
+-/*
+- * Size of a region that's large enough to hold the relocated U-Boot and all
+- * other allocations made around it (stack, heap, page tables, etc.)
+- * In practice, running "bdinfo" at the shell prompt, the stack reaches about
+- * 5MB from the address selected for ram_top as of the time of writing,
+- * so a 16MB region should be plenty.
+- */
+-#define MIN_USABLE_RAM_SIZE SZ_16M
+-/*
+- * The amount of space we expect to require for stack usage. Used to validate
+- * that all reservations fit into the region selected for the relocation target
+- */
+-#define MIN_USABLE_STACK_SIZE SZ_1M
+-
+-DECLARE_GLOBAL_DATA_PTR;
+-
+-extern unsigned long nvtboot_boot_x0;
+-extern struct mm_region tegra_mem_map[];
+-
+-/*
+- * These variables are written to before relocation, and hence cannot be
+- * in.bss, since .bss overlaps the DTB that's appended to the U-Boot binary.
+- * The section attribute forces this into .data and avoids this issue. This
+- * also has the nice side-effect of the content being valid after relocation.
+- */
+-
+-/* The number of valid entries in ram_banks[] */
+-static int ram_bank_count __attribute__((section(".data")));
+-
+-/*
+- * The usable top-of-RAM for U-Boot. This is both:
+- * a) Below 4GB to avoid issues with peripherals that use 32-bit addressing.
+- * b) At the end of a region that has enough space to hold the relocated U-Boot
+- *    and all other allocations made around it (stack, heap, page tables, etc.)
+- */
+-static u64 ram_top __attribute__((section(".data")));
+-/* The base address of the region of RAM that ends at ram_top */
+-static u64 region_base __attribute__((section(".data")));
+-
+-int dram_init(void)
+-{
+-	unsigned int na, ns;
+-	const void *nvtboot_blob = (void *)nvtboot_boot_x0;
+-	int node, len, i;
+-	const u32 *prop;
+-
+-	na = fdtdec_get_uint(nvtboot_blob, 0, "#address-cells", 2);
+-	ns = fdtdec_get_uint(nvtboot_blob, 0, "#size-cells", 2);
+-
+-	node = fdt_path_offset(nvtboot_blob, "/memory");
+-	if (node < 0) {
+-		pr_err("Can't find /memory node in nvtboot DTB");
+-		hang();
+-	}
+-	prop = fdt_getprop(nvtboot_blob, node, "reg", &len);
+-	if (!prop) {
+-		pr_err("Can't find /memory/reg property in nvtboot DTB");
+-		hang();
+-	}
+-
+-	/* Calculate the true # of base/size pairs to read */
+-	len /= 4;		/* Convert bytes to number of cells */
+-	len /= (na + ns);	/* Convert cells to number of banks */
+-	if (len > CONFIG_NR_DRAM_BANKS)
+-		len = CONFIG_NR_DRAM_BANKS;
+-
+-	/* Parse the /memory node, and save useful entries */
+-	gd->ram_size = 0;
+-	ram_bank_count = 0;
+-	for (i = 0; i < len; i++) {
+-		u64 bank_start, bank_end, bank_size, usable_bank_size;
+-
+-		/* Extract raw memory region data from DTB */
+-		bank_start = fdt_read_number(prop, na);
+-		prop += na;
+-		bank_size = fdt_read_number(prop, ns);
+-		prop += ns;
+-		gd->ram_size += bank_size;
+-		bank_end = bank_start + bank_size;
+-		debug("Bank %d: %llx..%llx (+%llx)\n", i,
+-		      bank_start, bank_end, bank_size);
+-
+-		/*
+-		 * Align the bank to MMU section size. This is not strictly
+-		 * necessary, since the translation table construction code
+-		 * handles page granularity without issue. However, aligning
+-		 * the MMU entries reduces the size and number of levels in the
+-		 * page table, so is worth it.
+-		 */
+-		bank_start = ROUND(bank_start, SZ_2M);
+-		bank_end = bank_end & ~(SZ_2M - 1);
+-		bank_size = bank_end - bank_start;
+-		debug("  aligned: %llx..%llx (+%llx)\n",
+-		      bank_start, bank_end, bank_size);
+-		if (bank_end <= bank_start)
+-			continue;
+-
+-		/* Record data used to create MMU translation tables */
+-		ram_bank_count++;
+-		/* Index below is deliberately 1-based to skip MMIO entry */
+-		tegra_mem_map[ram_bank_count].virt = bank_start;
+-		tegra_mem_map[ram_bank_count].phys = bank_start;
+-		tegra_mem_map[ram_bank_count].size = bank_size;
+-		tegra_mem_map[ram_bank_count].attrs =
+-			PTE_BLOCK_MEMTYPE(MT_NORMAL) | PTE_BLOCK_INNER_SHARE;
+-
+-		/* Determine best bank to relocate U-Boot into */
+-		if (bank_end > SZ_4G)
+-			bank_end = SZ_4G;
+-		debug("  end  %llx (usable)\n", bank_end);
+-		usable_bank_size = bank_end - bank_start;
+-		debug("  size %llx (usable)\n", usable_bank_size);
+-		if ((usable_bank_size >= MIN_USABLE_RAM_SIZE) &&
+-		    (bank_end > ram_top)) {
+-			ram_top = bank_end;
+-			region_base = bank_start;
+-			debug("ram top now %llx\n", ram_top);
+-		}
+-	}
+-
+-	/* Ensure memory map contains the desired sentinel entry */
+-	tegra_mem_map[ram_bank_count + 1].virt = 0;
+-	tegra_mem_map[ram_bank_count + 1].phys = 0;
+-	tegra_mem_map[ram_bank_count + 1].size = 0;
+-	tegra_mem_map[ram_bank_count + 1].attrs = 0;
+-
+-	/* Error out if a relocation target couldn't be found */
+-	if (!ram_top) {
+-		pr_err("Can't find a usable RAM top");
+-		hang();
+-	}
+-
+-	return 0;
+-}
+-
+-int dram_init_banksize(void)
+-{
+-	int i;
+-
+-	if ((gd->start_addr_sp - region_base) < MIN_USABLE_STACK_SIZE) {
+-		pr_err("Reservations exceed chosen region size");
+-		hang();
+-	}
+-
+-	for (i = 0; i < ram_bank_count; i++) {
+-		gd->bd->bi_dram[i].start = tegra_mem_map[1 + i].virt;
+-		gd->bd->bi_dram[i].size = tegra_mem_map[1 + i].size;
+-	}
+-
+-#ifdef CONFIG_PCI
+-	gd->pci_ram_top = ram_top;
+-#endif
+-
+-	return 0;
+-}
+-
+-ulong board_get_usable_ram_top(ulong total_size)
+-{
+-	return ram_top;
+-}
+diff --git a/arch/arm/mach-tegra/tegra210/Makefile b/arch/arm/mach-tegra/tegra210/Makefile
+index b6012fc7baa..6de6d810eb2 100644
+--- a/arch/arm/mach-tegra/tegra210/Makefile
++++ b/arch/arm/mach-tegra/tegra210/Makefile
+@@ -8,5 +8,8 @@
+ obj-y	+= clock.o
+ obj-y	+= funcmux.o
+ obj-y	+= pinmux.o
++obj-y	+= ../nvtboot_board.o
++obj-y	+= ../nvtboot_ll.o
++obj-y	+= ../nvtboot_mem.o
+ obj-y	+= xusb-padctl.o
+ obj-y	+= ../xusb-padctl-common.o
+-- 
+2.17.1
+
+From 8034f76be3face948e6356dcfe5444cf91f12059 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Wed, 1 Aug 2018 11:10:33 +0100
+Subject: [PATCH 6/7] add nvboot files
+
+---
+ arch/arm/mach-tegra/nvtboot_board.c | 402 ++++++++++++++++++++++++++++
+ arch/arm/mach-tegra/nvtboot_ll.S    |  20 ++
+ arch/arm/mach-tegra/nvtboot_mem.c   | 173 ++++++++++++
+ 3 files changed, 595 insertions(+)
+ create mode 100644 arch/arm/mach-tegra/nvtboot_board.c
+ create mode 100644 arch/arm/mach-tegra/nvtboot_ll.S
+ create mode 100644 arch/arm/mach-tegra/nvtboot_mem.c
+
+diff --git a/arch/arm/mach-tegra/nvtboot_board.c b/arch/arm/mach-tegra/nvtboot_board.c
+new file mode 100644
+index 00000000000..7b98b502ef2
+--- /dev/null
++++ b/arch/arm/mach-tegra/nvtboot_board.c
+@@ -0,0 +1,402 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright (c) 2016-2018, NVIDIA CORPORATION.
++ */
++
++#include <stdlib.h>
++#include <common.h>
++#include <linux/ctype.h>
++#include <fdt_support.h>
++#include <fdtdec.h>
++#include <asm/arch/tegra.h>
++#include <asm/armv8/mmu.h>
++
++extern unsigned long nvtboot_boot_x0;
++
++/*
++ * The following few functions run late during the boot process and dynamically
++ * calculate the load address of various binaries. To keep track of multiple
++ * allocations, some writable list of RAM banks must be used. tegra_mem_map[]
++ * is used for this purpose to avoid making yet another copy of the list of RAM
++ * banks. This is safe because tegra_mem_map[] is only used once during very
++ * early boot to create U-Boot's page tables, long before this code runs. If
++ * this assumption becomes invalid later, we can just fix the code to copy the
++ * list of RAM banks into some private data structure before running.
++ */
++
++extern struct mm_region tegra_mem_map[];
++
++static char *gen_varname(const char *var, const char *ext)
++{
++	size_t len_var = strlen(var);
++	size_t len_ext = strlen(ext);
++	size_t len = len_var + len_ext + 1;
++	char *varext = malloc(len);
++
++	if (!varext)
++		return 0;
++	strcpy(varext, var);
++	strcpy(varext + len_var, ext);
++	return varext;
++}
++
++static void mark_ram_allocated(int bank, u64 allocated_start, u64 allocated_end)
++{
++	u64 bank_start = tegra_mem_map[bank].virt;
++	u64 bank_size = tegra_mem_map[bank].size;
++	u64 bank_end = bank_start + bank_size;
++	bool keep_front = allocated_start != bank_start;
++	bool keep_tail = allocated_end != bank_end;
++
++	if (keep_front && keep_tail) {
++		/*
++		 * There are CONFIG_NR_DRAM_BANKS DRAM entries in the array,
++		 * starting at index 1 (index 0 is MMIO). So, we are at DRAM
++		 * entry "bank" not "bank - 1" as for a typical 0-base array.
++		 * The number of remaining DRAM entries is therefore
++		 * "CONFIG_NR_DRAM_BANKS - bank". We want to duplicate the
++		 * current entry and shift up the remaining entries, dropping
++		 * the last one. Thus, we must copy one fewer entry than the
++		 * number remaining.
++		 */
++		memmove(&tegra_mem_map[bank + 1], &tegra_mem_map[bank],
++			CONFIG_NR_DRAM_BANKS - bank - 1);
++		tegra_mem_map[bank].size = allocated_start - bank_start;
++		bank++;
++		tegra_mem_map[bank].virt = allocated_end;
++		tegra_mem_map[bank].phys = allocated_end;
++		tegra_mem_map[bank].size = bank_end - allocated_end;
++	} else if (keep_front) {
++		tegra_mem_map[bank].size = allocated_start - bank_start;
++	} else if (keep_tail) {
++		tegra_mem_map[bank].virt = allocated_end;
++		tegra_mem_map[bank].phys = allocated_end;
++		tegra_mem_map[bank].size = bank_end - allocated_end;
++	} else {
++		/*
++		 * We could move all subsequent banks down in the array but
++		 * that's not necessary for subsequent allocations to work, so
++		 * we skip doing so.
++		 */
++		tegra_mem_map[bank].size = 0;
++	}
++}
++
++static void reserve_ram(u64 start, u64 size)
++{
++	int bank;
++	u64 end = start + size;
++
++	for (bank = 1; bank <= CONFIG_NR_DRAM_BANKS; bank++) {
++		u64 bank_start = tegra_mem_map[bank].virt;
++		u64 bank_size = tegra_mem_map[bank].size;
++		u64 bank_end = bank_start + bank_size;
++
++		if (end <= bank_start || start > bank_end)
++			continue;
++		mark_ram_allocated(bank, start, end);
++		break;
++	}
++}
++
++static u64 alloc_ram(u64 size, u64 align, u64 offset)
++{
++	int bank;
++
++	for (bank = 1; bank <= CONFIG_NR_DRAM_BANKS; bank++) {
++		u64 bank_start = tegra_mem_map[bank].virt;
++		u64 bank_size = tegra_mem_map[bank].size;
++		u64 bank_end = bank_start + bank_size;
++		u64 allocated = ROUND(bank_start, align) + offset;
++		u64 allocated_end = allocated + size;
++
++		if (allocated_end > bank_end)
++			continue;
++		mark_ram_allocated(bank, allocated, allocated_end);
++		return allocated;
++	}
++	return 0;
++}
++
++static void set_calculated_aliases(char *aliases, u64 address)
++{
++	char *tmp, *alias;
++	int err;
++
++	aliases = strdup(aliases);
++	if (!aliases) {
++		pr_err("strdup(aliases) failed");
++		return;
++	}
++
++	tmp = aliases;
++	while (true) {
++		alias = strsep(&tmp, " ");
++		if (!alias)
++			break;
++		debug("%s: alias: %s\n", __func__, alias);
++		err = env_set_hex(alias, address);
++		if (err)
++			pr_err("Could not set %s\n", alias);
++	}
++
++	free(aliases);
++}
++
++static void set_calculated_env_var(const char *var)
++{
++	char *var_size;
++	char *var_align;
++	char *var_offset;
++	char *var_aliases;
++	u64 size;
++	u64 align;
++	u64 offset;
++	char *aliases;
++	u64 address;
++	int err;
++
++	var_size = gen_varname(var, "_size");
++	if (!var_size)
++		return;
++	var_align = gen_varname(var, "_align");
++	if (!var_align)
++		goto out_free_var_size;
++	var_offset = gen_varname(var, "_offset");
++	if (!var_offset)
++		goto out_free_var_align;
++	var_aliases = gen_varname(var, "_aliases");
++	if (!var_aliases)
++		goto out_free_var_offset;
++
++	size = env_get_hex(var_size, 0);
++	if (!size) {
++		pr_err("%s not set or zero\n", var_size);
++		goto out_free_var_aliases;
++	}
++	align = env_get_hex(var_align, 1);
++	/* Handle extant variables, but with a value of 0 */
++	if (!align)
++		align = 1;
++	offset = env_get_hex(var_offset, 0);
++	aliases = env_get(var_aliases);
++
++	debug("%s: Calc var %s; size=%llx, align=%llx, offset=%llx\n",
++	      __func__, var, size, align, offset);
++	if (aliases)
++		debug("%s: Aliases: %s\n", __func__, aliases);
++
++	address = alloc_ram(size, align, offset);
++	if (!address) {
++		pr_err("Could not allocate %s\n", var);
++		goto out_free_var_aliases;
++	}
++	debug("%s: Address %llx\n", __func__, address);
++
++	err = env_set_hex(var, address);
++	if (err)
++		pr_err("Could not set %s\n", var);
++	if (aliases)
++		set_calculated_aliases(aliases, address);
++
++out_free_var_aliases:
++	free(var_aliases);
++out_free_var_offset:
++	free(var_offset);
++out_free_var_align:
++	free(var_align);
++out_free_var_size:
++	free(var_size);
++}
++
++#ifdef DEBUG
++static void dump_ram_banks(void)
++{
++	int bank;
++
++	for (bank = 1; bank <= CONFIG_NR_DRAM_BANKS; bank++) {
++		u64 bank_start = tegra_mem_map[bank].virt;
++		u64 bank_size = tegra_mem_map[bank].size;
++		u64 bank_end = bank_start + bank_size;
++
++		if (!bank_size)
++			continue;
++		printf("%d: %010llx..%010llx (+%010llx)\n", bank - 1,
++		       bank_start, bank_end, bank_size);
++	}
++}
++#endif
++
++static void set_calculated_env_vars(void)
++{
++	char *vars, *tmp, *var;
++
++#ifdef DEBUG
++	printf("RAM banks before any calculated env. var.s:\n");
++	dump_ram_banks();
++#endif
++
++	reserve_ram(nvtboot_boot_x0, fdt_totalsize(nvtboot_boot_x0));
++
++#ifdef DEBUG
++	printf("RAM after reserving cboot DTB:\n");
++	dump_ram_banks();
++#endif
++
++	vars = env_get("calculated_vars");
++	if (!vars) {
++		debug("%s: No env var calculated_vars\n", __func__);
++		return;
++	}
++
++	vars = strdup(vars);
++	if (!vars) {
++		pr_err("strdup(calculated_vars) failed");
++		return;
++	}
++
++	tmp = vars;
++	while (true) {
++		var = strsep(&tmp, " ");
++		if (!var)
++			break;
++		debug("%s: var: %s\n", __func__, var);
++		set_calculated_env_var(var);
++#ifdef DEBUG
++		printf("RAM banks affter allocating %s:\n", var);
++		dump_ram_banks();
++#endif
++	}
++
++	free(vars);
++}
++
++char *strstrip(char *s)
++{
++    size_t size;
++    char *end;
++
++    size = strlen(s);
++
++    if (!size)
++        return s;
++
++    end = s + size - 1;
++    while (end >= s && isblank(*end))
++        end--;
++    *(end + 1) = '\0';
++
++    while (*s && isblank(*s))
++        s++;
++
++    return s;
++}
++
++static int set_fdt_addr(void)
++{
++	int ret;
++
++	ret = env_set_hex("fdt_addr", nvtboot_boot_x0);
++	if (ret) {
++		printf("Failed to set fdt_addr to point at DTB: %d\n", ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++#if defined(CONFIG_TEGRA186)
++/*
++ * Attempt to use /chosen/nvidia,ether-mac in the nvtboot DTB to U-Boot's
++ * ethaddr environment variable if possible.
++ */
++static int set_ethaddr_from_nvtboot(void)
++{
++	const void *nvtboot_blob = (void *)nvtboot_boot_x0;
++	int ret, node, len;
++	const u32 *prop;
++
++	/* Already a valid address in the environment? If so, keep it */
++	if (env_get("ethaddr"))
++		return 0;
++
++	node = fdt_path_offset(nvtboot_blob, "/chosen");
++	if (node < 0) {
++		printf("Can't find /chosen node in nvtboot DTB\n");
++		return node;
++	}
++	prop = fdt_getprop(nvtboot_blob, node, "nvidia,ether-mac", &len);
++	if (!prop) {
++		printf("Can't find nvidia,ether-mac property in nvtboot DTB\n");
++		return -ENOENT;
++	}
++
++	ret = env_set("ethaddr", (void *)prop);
++	if (ret) {
++		printf("Failed to set ethaddr from nvtboot DTB: %d\n", ret);
++		return ret;
++	}
++
++	return 0;
++}
++#endif
++
++static int set_cbootargs(void)
++{
++	const void *nvtboot_blob = (void *)nvtboot_boot_x0;
++	const void *prop;
++	char *bargs, *s;
++	int node, len, ret = 0;
++
++	/*
++	 * Save the bootargs passed in the DTB by the previous bootloader
++	 * (CBoot) to the env. (pointer in reg x0)
++	 */
++
++	debug("%s: nvtboot_blob = %p\n", __func__, nvtboot_blob);
++
++	node = fdt_path_offset(nvtboot_blob, "/chosen");
++	if (node < 0) {
++		pr_err("Can't find /chosen node in nvtboot DTB");
++		return node;
++	}
++	debug("%s: found 'chosen' node: %d\n", __func__, node);
++
++	prop = fdt_getprop(nvtboot_blob, node, "bootargs", &len);
++	if (!prop) {
++		pr_err("Can't find /chosen/bootargs property in nvtboot DTB");
++		return -ENOENT;
++	}
++	debug("%s: found 'bootargs' property, len =%d\n",  __func__, len);
++
++	/* CBoot seems to add trailing whitespace - strip it here */
++	s = strdup((char *)prop);
++	bargs = strstrip(s);
++	debug("%s: bootargs = %s!\n", __func__, bargs);
++
++        /* Set cbootargs to env for later use by extlinux files */
++	ret = env_set("cbootargs", bargs);
++	if (ret)
++		printf("Failed to set cbootargs from cboot DTB: %d\n", ret);
++
++	free(s);
++	return ret;
++}
++
++int tegra_soc_board_init_late(void)
++{
++	set_calculated_env_vars();
++	/*
++	 * Ignore errors here; the value may not be used depending on
++	 * extlinux.conf or boot script content.
++	 */
++	set_fdt_addr();
++#if defined(CONFIG_TEGRA186)
++	/* Ignore errors here; not all cases care about Ethernet addresses */
++	set_ethaddr_from_nvtboot();
++#endif
++	/* Save CBoot bootargs to env */
++	set_cbootargs();
++
++	return 0;
++}
+diff --git a/arch/arm/mach-tegra/nvtboot_ll.S b/arch/arm/mach-tegra/nvtboot_ll.S
+new file mode 100644
+index 00000000000..aa7a863d970
+--- /dev/null
++++ b/arch/arm/mach-tegra/nvtboot_ll.S
+@@ -0,0 +1,20 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++/*
++ * Save nvtboot-related boot-time CPU state
++ *
++ * (C) Copyright 2015-2016 NVIDIA Corporation <www.nvidia.com>
++ */
++
++#include <config.h>
++#include <linux/linkage.h>
++
++.align 8
++.globl	nvtboot_boot_x0
++nvtboot_boot_x0:
++	.dword 0
++
++ENTRY(save_boot_params)
++	adr	x8, nvtboot_boot_x0
++	str	x0, [x8]
++	b	save_boot_params_ret
++ENDPROC(save_boot_params)
+diff --git a/arch/arm/mach-tegra/nvtboot_mem.c b/arch/arm/mach-tegra/nvtboot_mem.c
+new file mode 100644
+index 00000000000..5c9467bfe8b
+--- /dev/null
++++ b/arch/arm/mach-tegra/nvtboot_mem.c
+@@ -0,0 +1,173 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright (c) 2016-2018, NVIDIA CORPORATION.
++ */
++
++#include <common.h>
++#include <fdt_support.h>
++#include <fdtdec.h>
++#include <asm/arch/tegra.h>
++#include <asm/armv8/mmu.h>
++
++#define SZ_4G 0x100000000ULL
++
++/*
++ * Size of a region that's large enough to hold the relocated U-Boot and all
++ * other allocations made around it (stack, heap, page tables, etc.)
++ * In practice, running "bdinfo" at the shell prompt, the stack reaches about
++ * 5MB from the address selected for ram_top as of the time of writing,
++ * so a 16MB region should be plenty.
++ */
++#define MIN_USABLE_RAM_SIZE SZ_16M
++/*
++ * The amount of space we expect to require for stack usage. Used to validate
++ * that all reservations fit into the region selected for the relocation target
++ */
++#define MIN_USABLE_STACK_SIZE SZ_1M
++
++DECLARE_GLOBAL_DATA_PTR;
++
++extern unsigned long nvtboot_boot_x0;
++extern struct mm_region tegra_mem_map[];
++
++/*
++ * These variables are written to before relocation, and hence cannot be
++ * in.bss, since .bss overlaps the DTB that's appended to the U-Boot binary.
++ * The section attribute forces this into .data and avoids this issue. This
++ * also has the nice side-effect of the content being valid after relocation.
++ */
++
++/* The number of valid entries in ram_banks[] */
++static int ram_bank_count __attribute__((section(".data")));
++
++/*
++ * The usable top-of-RAM for U-Boot. This is both:
++ * a) Below 4GB to avoid issues with peripherals that use 32-bit addressing.
++ * b) At the end of a region that has enough space to hold the relocated U-Boot
++ *    and all other allocations made around it (stack, heap, page tables, etc.)
++ */
++static u64 ram_top __attribute__((section(".data")));
++/* The base address of the region of RAM that ends at ram_top */
++static u64 region_base __attribute__((section(".data")));
++
++int dram_init(void)
++{
++	unsigned int na, ns;
++	const void *nvtboot_blob = (void *)nvtboot_boot_x0;
++	int node, len, i;
++	const u32 *prop;
++
++	na = fdtdec_get_uint(nvtboot_blob, 0, "#address-cells", 2);
++	ns = fdtdec_get_uint(nvtboot_blob, 0, "#size-cells", 2);
++
++	node = fdt_path_offset(nvtboot_blob, "/memory");
++	if (node < 0) {
++		pr_err("Can't find /memory node in nvtboot DTB");
++		hang();
++	}
++	prop = fdt_getprop(nvtboot_blob, node, "reg", &len);
++	if (!prop) {
++		pr_err("Can't find /memory/reg property in nvtboot DTB");
++		hang();
++	}
++
++	/* Calculate the true # of base/size pairs to read */
++	len /= 4;		/* Convert bytes to number of cells */
++	len /= (na + ns);	/* Convert cells to number of banks */
++	if (len > CONFIG_NR_DRAM_BANKS)
++		len = CONFIG_NR_DRAM_BANKS;
++
++	/* Parse the /memory node, and save useful entries */
++	gd->ram_size = 0;
++	ram_bank_count = 0;
++	for (i = 0; i < len; i++) {
++		u64 bank_start, bank_end, bank_size, usable_bank_size;
++
++		/* Extract raw memory region data from DTB */
++		bank_start = fdt_read_number(prop, na);
++		prop += na;
++		bank_size = fdt_read_number(prop, ns);
++		prop += ns;
++		gd->ram_size += bank_size;
++		bank_end = bank_start + bank_size;
++		debug("Bank %d: %llx..%llx (+%llx)\n", i,
++		      bank_start, bank_end, bank_size);
++
++		/*
++		 * Align the bank to MMU section size. This is not strictly
++		 * necessary, since the translation table construction code
++		 * handles page granularity without issue. However, aligning
++		 * the MMU entries reduces the size and number of levels in the
++		 * page table, so is worth it.
++		 */
++		bank_start = ROUND(bank_start, SZ_2M);
++		bank_end = bank_end & ~(SZ_2M - 1);
++		bank_size = bank_end - bank_start;
++		debug("  aligned: %llx..%llx (+%llx)\n",
++		      bank_start, bank_end, bank_size);
++		if (bank_end <= bank_start)
++			continue;
++
++		/* Record data used to create MMU translation tables */
++		ram_bank_count++;
++		/* Index below is deliberately 1-based to skip MMIO entry */
++		tegra_mem_map[ram_bank_count].virt = bank_start;
++		tegra_mem_map[ram_bank_count].phys = bank_start;
++		tegra_mem_map[ram_bank_count].size = bank_size;
++		tegra_mem_map[ram_bank_count].attrs =
++			PTE_BLOCK_MEMTYPE(MT_NORMAL) | PTE_BLOCK_INNER_SHARE;
++
++		/* Determine best bank to relocate U-Boot into */
++		if (bank_end > SZ_4G)
++			bank_end = SZ_4G;
++		debug("  end  %llx (usable)\n", bank_end);
++		usable_bank_size = bank_end - bank_start;
++		debug("  size %llx (usable)\n", usable_bank_size);
++		if ((usable_bank_size >= MIN_USABLE_RAM_SIZE) &&
++		    (bank_end > ram_top)) {
++			ram_top = bank_end;
++			region_base = bank_start;
++			debug("ram top now %llx\n", ram_top);
++		}
++	}
++
++	/* Ensure memory map contains the desired sentinel entry */
++	tegra_mem_map[ram_bank_count + 1].virt = 0;
++	tegra_mem_map[ram_bank_count + 1].phys = 0;
++	tegra_mem_map[ram_bank_count + 1].size = 0;
++	tegra_mem_map[ram_bank_count + 1].attrs = 0;
++
++	/* Error out if a relocation target couldn't be found */
++	if (!ram_top) {
++		pr_err("Can't find a usable RAM top");
++		hang();
++	}
++
++	return 0;
++}
++
++int dram_init_banksize(void)
++{
++	int i;
++
++	if ((gd->start_addr_sp - region_base) < MIN_USABLE_STACK_SIZE) {
++		pr_err("Reservations exceed chosen region size");
++		hang();
++	}
++
++	for (i = 0; i < ram_bank_count; i++) {
++		gd->bd->bi_dram[i].start = tegra_mem_map[1 + i].virt;
++		gd->bd->bi_dram[i].size = tegra_mem_map[1 + i].size;
++	}
++
++#ifdef CONFIG_PCI
++	gd->pci_ram_top = ram_top;
++#endif
++
++	return 0;
++}
++
++ulong board_get_usable_ram_top(ulong total_size)
++{
++	return ram_top;
++}
+-- 
+2.17.1
+
+From 43290aacb9fc3ec05ff57b182fefbfec3be81da7 Mon Sep 17 00:00:00 2001
+From: JC Kuo <jckuo@nvidia.com>
+Date: Fri, 14 Apr 2017 17:54:21 +0800
+Subject: [PATCH 7/7] T210: do not enable PLLE and UPHY PLL HW PWRSEQ
+
+This commit removes the programming sequence that enables PLLE
+and UPHY PLL hardware power sequencers. Per TRM, boot software
+should enable PLLE and UPHY PLLs in software controlled power-on
+state and should power down PLL before jumping into kernel or
+the next stage boot software.
+
+Bug 1889735
+
+Change-Id: I41b563d613b502abe902393b92ce311720d59ec0
+Signed-off-by: JC Kuo <jckuo@nvidia.com>
+Reviewed-on: http://git-master/r/1462905
+(cherry picked from commit f6ce7fbb731949fb94187b735ee76d30ef6256ad on dev-other-v2016.07)
+Reviewed-on: http://git-master/r/1484083
+Reviewed-by: Stephen Warren <swarren@nvidia.com>
+GVS: Gerrit_Virtual_Submit
+Reviewed-by: Tom Warren <twarren@nvidia.com>
+Tested-by: Tom Warren <twarren@nvidia.com>
+---
+ arch/arm/include/asm/arch-tegra/xusb-padctl.h |  1 +
+ arch/arm/mach-tegra/board2.c                  |  6 ++
+ arch/arm/mach-tegra/tegra210/clock.c          | 19 ------
+ arch/arm/mach-tegra/tegra210/xusb-padctl.c    | 68 ++++++++++++-------
+ arch/arm/mach-tegra/xusb-padctl-dummy.c       |  4 ++
+ 5 files changed, 54 insertions(+), 44 deletions(-)
+
+diff --git a/arch/arm/include/asm/arch-tegra/xusb-padctl.h b/arch/arm/include/asm/arch-tegra/xusb-padctl.h
+index deccdf455d9..7e14d8109d1 100644
+--- a/arch/arm/include/asm/arch-tegra/xusb-padctl.h
++++ b/arch/arm/include/asm/arch-tegra/xusb-padctl.h
+@@ -16,6 +16,7 @@ struct tegra_xusb_phy;
+ struct tegra_xusb_phy *tegra_xusb_phy_get(unsigned int type);
+ 
+ void tegra_xusb_padctl_init(void);
++void tegra_xusb_padctl_exit(void);
+ int tegra_xusb_phy_prepare(struct tegra_xusb_phy *phy);
+ int tegra_xusb_phy_enable(struct tegra_xusb_phy *phy);
+ int tegra_xusb_phy_disable(struct tegra_xusb_phy *phy);
+diff --git a/arch/arm/mach-tegra/board2.c b/arch/arm/mach-tegra/board2.c
+index 301fd16af61..22ecd997600 100644
+--- a/arch/arm/mach-tegra/board2.c
++++ b/arch/arm/mach-tegra/board2.c
+@@ -171,6 +171,12 @@ int board_init(void)
+ 	return nvidia_board_init();
+ }
+ 
++void board_cleanup_before_linux(void)
++{
++	/* power down UPHY PLL */
++	tegra_xusb_padctl_exit();
++}
++
+ #ifdef CONFIG_BOARD_EARLY_INIT_F
+ static void __gpio_early_init(void)
+ {
+diff --git a/arch/arm/mach-tegra/tegra210/clock.c b/arch/arm/mach-tegra/tegra210/clock.c
+index 06068c4b7b8..341c97f16d9 100644
+--- a/arch/arm/mach-tegra/tegra210/clock.c
++++ b/arch/arm/mach-tegra/tegra210/clock.c
+@@ -1235,25 +1235,6 @@ int tegra_plle_enable(void)
+ 	value &= ~PLLE_SS_CNTL_INTERP_RESET;
+ 	writel(value, NV_PA_CLK_RST_BASE + PLLE_SS_CNTL);
+ 
+-	/* 7. Enable HW power sequencer for PLLE */
+-
+-	value = readl(NV_PA_CLK_RST_BASE + PLLE_MISC);
+-	value &= ~PLLE_MISC_IDDQ_SWCTL;
+-	writel(value, NV_PA_CLK_RST_BASE + PLLE_MISC);
+-
+-	value = readl(NV_PA_CLK_RST_BASE + PLLE_AUX);
+-	value &= ~PLLE_AUX_SS_SWCTL;
+-	value &= ~PLLE_AUX_ENABLE_SWCTL;
+-	value |= PLLE_AUX_SS_SEQ_INCLUDE;
+-	value |= PLLE_AUX_USE_LOCKDET;
+-	writel(value, NV_PA_CLK_RST_BASE + PLLE_AUX);
+-
+-	/* 8. Wait 1 us */
+-
+-	udelay(1);
+-	value |= PLLE_AUX_SEQ_ENABLE;
+-	writel(value, NV_PA_CLK_RST_BASE + PLLE_AUX);
+-
+ 	return 0;
+ }
+ 
+diff --git a/arch/arm/mach-tegra/tegra210/xusb-padctl.c b/arch/arm/mach-tegra/tegra210/xusb-padctl.c
+index ab6684f027c..64dc297ae27 100644
+--- a/arch/arm/mach-tegra/tegra210/xusb-padctl.c
++++ b/arch/arm/mach-tegra/tegra210/xusb-padctl.c
+@@ -170,6 +170,17 @@ static int phy_unprepare(struct tegra_xusb_phy *phy)
+ 	return tegra_xusb_padctl_disable(phy->padctl);
+ }
+ 
++#define XUSB_PADCTL_USB3_PAD_MUX 0x28
++#define  XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE (1 << 0)
++#define  XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE_MASK0 (1 << 1)
++#define  XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE_MASK1 (1 << 2)
++#define  XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE_MASK2 (1 << 3)
++#define  XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE_MASK3 (1 << 4)
++#define  XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE_MASK4 (1 << 5)
++#define  XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE_MASK5 (1 << 6)
++#define  XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE_MASK6 (1 << 7)
++#define  XUSB_PADCTL_USB3_PAD_MUX_FORCE_SATA_PAD_IDDQ_DISABLE_MASK0 (1 << 8)
++
+ #define XUSB_PADCTL_UPHY_PLL_P0_CTL1 0x360
+ #define  XUSB_PADCTL_UPHY_PLL_P0_CTL1_FREQ_NDIV_MASK (0xff << 20)
+ #define  XUSB_PADCTL_UPHY_PLL_P0_CTL1_FREQ_NDIV(x) (((x) & 0xff) << 20)
+@@ -366,31 +377,6 @@ static int pcie_phy_enable(struct tegra_xusb_phy *phy)
+ 	value &= ~XUSB_PADCTL_UPHY_PLL_P0_CTL8_RCAL_CLK_EN;
+ 	padctl_writel(padctl, value, XUSB_PADCTL_UPHY_PLL_P0_CTL8);
+ 
+-	value = readl(NV_PA_CLK_RST_BASE + CLK_RST_XUSBIO_PLL_CFG0);
+-	value &= ~CLK_RST_XUSBIO_PLL_CFG0_PADPLL_RESET_SWCTL;
+-	value &= ~CLK_RST_XUSBIO_PLL_CFG0_CLK_ENABLE_SWCTL;
+-	value |= CLK_RST_XUSBIO_PLL_CFG0_PADPLL_USE_LOCKDET;
+-	value |= CLK_RST_XUSBIO_PLL_CFG0_PADPLL_SLEEP_IDDQ;
+-	writel(value, NV_PA_CLK_RST_BASE + CLK_RST_XUSBIO_PLL_CFG0);
+-
+-	value = padctl_readl(padctl, XUSB_PADCTL_UPHY_PLL_P0_CTL1);
+-	value &= ~XUSB_PADCTL_UPHY_PLL_P0_CTL1_PWR_OVRD;
+-	padctl_writel(padctl, value, XUSB_PADCTL_UPHY_PLL_P0_CTL1);
+-
+-	value = padctl_readl(padctl, XUSB_PADCTL_UPHY_PLL_P0_CTL2);
+-	value &= ~XUSB_PADCTL_UPHY_PLL_P0_CTL2_CAL_OVRD;
+-	padctl_writel(padctl, value, XUSB_PADCTL_UPHY_PLL_P0_CTL2);
+-
+-	value = padctl_readl(padctl, XUSB_PADCTL_UPHY_PLL_P0_CTL8);
+-	value &= ~XUSB_PADCTL_UPHY_PLL_P0_CTL8_RCAL_OVRD;
+-	padctl_writel(padctl, value, XUSB_PADCTL_UPHY_PLL_P0_CTL8);
+-
+-	udelay(1);
+-
+-	value = readl(NV_PA_CLK_RST_BASE + CLK_RST_XUSBIO_PLL_CFG0);
+-	value |= CLK_RST_XUSBIO_PLL_CFG0_SEQ_ENABLE;
+-	writel(value, NV_PA_CLK_RST_BASE + CLK_RST_XUSBIO_PLL_CFG0);
+-
+ 	debug("< %s()\n", __func__);
+ 	return 0;
+ }
+@@ -454,3 +440,35 @@ void tegra_xusb_padctl_init(void)
+ 	ret = tegra_xusb_process_nodes(nodes, count, &tegra210_socdata);
+ 	debug("%s: done, ret=%d\n", __func__, ret);
+ }
++
++void tegra_xusb_padctl_exit(void)
++{
++	u32 value;
++
++	debug("> %s\n", __func__);
++
++	value = padctl_readl(&padctl, XUSB_PADCTL_USB3_PAD_MUX);
++	value &= ~XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE;
++	value &= ~XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE_MASK0;
++	value &= ~XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE_MASK1;
++	value &= ~XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE_MASK2;
++	value &= ~XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE_MASK3;
++	value &= ~XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE_MASK4;
++	value &= ~XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE_MASK5;
++	value &= ~XUSB_PADCTL_USB3_PAD_MUX_FORCE_PCIE_PAD_IDDQ_DISABLE_MASK6;
++	value &= ~XUSB_PADCTL_USB3_PAD_MUX_FORCE_SATA_PAD_IDDQ_DISABLE_MASK0;
++	padctl_writel(&padctl, value, XUSB_PADCTL_USB3_PAD_MUX);
++
++	value = padctl_readl(&padctl, XUSB_PADCTL_UPHY_PLL_P0_CTL1);
++	value &= ~XUSB_PADCTL_UPHY_PLL_P0_CTL1_IDDQ;
++	value &= ~XUSB_PADCTL_UPHY_PLL_P0_CTL1_SLEEP_MASK;
++	value |= XUSB_PADCTL_UPHY_PLL_P0_CTL1_SLEEP(3);
++	value &= ~XUSB_PADCTL_UPHY_PLL_P0_CTL1_ENABLE;
++	padctl_writel(&padctl, value, XUSB_PADCTL_UPHY_PLL_P0_CTL1);
++
++	reset_set_enable(PERIPH_ID_PEX_USB_UPHY, 1);
++	while (padctl.enable)
++		tegra_xusb_padctl_disable(&padctl);
++
++	debug("< %s()\n", __func__);
++}
+diff --git a/arch/arm/mach-tegra/xusb-padctl-dummy.c b/arch/arm/mach-tegra/xusb-padctl-dummy.c
+index 3ec27a2e3aa..f2d90302f6d 100644
+--- a/arch/arm/mach-tegra/xusb-padctl-dummy.c
++++ b/arch/arm/mach-tegra/xusb-padctl-dummy.c
+@@ -36,3 +36,7 @@ int __weak tegra_xusb_phy_unprepare(struct tegra_xusb_phy *phy)
+ void __weak tegra_xusb_padctl_init(void)
+ {
+ }
++
++void __weak tegra_xusb_padctl_exit(void)
++{
++}
+-- 
+2.17.1
+

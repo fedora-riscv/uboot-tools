@@ -1,3 +1,4 @@
+avnet_ultra96_rev1
 bananapi_m64
 dragonboard410c
 dragonboard820c
@@ -15,6 +16,7 @@ mvebu_mcbin-88f8040
 nanopi-k2
 nanopi_neo2
 odroid-c2
+orangepi_one_plus
 orangepi_pc2
 orangepi_prime
 orangepi_win

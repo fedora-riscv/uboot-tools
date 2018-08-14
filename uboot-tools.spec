@@ -1,8 +1,8 @@
-%global candidate rc1
+%global candidate rc2
 
 Name:      uboot-tools
 Version:   2018.09
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -26,7 +26,8 @@ Patch10:   dragonboard-fixes.patch
 Patch11:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
 Patch12:   rockchip-make_fit_atf-use-elf-entry-point.patch
 Patch13:   tegra186-jetson-tx2-disable-onboard-emmc.patch
-Patch14:   tegra-p2771-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
+Patch14:   tegra-fix-tx1.patch
+Patch15:   tegra-p2771-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
 #Patch19:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
 # Patch99:   mvebu-enable-generic-distro-boot-config.patch
@@ -292,6 +293,11 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Aug 14 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.09-0.2.rc2
+- 2018.09 RC2
+- Improve Jetson TX1 support
+- Enable OrangePi 1+ and Avnet Ultra96
+
 * Tue Jul 31 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.09-0.1.rc1
 - 2018.09 RC1
 
