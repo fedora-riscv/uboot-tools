@@ -66,34 +66,29 @@ index 5ccfe7f8c8..9e2d3f5d9b 100644
  			compatible = "qcom,sdhci-msm-v4";
 -- 
 2.14.3
-
-From a43912730613da9f17a185e55a980d9acd0e437e Mon Sep 17 00:00:00 2001
+From 6baac1d73a20f880cb91f3bc03fe4f9cf88c61f6 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 6 Mar 2018 10:08:32 +0000
-Subject: [PATCH 3/4] db410c: config updates
+Date: Tue, 4 Sep 2018 12:21:59 +0100
+Subject: [PATCH] add options for dm410c config
 
-Enable USB keyboards and video output, VFAT writes (useful for EFI boot)
-and a common USB eth adapter
-
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
  configs/dragonboard410c_defconfig | 10 ++++++++++
  1 file changed, 10 insertions(+)
 
 diff --git a/configs/dragonboard410c_defconfig b/configs/dragonboard410c_defconfig
-index e6114db2ce..30e5cb3f5d 100644
+index 96a831443a..d167c765b1 100644
 --- a/configs/dragonboard410c_defconfig
 +++ b/configs/dragonboard410c_defconfig
-@@ -20,6 +20,8 @@ CONFIG_CMD_USB=y
- CONFIG_CMD_CACHE=y
- CONFIG_CMD_TIMER=y
- CONFIG_ENV_IS_IN_MMC=y
+@@ -6,6 +6,8 @@ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_NR_DRAM_BANKS=1
+ CONFIG_FIT=y
+ CONFIG_OF_BOARD_SETUP=y
 +CONFIG_FAT_WRITE=y
 +CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
- CONFIG_CLK=y
- CONFIG_MSM_GPIO=y
- CONFIG_PM8916_GPIO=y
-@@ -32,10 +34,17 @@ CONFIG_DM_PMIC=y
+ CONFIG_MISC_INIT_R=y
+ # CONFIG_DISPLAY_CPUINFO is not set
+ # CONFIG_DISPLAY_BOARDINFO is not set
+@@ -35,6 +37,13 @@ CONFIG_DM_PMIC=y
  CONFIG_PMIC_PM8916=y
  CONFIG_MSM_SERIAL=y
  CONFIG_SPMI_MSM=y
@@ -103,15 +98,11 @@ index e6114db2ce..30e5cb3f5d 100644
 +# CONFG_VIDEO_BPP8 is not set
 +CONFIG_NO_FB_CLEAR=y
 +CONFIG_VIDEO_SIMPLE=y
++CONFIG_USB_KEYBOARD=y
  CONFIG_USB=y
  CONFIG_DM_USB=y
  CONFIG_USB_EHCI_HCD=y
- CONFIG_USB_EHCI_MSM=y
-+CONFIG_USB_KEYBOARD=y
- CONFIG_USB_ULPI_VIEWPORT=y
- CONFIG_USB_ULPI=y
- CONFIG_USB_STORAGE=y
-@@ -43,5 +52,6 @@ CONFIG_USB_HOST_ETHER=y
+@@ -46,5 +55,6 @@ CONFIG_USB_HOST_ETHER=y
  CONFIG_USB_ETHER_ASIX=y
  CONFIG_USB_ETHER_ASIX88179=y
  CONFIG_USB_ETHER_MCS7830=y
@@ -119,4 +110,5 @@ index e6114db2ce..30e5cb3f5d 100644
  CONFIG_USB_ETHER_SMSC95XX=y
  CONFIG_OF_LIBFDT_OVERLAY=y
 -- 
-2.14.3
+2.19.0.rc0
+

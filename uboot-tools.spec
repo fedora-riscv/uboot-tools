@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2018.09
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -22,13 +22,15 @@ Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
 
 # Board fixes and enablement
-Patch10:   dragonboard-fixes.patch
+Patch10:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch11:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
 Patch12:   rockchip-make_fit_atf-use-elf-entry-point.patch
 Patch13:   tegra186-jetson-tx2-disable-onboard-emmc.patch
-Patch14:   tegra-fix-tx1.patch
-Patch15:   tegra-p2771-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
-#Patch19:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+Patch14:   rk3399-Rock960-board-support.patch
+Patch15:   dragonboard-fixes.patch
+Patch16:   tegra-efi_loader-simplify-ifdefs.patch
+#Patch17:   tegra-fix-tx1.patch
+#Patch17.1:   tegra-p2771-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
 
 # Patch99:   mvebu-enable-generic-distro-boot-config.patch
 
@@ -115,12 +117,17 @@ do
   echo "Building board: $board"
   mkdir builds/$(echo $board)/
   # ATF selection, needs improving, suggestions of ATF SoC to Board matrix welcome
-  sun50i=(pine64_plus a64-olinuxino bananapi_m64 nanopi_a64 nanopi_neo2 orangepi_pc2 orangepi_prime orangepi_win orangepi_zero_plus2 sopine_baseboard)
+  sun50i=(a64-olinuxino bananapi_m64 libretech_all_h3_cc_h5 nanopi_neo2 nanopi_neo_plus2 orangepi_pc2 orangepi_prime orangepi_win orangepi_zero_plus orangepi_zero_plus2 pine64_plus sopine_baseboard)
   if [[ " ${sun50i[*]} " == *" $board "* ]]; then
-    echo "Board: $board using sun50iw1p1"
-    cp /usr/share/arm-trusted-firmware/sun50iw1p1/* builds/$(echo $board)/
+    echo "Board: $board using sun50i_a64"
+    cp /usr/share/arm-trusted-firmware/sun50i_a64/* builds/$(echo $board)/
   fi
-  rk3399=(evb-rk3399 firefly-rk3399)
+  sun50i=(orangepi_one_plus pine_h64)
+  if [[ " ${sun50i[*]} " == *" $board "* ]]; then
+    echo "Board: $board using sun50i_h6"
+    cp /usr/share/arm-trusted-firmware/sun50i_h6/* builds/$(echo $board)/
+  fi
+  rk3399=(evb-rk3399 firefly-rk3399 rock960-rk3399)
   if [[ " ${rk3399[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3399"
     cp /usr/share/arm-trusted-firmware/rk3399/* builds/$(echo $board)/
@@ -293,6 +300,11 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Sep  4 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.09-0.3.rc3
+- 2018.09 RC3
+- Enable nanopi_neo_plus2, pine_h64, rock960-rk3399, a64-olinuxino
+- Build against new upstream AllWinner ATF support
+
 * Tue Aug 14 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.09-0.2.rc2
 - 2018.09 RC2
 - Improve Jetson TX1 support

@@ -1,6 +1,6 @@
-From 8a423a24f3d6f0d9deae23172372b9075a95851b Mon Sep 17 00:00:00 2001
+From 44dd1455f924aa99e6bff0b124a9be0a85dcfa89 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 17 Apr 2018 13:50:49 +0100
+Date: Tue, 4 Sep 2018 11:59:18 +0100
 Subject: [PATCH] rpi: Use firmware provided device tree
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
@@ -10,87 +10,73 @@ Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
  configs/rpi_3_32b_defconfig | 2 +-
  configs/rpi_3_defconfig     | 2 +-
  configs/rpi_defconfig       | 2 +-
- include/configs/rpi.h       | 2 +-
- 6 files changed, 6 insertions(+), 6 deletions(-)
+ 5 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/configs/rpi_0_w_defconfig b/configs/rpi_0_w_defconfig
-index fcc2ae68c9..48b656cdb2 100644
+index d5bf01b76e..08f177f34a 100644
 --- a/configs/rpi_0_w_defconfig
 +++ b/configs/rpi_0_w_defconfig
-@@ -12,7 +12,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
+@@ -13,7 +13,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
  CONFIG_CMD_GPIO=y
  CONFIG_CMD_MMC=y
  CONFIG_CMD_USB=y
 -CONFIG_OF_EMBED=y
 +CONFIG_OF_BOARD=y
+ CONFIG_DEFAULT_DEVICE_TREE="bcm2835-rpi-zero-w"
  CONFIG_ENV_FAT_INTERFACE="mmc"
  CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
- CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
 diff --git a/configs/rpi_2_defconfig b/configs/rpi_2_defconfig
-index 204af74239..ed60fd96d8 100644
+index a50a815759..0918c6c9ff 100644
 --- a/configs/rpi_2_defconfig
 +++ b/configs/rpi_2_defconfig
-@@ -12,7 +12,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
+@@ -13,7 +13,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
  CONFIG_CMD_GPIO=y
  CONFIG_CMD_MMC=y
  CONFIG_CMD_USB=y
 -CONFIG_OF_EMBED=y
 +CONFIG_OF_BOARD=y
+ CONFIG_DEFAULT_DEVICE_TREE="bcm2836-rpi-2-b"
  CONFIG_ENV_FAT_INTERFACE="mmc"
  CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
- CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
 diff --git a/configs/rpi_3_32b_defconfig b/configs/rpi_3_32b_defconfig
-index 9e142cae63..465e97b662 100644
+index ec395d29ed..22165bde53 100644
 --- a/configs/rpi_3_32b_defconfig
 +++ b/configs/rpi_3_32b_defconfig
-@@ -13,7 +13,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
+@@ -14,7 +14,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
  CONFIG_CMD_GPIO=y
  CONFIG_CMD_MMC=y
  CONFIG_CMD_USB=y
 -CONFIG_OF_EMBED=y
 +CONFIG_OF_BOARD=y
+ CONFIG_DEFAULT_DEVICE_TREE="bcm2837-rpi-3-b"
  CONFIG_ENV_FAT_INTERFACE="mmc"
  CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
- CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
 diff --git a/configs/rpi_3_defconfig b/configs/rpi_3_defconfig
-index f46e504497..cbae3d198b 100644
+index ac99f2000a..0ca298cd54 100644
 --- a/configs/rpi_3_defconfig
 +++ b/configs/rpi_3_defconfig
+@@ -14,7 +14,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_MMC=y
+ CONFIG_CMD_USB=y
+-CONFIG_OF_EMBED=y
++CONFIG_OF_BOARD=y
+ CONFIG_DEFAULT_DEVICE_TREE="bcm2837-rpi-3-b"
+ CONFIG_ENV_FAT_INTERFACE="mmc"
+ CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
+diff --git a/configs/rpi_defconfig b/configs/rpi_defconfig
+index db42ffd135..0ec1365b1b 100644
+--- a/configs/rpi_defconfig
++++ b/configs/rpi_defconfig
 @@ -13,7 +13,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
  CONFIG_CMD_GPIO=y
  CONFIG_CMD_MMC=y
  CONFIG_CMD_USB=y
 -CONFIG_OF_EMBED=y
 +CONFIG_OF_BOARD=y
+ CONFIG_DEFAULT_DEVICE_TREE="bcm2835-rpi-b"
  CONFIG_ENV_FAT_INTERFACE="mmc"
  CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
- CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
-diff --git a/configs/rpi_defconfig b/configs/rpi_defconfig
-index 82c90d40e1..916b6df5a6 100644
---- a/configs/rpi_defconfig
-+++ b/configs/rpi_defconfig
-@@ -12,7 +12,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
- CONFIG_CMD_GPIO=y
- CONFIG_CMD_MMC=y
- CONFIG_CMD_USB=y
--CONFIG_OF_EMBED=y
-+CONFIG_OF_BOARD=y
- CONFIG_ENV_FAT_INTERFACE="mmc"
- CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
- CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
-diff --git a/include/configs/rpi.h b/include/configs/rpi.h
-index 325e52a019..fcf7e0976b 100644
---- a/include/configs/rpi.h
-+++ b/include/configs/rpi.h
-@@ -124,7 +124,7 @@
- #define ENV_MEM_LAYOUT_SETTINGS \
- 	"fdt_high=ffffffff\0" \
- 	"initrd_high=ffffffff\0" \
--	"fdt_addr_r=0x00000100\0" \
-+	"fdt_addr_r=0x01f00000\0" \
- 	"pxefile_addr_r=0x00100000\0" \
- 	"kernel_addr_r=0x01000000\0" \
- 	"scriptaddr=0x02000000\0" \
 -- 
-2.17.0
+2.19.0.rc0
 

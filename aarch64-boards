@@ -1,3 +1,4 @@
+a64-olinuxino
 avnet_ultra96_rev1
 bananapi_m64
 dragonboard410c
@@ -15,6 +16,7 @@ mvebu_espressobin-88f3720
 mvebu_mcbin-88f8040
 nanopi-k2
 nanopi_neo2
+nanopi_neo_plus2
 odroid-c2
 orangepi_one_plus
 orangepi_pc2
@@ -25,8 +27,10 @@ orangepi_zero_plus2
 p212
 p2371-2180
 p2771-0000-500
+pine_h64
 pine64_plus
 poplar
+rock960-rk3399
 rpi_3
 sopine_baseboard
 turris_mox
