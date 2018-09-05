@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2018.09
-Release:   0.3%{?candidate:.%{candidate}}%{?dist}
+Release:   0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -25,14 +25,12 @@ Patch3:    usb-kbd-fixes.patch
 Patch10:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch11:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
 Patch12:   rockchip-make_fit_atf-use-elf-entry-point.patch
-Patch13:   tegra186-jetson-tx2-disable-onboard-emmc.patch
-Patch14:   rk3399-Rock960-board-support.patch
-Patch15:   dragonboard-fixes.patch
+Patch13:   rk3399-Rock960-board-support.patch
+Patch14:   dragonboard-fixes.patch
+Patch15:   tegra186-jetson-tx2-disable-onboard-emmc.patch
 Patch16:   tegra-efi_loader-simplify-ifdefs.patch
-#Patch17:   tegra-fix-tx1.patch
-#Patch17.1:   tegra-p2771-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
-
-# Patch99:   mvebu-enable-generic-distro-boot-config.patch
+Patch17:   tegra-TXx-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
+Patch18:   tegra-fix-tx1.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -300,10 +298,11 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Tue Sep  4 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.09-0.3.rc3
+* Tue Sep  4 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.09-0.4.rc3
 - 2018.09 RC3
 - Enable nanopi_neo_plus2, pine_h64, rock960-rk3399, a64-olinuxino
 - Build against new upstream AllWinner ATF support
+- Use firmware provided DT on Raspberry Pi
 
 * Tue Aug 14 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.09-0.2.rc2
 - 2018.09 RC2
