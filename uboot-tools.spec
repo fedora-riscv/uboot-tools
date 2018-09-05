@@ -31,6 +31,7 @@ Patch15:   tegra186-jetson-tx2-disable-onboard-emmc.patch
 Patch16:   tegra-efi_loader-simplify-ifdefs.patch
 Patch17:   tegra-TXx-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
 Patch18:   tegra-fix-tx1.patch
+Patch19:   sunxi-DT-A64-add-Pine64-LTS-support.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -303,6 +304,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 - Enable nanopi_neo_plus2, pine_h64, rock960-rk3399, a64-olinuxino
 - Build against new upstream AllWinner ATF support
 - Use firmware provided DT on Raspberry Pi
+- Support for Pine64-LTS
 
 * Tue Aug 14 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.09-0.2.rc2
 - 2018.09 RC2
