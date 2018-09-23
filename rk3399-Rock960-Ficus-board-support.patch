@@ -1,0 +1,2961 @@
+From patchwork Fri Sep 21 00:22:12 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v2,
+ 1/4] arm: dts: rockchip: add some common pin-settings to rk3399
+X-Patchwork-Submitter: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+X-Patchwork-Id: 972789
+Message-Id: <20180921002215.2013-2-manivannan.sadhasivam@linaro.org>
+To: sjg@chromium.org,
+	philipp.tomsich@theobroma-systems.com
+Cc: tom@vamrs.com, Randy Li <ayaka@soulik.info>, amit.kucheria@linaro.org,
+ dev@vamrs.com, u-boot@lists.denx.de,
+ Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, stephen@vamrs.com
+Date: Thu, 20 Sep 2018 17:22:12 -0700
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+From: Randy Li <ayaka@soulik.info>
+
+Those pins would be used by many boards.
+
+Commit grabbed from Linux:
+
+commit b41023282d07b61a53e2c9b9508912b1e7ce7b4f
+Author: Randy Li <ayaka@soulik.info>
+Date:   Thu Jun 21 21:32:10 2018 +0800
+
+    arm64: dts: rockchip: add some common pin-settings to rk3399
+
+    Those pins would be used by many boards.
+
+    Signed-off-by: Randy Li <ayaka@soulik.info>
+    Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+
+Acked-by: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>
+Signed-off-by: Randy Li <ayaka@soulik.info>
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+---
+
+Changes in v2: None
+
+ arch/arm/dts/rk3399.dtsi | 55 +++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 49 insertions(+), 6 deletions(-)
+
+diff --git a/arch/arm/dts/rk3399.dtsi b/arch/arm/dts/rk3399.dtsi
+index 83c257b1228..8349451b03d 100644
+--- a/arch/arm/dts/rk3399.dtsi
++++ b/arch/arm/dts/rk3399.dtsi
+@@ -1602,19 +1602,49 @@
+ 			drive-strength = <12>;
+ 		};
+ 
++		pcfg_pull_none_13ma: pcfg-pull-none-13ma {
++			bias-disable;
++			drive-strength = <13>;
++		};
++
++		pcfg_pull_none_18ma: pcfg-pull-none-18ma {
++			bias-disable;
++			drive-strength = <18>;
++		};
++
++		pcfg_pull_none_20ma: pcfg-pull-none-20ma {
++			bias-disable;
++			drive-strength = <20>;
++		};
++
++		pcfg_pull_up_2ma: pcfg-pull-up-2ma {
++			bias-pull-up;
++			drive-strength = <2>;
++		};
++
+ 		pcfg_pull_up_8ma: pcfg-pull-up-8ma {
+ 			bias-pull-up;
+ 			drive-strength = <8>;
+ 		};
+ 
++		pcfg_pull_up_18ma: pcfg-pull-up-18ma {
++			bias-pull-up;
++			drive-strength = <18>;
++		};
++
++		pcfg_pull_up_20ma: pcfg-pull-up-20ma {
++			bias-pull-up;
++			drive-strength = <20>;
++		};
++
+ 		pcfg_pull_down_4ma: pcfg-pull-down-4ma {
+ 			bias-pull-down;
+ 			drive-strength = <4>;
+ 		};
+ 
+-		pcfg_pull_up_2ma: pcfg-pull-up-2ma {
+-			bias-pull-up;
+-			drive-strength = <2>;
++		pcfg_pull_down_8ma: pcfg-pull-down-8ma {
++			bias-pull-down;
++			drive-strength = <8>;
+ 		};
+ 
+ 		pcfg_pull_down_12ma: pcfg-pull-down-12ma {
+@@ -1622,9 +1652,22 @@
+ 			drive-strength = <12>;
+ 		};
+ 
+-		pcfg_pull_none_13ma: pcfg-pull-none-13ma {
+-			bias-disable;
+-			drive-strength = <13>;
++		pcfg_pull_down_18ma: pcfg-pull-down-18ma {
++			bias-pull-down;
++			drive-strength = <18>;
++		};
++
++		pcfg_pull_down_20ma: pcfg-pull-down-20ma {
++			bias-pull-down;
++			drive-strength = <20>;
++		};
++
++		pcfg_output_high: pcfg-output-high {
++			output-high;
++		};
++
++		pcfg_output_low: pcfg-output-low {
++			output-low;
+ 		};
+ 
+ 		clock {
+
+From patchwork Fri Sep 21 00:22:13 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot, v2,
+ 2/4] rockchip: rk3399: Add common Rock960 family from Vamrs
+X-Patchwork-Submitter: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+X-Patchwork-Id: 972790
+Message-Id: <20180921002215.2013-3-manivannan.sadhasivam@linaro.org>
+To: sjg@chromium.org,
+	philipp.tomsich@theobroma-systems.com
+Cc: tom@vamrs.com, amit.kucheria@linaro.org, dev@vamrs.com,
+ u-boot@lists.denx.de,
+ Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, 
+ stephen@vamrs.com
+Date: Thu, 20 Sep 2018 17:22:13 -0700
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Rock960 is a family of boards based on Rockchip RK3399 SoC from Vamrs.
+It consists of Rock960 (Consumer Edition) and Ficus (Enterprise Edition)
+96Boards.
+
+Below are some of the key differences between both Rock960 and Ficus
+boards:
+
+1. Different host enable GPIO for USB
+2. Different power and reset GPIO for PCI-E
+3. No Ethernet port on Rock960
+
+The common board support will be utilized by both boards. The device
+tree has been organized in such a way that only the properties which
+differ between both boards are placed in the board specific dts and
+the reset of the nodes are placed in common dtsi file.
+
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+[Added instructions for SD card boot]
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+---
+
+Changes in v2: None
+
+ arch/arm/dts/rk3399-rock960.dtsi            | 506 ++++++++++++++++++++
+ arch/arm/mach-rockchip/rk3399/Kconfig       |  26 +
+ board/vamrs/rock960_rk3399/Kconfig          |  15 +
+ board/vamrs/rock960_rk3399/MAINTAINERS      |   6 +
+ board/vamrs/rock960_rk3399/Makefile         |   6 +
+ board/vamrs/rock960_rk3399/README           | 151 ++++++
+ board/vamrs/rock960_rk3399/rock960-rk3399.c |  50 ++
+ include/configs/rock960_rk3399.h            |  15 +
+ 8 files changed, 775 insertions(+)
+ create mode 100644 arch/arm/dts/rk3399-rock960.dtsi
+ create mode 100644 board/vamrs/rock960_rk3399/Kconfig
+ create mode 100644 board/vamrs/rock960_rk3399/MAINTAINERS
+ create mode 100644 board/vamrs/rock960_rk3399/Makefile
+ create mode 100644 board/vamrs/rock960_rk3399/README
+ create mode 100644 board/vamrs/rock960_rk3399/rock960-rk3399.c
+ create mode 100644 include/configs/rock960_rk3399.h
+
+diff --git a/arch/arm/dts/rk3399-rock960.dtsi b/arch/arm/dts/rk3399-rock960.dtsi
+new file mode 100644
+index 00000000000..51644d6d02d
+--- /dev/null
++++ b/arch/arm/dts/rk3399-rock960.dtsi
+@@ -0,0 +1,506 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright (c) 2018 Linaro Ltd.
++ */
++
++#include <dt-bindings/pwm/pwm.h>
++#include <dt-bindings/pinctrl/rockchip.h>
++#include "rk3399.dtsi"
++
++/ {
++	vcc1v8_s0: vcc1v8-s0 {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc1v8_s0";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		regulator-always-on;
++	};
++
++	vcc_sys: vcc-sys {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc_sys";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		regulator-always-on;
++	};
++
++	vcc3v3_sys: vcc3v3-sys {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc3v3_sys";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		regulator-always-on;
++		vin-supply = <&vcc_sys>;
++	};
++
++	vcc3v3_pcie: vcc3v3-pcie-regulator {
++		compatible = "regulator-fixed";
++		enable-active-high;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pcie_drv>;
++		regulator-boot-on;
++		regulator-name = "vcc3v3_pcie";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		vin-supply = <&vcc3v3_sys>;
++	};
++
++	vcc5v0_host: vcc5v0-host-regulator {
++		compatible = "regulator-fixed";
++		enable-active-high;
++		pinctrl-names = "default";
++		pinctrl-0 = <&host_vbus_drv>;
++		regulator-name = "vcc5v0_host";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		regulator-always-on;
++		vin-supply = <&vcc_sys>;
++	};
++
++	vdd_log: vdd-log {
++		compatible = "pwm-regulator";
++		pwms = <&pwm2 0 25000 0>;
++		regulator-name = "vdd_log";
++		regulator-min-microvolt = <800000>;
++		regulator-max-microvolt = <1400000>;
++		regulator-always-on;
++		regulator-boot-on;
++		vin-supply = <&vcc_sys>;
++	};
++
++};
++
++&cpu_l0 {
++	cpu-supply = <&vdd_cpu_l>;
++};
++
++&cpu_l1 {
++	cpu-supply = <&vdd_cpu_l>;
++};
++
++&cpu_l2 {
++	cpu-supply = <&vdd_cpu_l>;
++};
++
++&cpu_l3 {
++	cpu-supply = <&vdd_cpu_l>;
++};
++
++&cpu_b0 {
++	cpu-supply = <&vdd_cpu_b>;
++};
++
++&cpu_b1 {
++	cpu-supply = <&vdd_cpu_b>;
++};
++
++&emmc_phy {
++	status = "okay";
++};
++
++&hdmi {
++	status = "okay";
++};
++
++&i2c0 {
++	clock-frequency = <400000>;
++	i2c-scl-rising-time-ns = <168>;
++	i2c-scl-falling-time-ns = <4>;
++	status = "okay";
++
++	vdd_cpu_b: regulator@40 {
++		compatible = "silergy,syr827";
++		reg = <0x40>;
++		fcs,suspend-voltage-selector = <1>;
++		regulator-name = "vdd_cpu_b";
++		regulator-min-microvolt = <712500>;
++		regulator-max-microvolt = <1500000>;
++		regulator-ramp-delay = <1000>;
++		regulator-always-on;
++		regulator-boot-on;
++		vin-supply = <&vcc_sys>;
++		status = "okay";
++
++		regulator-state-mem {
++			regulator-off-in-suspend;
++		};
++	};
++
++	vdd_gpu: regulator@41 {
++		compatible = "silergy,syr828";
++		reg = <0x41>;
++		fcs,suspend-voltage-selector = <1>;
++		regulator-name = "vdd_gpu";
++		regulator-min-microvolt = <712500>;
++		regulator-max-microvolt = <1500000>;
++		regulator-ramp-delay = <1000>;
++		regulator-always-on;
++		regulator-boot-on;
++		vin-supply = <&vcc_sys>;
++		regulator-state-mem {
++			regulator-off-in-suspend;
++		};
++	};
++
++	rk808: pmic@1b {
++		compatible = "rockchip,rk808";
++		reg = <0x1b>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <21 IRQ_TYPE_LEVEL_LOW>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pmic_int_l>;
++		rockchip,system-power-controller;
++		wakeup-source;
++		#clock-cells = <1>;
++		clock-output-names = "xin32k", "rk808-clkout2";
++
++		vcc1-supply = <&vcc_sys>;
++		vcc2-supply = <&vcc_sys>;
++		vcc3-supply = <&vcc_sys>;
++		vcc4-supply = <&vcc_sys>;
++		vcc6-supply = <&vcc_sys>;
++		vcc7-supply = <&vcc_sys>;
++		vcc8-supply = <&vcc3v3_sys>;
++		vcc9-supply = <&vcc_sys>;
++		vcc10-supply = <&vcc_sys>;
++		vcc11-supply = <&vcc_sys>;
++		vcc12-supply = <&vcc3v3_sys>;
++		vddio-supply = <&vcc_1v8>;
++
++		regulators {
++			vdd_center: DCDC_REG1 {
++				regulator-name = "vdd_center";
++				regulator-min-microvolt = <750000>;
++				regulator-max-microvolt = <1350000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vdd_cpu_l: DCDC_REG2 {
++				regulator-name = "vdd_cpu_l";
++				regulator-min-microvolt = <750000>;
++				regulator-max-microvolt = <1350000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-off-in-suspend;
++				};
++			};
++
++			vcc_ddr: DCDC_REG3 {
++				regulator-name = "vcc_ddr";
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-on-in-suspend;
++				};
++			};
++
++			vcc_1v8: DCDC_REG4 {
++				regulator-name = "vcc_1v8";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <1800000>;
++				};
++			};
++
++			vcc1v8_dvp: LDO_REG1 {
++				regulator-name = "vcc1v8_dvp";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <1800000>;
++				};
++			};
++
++			vcca1v8_hdmi: LDO_REG2 {
++				regulator-name = "vcca1v8_hdmi";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <1800000>;
++				};
++			};
++
++			vcca_1v8: LDO_REG3 {
++				regulator-name = "vcca_1v8";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <1800000>;
++				};
++			};
++
++			vcc_sd: LDO_REG4 {
++				regulator-name = "vcc_sd";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <3300000>;
++				};
++			};
++
++			vcc3v0_sd: LDO_REG5 {
++				regulator-name = "vcc3v0_sd";
++				regulator-min-microvolt = <3000000>;
++				regulator-max-microvolt = <3000000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <3000000>;
++				};
++			};
++
++			vcc_1v5: LDO_REG6 {
++				regulator-name = "vcc_1v5";
++				regulator-min-microvolt = <1500000>;
++				regulator-max-microvolt = <1500000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <1500000>;
++				};
++			};
++
++			vcca0v9_hdmi: LDO_REG7 {
++				regulator-name = "vcca0v9_hdmi";
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <900000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <900000>;
++				};
++			};
++
++			vcc_3v0: LDO_REG8 {
++				regulator-name = "vcc_3v0";
++				regulator-min-microvolt = <3000000>;
++				regulator-max-microvolt = <3000000>;
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-on-in-suspend;
++					regulator-suspend-microvolt = <3000000>;
++				};
++			};
++
++			vcc3v3_s3: SWITCH_REG1 {
++				regulator-name = "vcc3v3_s3";
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-on-in-suspend;
++				};
++			};
++
++			vcc3v3_s0: SWITCH_REG2 {
++				regulator-name = "vcc3v3_s0";
++				regulator-always-on;
++				regulator-boot-on;
++				regulator-state-mem {
++					regulator-on-in-suspend;
++				};
++			};
++		};
++	};
++};
++
++&i2c1 {
++	status = "okay";
++};
++
++&i2c2 {
++	status = "okay";
++};
++
++&i2c3 {
++	status = "okay";
++};
++
++&i2c4 {
++	status = "okay";
++};
++
++&io_domains {
++	bt656-supply = <&vcc1v8_s0>; /* bt656_gpio2ab_ms */
++	audio-supply = <&vcc1v8_s0>; /* audio_gpio3d4a_ms */
++	sdmmc-supply = <&vcc_sd>; /* sdmmc_gpio4b_ms */
++	gpio1830-supply = <&vcc_3v0>; /* gpio1833_gpio4cd_ms */
++	status = "okay";
++};
++
++&pcie_phy {
++	status = "okay";
++};
++
++&pcie0 {
++	num-lanes = <4>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pcie_clkreqn_cpm>;
++	vpcie3v3-supply = <&vcc3v3_pcie>;
++	status = "okay";
++};
++
++&pmu_io_domains {
++	pmu1830-supply = <&vcc_1v8>;
++	status = "okay";
++};
++
++&pinctrl {
++	sdmmc {
++		sdmmc_bus1: sdmmc-bus1 {
++			rockchip,pins =
++				<4 8 RK_FUNC_1 &pcfg_pull_up_8ma>;
++		};
++
++		sdmmc_bus4: sdmmc-bus4 {
++			rockchip,pins =
++				<4 8 RK_FUNC_1 &pcfg_pull_up_8ma>,
++				<4 9 RK_FUNC_1 &pcfg_pull_up_8ma>,
++				<4 10 RK_FUNC_1 &pcfg_pull_up_8ma>,
++				<4 11 RK_FUNC_1 &pcfg_pull_up_8ma>;
++		};
++
++		sdmmc_clk: sdmmc-clk {
++			rockchip,pins =
++				<4 12 RK_FUNC_1 &pcfg_pull_none_18ma>;
++		};
++
++		sdmmc_cmd: sdmmc-cmd {
++			rockchip,pins =
++				<4 13 RK_FUNC_1 &pcfg_pull_up_8ma>;
++		};
++	};
++
++	pmic {
++		pmic_int_l: pmic-int-l {
++			rockchip,pins =
++				<1 21 RK_FUNC_GPIO &pcfg_pull_up>;
++		};
++
++		vsel1_gpio: vsel1-gpio {
++			rockchip,pins =
++				<1 17 RK_FUNC_GPIO &pcfg_pull_down>;
++		};
++
++		vsel2_gpio: vsel2-gpio {
++			rockchip,pins =
++				<1 14 RK_FUNC_GPIO &pcfg_pull_down>;
++		};
++	};
++};
++
++&pwm2 {
++	status = "okay";
++};
++
++&pwm3 {
++	status = "okay";
++};
++
++&sdhci {
++	bus-width = <8>;
++	mmc-hs400-1_8v;
++	mmc-hs400-enhanced-strobe;
++	non-removable;
++	status = "okay";
++};
++
++&sdmmc {
++	bus-width = <4>;
++	cap-mmc-highspeed;
++	cap-sd-highspeed;
++	clock-frequency = <100000000>;
++	clock-freq-min-max = <100000 100000000>;
++	cd-gpios = <&gpio0 7 GPIO_ACTIVE_LOW>;
++	disable-wp;
++	sd-uhs-sdr104;
++	vqmmc-supply = <&vcc_sd>;
++	card-detect-delay = <800>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&sdmmc_clk &sdmmc_cmd &sdmmc_cd &sdmmc_bus4>;
++	status = "okay";
++};
++
++&uart0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&uart0_xfer &uart0_cts>;
++	status = "okay";
++};
++
++&uart2 {
++	status = "okay";
++};
++
++&u2phy0 {
++	status = "okay";
++};
++
++&u2phy1 {
++	status = "okay";
++};
++
++&u2phy0_host {
++	phy-supply = <&vcc5v0_host>;
++	status = "okay";
++};
++
++&u2phy1_host {
++	phy-supply = <&vcc5v0_host>;
++	status = "okay";
++};
++
++&u2phy0_otg {
++	status = "okay";
++};
++
++&u2phy1_otg {
++	status = "okay";
++};
++
++&usb_host0_ehci {
++	status = "okay";
++};
++
++&usb_host0_ohci {
++	status = "okay";
++};
++
++&usb_host1_ehci {
++	status = "okay";
++};
++
++&usb_host1_ohci {
++	status = "okay";
++};
++
++&vopb {
++	status = "okay";
++};
++
++&vopl {
++	status = "okay";
++};
+diff --git a/arch/arm/mach-rockchip/rk3399/Kconfig b/arch/arm/mach-rockchip/rk3399/Kconfig
+index 415466a49bb..8f18e33c76f 100644
+--- a/arch/arm/mach-rockchip/rk3399/Kconfig
++++ b/arch/arm/mach-rockchip/rk3399/Kconfig
+@@ -28,6 +28,31 @@ config TARGET_PUMA_RK3399
+ 	   * HDMI, eDP, MIPI-DSI, MIPI-DSI/CSI and MIPI-CSI
+ 	   * SPI, I2C, I2S, UART, GPIO, ...
+ 
++config TARGET_ROCK960_RK3399
++	bool "Vamrs Limited Rock960 board family"
++	help
++	  Support for Rock960 board family by Vamrs Limited. This board
++	  family consists of Rock960 (Consumer Edition) and Ficus
++	  (Enterprise Edition) 96Boards.
++
++	  Common features implemented on both boards:
++	   * Rockchip RK3399 SoC (2xCortex A72, 4xCortex A53, ARM Mali T860MP4)
++	   * 16/32GB eMMC, uSD slot
++	   * HDMI/DP/MIPI
++	   * 20-pin low speed and 40-pin high speed expanders, 6 LED, 3 buttons
++
++	  Additional features of Rock960:
++	   * 2GiB/4GiB LPDDR3 RAM
++	   * 1x USB 3.0 type A, 1x USB 2.0 type A (host mode only),
++	     1x USB 3.0 type C OTG
++
++	  Additional features of Ficus:
++	   * 2GiB/4GiB DDR3 RAM
++	   * Ethernet
++	   * Dual SATA
++	   * 2x USB 3.0 type A, 2x USB 2.0 type A (host mode only),
++	     1x USB 3.0 type C OTG
++
+ endchoice
+ 
+ config SYS_SOC
+@@ -38,5 +63,6 @@ config SYS_MALLOC_F_LEN
+ 
+ source "board/rockchip/evb_rk3399/Kconfig"
+ source "board/theobroma-systems/puma_rk3399/Kconfig"
++source "board/vamrs/rock960_rk3399/Kconfig"
+ 
+ endif
+diff --git a/board/vamrs/rock960_rk3399/Kconfig b/board/vamrs/rock960_rk3399/Kconfig
+new file mode 100644
+index 00000000000..cacc53f3780
+--- /dev/null
++++ b/board/vamrs/rock960_rk3399/Kconfig
+@@ -0,0 +1,15 @@
++if TARGET_ROCK960_RK3399
++
++config SYS_BOARD
++	default "rock960_rk3399"
++
++config SYS_VENDOR
++	default "vamrs"
++
++config SYS_CONFIG_NAME
++	default "rock960_rk3399"
++
++config BOARD_SPECIFIC_OPTIONS # dummy
++	def_bool y
++
++endif
+diff --git a/board/vamrs/rock960_rk3399/MAINTAINERS b/board/vamrs/rock960_rk3399/MAINTAINERS
+new file mode 100644
+index 00000000000..9f3fe75f4fb
+--- /dev/null
++++ b/board/vamrs/rock960_rk3399/MAINTAINERS
+@@ -0,0 +1,6 @@
++ROCK960-RK3399
++M:      Manivannan Sadhasivam manivannan.sadhasivam@linaro.org
++S:      Maintained
++F:      board/rockchip/rock960_rk3399
++F:      include/configs/rock960_rk3399.h
++F:      configs/rock960-rk3399_defconfig
+diff --git a/board/vamrs/rock960_rk3399/Makefile b/board/vamrs/rock960_rk3399/Makefile
+new file mode 100644
+index 00000000000..6c3e475b3a8
+--- /dev/null
++++ b/board/vamrs/rock960_rk3399/Makefile
+@@ -0,0 +1,6 @@
++# SPDX-License-Identifier: GPL-2.0+
++#
++# Copyright (C) 2018 Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
++#
++
++obj-y	+= rock960-rk3399.o
+diff --git a/board/vamrs/rock960_rk3399/README b/board/vamrs/rock960_rk3399/README
+new file mode 100644
+index 00000000000..f3389520b08
+--- /dev/null
++++ b/board/vamrs/rock960_rk3399/README
+@@ -0,0 +1,151 @@
++Contents
++========
++
++1. Introduction
++2. Get the Source and prebuild binary
++3. Compile the U-Boot
++4. Compile the rkdeveloptool
++5. Package the image
++   5.1. Package the image for U-Boot SPL(option 1)
++   5.2. Package the image for Rockchip miniloader(option 2)
++6. Bootloader storage options
++7. Flash the image to eMMC
++   7.1. Flash the image with U-Boot SPL(option 1)
++   7.2. Flash the image with Rockchip miniloader(option 2)
++8. Create a bootable SD/MMC
++9. And that is it
++
++Introduction
++============
++
++Rock960 board family consists of Rock960 (Consumer Edition) and
++Ficus (Enterprise Edition) 96Boards featuring Rockchip RK3399 SoC.
++
++Common features implemented on both boards:
++	* CPU: ARMv8 64bit Big-Little architecture,
++		* Big: dual-core Cortex-A72
++		* Little: quad-core Cortex-A53
++		* IRAM: 200KB
++	* eMMC: 16/32GB eMMC 5.1
++	* PMU: RK808
++	* SD/MMC
++	* Display: HDMI/DP/MIPI
++	* Low Speed Expansion Connector
++	* High Speed Expansion Connector
++
++Additional features of Rock960:
++	* DRAM: 2GB/4GB LPDDR3 @ 1866MHz
++	* 1x USB 3.0 type A, 1x USB 2.0 type A (host mode only),
++	  1x USB 3.0 type C OTG
++
++Additional features of Ficus:
++	* DRAM: 2GB/4GB DDR3 @ 1600MHz
++	* Ethernet
++	* 2x USB 3.0 type A, 2x USB 2.0 type A (host mode only),
++	  1x USB 3.0 type C OTG
++
++Here is the step-by-step to boot to U-Boot on Rock960 boards.
++
++Get the Source and prebuild binary
++==================================
++
++  > git clone https://github.com/96rocks/rkbin.git
++  > git clone https://github.com/rockchip-linux/rkdeveloptool.git
++
++Compile the U-Boot
++==================
++
++  > cd ../u-boot
++  > export ARCH=arm64
++  > export CROSS_COMPILE=aarch64-linux-gnu-
++  > make rock960-rk3399_defconfig
++  > make
++  > make u-boot.itb
++
++Compile the rkdeveloptool
++=========================
++
++Follow instructions in latest README
++  > cd ../rkdeveloptool
++  > autoreconf -i
++  > ./configure
++  > make
++  > sudo make install
++
++Package the image
++=================
++
++Package the image for U-Boot SPL(option 1)
++--------------------------------
++  > cd ..
++  > tools/mkimage -n rk3399 -T rksd -d spl/u-boot-spl.bin idbspl.img
++
++  Get idbspl.img in this step.
++
++Package the image for Rockchip miniloader(option 2)
++------------------------------------------
++  > cd ../rkbin
++  > ./tools/loaderimage --pack --uboot u-boot/u-boot-dtb.bin uboot.img 0x200000
++
++  > ../u-boot/tools/mkimage -n rk3399 -T rksd -d rk3399_ddr_933MHz_v1.08.bin idbloader.img
++  > cat ./rk33/rk3399_miniloader_v1.06.bin >> idbloader.img
++
++  Get uboot.img and idbloader.img in this step.
++
++Bootloader storage options
++==========================
++
++There are a few different storage options for the bootloader.
++This document explores two of these: eMMC and removable SD/MMC.
++
++Flash the image to eMMC
++=======================
++
++Flash the image with U-Boot SPL(option 1)
++-------------------------------
++Power on(or reset with RESET KEY) with MASKROM KEY preesed, and then:
++  > rkdeveloptool db rkbin/rk33/rk3399_loader_v1.08.106.bin
++  > rkdeveloptool wl 64 u-boot/idbspl.img
++  > rkdeveloptool wl 0x4000 u-boot/u-boot.itb
++  > rkdeveloptool rd
++
++Flash the image with Rockchip miniloader(option 2)
++----------------------------------------
++Power on(or reset with RESET KEY) with MASKROM KEY preesed, and then:
++  > rkdeveloptool db rkbin/rk33/rk3399_loader_v1.08.106.bin
++  > rkdeveloptool wl 0x40 idbloader.img
++  > rkdeveloptool wl 0x4000 uboot.img
++  > rkdeveloptool wl 0x6000 ./img/rk3399/trust.img
++  > rkdeveloptool rd
++
++Create a bootable SD/MMC
++========================
++
++The idbspl.img contains the first stage, and the u-boot.img the second stage.
++As explained in the Rockchip partition table reference [1], the first stage
++(aka loader1) start sector is 64, and the second stage start sector is 16384.
++
++Each sector is 512 bytes, which means the first stage offset is 32 KiB,
++and the second stage offset is 8 MiB.
++
++Note: the second stage location is actually not as per the spec,
++but defined by the SPL. Mainline SPL defines an 8 MiB offset for the second
++stage.
++
++Assuming the SD card is exposed by device /dev/mmcblk0, the commands
++to write the two stages are:
++
++  > dd if=idbspl.img of=/dev/mmcblk0 bs=1k seek=32
++  > dd if=u-boot.itb of=/dev/mmcblk0 bs=1k seek=8192
++
++Setting up the kernel and rootfs is beyond the scope of this document.
++
++And that is it
++==============
++
++You should be able to get U-Boot log in console/UART2(baurdrate 1500000)
++
++For more detail, please reference [2].
++
++[1] http://opensource.rock-chips.com/wiki_Partitions
++[2] http://opensource.rock-chips.com/wiki_Boot_option
+diff --git a/board/vamrs/rock960_rk3399/rock960-rk3399.c b/board/vamrs/rock960_rk3399/rock960-rk3399.c
+new file mode 100644
+index 00000000000..d3775b22191
+--- /dev/null
++++ b/board/vamrs/rock960_rk3399/rock960-rk3399.c
+@@ -0,0 +1,50 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright (C) 2018 Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
++ */
++
++#include <common.h>
++#include <dm.h>
++#include <dm/pinctrl.h>
++#include <dm/uclass-internal.h>
++#include <asm/arch/periph.h>
++#include <power/regulator.h>
++#include <spl.h>
++
++int board_init(void)
++{
++	int ret;
++
++	ret = regulators_enable_boot_on(false);
++	if (ret)
++		debug("%s: Cannot enable boot on regulator\n", __func__);
++
++	return 0;
++}
++
++void spl_board_init(void)
++{
++	struct udevice *pinctrl;
++	int ret;
++
++	ret = uclass_get_device(UCLASS_PINCTRL, 0, &pinctrl);
++	if (ret) {
++		debug("%s: Cannot find pinctrl device\n", __func__);
++		goto err;
++	}
++
++	/* Enable debug UART */
++	ret = pinctrl_request_noflags(pinctrl, PERIPH_ID_UART_DBG);
++	if (ret) {
++		debug("%s: Failed to set up console UART\n", __func__);
++		goto err;
++	}
++
++	preloader_console_init();
++	return;
++err:
++	printf("%s: Error %d\n", __func__, ret);
++
++	/* No way to report error here */
++	hang();
++}
+diff --git a/include/configs/rock960_rk3399.h b/include/configs/rock960_rk3399.h
+new file mode 100644
+index 00000000000..746d24cbff5
+--- /dev/null
++++ b/include/configs/rock960_rk3399.h
+@@ -0,0 +1,15 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
++/*
++ * Copyright (C) 2018 Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
++ */
++
++#ifndef __ROCK960_RK3399_H
++#define __ROCK960_RK3399_H
++
++#include <configs/rk3399_common.h>
++
++#define CONFIG_SYS_MMC_ENV_DEV		1
++
++#define SDRAM_BANK_SIZE			(2UL << 30)
++
++#endif
+
+From patchwork Fri Sep 21 00:22:14 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v2,3/4] rockchip: rk3399: Add Rock960 CE board support
+X-Patchwork-Submitter: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+X-Patchwork-Id: 972791
+Message-Id: <20180921002215.2013-4-manivannan.sadhasivam@linaro.org>
+To: sjg@chromium.org,
+	philipp.tomsich@theobroma-systems.com
+Cc: tom@vamrs.com, amit.kucheria@linaro.org, dev@vamrs.com,
+ u-boot@lists.denx.de,
+ Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, 
+ stephen@vamrs.com
+Date: Thu, 20 Sep 2018 17:22:14 -0700
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Add board support for Rock960 CE board from Vamrs. This board utilizes
+common Rock960 family support.
+
+Following peripherals are tested and known to work:
+* USB 2.0
+* MMC
+
+This commit also adds DDR configuration for LPDDR3-2GiB-1600MHz which
+is being used on the board.
+
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+---
+
+Changes in v2:
+
+* Added missing config options for USB/uSD
+* Fixed the commit description for DDR speed
+
+ arch/arm/dts/Makefile                         |    1 +
+ arch/arm/dts/rk3399-rock960.dts               |   45 +
+ .../arm/dts/rk3399-sdram-lpddr3-2GB-1600.dtsi | 1536 +++++++++++++++++
+ configs/rock960-rk3399_defconfig              |   67 +
+ 4 files changed, 1649 insertions(+)
+ create mode 100644 arch/arm/dts/rk3399-rock960.dts
+ create mode 100644 arch/arm/dts/rk3399-sdram-lpddr3-2GB-1600.dtsi
+ create mode 100644 configs/rock960-rk3399_defconfig
+
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index ebfa2272627..9b891826b73 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -51,6 +51,7 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += \
+ 	rk3399-puma-ddr1333.dtb \
+ 	rk3399-puma-ddr1600.dtb \
+ 	rk3399-puma-ddr1866.dtb \
++	rk3399-rock960.dtb \
+ 	rv1108-evb.dtb
+ dtb-$(CONFIG_ARCH_MESON) += \
+ 	meson-gxbb-nanopi-k2.dtb \
+diff --git a/arch/arm/dts/rk3399-rock960.dts b/arch/arm/dts/rk3399-rock960.dts
+new file mode 100644
+index 00000000000..25c58b42611
+--- /dev/null
++++ b/arch/arm/dts/rk3399-rock960.dts
+@@ -0,0 +1,45 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright (C) 2018 Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
++ */
++
++/dts-v1/;
++#include "rk3399-rock960.dtsi"
++#include "rk3399-sdram-lpddr3-2GB-1600.dtsi"
++
++/ {
++	model = "96boards Rock960";
++	compatible = "vamrs,rock960", "rockchip,rk3399";
++
++	chosen {
++		stdout-path = "serial2:1500000n8";
++	};
++};
++
++&pcie0 {
++	ep-gpios = <&gpio2 RK_PA2 GPIO_ACTIVE_HIGH>;
++};
++
++&pinctrl {
++	pcie {
++		pcie_drv: pcie-drv {
++			rockchip,pins =
++				<2 RK_PA5 RK_FUNC_GPIO &pcfg_pull_none>;
++			};
++	};
++
++	usb2 {
++		host_vbus_drv: host-vbus-drv {
++			rockchip,pins =
++				<4 RK_PD1 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++};
++
++&vcc3v3_pcie {
++	gpio = <&gpio2 5 GPIO_ACTIVE_HIGH>;
++};
++
++&vcc5v0_host {
++	gpio = <&gpio4 25 GPIO_ACTIVE_HIGH>;
++};
+diff --git a/arch/arm/dts/rk3399-sdram-lpddr3-2GB-1600.dtsi b/arch/arm/dts/rk3399-sdram-lpddr3-2GB-1600.dtsi
+new file mode 100644
+index 00000000000..d14e833d228
+--- /dev/null
++++ b/arch/arm/dts/rk3399-sdram-lpddr3-2GB-1600.dtsi
+@@ -0,0 +1,1536 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * (C) Copyright 2016 Rockchip Electronics Co., Ltd
++ * (C) Copyright 2018 Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
++ */
++
++&dmc {
++	rockchip,sdram-params = <
++		0x1
++		0xa
++		0x3
++		0x2
++		0x2
++		0x0
++		0xf
++		0xf
++		1
++		0x1d191519
++		0x14040808
++		0x00000002
++		0x00006226
++		0x00000054
++		0x00000000
++		0x1
++		0xa
++		0x3
++		0x2
++		0x2
++		0x0
++		0xf
++		0xf
++		1
++		0x1d191519
++		0x14040808
++		0x00000002
++		0x00006226
++		0x00000054
++		0x00000000
++		800
++		6
++		2
++		9
++		1
++		0x00000700
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000050
++		0x00027100
++		0x00000320
++		0x00001f40
++		0x00000050
++		0x00027100
++		0x00000320
++		0x00001f40
++		0x00000050
++		0x00027100
++		0x00000320
++		0x01001f40
++		0x00000000
++		0x00000101
++		0x00020100
++		0x000000a0
++		0x00000190
++		0x00000000
++		0x06180000
++		0x00061800
++		0x04000618
++		0x33080004
++		0x280f0622
++		0x22330800
++		0x00280f06
++		0x06223308
++		0x0600280f
++		0x00000a0a
++		0x0600dac0
++		0x0a0a060c
++		0x0600dac0
++		0x0a0a060c
++		0x0600dac0
++		0x0203000c
++		0x0f0c0f00
++		0x040c0f0c
++		0x14000a0a
++		0x03030a0a
++		0x00010003
++		0x031b1b1b
++		0x00111111
++		0x00000000
++		0x03010000
++		0x0c2800a8
++		0x0c2800a8
++		0x0c2800a8
++		0x00000000
++		0x00060006
++		0x00140006
++		0x00140014
++		0x000f0f0f
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00b00000
++		0x00b000b0
++		0x00b000b0
++		0x000000b0
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000301
++		0x00000001
++		0x00000000
++		0x00000000
++		0x01000000
++		0x80104002
++		0x00040003
++		0x00040005
++		0x00030000
++		0x00050004
++		0x00000004
++		0x00040003
++		0x00040005
++		0x30a00000
++		0x00001850
++		0x185030a0
++		0x30a00000
++		0x00001850
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x02020200
++		0x00020202
++		0x00030200
++		0x00040700
++		0x00000302
++		0x02000407
++		0x00000003
++		0x00030f04
++		0x00070004
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00010000
++		0x20040020
++		0x00200400
++		0x01000400
++		0x00000b80
++		0x00000000
++		0x00000001
++		0x00000002
++		0x0000000e
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00a00000
++		0x00c80050
++		0x00c80000
++		0x005000a0
++		0x000000c8
++		0x00a000c8
++		0x00c80050
++		0x00c80000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00430000
++		0x0000001a
++		0x001a0043
++		0x00430000
++		0x0000001a
++		0x00010001
++		0x07000001
++		0x00000707
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00430000
++		0x0000001a
++		0x001a0043
++		0x00430000
++		0x0000001a
++		0x00010001
++		0x07000001
++		0x00000707
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x01000000
++		0x00000000
++		0x00000000
++		0x18151100
++		0x0000000c
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00032003
++		0x00480120
++		0x00000000
++		0x01200320
++		0x00000048
++		0x00032000
++		0x00480120
++		0x00000000
++		0x00280000
++		0x00280028
++		0x01010100
++		0x01000202
++		0x0a000002
++		0x01000f0f
++		0x00000000
++		0x00000000
++		0x00010003
++		0x00000c03
++		0x00000100
++		0x00010000
++		0x01000000
++		0x00010000
++		0x00000001
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00010000
++		0x03030301
++		0x01010808
++		0x03030001
++		0x0a0a0a03
++		0x02080808
++		0x02050103
++		0x02050103
++		0x00050103
++		0x00020202
++		0x05020500
++		0x00020502
++		0x00000000
++		0x00000000
++		0x0d000001
++		0x00010028
++		0x00010000
++		0x00000003
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00010100
++		0x01000000
++		0x00000001
++		0x00000303
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x000556aa
++		0x000aaaaa
++		0x000aa955
++		0x00055555
++		0x000b3133
++		0x0004cd33
++		0x0004cecc
++		0x000b32cc
++		0x00010300
++		0x03000100
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00ffff00
++		0x1e1e0000
++		0x0800001e
++		0x00001850
++		0x00000200
++		0x00000200
++		0x00000200
++		0x00000200
++		0x00001850
++		0x0000f320
++		0x1850050a
++		0x00000200
++		0x00000200
++		0x00000200
++		0x00000200
++		0x00001850
++		0x0000f320
++		0x1850050a
++		0x00000200
++		0x00000200
++		0x00000200
++		0x00000200
++		0x00001850
++		0x0000f320
++		0x0202050a
++		0x03030202
++		0x00000018
++		0x00000000
++		0x00000000
++		0x00001403
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00030000
++		0x000e0020
++		0x000e0020
++		0x000e0020
++		0x00000000
++		0x00000000
++		0x01000000
++		0x00070007
++		0x00050007
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x01000101
++		0x01010101
++		0x01000101
++		0x01000100
++		0x00010001
++		0x00010002
++		0x00020100
++		0x00000002
++		0x00000700
++		0x00000000
++		0x000030a0
++		0x00001850
++		0x000030a0
++		0x00001850
++		0x000030a0
++		0x18501850
++		0x00000200
++		0x00000200
++		0x00000200
++		0x00000200
++		0x00001850
++		0x00000200
++		0x00000200
++		0x00000200
++		0x00000200
++		0x00001850
++		0x00000200
++		0x00000200
++		0x00000200
++		0x00000200
++		0x00010000
++		0x00000007
++		0x81000001
++		0x0f0003f0
++		0x3fffffff
++		0x0f0000a0
++		0x377ff000
++		0x0f000020
++		0x377ff000
++		0x0f000030
++		0x377ff000
++		0x0f0000b0
++		0x377ff000
++		0x0f000100
++		0x377ff000
++		0x0f000110
++		0x377ff000
++		0x0f000010
++		0x377ff000
++		0x03000101
++		0x042e2e2e
++		0x06180006
++		0x00061800
++		0x00000018
++		0x0c2800a8
++		0x0c2800a8
++		0x0c2800a8
++		0x00000500
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x04040000
++		0x0d000004
++		0x00000128
++		0x00000000
++		0x00030003
++		0x00000018
++		0x00000000
++		0x00000000
++		0x03060002
++		0x03010301
++		0x01080801
++		0x04020201
++		0x01080804
++		0x00000000
++		0x03030000
++		0x0a0a0a03
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00030300
++		0x00000014
++		0x00000000
++		0x01010300
++		0x00000000
++		0x00000000
++		0x01000000
++		0x00000101
++		0x55555a5a
++		0x55555a5a
++		0x55555a5a
++		0x55555a5a
++		0x0a0a0001
++		0x0505000a
++		0x00000005
++		0x00000100
++		0x00030000
++		0x17030000
++		0x000e0020
++		0x000e0020
++		0x000e0020
++		0x00000000
++		0x00000000
++		0x00000100
++		0x140a0000
++		0x000a030a
++		0x03000a03
++		0x010a000a
++		0x00000100
++		0x01000000
++		0x00000000
++		0x00000100
++		0x1e1a0000
++		0x10010204
++		0x07070705
++		0x20000202
++		0x00201000
++		0x00201000
++		0x04041000
++		0x10100100
++		0x00010110
++		0x004b004a
++		0x1a030000
++		0x0102041e
++		0x34000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00004300
++		0x0001001a
++		0x004d4d07
++		0x001a0043
++		0x4d070001
++		0x0000434d
++		0x0001001a
++		0x004d4d07
++		0x001a0043
++		0x4d070001
++		0x0000434d
++		0x0001001a
++		0x004d4d07
++		0x001a0043
++		0x4d070001
++		0x0043004d
++		0x0001001a
++		0x004d4d07
++		0x001a0043
++		0x4d070001
++		0x0000434d
++		0x0001001a
++		0x004d4d07
++		0x001a0043
++		0x4d070001
++		0x0000434d
++		0x0001001a
++		0x004d4d07
++		0x001a0043
++		0x4d070001
++		0x0100004d
++		0x00c800c8
++		0x060400c8
++		0x0c060f11
++		0x2200d890
++		0x0a0c2005
++		0x0f11060a
++		0x00000c06
++		0x2200d890
++		0x0a0c2005
++		0x0f11060a
++		0x00000c06
++		0x2200d890
++		0x0a0c2005
++		0x0200020a
++		0x02000200
++		0x02000200
++		0x02000200
++		0x02000200
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x01000300
++		0x00185000
++		0x0000f320
++		0x00001850
++		0x0000f320
++		0x00001850
++		0x0000f320
++		0x08000000
++		0x00000100
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000002
++		0x76543210
++		0x0004c008
++		0x000000b3
++		0x00000000
++		0x00000000
++		0x00010000
++		0x01665555
++		0x00665555
++		0x00010f00
++		0x05010200
++		0x00000003
++		0x001700c0
++		0x00cc0101
++		0x00030066
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x04080000
++		0x04080400
++		0x08000000
++		0x0c00c007
++		0x00000100
++		0x00000100
++		0x55555555
++		0xaaaaaaaa
++		0x55555555
++		0xaaaaaaaa
++		0x00005555
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00200000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x02700270
++		0x02700270
++		0x02700270
++		0x02700270
++		0x00000270
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00800000
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00b30080
++		0x00000003
++		0x00000000
++		0x00020000
++		0x00000200
++		0x00000000
++		0x51315152
++		0xc0013150
++		0x020000c0
++		0x00100001
++		0x07054208
++		0x000f0c18
++		0x01000140
++		0x00000c20
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x76543210
++		0x0004c008
++		0x000000b3
++		0x00000000
++		0x00000000
++		0x00010000
++		0x01665555
++		0x00665555
++		0x00010f00
++		0x05010200
++		0x00000003
++		0x001700c0
++		0x00cc0101
++		0x00030066
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x04080000
++		0x04080400
++		0x08000000
++		0x0c00c007
++		0x00000100
++		0x00000100
++		0x55555555
++		0xaaaaaaaa
++		0x55555555
++		0xaaaaaaaa
++		0x00005555
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00200000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x02700270
++		0x02700270
++		0x02700270
++		0x02700270
++		0x00000270
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00800000
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00b30080
++		0x00000003
++		0x00000000
++		0x00020000
++		0x00000200
++		0x00000000
++		0x51315152
++		0xc0013150
++		0x020000c0
++		0x00100001
++		0x07054208
++		0x000f0c18
++		0x01000140
++		0x00000c20
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x76543210
++		0x0004c008
++		0x000000b3
++		0x00000000
++		0x00000000
++		0x00010000
++		0x01665555
++		0x00665555
++		0x00010f00
++		0x05010200
++		0x00000003
++		0x001700c0
++		0x00cc0101
++		0x00030066
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x04080000
++		0x04080400
++		0x08000000
++		0x0c00c007
++		0x00000100
++		0x00000100
++		0x55555555
++		0xaaaaaaaa
++		0x55555555
++		0xaaaaaaaa
++		0x00005555
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00200000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x02700270
++		0x02700270
++		0x02700270
++		0x02700270
++		0x00000270
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00800000
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00b30080
++		0x00000003
++		0x00000000
++		0x00020000
++		0x00000200
++		0x00000000
++		0x51315152
++		0xc0013150
++		0x020000c0
++		0x00100001
++		0x07054208
++		0x000f0c18
++		0x01000140
++		0x00000c20
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x76543210
++		0x0004c008
++		0x000000b3
++		0x00000000
++		0x00000000
++		0x00010000
++		0x01665555
++		0x00665555
++		0x00010f00
++		0x05010200
++		0x00000003
++		0x001700c0
++		0x00cc0101
++		0x00030066
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x04080000
++		0x04080400
++		0x08000000
++		0x0c00c007
++		0x00000100
++		0x00000100
++		0x55555555
++		0xaaaaaaaa
++		0x55555555
++		0xaaaaaaaa
++		0x00005555
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00200000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x02700270
++		0x02700270
++		0x02700270
++		0x02700270
++		0x00000270
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00800000
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00800080
++		0x00b30080
++		0x00000003
++		0x00000000
++		0x00020000
++		0x00000200
++		0x00000000
++		0x51315152
++		0xc0013150
++		0x020000c0
++		0x00100001
++		0x07054208
++		0x000f0c18
++		0x01000140
++		0x00000c20
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00800000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000001
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00400320
++		0x00000040
++		0x00806420
++		0x00917531
++		0x00806420
++		0x01917531
++		0x00020003
++		0x00000000
++		0x00000000
++		0x00000000
++		0x000556aa
++		0x000aaaaa
++		0x000aa955
++		0x00055555
++		0x000b3133
++		0x0004cd33
++		0x0004cecc
++		0x000b32cc
++		0x0a418820
++		0x103f0000
++		0x0000003f
++		0x00038055
++		0x03800380
++		0x03800380
++		0x00000380
++		0x42080010
++		0x00000003
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00800000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000001
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00400320
++		0x00000040
++		0x00008eca
++		0x00009fdb
++		0x00008eca
++		0x01009fdb
++		0x00020003
++		0x00000000
++		0x00000000
++		0x00000000
++		0x000556aa
++		0x000aaaaa
++		0x000aa955
++		0x00055555
++		0x000b3133
++		0x0004cd33
++		0x0004cecc
++		0x000b32cc
++		0x0004a0e6
++		0x080f0000
++		0x0000000f
++		0x00038055
++		0x03800380
++		0x03800380
++		0x00000380
++		0x42080010
++		0x00000003
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00800000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000001
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00400320
++		0x00000040
++		0x00008eca
++		0x00009fdb
++		0x00008eca
++		0x01009fdb
++		0x00020003
++		0x00000000
++		0x00000000
++		0x00000000
++		0x000556aa
++		0x000aaaaa
++		0x000aa955
++		0x00055555
++		0x000b3133
++		0x0004cd33
++		0x0004cecc
++		0x000b32cc
++		0x1ee6b16a
++		0x10000000
++		0x00000000
++		0x00038055
++		0x03800380
++		0x03800380
++		0x00000380
++		0x42080010
++		0x00000003
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000001
++		0x00000000
++		0x01000005
++		0x04000f00
++		0x00020040
++		0x00020055
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000050
++		0x00000000
++		0x00010100
++		0x00000601
++		0x00000000
++		0x00006400
++		0x01221102
++		0x00000000
++		0x00051f00
++		0x051f051f
++		0x051f051f
++		0x00030003
++		0x03000300
++		0x00000300
++		0x01221102
++		0x00000000
++		0x00000000
++		0x03020000
++		0x00000001
++		0x00000011
++		0x00000011
++		0x00000400
++		0x00000000
++		0x00000011
++		0x00000011
++		0x00004410
++		0x00004410
++		0x00004410
++		0x00004410
++		0x00004410
++		0x00000011
++		0x00004410
++		0x00000011
++		0x00004410
++		0x00000011
++		0x00004410
++		0x00000000
++		0x00000000
++		0x00000000
++		0x04000000
++		0x00000000
++		0x00000000
++		0x00000508
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0x00000000
++		0xe4000000
++		0x00000000
++		0x00000000
++		0x01010000
++		0x00000000
++	>;
++};
+diff --git a/configs/rock960-rk3399_defconfig b/configs/rock960-rk3399_defconfig
+new file mode 100644
+index 00000000000..9c6db64d7ec
+--- /dev/null
++++ b/configs/rock960-rk3399_defconfig
+@@ -0,0 +1,67 @@
++CONFIG_ARM=y
++CONFIG_ARCH_ROCKCHIP=y
++CONFIG_SYS_TEXT_BASE=0x00200000
++CONFIG_SPL_LIBCOMMON_SUPPORT=y
++CONFIG_SPL_LIBGENERIC_SUPPORT=y
++CONFIG_SYS_MALLOC_F_LEN=0x4000
++CONFIG_ROCKCHIP_RK3399=y
++CONFIG_ROCKCHIP_SPL_RESERVE_IRAM=0x4000
++CONFIG_TARGET_ROCK960_RK3399=y
++CONFIG_DEBUG_UART_BASE=0xFF1A0000
++CONFIG_DEBUG_UART_CLOCK=24000000
++CONFIG_DEBUG_UART_SHIFT=2
++CONFIG_BAUDRATE=1500000
++CONFIG_SPL_STACK_R_ADDR=0x80000
++CONFIG_DEFAULT_DEVICE_TREE="rk3399-rock960"
++CONFIG_DEBUG_UART=y
++CONFIG_FIT=y
++CONFIG_SPL_LOAD_FIT=y
++CONFIG_SPL_FIT_GENERATOR="arch/arm/mach-rockchip/make_fit_atf.py"
++CONFIG_DEFAULT_FDT_FILE="rockchip/rk3399-rock960.dtb"
++CONFIG_SYS_PROMPT="rock960 => "
++# CONFIG_DISPLAY_CPUINFO is not set
++CONFIG_DISPLAY_BOARDINFO_LATE=y
++CONFIG_SPL_STACK_R=y
++CONFIG_SPL_STACK_R_MALLOC_SIMPLE_LEN=0x4000
++CONFIG_SPL_ATF=y
++CONFIG_SPL_ATF_NO_PLATFORM_PARAM=y
++CONFIG_CMD_BOOTZ=y
++CONFIG_CMD_GPT=y
++CONFIG_CMD_MMC=y
++CONFIG_CMD_SF=y
++CONFIG_CMD_USB=y
++# CONFIG_CMD_SETEXPR is not set
++CONFIG_CMD_TIME=y
++CONFIG_SPL_OF_CONTROL=y
++CONFIG_OF_SPL_REMOVE_PROPS="pinctrl-0 pinctrl-names clock-names interrupt-parent assigned-clocks assigned-clock-rates assigned-clock-parents"
++CONFIG_ENV_IS_IN_MMC=y
++CONFIG_REGMAP=y
++CONFIG_SPL_REGMAP=y
++CONFIG_SYSCON=y
++CONFIG_SPL_SYSCON=y
++CONFIG_CLK=y
++CONFIG_SPL_CLK=y
++CONFIG_ROCKCHIP_GPIO=y
++CONFIG_SYS_I2C_ROCKCHIP=y
++CONFIG_MMC_DW=y
++CONFIG_MMC_DW_ROCKCHIP=y
++CONFIG_MMC_SDHCI=y
++CONFIG_MMC_SDHCI_ROCKCHIP=y
++CONFIG_PINCTRL=y
++CONFIG_SPL_PINCTRL=y
++CONFIG_PINCTRL_ROCKCHIP_RK3399=y
++CONFIG_DM_PMIC=y
++CONFIG_PMIC_RK8XX=y
++CONFIG_REGULATOR_PWM=y
++CONFIG_DM_REGULATOR_FIXED=y
++CONFIG_REGULATOR_RK8XX=y
++CONFIG_PWM_ROCKCHIP=y
++CONFIG_RAM=y
++CONFIG_SPL_RAM=y
++CONFIG_SYSRESET=y
++CONFIG_USB=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_GENERIC=y
++CONFIG_USB_STORAGE=y
++CONFIG_USE_TINY_PRINTF=y
++CONFIG_ERRNO_STR=y
+
+From patchwork Fri Sep 21 00:22:15 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,v2,4/4] rockchip: rk3399: Add Ficus EE board support
+X-Patchwork-Submitter: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+X-Patchwork-Id: 972792
+Message-Id: <20180921002215.2013-5-manivannan.sadhasivam@linaro.org>
+To: sjg@chromium.org,
+	philipp.tomsich@theobroma-systems.com
+Cc: tom@vamrs.com, amit.kucheria@linaro.org, dev@vamrs.com,
+ u-boot@lists.denx.de,
+ Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, 
+ stephen@vamrs.com
+Date: Thu, 20 Sep 2018 17:22:15 -0700
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Add board support for Ficus EE board from Vamrs. This board utilizes
+common Rock960 family support.
+
+Following peripherals are tested and known to work:
+* Gigabit Ethernet
+* USB 2.0
+* MMC
+
+Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
+[Reworked based on common Rock960 family support]
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+---
+
+Changes in v2: None
+
+ arch/arm/dts/Makefile          |  1 +
+ arch/arm/dts/rk3399-ficus.dts  | 78 ++++++++++++++++++++++++++++++++++
+ configs/ficus-rk3399_defconfig | 71 +++++++++++++++++++++++++++++++
+ 3 files changed, 150 insertions(+)
+ create mode 100644 arch/arm/dts/rk3399-ficus.dts
+ create mode 100644 configs/ficus-rk3399_defconfig
+
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index 9b891826b73..e2bd9822aa2 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -42,6 +42,7 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += \
+ 	rk3288-veyron-minnie.dtb \
+ 	rk3288-vyasa.dtb \
+ 	rk3328-evb.dtb \
++	rk3399-ficus.dtb \
+ 	rk3368-lion.dtb \
+ 	rk3368-sheep.dtb \
+ 	rk3368-geekbox.dtb \
+diff --git a/arch/arm/dts/rk3399-ficus.dts b/arch/arm/dts/rk3399-ficus.dts
+new file mode 100644
+index 00000000000..de934cd61ab
+--- /dev/null
++++ b/arch/arm/dts/rk3399-ficus.dts
+@@ -0,0 +1,78 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Copyright (c) 2018 Collabora Ltd.
++ * Copyright (c) 2018 Fuzhou Rockchip Electronics Co., Ltd.
++ *
++ * Schematics available at https://dl.vamrs.com/products/ficus/docs/hw
++ */
++
++/dts-v1/;
++#include "rk3399-rock960.dtsi"
++#include "rk3399-sdram-lpddr3-4GB-1600.dtsi"
++
++/ {
++	model = "96boards RK3399 Ficus";
++	compatible = "vamrs,ficus", "rockchip,rk3399";
++
++	chosen {
++		stdout-path = "serial2:1500000n8";
++	};
++
++	clkin_gmac: external-gmac-clock {
++		compatible = "fixed-clock";
++		clock-frequency = <125000000>;
++		clock-output-names = "clkin_gmac";
++		#clock-cells = <0>;
++	};
++};
++
++&gmac {
++	assigned-clocks = <&cru SCLK_RMII_SRC>;
++	assigned-clock-parents = <&clkin_gmac>;
++	clock_in_out = "input";
++	phy-supply = <&vcc3v3_sys>;
++	phy-mode = "rgmii";
++	pinctrl-names = "default";
++	pinctrl-0 = <&rgmii_pins>;
++	snps,reset-gpio = <&gpio3 RK_PB7 GPIO_ACTIVE_LOW>;
++	snps,reset-active-low;
++	snps,reset-delays-us = <0 10000 50000>;
++	tx_delay = <0x28>;
++	rx_delay = <0x11>;
++	status = "okay";
++};
++
++&pcie0 {
++	ep-gpios = <&gpio4 RK_PD4 GPIO_ACTIVE_HIGH>;
++};
++
++&pinctrl {
++	gmac {
++		rgmii_sleep_pins: rgmii-sleep-pins {
++			rockchip,pins =
++				<3 15 RK_FUNC_GPIO &pcfg_output_low>;
++		};
++	};
++
++	pcie {
++		pcie_drv: pcie-drv {
++			rockchip,pins =
++				<1 24 RK_FUNC_GPIO &pcfg_pull_none>;
++			};
++	};
++
++	usb2 {
++		host_vbus_drv: host-vbus-drv {
++			rockchip,pins =
++				<4 27 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++};
++
++&vcc3v3_pcie {
++	gpio = <&gpio1 24 GPIO_ACTIVE_HIGH>;
++};
++
++&vcc5v0_host {
++	gpio = <&gpio4 27 GPIO_ACTIVE_HIGH>;
++};
+diff --git a/configs/ficus-rk3399_defconfig b/configs/ficus-rk3399_defconfig
+new file mode 100644
+index 00000000000..e890bc25238
+--- /dev/null
++++ b/configs/ficus-rk3399_defconfig
+@@ -0,0 +1,71 @@
++CONFIG_ARM=y
++CONFIG_ARCH_ROCKCHIP=y
++CONFIG_SYS_TEXT_BASE=0x00200000
++CONFIG_SPL_LIBCOMMON_SUPPORT=y
++CONFIG_SPL_LIBGENERIC_SUPPORT=y
++CONFIG_SYS_MALLOC_F_LEN=0x4000
++CONFIG_ROCKCHIP_RK3399=y
++CONFIG_TARGET_ROCK960_RK3399=y
++CONFIG_ROCKCHIP_SPL_RESERVE_IRAM=0x4000
++CONFIG_DEBUG_UART_BASE=0xFF1A0000
++CONFIG_DEBUG_UART_CLOCK=24000000
++CONFIG_SPL_STACK_R_ADDR=0x80000
++CONFIG_DEFAULT_DEVICE_TREE="rk3399-ficus"
++CONFIG_DEBUG_UART=y
++CONFIG_FIT=y
++CONFIG_SPL_LOAD_FIT=y
++CONFIG_SPL_FIT_GENERATOR="arch/arm/mach-rockchip/make_fit_atf.py"
++# CONFIG_DISPLAY_CPUINFO is not set
++CONFIG_DISPLAY_BOARDINFO_LATE=y
++CONFIG_SPL_STACK_R=y
++CONFIG_SPL_STACK_R_MALLOC_SIMPLE_LEN=0x4000
++CONFIG_SPL_ATF=y
++CONFIG_SPL_ATF_NO_PLATFORM_PARAM=y
++CONFIG_CMD_BOOTZ=y
++CONFIG_CMD_GPT=y
++CONFIG_CMD_MMC=y
++CONFIG_CMD_SF=y
++CONFIG_CMD_USB=y
++# CONFIG_CMD_SETEXPR is not set
++CONFIG_CMD_TIME=y
++CONFIG_SPL_OF_CONTROL=y
++CONFIG_OF_SPL_REMOVE_PROPS="pinctrl-0 pinctrl-names clock-names interrupt-parent assigned-clocks assigned-clock-rates assigned-clock-parents"
++CONFIG_ENV_IS_IN_MMC=y
++CONFIG_NET_RANDOM_ETHADDR=y
++CONFIG_REGMAP=y
++CONFIG_SPL_REGMAP=y
++CONFIG_SYSCON=y
++CONFIG_SPL_SYSCON=y
++CONFIG_CLK=y
++CONFIG_SPL_CLK=y
++CONFIG_ROCKCHIP_GPIO=y
++CONFIG_SYS_I2C_ROCKCHIP=y
++CONFIG_MMC_DW=y
++CONFIG_MMC_DW_ROCKCHIP=y
++CONFIG_MMC_SDHCI=y
++CONFIG_MMC_SDHCI_ROCKCHIP=y
++CONFIG_DM_ETH=y
++CONFIG_ETH_DESIGNWARE=y
++CONFIG_RGMII=y
++CONFIG_GMAC_ROCKCHIP=y
++CONFIG_PINCTRL=y
++CONFIG_SPL_PINCTRL=y
++CONFIG_PINCTRL_ROCKCHIP_RK3399=y
++CONFIG_DM_PMIC=y
++CONFIG_PMIC_RK8XX=y
++CONFIG_REGULATOR_PWM=y
++CONFIG_DM_REGULATOR_FIXED=y
++CONFIG_DM_REGULATOR_GPIO=y
++CONFIG_REGULATOR_RK8XX=y
++CONFIG_PWM_ROCKCHIP=y
++CONFIG_RAM=y
++CONFIG_SPL_RAM=y
++CONFIG_BAUDRATE=1500000
++CONFIG_DEBUG_UART_SHIFT=2
++CONFIG_SYSRESET=y
++CONFIG_USB=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_GENERIC=y
++CONFIG_USB_STORAGE=y
++CONFIG_USE_TINY_PRINTF=y
++CONFIG_ERRNO_STR=y

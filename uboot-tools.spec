@@ -25,7 +25,7 @@ Patch3:    usb-kbd-fixes.patch
 Patch10:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch11:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
 Patch12:   rockchip-make_fit_atf-use-elf-entry-point.patch
-Patch13:   rk3399-Rock960-board-support.patch
+Patch13:   rk3399-Rock960-Ficus-board-support.patch
 Patch14:   dragonboard-fixes.patch
 Patch15:   tegra186-jetson-tx2-disable-onboard-emmc.patch
 Patch16:   tegra-efi_loader-simplify-ifdefs.patch
@@ -299,6 +299,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Sep 23 2018 Peter Robinson <pbrobinson@fedoraproject.org>
+- Update Rock960 patches, enable Rock960 Enterprise Edition (ficus)
+
 * Mon Sep 10 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.09-1
 - 2018.09
 
