@@ -33,6 +33,9 @@ Patch17:   tegra-TXx-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
 Patch18:   tegra-fix-tx1.patch
 Patch19:   sunxi-DT-A64-add-Pine64-LTS-support.patch
 
+# Upstream UEFI fixes
+Patch20:   uefi-fixes.patch
+
 BuildRequires:  bc
 BuildRequires:  dtc
 BuildRequires:  gcc make
@@ -96,13 +99,13 @@ u-boot bootloader ELF binaries for use with qemu and other platforms
 
 git init
 git config --global gc.auto 0
-git config user.email "noone@example.com" 
-git config user.name "no one" 
-git add . 
-git commit -a -q -m "%{version} baseline" 
-git am %{patches} </dev/null 
-git config --unset user.email 
-git config --unset user.name 
+git config user.email "noone@example.com"
+git config user.name "no one"
+git add .
+git commit -a -q -m "%{version} baseline"
+git am %{patches} </dev/null
+git config --unset user.email
+git config --unset user.name
 rm -rf .git
 
 cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 .

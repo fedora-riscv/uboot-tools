@@ -1,18 +1,19 @@
-From patchwork Fri Sep 21 00:22:12 2018
+From patchwork Thu Sep 27 19:02:58 2018
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot, v2,
+Subject: [U-Boot, v3,
  1/4] arm: dts: rockchip: add some common pin-settings to rk3399
 X-Patchwork-Submitter: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-X-Patchwork-Id: 972789
-Message-Id: <20180921002215.2013-2-manivannan.sadhasivam@linaro.org>
+X-Patchwork-Id: 975858
+X-Patchwork-Delegate: philipp.tomsich@theobroma-systems.com
+Message-Id: <20180927190301.9642-2-manivannan.sadhasivam@linaro.org>
 To: sjg@chromium.org,
 	philipp.tomsich@theobroma-systems.com
-Cc: tom@vamrs.com, Randy Li <ayaka@soulik.info>, amit.kucheria@linaro.org,
- dev@vamrs.com, u-boot@lists.denx.de,
+Cc: Randy Li <ayaka@soulik.info>, tom@vamrs.com, daniel.lezcano@linaro.org, 
+ amit.kucheria@linaro.org, dev@vamrs.com, u-boot@lists.denx.de,
  Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, stephen@vamrs.com
-Date: Thu, 20 Sep 2018 17:22:12 -0700
+Date: Fri, 28 Sep 2018 00:32:58 +0530
 From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -38,6 +39,8 @@ Signed-off-by: Randy Li <ayaka@soulik.info>
 Signed-off-by: Heiko Stuebner <heiko@sntech.de>
 Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
 ---
+
+Changes in v3: None
 
 Changes in v2: None
 
@@ -128,22 +131,22 @@ index 83c257b1228..8349451b03d 100644
  
  		clock {
 
-From patchwork Fri Sep 21 00:22:13 2018
+From patchwork Thu Sep 27 19:02:59 2018
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot, v2,
+Subject: [U-Boot, v3,
  2/4] rockchip: rk3399: Add common Rock960 family from Vamrs
 X-Patchwork-Submitter: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-X-Patchwork-Id: 972790
-Message-Id: <20180921002215.2013-3-manivannan.sadhasivam@linaro.org>
+X-Patchwork-Id: 975861
+X-Patchwork-Delegate: philipp.tomsich@theobroma-systems.com
+Message-Id: <20180927190301.9642-3-manivannan.sadhasivam@linaro.org>
 To: sjg@chromium.org,
 	philipp.tomsich@theobroma-systems.com
-Cc: tom@vamrs.com, amit.kucheria@linaro.org, dev@vamrs.com,
- u-boot@lists.denx.de,
- Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, 
- stephen@vamrs.com
-Date: Thu, 20 Sep 2018 17:22:13 -0700
+Cc: tom@vamrs.com, daniel.lezcano@linaro.org, amit.kucheria@linaro.org,
+ dev@vamrs.com, u-boot@lists.denx.de,
+ Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, stephen@vamrs.com
+Date: Fri, 28 Sep 2018 00:32:59 +0530
 From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -168,6 +171,8 @@ Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
 ---
 
+Changes in v3: Added instruction for copying prebuilt bl31.elf for SPL
+
 Changes in v2: None
 
  arch/arm/dts/rk3399-rock960.dtsi            | 506 ++++++++++++++++++++
@@ -175,10 +180,10 @@ Changes in v2: None
  board/vamrs/rock960_rk3399/Kconfig          |  15 +
  board/vamrs/rock960_rk3399/MAINTAINERS      |   6 +
  board/vamrs/rock960_rk3399/Makefile         |   6 +
- board/vamrs/rock960_rk3399/README           | 151 ++++++
+ board/vamrs/rock960_rk3399/README           | 152 ++++++
  board/vamrs/rock960_rk3399/rock960-rk3399.c |  50 ++
  include/configs/rock960_rk3399.h            |  15 +
- 8 files changed, 775 insertions(+)
+ 8 files changed, 776 insertions(+)
  create mode 100644 arch/arm/dts/rk3399-rock960.dtsi
  create mode 100644 board/vamrs/rock960_rk3399/Kconfig
  create mode 100644 board/vamrs/rock960_rk3399/MAINTAINERS
@@ -789,10 +794,10 @@ index 00000000000..6c3e475b3a8
 +obj-y	+= rock960-rk3399.o
 diff --git a/board/vamrs/rock960_rk3399/README b/board/vamrs/rock960_rk3399/README
 new file mode 100644
-index 00000000000..f3389520b08
+index 00000000000..d14399090e2
 --- /dev/null
 +++ b/board/vamrs/rock960_rk3399/README
-@@ -0,0 +1,151 @@
+@@ -0,0 +1,152 @@
 +Contents
 +========
 +
@@ -851,6 +856,7 @@ index 00000000000..f3389520b08
 +==================
 +
 +  > cd ../u-boot
++  > cp ../rkbin/rk33/rk3399_bl31_v1.00.elf ./bl31.elf
 +  > export ARCH=arm64
 +  > export CROSS_COMPILE=aarch64-linux-gnu-
 +  > make rock960-rk3399_defconfig
@@ -1022,21 +1028,21 @@ index 00000000000..746d24cbff5
 +
 +#endif
 
-From patchwork Fri Sep 21 00:22:14 2018
+From patchwork Thu Sep 27 19:03:00 2018
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,v2,3/4] rockchip: rk3399: Add Rock960 CE board support
+Subject: [U-Boot,v3,3/4] rockchip: rk3399: Add Rock960 CE board support
 X-Patchwork-Submitter: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-X-Patchwork-Id: 972791
-Message-Id: <20180921002215.2013-4-manivannan.sadhasivam@linaro.org>
+X-Patchwork-Id: 975860
+X-Patchwork-Delegate: philipp.tomsich@theobroma-systems.com
+Message-Id: <20180927190301.9642-4-manivannan.sadhasivam@linaro.org>
 To: sjg@chromium.org,
 	philipp.tomsich@theobroma-systems.com
-Cc: tom@vamrs.com, amit.kucheria@linaro.org, dev@vamrs.com,
- u-boot@lists.denx.de,
- Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, 
- stephen@vamrs.com
-Date: Thu, 20 Sep 2018 17:22:14 -0700
+Cc: tom@vamrs.com, daniel.lezcano@linaro.org, amit.kucheria@linaro.org,
+ dev@vamrs.com, u-boot@lists.denx.de,
+ Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, stephen@vamrs.com
+Date: Fri, 28 Sep 2018 00:33:00 +0530
 From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -1053,6 +1059,10 @@ is being used on the board.
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 ---
 
+Changes in v3:
+
+* Add config options for USB to Ethernet and USB2 PHY
+
 Changes in v2:
 
 * Added missing config options for USB/uSD
@@ -1061,8 +1071,8 @@ Changes in v2:
  arch/arm/dts/Makefile                         |    1 +
  arch/arm/dts/rk3399-rock960.dts               |   45 +
  .../arm/dts/rk3399-sdram-lpddr3-2GB-1600.dtsi | 1536 +++++++++++++++++
- configs/rock960-rk3399_defconfig              |   67 +
- 4 files changed, 1649 insertions(+)
+ configs/rock960-rk3399_defconfig              |   69 +
+ 4 files changed, 1651 insertions(+)
  create mode 100644 arch/arm/dts/rk3399-rock960.dts
  create mode 100644 arch/arm/dts/rk3399-sdram-lpddr3-2GB-1600.dtsi
  create mode 100644 configs/rock960-rk3399_defconfig
@@ -2674,10 +2684,10 @@ index 00000000000..d14e833d228
 +};
 diff --git a/configs/rock960-rk3399_defconfig b/configs/rock960-rk3399_defconfig
 new file mode 100644
-index 00000000000..9c6db64d7ec
+index 00000000000..bb10ee9a435
 --- /dev/null
 +++ b/configs/rock960-rk3399_defconfig
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,69 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_ROCKCHIP=y
 +CONFIG_SYS_TEXT_BASE=0x00200000
@@ -2743,24 +2753,26 @@ index 00000000000..9c6db64d7ec
 +CONFIG_USB_EHCI_HCD=y
 +CONFIG_USB_EHCI_GENERIC=y
 +CONFIG_USB_STORAGE=y
++CONFIG_ROCKCHIP_USB2_PHY=y
++CONFIG_USB_ETHER_ASIX=y
 +CONFIG_USE_TINY_PRINTF=y
 +CONFIG_ERRNO_STR=y
 
-From patchwork Fri Sep 21 00:22:15 2018
+From patchwork Thu Sep 27 19:03:01 2018
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,v2,4/4] rockchip: rk3399: Add Ficus EE board support
+Subject: [U-Boot,v3,4/4] rockchip: rk3399: Add Ficus EE board support
 X-Patchwork-Submitter: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-X-Patchwork-Id: 972792
-Message-Id: <20180921002215.2013-5-manivannan.sadhasivam@linaro.org>
+X-Patchwork-Id: 975859
+X-Patchwork-Delegate: philipp.tomsich@theobroma-systems.com
+Message-Id: <20180927190301.9642-5-manivannan.sadhasivam@linaro.org>
 To: sjg@chromium.org,
 	philipp.tomsich@theobroma-systems.com
-Cc: tom@vamrs.com, amit.kucheria@linaro.org, dev@vamrs.com,
- u-boot@lists.denx.de,
- Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, 
- stephen@vamrs.com
-Date: Thu, 20 Sep 2018 17:22:15 -0700
+Cc: tom@vamrs.com, daniel.lezcano@linaro.org, amit.kucheria@linaro.org,
+ dev@vamrs.com, u-boot@lists.denx.de,
+ Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, stephen@vamrs.com
+Date: Fri, 28 Sep 2018 00:33:01 +0530
 From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -2776,6 +2788,8 @@ Signed-off-by: Ezequiel Garcia <ezequiel@collabora.com>
 [Reworked based on common Rock960 family support]
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 ---
+
+Changes in v3: Modified the DRAM config header from LPDDR3 to DDR3
 
 Changes in v2: None
 
@@ -2800,7 +2814,7 @@ index 9b891826b73..e2bd9822aa2 100644
  	rk3368-geekbox.dtb \
 diff --git a/arch/arm/dts/rk3399-ficus.dts b/arch/arm/dts/rk3399-ficus.dts
 new file mode 100644
-index 00000000000..de934cd61ab
+index 00000000000..4af0e4e3834
 --- /dev/null
 +++ b/arch/arm/dts/rk3399-ficus.dts
 @@ -0,0 +1,78 @@
@@ -2814,7 +2828,7 @@ index 00000000000..de934cd61ab
 +
 +/dts-v1/;
 +#include "rk3399-rock960.dtsi"
-+#include "rk3399-sdram-lpddr3-4GB-1600.dtsi"
++#include "rk3399-sdram-ddr3-1600.dtsi"
 +
 +/ {
 +	model = "96boards RK3399 Ficus";

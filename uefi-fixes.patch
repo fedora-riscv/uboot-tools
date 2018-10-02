@@ -1,0 +1,990 @@
+From 6aef5da1b5b6a649e64b00e3209a580359db9179 Mon Sep 17 00:00:00 2001
+From: Alexander Graf <agraf@suse.de>
+Date: Mon, 17 Sep 2018 13:54:33 +0200
+Subject: [PATCH 1/5] efi_loader: Align runtime section to 64kb
+
+The UEFI spec mandates that runtime sections are 64kb aligned to enable
+support for 64kb page size OSs.
+
+This patch ensures that we extend the runtime section to 64kb to be spec
+compliant.
+
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ lib/efi_loader/efi_memory.c | 20 +++++++++++++++++---
+ 1 file changed, 17 insertions(+), 3 deletions(-)
+
+diff --git a/lib/efi_loader/efi_memory.c b/lib/efi_loader/efi_memory.c
+index e2b40aa85b5..50c3515f5e6 100644
+--- a/lib/efi_loader/efi_memory.c
++++ b/lib/efi_loader/efi_memory.c
+@@ -12,6 +12,7 @@
+ #include <mapmem.h>
+ #include <watchdog.h>
+ #include <linux/list_sort.h>
++#include <linux/sizes.h>
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+@@ -519,6 +520,7 @@ __weak void efi_add_known_memory(void)
+ static void add_u_boot_and_runtime(void)
+ {
+ 	unsigned long runtime_start, runtime_end, runtime_pages;
++	unsigned long runtime_mask = EFI_PAGE_MASK;
+ 	unsigned long uboot_start, uboot_pages;
+ 	unsigned long uboot_stack_size = 16 * 1024 * 1024;
+ 
+@@ -527,10 +529,22 @@ static void add_u_boot_and_runtime(void)
+ 	uboot_pages = (gd->ram_top - uboot_start) >> EFI_PAGE_SHIFT;
+ 	efi_add_memory_map(uboot_start, uboot_pages, EFI_LOADER_DATA, false);
+ 
+-	/* Add Runtime Services */
+-	runtime_start = (ulong)&__efi_runtime_start & ~EFI_PAGE_MASK;
++#if defined(__aarch64__)
++	/*
++	 * Runtime Services must be 64KiB aligned according to the
++	 * "AArch64 Platforms" section in the UEFI spec (2.7+).
++	 */
++
++	runtime_mask = SZ_64K - 1;
++#endif
++
++	/*
++	 * Add Runtime Services. We mark surrounding boottime code as runtime as
++	 * well to fulfill the runtime alignment constraints but avoid padding.
++	 */
++	runtime_start = (ulong)&__efi_runtime_start & ~runtime_mask;
+ 	runtime_end = (ulong)&__efi_runtime_stop;
+-	runtime_end = (runtime_end + EFI_PAGE_MASK) & ~EFI_PAGE_MASK;
++	runtime_end = (runtime_end + runtime_mask) & ~runtime_mask;
+ 	runtime_pages = (runtime_end - runtime_start) >> EFI_PAGE_SHIFT;
+ 	efi_add_memory_map(runtime_start, runtime_pages,
+ 			   EFI_RUNTIME_SERVICES_CODE, false);
+-- 
+2.19.0
+
+From af3ef8121fbfff175e963e03b3eedf13df5ce548 Mon Sep 17 00:00:00 2001
+From: Alexander Graf <agraf@suse.de>
+Date: Mon, 17 Sep 2018 04:35:10 +0200
+Subject: [PATCH 2/5] efi_loader: Merge memory map entries
+
+We currently do not combine memory entries that are adjacent and have
+the same attributes. The problem with that is that our memory map can
+easily grow multiple hundreds of entries in a simple UEFI Shell
+environment.
+
+So let's make sure we always combine all entries to make the memory
+map as small as possible. That way every other piece of code that
+loops through it should also gain some nice speed ups.
+
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ lib/efi_loader/efi_memory.c | 45 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
+
+diff --git a/lib/efi_loader/efi_memory.c b/lib/efi_loader/efi_memory.c
+index 50c3515f5e6..3fe014d9e72 100644
+--- a/lib/efi_loader/efi_memory.c
++++ b/lib/efi_loader/efi_memory.c
+@@ -67,9 +67,54 @@ static int efi_mem_cmp(void *priv, struct list_head *a, struct list_head *b)
+ 		return -1;
+ }
+ 
++static uint64_t desc_get_end(struct efi_mem_desc *desc)
++{
++	return desc->physical_start + (desc->num_pages << EFI_PAGE_SHIFT);
++}
++
+ static void efi_mem_sort(void)
+ {
++	struct list_head *lhandle;
++	struct efi_mem_list *prevmem = NULL;
++	bool merge_again = true;
++
+ 	list_sort(NULL, &efi_mem, efi_mem_cmp);
++
++	/* Now merge entries that can be merged */
++	while (merge_again) {
++		merge_again = false;
++		list_for_each(lhandle, &efi_mem) {
++			struct efi_mem_list *lmem;
++			struct efi_mem_desc *prev = &prevmem->desc;
++			struct efi_mem_desc *cur;
++			uint64_t pages;
++
++			lmem = list_entry(lhandle, struct efi_mem_list, link);
++			if (!prevmem) {
++				prevmem = lmem;
++				continue;
++			}
++
++			cur = &lmem->desc;
++
++			if ((desc_get_end(cur) == prev->physical_start) &&
++			    (prev->type == cur->type) &&
++			    (prev->attribute == cur->attribute)) {
++				/* There is an existing map before, reuse it */
++				pages = cur->num_pages;
++				prev->num_pages += pages;
++				prev->physical_start -= pages << EFI_PAGE_SHIFT;
++				prev->virtual_start -= pages << EFI_PAGE_SHIFT;
++				list_del(&lmem->link);
++				free(lmem);
++
++				merge_again = true;
++				break;
++			}
++
++			prevmem = lmem;
++		}
++	}
+ }
+ 
+ /** efi_mem_carve_out - unmap memory region
+-- 
+2.19.0
+
+From 2b72b771cc760ca85f47a561c4055817e8bc8f25 Mon Sep 17 00:00:00 2001
+From: Alexander Graf <agraf@suse.de>
+Date: Sun, 23 Sep 2018 16:26:58 +0200
+Subject: [PATCH 3/5] efi_loader: Fix loaded_image handle passing from EL3
+
+When running in EL3 mode on AArch64, we have to first drop to EL2
+to execute a UEFI payload. When dropping down, the arguments to
+the entry point have to stay identical to the ones for normal entry
+though.
+
+In commit ea54ad59286 ("efi_loader: pass handle of loaded image")
+we incorrectly changed that logic and had the el3 entry path diverge.
+Fix it up by syncing it back to what it's supposed to be.
+
+Fixes: ea54ad59286 ("efi_loader: pass handle of loaded image")
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ cmd/bootefi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cmd/bootefi.c b/cmd/bootefi.c
+index b60c151fb4a..f2939da3e1a 100644
+--- a/cmd/bootefi.c
++++ b/cmd/bootefi.c
+@@ -373,7 +373,7 @@ static efi_status_t do_bootefi_exec(void *efi,
+ 
+ 		/* Move into EL2 and keep running there */
+ 		armv8_switch_to_el2((ulong)entry,
+-				    (ulong)&loaded_image_info_obj.handle,
++				    (ulong)loaded_image_info_obj.handle,
+ 				    (ulong)&systab, 0, (ulong)efi_run_in_el2,
+ 				    ES_TO_AARCH64);
+ 
+-- 
+2.19.0
+
+From fdbf589100f6b1f9e4e12a53a0d370d88de5f7e3 Mon Sep 17 00:00:00 2001
+From: Stephen Warren <swarren@nvidia.com>
+Date: Tue, 31 Jul 2018 13:44:12 -0600
+Subject: [PATCH 4/5] efi_loader: don't allocate unusable RAM
+
+Some boards define a maximum usable RAM top that's more restrictive than
+the ranges defined by U-Boot's memory bank definitions[1]. In this case,
+the unusable RAM isn't mapped in the page tables, and so the EFI code must
+not attempt to allocate RAM from outside the usable regions. Fix
+efi_find_free_memory() to detect when max_addr is unconstrained or out of
+range, and substitue a valid value.
+
+[1] For example, when some peripherals can't access RAM above 4GiB, it's
+simplest to force U-Boot's ram_top to a smaller value to avoid dealing
+with this issue more explicitly. However, the RAM bank definitions still
+describe the unusable RAM so that the booted OS has access to it, since
+the OS can typically deal with such restrictions in a more complex
+manner.
+
+Fixes: aa909462d018 "efi_loader: efi_allocate_pages is too restrictive"
+Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Cc: Alexander Graf <agraf@suse.de>
+Signed-off-by: Stephen Warren <swarren@nvidia.com>
+---
+ lib/efi_loader/efi_memory.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/lib/efi_loader/efi_memory.c b/lib/efi_loader/efi_memory.c
+index 3fe014d9e72..bf9d6963cbe 100644
+--- a/lib/efi_loader/efi_memory.c
++++ b/lib/efi_loader/efi_memory.c
+@@ -296,6 +296,9 @@ static uint64_t efi_find_free_memory(uint64_t len, uint64_t max_addr)
+ {
+ 	struct list_head *lhandle;
+ 
++	if ((max_addr == -1ULL) || (max_addr > gd->ram_top))
++		max_addr = gd->ram_top;
++
+ 	list_for_each(lhandle, &efi_mem) {
+ 		struct efi_mem_list *lmem = list_entry(lhandle,
+ 			struct efi_mem_list, link);
+-- 
+2.19.0
+
+From df3831a3833c2f477ef779a207cf973dd74ef0ee Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Fri, 28 Sep 2018 15:56:25 +0100
+Subject: [PATCH 5/5] efi_loader: remove efi_exit_caches()
+
+Since GRUB patch d0c070179d4d ("arm/efi: Switch to arm64 linux loader",
+2018-07-09) we do not need a workaround for GRUB on 32bit ARM anymore.
+
+So let's eliminate function efi_exit_caches().
+
+This will require Linux distributions to update grub-efi-arm to the GRUB
+git HEAD (a tag containing the aforementioned GRUB patch is not available
+yet).
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ lib/efi_loader/efi_boottime.c | 28 ----------------------------
+ 1 file changed, 28 deletions(-)
+
+diff --git a/lib/efi_loader/efi_boottime.c b/lib/efi_loader/efi_boottime.c
+index 3935e4f1ce9..56557205d00 100644
+--- a/lib/efi_loader/efi_boottime.c
++++ b/lib/efi_loader/efi_boottime.c
+@@ -27,14 +27,6 @@ LIST_HEAD(efi_obj_list);
+ /* List of all events */
+ LIST_HEAD(efi_events);
+ 
+-/*
+- * If we're running on nasty systems (32bit ARM booting into non-EFI Linux)
+- * we need to do trickery with caches. Since we don't want to break the EFI
+- * aware boot path, only apply hacks when loading exiting directly (breaking
+- * direct Linux EFI booting along the way - oh well).
+- */
+-static bool efi_is_direct_boot = true;
+-
+ #ifdef CONFIG_ARM
+ /*
+  * The "gd" pointer lives in a register on ARM and AArch64 that we declare
+@@ -1696,8 +1688,6 @@ static efi_status_t EFIAPI efi_start_image(efi_handle_t image_handle,
+ 	EFI_ENTRY("%p, %p, %p", image_handle, exit_data_size, exit_data);
+ 	entry = info->reserved;
+ 
+-	efi_is_direct_boot = false;
+-
+ 	/* call the image! */
+ 	if (setjmp(&info->exit_jmp)) {
+ 		/*
+@@ -1811,21 +1801,6 @@ static efi_status_t EFIAPI efi_unload_image(efi_handle_t image_handle)
+ 	return EFI_EXIT(EFI_SUCCESS);
+ }
+ 
+-/**
+- * efi_exit_caches() - fix up caches for EFI payloads if necessary
+- */
+-static void efi_exit_caches(void)
+-{
+-#if defined(CONFIG_ARM) && !defined(CONFIG_ARM64)
+-	/*
+-	 * Grub on 32bit ARM needs to have caches disabled before jumping into
+-	 * a zImage, but does not know of all cache layers. Give it a hand.
+-	 */
+-	if (efi_is_direct_boot)
+-		cleanup_before_linux();
+-#endif
+-}
+-
+ /**
+  * efi_exit_boot_services() - stop all boot services
+  * @image_handle: handle of the loaded image
+@@ -1879,9 +1854,6 @@ static efi_status_t EFIAPI efi_exit_boot_services(efi_handle_t image_handle,
+ 
+ 	board_quiesce_devices();
+ 
+-	/* Fix up caches for EFI payloads if necessary */
+-	efi_exit_caches();
+-
+ 	/* This stops all lingering devices */
+ 	bootm_disable_interrupts();
+ 
+-- 
+2.19.0
+
+From 8624839d8a6fda54bd09edcd1c661fb960cca236 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Tue, 2 Oct 2018 10:04:29 +0100
+Subject: [PATCH] efi_loader: fix simple network protocol
+
+We should not call eth_rx() before the network interface is initialized.
+The services of the simple network protocol should check the state of
+the network adapter.
+
+Provide a correctly aligned transmit buffer not depending on
+CONFIG_EFI_LOADER_BOUNCE_BUFFER.
+
+Correct the unit test.
+
+Add and correct comments.
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ lib/efi_loader/efi_net.c            | 404 +++++++++++++++++++++++-----
+ lib/efi_selftest/efi_selftest_snp.c |  16 +-
+ 2 files changed, 349 insertions(+), 71 deletions(-)
+
+diff --git a/lib/efi_loader/efi_net.c b/lib/efi_loader/efi_net.c
+index 5a3d7be86cf..7879952b260 100644
+--- a/lib/efi_loader/efi_net.c
++++ b/lib/efi_loader/efi_net.c
+@@ -16,6 +16,8 @@ static const efi_guid_t efi_pxe_guid = EFI_PXE_GUID;
+ static struct efi_pxe_packet *dhcp_ack;
+ static bool new_rx_packet;
+ static void *new_tx_packet;
++static void *transmit_buffer;
++
+ /*
+  * The notification function of this event is called in every timer cycle
+  * to check if a new network packet has been received.
+@@ -37,22 +39,68 @@ struct efi_net_obj {
+ 	struct efi_pxe_mode pxe_mode;
+ };
+ 
++/*
++ * efi_net_start() - start the network interface
++ *
++ * This function implements the Start service of the
++ * EFI_SIMPLE_NETWORK_PROTOCOL. See the Unified Extensible Firmware Interface
++ * (UEFI) specification for details.
++ *
++ * @this:	pointer to the protocol instance
++ * @return:	status code
++ */
+ static efi_status_t EFIAPI efi_net_start(struct efi_simple_network *this)
+ {
++	efi_status_t ret = EFI_SUCCESS;
++
+ 	EFI_ENTRY("%p", this);
+ 
+-	return EFI_EXIT(EFI_SUCCESS);
++	/* Check parameters */
++	if (!this) {
++		ret = EFI_INVALID_PARAMETER;
++		goto out;
++	}
++
++	if (this->mode->state != EFI_NETWORK_STOPPED)
++		ret = EFI_ALREADY_STARTED;
++	else
++		this->mode->state = EFI_NETWORK_STARTED;
++out:
++	return EFI_EXIT(ret);
+ }
+ 
++/*
++ * efi_net_stop() - stop the network interface
++ *
++ * This function implements the Stop service of the
++ * EFI_SIMPLE_NETWORK_PROTOCOL. See the Unified Extensible Firmware Interface
++ * (UEFI) specification for details.
++ *
++ * @this:	pointer to the protocol instance
++ * @return:	status code
++ */
+ static efi_status_t EFIAPI efi_net_stop(struct efi_simple_network *this)
+ {
++	efi_status_t ret = EFI_SUCCESS;
++
+ 	EFI_ENTRY("%p", this);
+ 
+-	return EFI_EXIT(EFI_SUCCESS);
++	/* Check parameters */
++	if (!this) {
++		ret = EFI_INVALID_PARAMETER;
++		goto out;
++	}
++
++	if (this->mode->state == EFI_NETWORK_STOPPED)
++		ret = EFI_NOT_STARTED;
++	else
++		this->mode->state = EFI_NETWORK_STOPPED;
++out:
++	return EFI_EXIT(ret);
+ }
+ 
+ /*
+- * Initialize network adapter and allocate transmit and receive buffers.
++ * efi_net_initialize() - initialize the network interface
+  *
+  * This function implements the Initialize service of the
+  * EFI_SIMPLE_NETWORK_PROTOCOL. See the Unified Extensible Firmware Interface
+@@ -71,9 +119,10 @@ static efi_status_t EFIAPI efi_net_initialize(struct efi_simple_network *this,
+ 
+ 	EFI_ENTRY("%p, %lx, %lx", this, extra_rx, extra_tx);
+ 
++	/* Check parameters */
+ 	if (!this) {
+ 		r = EFI_INVALID_PARAMETER;
+-		goto error;
++		goto out;
+ 	}
+ 
+ 	/* Setup packet buffers */
+@@ -86,32 +135,83 @@ static efi_status_t EFIAPI efi_net_initialize(struct efi_simple_network *this,
+ 	ret = eth_init();
+ 	if (ret < 0) {
+ 		eth_halt();
++		this->mode->state = EFI_NETWORK_STOPPED;
+ 		r = EFI_DEVICE_ERROR;
++		goto out;
++	} else {
++		this->mode->state = EFI_NETWORK_INITIALIZED;
+ 	}
+-
+-error:
++out:
+ 	return EFI_EXIT(r);
+ }
+ 
++/*
++ * efi_net_reset() - reinitialize the network interface
++ *
++ * This function implements the Reset service of the
++ * EFI_SIMPLE_NETWORK_PROTOCOL. See the Unified Extensible Firmware Interface
++ * (UEFI) specification for details.
++ *
++ * @this:			pointer to the protocol instance
++ * @extended_verification:	execute exhaustive verification
++ * Return:			status code
++ */
+ static efi_status_t EFIAPI efi_net_reset(struct efi_simple_network *this,
+ 					 int extended_verification)
+ {
+ 	EFI_ENTRY("%p, %x", this, extended_verification);
+ 
+-	return EFI_EXIT(EFI_SUCCESS);
++	return EFI_EXIT(EFI_CALL(efi_net_initialize(this, 0, 0)));
+ }
+ 
++/*
++ * efi_net_shutdown() - shut down the network interface
++ *
++ * This function implements the Shutdown service of the
++ * EFI_SIMPLE_NETWORK_PROTOCOL. See the Unified Extensible Firmware Interface
++ * (UEFI) specification for details.
++ *
++ * @this:	pointer to the protocol instance
++ * Return:	status code
++ */
+ static efi_status_t EFIAPI efi_net_shutdown(struct efi_simple_network *this)
+ {
++	efi_status_t ret = EFI_SUCCESS;
++
+ 	EFI_ENTRY("%p", this);
+ 
+-	return EFI_EXIT(EFI_SUCCESS);
++	/* Check parameters */
++	if (!this) {
++		ret = EFI_INVALID_PARAMETER;
++		goto out;
++	}
++
++	eth_halt();
++	this->mode->state = EFI_NETWORK_STOPPED;
++
++out:
++	return EFI_EXIT(ret);
+ }
+ 
+-static efi_status_t EFIAPI efi_net_receive_filters(
+-		struct efi_simple_network *this, u32 enable, u32 disable,
+-		int reset_mcast_filter, ulong mcast_filter_count,
+-		struct efi_mac_address *mcast_filter)
++/*
++ * efi_net_receive_filters() - mange multicast receive filters
++ *
++ * This function implements the ReceiveFilters service of the
++ * EFI_SIMPLE_NETWORK_PROTOCOL. See the Unified Extensible Firmware Interface
++ * (UEFI) specification for details.
++ *
++ * @this:		pointer to the protocol instance
++ * @enable:		bit mask of receive filters to enable
++ * @disable:		bit mask of receive filters to disable
++ * @reset_mcast_filter:	true resets contents of the filters
++ * @mcast_filter_count:	number of hardware MAC addresses in the new filters list
++ * @mcast_filter:	list of new filters
++ * Return:		status code
++ */
++static efi_status_t EFIAPI efi_net_receive_filters
++		(struct efi_simple_network *this, u32 enable, u32 disable,
++		 int reset_mcast_filter, ulong mcast_filter_count,
++		 struct efi_mac_address *mcast_filter)
+ {
+ 	EFI_ENTRY("%p, %x, %x, %x, %lx, %p", this, enable, disable,
+ 		  reset_mcast_filter, mcast_filter_count, mcast_filter);
+@@ -119,15 +219,40 @@ static efi_status_t EFIAPI efi_net_receive_filters(
+ 	return EFI_EXIT(EFI_UNSUPPORTED);
+ }
+ 
+-static efi_status_t EFIAPI efi_net_station_address(
+-		struct efi_simple_network *this, int reset,
+-		struct efi_mac_address *new_mac)
++/*
++ * efi_net_station_address() - set the hardware MAC address
++ *
++ * This function implements the StationAddress service of the
++ * EFI_SIMPLE_NETWORK_PROTOCOL. See the Unified Extensible Firmware Interface
++ * (UEFI) specification for details.
++ *
++ * @this:	pointer to the protocol instance
++ * @reset:	if true reset the address to default
++ * @new_mac:	new MAC address
++ * Return:	status code
++ */
++static efi_status_t EFIAPI efi_net_station_address
++		(struct efi_simple_network *this, int reset,
++		 struct efi_mac_address *new_mac)
+ {
+ 	EFI_ENTRY("%p, %x, %p", this, reset, new_mac);
+ 
+ 	return EFI_EXIT(EFI_UNSUPPORTED);
+ }
+ 
++/*
++ * efi_net_statistics() - reset or collect statistics of the network interface
++ *
++ * This function implements the Statistics service of the
++ * EFI_SIMPLE_NETWORK_PROTOCOL. See the Unified Extensible Firmware Interface
++ * (UEFI) specification for details.
++ *
++ * @this:	pointer to the protocol instance
++ * @reset:	if true, the statistics are reset
++ * @stat_size:	size of the statistics table
++ * @stat_table:	table to receive the statistics
++ * Return:	status code
++ */
+ static efi_status_t EFIAPI efi_net_statistics(struct efi_simple_network *this,
+ 					      int reset, ulong *stat_size,
+ 					      void *stat_table)
+@@ -137,6 +262,19 @@ static efi_status_t EFIAPI efi_net_statistics(struct efi_simple_network *this,
+ 	return EFI_EXIT(EFI_UNSUPPORTED);
+ }
+ 
++/*
++ * efi_net_mcastiptomac() - translate multicast IP address to MAC address
++ *
++ * This function implements the Statistics service of the
++ * EFI_SIMPLE_NETWORK_PROTOCOL. See the Unified Extensible Firmware Interface
++ * (UEFI) specification for details.
++ *
++ * @this:	pointer to the protocol instance
++ * @ipv6:	true if the IP address is an IPv6 address
++ * @ip:		IP address
++ * @mac:	MAC address
++ * Return:	status code
++ */
+ static efi_status_t EFIAPI efi_net_mcastiptomac(struct efi_simple_network *this,
+ 						int ipv6,
+ 						struct efi_ip_address *ip,
+@@ -147,6 +285,19 @@ static efi_status_t EFIAPI efi_net_mcastiptomac(struct efi_simple_network *this,
+ 	return EFI_EXIT(EFI_INVALID_PARAMETER);
+ }
+ 
++/**
++ * efi_net_nvdata() - read or write NVRAM
++ *
++ * This function implements the GetStatus service of the Simple Network
++ * Protocol. See the UEFI spec for details.
++ *
++ * @this:		the instance of the Simple Network Protocol
++ * @readwrite:		true for read, false for write
++ * @offset:		offset in NVRAM
++ * @buffer_size:	size of buffer
++ * @buffer:		buffer
++ * Return:		status code
++ */
+ static efi_status_t EFIAPI efi_net_nvdata(struct efi_simple_network *this,
+ 					  int read_write, ulong offset,
+ 					  ulong buffer_size, char *buffer)
+@@ -157,13 +308,42 @@ static efi_status_t EFIAPI efi_net_nvdata(struct efi_simple_network *this,
+ 	return EFI_EXIT(EFI_UNSUPPORTED);
+ }
+ 
++/**
++ * efi_net_get_status() - get interrupt status
++ *
++ * This function implements the GetStatus service of the Simple Network
++ * Protocol. See the UEFI spec for details.
++ *
++ * @this:		the instance of the Simple Network Protocol
++ * @int_status:		interface status
++ * @txbuf:		transmission buffer
++ */
+ static efi_status_t EFIAPI efi_net_get_status(struct efi_simple_network *this,
+ 					      u32 *int_status, void **txbuf)
+ {
++	efi_status_t ret = EFI_SUCCESS;
++
+ 	EFI_ENTRY("%p, %p, %p", this, int_status, txbuf);
+ 
+ 	efi_timer_check();
+ 
++	/* Check parameters */
++	if (!this) {
++		ret = EFI_INVALID_PARAMETER;
++		goto out;
++	}
++
++	switch (this->mode->state) {
++	case EFI_NETWORK_STOPPED:
++		ret = EFI_NOT_STARTED;
++		goto out;
++	case EFI_NETWORK_STARTED:
++		ret = EFI_DEVICE_ERROR;
++		goto out;
++	default:
++		break;
++	}
++
+ 	if (int_status) {
+ 		/* We send packets synchronously, so nothing is outstanding */
+ 		*int_status = EFI_SIMPLE_NETWORK_TRANSMIT_INTERRUPT;
+@@ -174,65 +354,103 @@ static efi_status_t EFIAPI efi_net_get_status(struct efi_simple_network *this,
+ 		*txbuf = new_tx_packet;
+ 
+ 	new_tx_packet = NULL;
+-
+-	return EFI_EXIT(EFI_SUCCESS);
++out:
++	return EFI_EXIT(ret);
+ }
+ 
+-static efi_status_t EFIAPI efi_net_transmit(struct efi_simple_network *this,
+-		size_t header_size, size_t buffer_size, void *buffer,
+-		struct efi_mac_address *src_addr,
+-		struct efi_mac_address *dest_addr, u16 *protocol)
++/**
++ * efi_net_transmit() - transmit a packet
++ *
++ * This function implements the Transmit service of the Simple Network Protocol.
++ * See the UEFI spec for details.
++ *
++ * @this:		the instance of the Simple Network Protocol
++ * @header_size:	size of the media header
++ * @buffer_size:	size of the buffer to receive the packet
++ * @buffer:		buffer to receive the packet
++ * @src_addr:		source hardware MAC address
++ * @dest_addr:		destination hardware MAC address
++ * @protocol:		type of header to build
++ * Return:		status code
++ */
++static efi_status_t EFIAPI efi_net_transmit
++		(struct efi_simple_network *this, size_t header_size,
++		 size_t buffer_size, void *buffer,
++		 struct efi_mac_address *src_addr,
++		 struct efi_mac_address *dest_addr, u16 *protocol)
+ {
++	efi_status_t ret = EFI_SUCCESS;
++
+ 	EFI_ENTRY("%p, %lu, %lu, %p, %p, %p, %p", this,
+ 		  (unsigned long)header_size, (unsigned long)buffer_size,
+ 		  buffer, src_addr, dest_addr, protocol);
+ 
+ 	efi_timer_check();
+ 
++	/* Check parameters */
++	if (!this) {
++		ret = EFI_INVALID_PARAMETER;
++		goto out;
++	}
++
++	/* We do not support jumbo packets */
++	if (buffer_size > PKTSIZE_ALIGN) {
++		ret = EFI_INVALID_PARAMETER;
++		goto out;
++	}
++
+ 	if (header_size) {
+-		/* We would need to create the header if header_size != 0 */
+-		return EFI_EXIT(EFI_INVALID_PARAMETER);
++		/*
++		 * TODO: We would need to create the header
++		 * if header_size != 0
++		 */
++		ret = EFI_INVALID_PARAMETER;
++		goto out;
++	}
++
++	switch (this->mode->state) {
++	case EFI_NETWORK_STOPPED:
++		ret = EFI_NOT_STARTED;
++		goto out;
++	case EFI_NETWORK_STARTED:
++		ret = EFI_DEVICE_ERROR;
++		goto out;
++	default:
++		break;
+ 	}
+ 
+-#ifdef CONFIG_EFI_LOADER_BOUNCE_BUFFER
+ 	/* Ethernet packets always fit, just bounce */
+-	memcpy(efi_bounce_buffer, buffer, buffer_size);
+-	net_send_packet(efi_bounce_buffer, buffer_size);
+-#else
+-	net_send_packet(buffer, buffer_size);
+-#endif
++	memcpy(transmit_buffer, buffer, buffer_size);
++	net_send_packet(transmit_buffer, buffer_size);
+ 
+ 	new_tx_packet = buffer;
+ 
+-	return EFI_EXIT(EFI_SUCCESS);
++out:
++	return EFI_EXIT(ret);
+ }
+ 
+-static void efi_net_push(void *pkt, int len)
+-{
+-	new_rx_packet = true;
+-	wait_for_packet->is_signaled = true;
+-}
+-
+-/*
+- * Receive a packet from a network interface.
++/**
++ * efi_net_receive() - receive a packet from a network interface
+  *
+  * This function implements the Receive service of the Simple Network Protocol.
+  * See the UEFI spec for details.
+  *
+- * @this	the instance of the Simple Network Protocol
+- * @header_size	size of the media header
+- * @buffer_size	size of the buffer to receive the packet
+- * @buffer	buffer to receive the packet
+- * @src_addr	source MAC address
+- * @dest_addr	destination MAC address
+- * @protocol	protocol
+- * @return	status code
++ * @this:		the instance of the Simple Network Protocol
++ * @header_size:	size of the media header
++ * @buffer_size:	size of the buffer to receive the packet
++ * @buffer:		buffer to receive the packet
++ * @src_addr:		source MAC address
++ * @dest_addr:		destination MAC address
++ * @protocol:		protocol
++ * Return:		status code
+  */
+-static efi_status_t EFIAPI efi_net_receive(struct efi_simple_network *this,
+-		size_t *header_size, size_t *buffer_size, void *buffer,
+-		struct efi_mac_address *src_addr,
+-		struct efi_mac_address *dest_addr, u16 *protocol)
++static efi_status_t EFIAPI efi_net_receive
++		(struct efi_simple_network *this, size_t *header_size,
++		 size_t *buffer_size, void *buffer,
++		 struct efi_mac_address *src_addr,
++		 struct efi_mac_address *dest_addr, u16 *protocol)
+ {
++	efi_status_t ret = EFI_SUCCESS;
+ 	struct ethernet_hdr *eth_hdr;
+ 	size_t hdr_size = sizeof(struct ethernet_hdr);
+ 	u16 protlen;
+@@ -240,8 +458,26 @@ static efi_status_t EFIAPI efi_net_receive(struct efi_simple_network *this,
+ 	EFI_ENTRY("%p, %p, %p, %p, %p, %p, %p", this, header_size,
+ 		  buffer_size, buffer, src_addr, dest_addr, protocol);
+ 
++	/* Execute events */
+ 	efi_timer_check();
+ 
++	/* Check parameters */
++	if (!this) {
++		ret = EFI_INVALID_PARAMETER;
++		goto out;
++	}
++
++	switch (this->mode->state) {
++	case EFI_NETWORK_STOPPED:
++		ret = EFI_NOT_STARTED;
++		goto out;
++	case EFI_NETWORK_STARTED:
++		ret = EFI_DEVICE_ERROR;
++		goto out;
++	default:
++		break;
++	}
++
+ 	if (!new_rx_packet)
+ 		return EFI_EXIT(EFI_NOT_READY);
+ 	/* Check that we at least received an Ethernet header */
+@@ -265,7 +501,7 @@ static efi_status_t EFIAPI efi_net_receive(struct efi_simple_network *this,
+ 	if (protocol)
+ 		*protocol = protlen;
+ 	if (*buffer_size < net_rx_packet_len) {
+-		/* Packet doesn't fit, try again with bigger buf */
++		/* Packet doesn't fit, try again with bigger buffer */
+ 		*buffer_size = net_rx_packet_len;
+ 		return EFI_EXIT(EFI_BUFFER_TOO_SMALL);
+ 	}
+@@ -273,10 +509,15 @@ static efi_status_t EFIAPI efi_net_receive(struct efi_simple_network *this,
+ 	memcpy(buffer, net_rx_packet, net_rx_packet_len);
+ 	*buffer_size = net_rx_packet_len;
+ 	new_rx_packet = false;
+-
+-	return EFI_EXIT(EFI_SUCCESS);
++out:
++	return EFI_EXIT(ret);
+ }
+ 
++/**
++ * efi_net_set_dhcp_ack() - take note of a selected DHCP IP address
++ *
++ * This function is called by dhcp_handler().
++ */
+ void efi_net_set_dhcp_ack(void *pkt, int len)
+ {
+ 	int maxsize = sizeof(*dhcp_ack);
+@@ -287,8 +528,22 @@ void efi_net_set_dhcp_ack(void *pkt, int len)
+ 	memcpy(dhcp_ack, pkt, min(len, maxsize));
+ }
+ 
+-/*
+- * Check if a new network packet has been received.
++/**
++ * efi_net_push() - callback for received network packet
++ *
++ * This function is called when a network packet is received by eth_rx().
++ *
++ * @pkt:	network packet
++ * @len:	length
++ */
++static void efi_net_push(void *pkt, int len)
++{
++	new_rx_packet = true;
++	wait_for_packet->is_signaled = true;
++}
++
++/**
++ * efi_network_timer_notify() - check if a new network packet has been received
+  *
+  * This notification function is called in every timer cycle.
+  *
+@@ -298,8 +553,17 @@ void efi_net_set_dhcp_ack(void *pkt, int len)
+ static void EFIAPI efi_network_timer_notify(struct efi_event *event,
+ 					    void *context)
+ {
++	struct efi_simple_network *this = (struct efi_simple_network *)context;
++
+ 	EFI_ENTRY("%p, %p", event, context);
+ 
++	/*
++	 * Some network drivers do not support calling eth_rx() before
++	 * initialization.
++	 */
++	if (!this || this->mode->state != EFI_NETWORK_INITIALIZED)
++		return;
++
+ 	if (!new_rx_packet) {
+ 		push_packet = efi_net_push;
+ 		eth_rx();
+@@ -308,10 +572,14 @@ static void EFIAPI efi_network_timer_notify(struct efi_event *event,
+ 	EFI_EXIT(EFI_SUCCESS);
+ }
+ 
+-/* This gets called from do_bootefi_exec(). */
++/**
++ * efi_net_register() - register the simple network protocol
++ *
++ * This gets called from do_bootefi_exec().
++ */
+ efi_status_t efi_net_register(void)
+ {
+-	struct efi_net_obj *netobj;
++	struct efi_net_obj *netobj = NULL;
+ 	efi_status_t r;
+ 
+ 	if (!eth_get_dev()) {
+@@ -321,10 +589,15 @@ efi_status_t efi_net_register(void)
+ 
+ 	/* We only expose the "active" eth device, so one is enough */
+ 	netobj = calloc(1, sizeof(*netobj));
+-	if (!netobj) {
+-		printf("ERROR: Out of memory\n");
+-		return EFI_OUT_OF_RESOURCES;
+-	}
++	if (!netobj)
++		goto out_of_resources;
++
++	/* Allocate an aligned transmit buffer */
++	transmit_buffer = calloc(1, PKTSIZE_ALIGN + ARCH_DMA_MINALIGN);
++	if (!transmit_buffer)
++		goto out_of_resources;
++	transmit_buffer = (void *)ALIGN((uintptr_t)transmit_buffer,
++					    ARCH_DMA_MINALIGN);
+ 
+ 	/* Hook net up to the device list */
+ 	efi_add_handle(&netobj->parent);
+@@ -387,13 +660,13 @@ efi_status_t efi_net_register(void)
+ 	 * iPXE is running at TPL_CALLBACK most of the time. Use a higher TPL.
+ 	 */
+ 	r = efi_create_event(EVT_TIMER | EVT_NOTIFY_SIGNAL, TPL_NOTIFY,
+-			     efi_network_timer_notify, NULL, NULL,
++			     efi_network_timer_notify, &netobj->net, NULL,
+ 			     &network_timer_event);
+ 	if (r != EFI_SUCCESS) {
+ 		printf("ERROR: Failed to register network event\n");
+ 		return r;
+ 	}
+-	/* Network is time critical, create event in every timer cyle */
++	/* Network is time critical, create event in every timer cycle */
+ 	r = efi_set_timer(network_timer_event, EFI_TIMER_PERIODIC, 0);
+ 	if (r != EFI_SUCCESS) {
+ 		printf("ERROR: Failed to set network timer\n");
+@@ -404,4 +677,9 @@ efi_status_t efi_net_register(void)
+ failure_to_add_protocol:
+ 	printf("ERROR: Failure to add protocol\n");
+ 	return r;
++out_of_resources:
++	free(netobj);
++	/* free(transmit_buffer) not needed yet */
++	printf("ERROR: Out of memory\n");
++	return EFI_OUT_OF_RESOURCES;
+ }
+diff --git a/lib/efi_selftest/efi_selftest_snp.c b/lib/efi_selftest/efi_selftest_snp.c
+index 09bd53da82d..e10a34ba645 100644
+--- a/lib/efi_selftest/efi_selftest_snp.c
++++ b/lib/efi_selftest/efi_selftest_snp.c
+@@ -103,7 +103,7 @@ static efi_status_t send_dhcp_discover(void)
+ 	struct dhcp p = {};
+ 
+ 	/*
+-	 * Fill ethernet header
++	 * Fill Ethernet header
+ 	 */
+ 	boottime->copy_mem(p.eth_hdr.et_dest, (void *)BROADCAST_MAC, ARP_HLEN);
+ 	boottime->copy_mem(p.eth_hdr.et_src, &net->mode->current_address,
+@@ -229,19 +229,19 @@ static int setup(const efi_handle_t handle,
+ 		return EFI_ST_FAILURE;
+ 	}
+ 	/*
+-	 * Initialize network adapter.
++	 * Start network adapter.
+ 	 */
+-	ret = net->initialize(net, 0, 0);
+-	if (ret != EFI_SUCCESS) {
+-		efi_st_error("Failed to initialize network adapter\n");
++	ret = net->start(net);
++	if (ret != EFI_SUCCESS && ret != EFI_ALREADY_STARTED) {
++		efi_st_error("Failed to start network adapter\n");
+ 		return EFI_ST_FAILURE;
+ 	}
+ 	/*
+-	 * Start network adapter.
++	 * Initialize network adapter.
+ 	 */
+-	ret = net->start(net);
++	ret = net->initialize(net, 0, 0);
+ 	if (ret != EFI_SUCCESS) {
+-		efi_st_error("Failed to start network adapter\n");
++		efi_st_error("Failed to initialize network adapter\n");
+ 		return EFI_ST_FAILURE;
+ 	}
+ 	return EFI_ST_SUCCESS;
+-- 
+2.19.0
+
