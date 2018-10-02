@@ -38,15 +38,29 @@ Patch20:   uefi-fixes.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
-BuildRequires:  gcc make
+BuildRequires:  make
+# Added for .el7 rebuild, so newer gcc is used
+%if 0%{?rhel} == 7
+BuildRequires:  devtoolset-7-build
+BuildRequires:  devtoolset-7-binutils
+BuildRequires:  devtoolset-7-gcc
+%else
+BuildRequires:  gcc
+%endif
 BuildRequires:  flex bison
 BuildRequires:  git-core
 BuildRequires:  openssl-devel
+%if 0%{?fedora}
 BuildRequires:  python-unversioned-command
+%endif
 BuildRequires:  python2-devel
 BuildRequires:  python2-setuptools
 BuildRequires:  python2-libfdt
+%if 0%{?rhel} == 7
+BuildRequires:  python-pyelftools
+%else
 BuildRequires:  python2-pyelftools
+%endif
 BuildRequires:  SDL-devel
 BuildRequires:  swig
 %ifarch %{arm} aarch64
@@ -112,6 +126,11 @@ cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 .
 
 %build
 mkdir builds
+
+%if 0%{?rhel} == 7
+#Enabling DTS for .el7
+%{?enable_devtoolset7:%{enable_devtoolset7}}
+%endif
 
 %ifarch aarch64 %{arm}
 for board in $(cat %{_arch}-boards)
@@ -302,6 +321,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Sep 30 2018 Pablo Greco <pablo@fliagreco.com.ar>
+- Added conditional to enable devtoolset-7-gcc for .el7 build (Arrfab)
+- Added conditional BR, python2-pyelftools is python-pyelftools in .el7 (Arrfab)
+
 * Sun Sep 23 2018 Peter Robinson <pbrobinson@fedoraproject.org>
 - Update Rock960 patches, enable Rock960 Enterprise Edition (ficus)
 
