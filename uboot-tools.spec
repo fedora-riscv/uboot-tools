@@ -288,7 +288,7 @@ cp -p board/warp/README builds/docs/README.warp
 cp -p board/warp7/README builds/docs/README.warp7
 
 %files
-%doc README doc/README.imximage doc/README.kwbimage doc/README.distro doc/README.gpt
+%doc README doc/imx doc/README.kwbimage doc/README.distro doc/README.gpt
 %doc doc/README.odroid doc/README.rockchip doc/README.uefi doc/uImage.FIT doc/README.arm64
 %doc doc/README.chromium builds/docs/*
 %{_bindir}/*
