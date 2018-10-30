@@ -306,10 +306,9 @@ index 3935e4f1ce9..56557205d00 100644
  
 -- 
 2.19.0
-
-From 8624839d8a6fda54bd09edcd1c661fb960cca236 Mon Sep 17 00:00:00 2001
+From 05e6d0b69f30c6b902ab9a343f4c4080a837ebd2 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 2 Oct 2018 10:04:29 +0100
+Date: Thu, 4 Oct 2018 10:37:24 +0100
 Subject: [PATCH] efi_loader: fix simple network protocol
 
 We should not call eth_rx() before the network interface is initialized.
@@ -323,15 +322,18 @@ Correct the unit test.
 
 Add and correct comments.
 
+Without this patch i.mx6 system Wandboard Quad rev B1 fails to execute
+bootefi selftest.
+
 Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- lib/efi_loader/efi_net.c            | 404 +++++++++++++++++++++++-----
+ lib/efi_loader/efi_net.c            | 419 +++++++++++++++++++++++-----
  lib/efi_selftest/efi_selftest_snp.c |  16 +-
- 2 files changed, 349 insertions(+), 71 deletions(-)
+ 2 files changed, 359 insertions(+), 76 deletions(-)
 
 diff --git a/lib/efi_loader/efi_net.c b/lib/efi_loader/efi_net.c
-index 5a3d7be86cf..7879952b260 100644
+index 5a3d7be86cf..871c4c98228 100644
 --- a/lib/efi_loader/efi_net.c
 +++ b/lib/efi_loader/efi_net.c
 @@ -16,6 +16,8 @@ static const efi_guid_t efi_pxe_guid = EFI_PXE_GUID;
@@ -355,7 +357,7 @@ index 5a3d7be86cf..7879952b260 100644
 + * (UEFI) specification for details.
 + *
 + * @this:	pointer to the protocol instance
-+ * @return:	status code
++ * Return:	status code
 + */
  static efi_status_t EFIAPI efi_net_start(struct efi_simple_network *this)
  {
@@ -386,7 +388,7 @@ index 5a3d7be86cf..7879952b260 100644
 + * (UEFI) specification for details.
 + *
 + * @this:	pointer to the protocol instance
-+ * @return:	status code
++ * Return:	status code
 + */
  static efi_status_t EFIAPI efi_net_stop(struct efi_simple_network *this)
  {
@@ -415,6 +417,15 @@ index 5a3d7be86cf..7879952b260 100644
   *
   * This function implements the Initialize service of the
   * EFI_SIMPLE_NETWORK_PROTOCOL. See the Unified Extensible Firmware Interface
+@@ -61,7 +109,7 @@ static efi_status_t EFIAPI efi_net_stop(struct efi_simple_network *this)
+  * @this:	pointer to the protocol instance
+  * @extra_rx:	extra receive buffer to be allocated
+  * @extra_tx:	extra transmit buffer to be allocated
+- * @return:	status code
++ * Return:	status code
+  */
+ static efi_status_t EFIAPI efi_net_initialize(struct efi_simple_network *this,
+ 					      ulong extra_rx, ulong extra_tx)
 @@ -71,9 +119,10 @@ static efi_status_t EFIAPI efi_net_initialize(struct efi_simple_network *this,
  
  	EFI_ENTRY("%p, %lx, %lx", this, extra_rx, extra_tx);
@@ -785,13 +796,15 @@ index 5a3d7be86cf..7879952b260 100644
  	struct ethernet_hdr *eth_hdr;
  	size_t hdr_size = sizeof(struct ethernet_hdr);
  	u16 protlen;
-@@ -240,8 +458,26 @@ static efi_status_t EFIAPI efi_net_receive(struct efi_simple_network *this,
+@@ -240,14 +458,35 @@ static efi_status_t EFIAPI efi_net_receive(struct efi_simple_network *this,
  	EFI_ENTRY("%p, %p, %p, %p, %p, %p, %p", this, header_size,
  		  buffer_size, buffer, src_addr, dest_addr, protocol);
  
 +	/* Execute events */
  	efi_timer_check();
  
+-	if (!new_rx_packet)
+-		return EFI_EXIT(EFI_NOT_READY);
 +	/* Check parameters */
 +	if (!this) {
 +		ret = EFI_INVALID_PARAMETER;
@@ -809,19 +822,31 @@ index 5a3d7be86cf..7879952b260 100644
 +		break;
 +	}
 +
- 	if (!new_rx_packet)
- 		return EFI_EXIT(EFI_NOT_READY);
++	if (!new_rx_packet) {
++		ret = EFI_NOT_READY;
++		goto out;
++	}
  	/* Check that we at least received an Ethernet header */
-@@ -265,7 +501,7 @@ static efi_status_t EFIAPI efi_net_receive(struct efi_simple_network *this,
+ 	if (net_rx_packet_len < sizeof(struct ethernet_hdr)) {
+ 		new_rx_packet = false;
+-		return EFI_EXIT(EFI_NOT_READY);
++		ret = EFI_NOT_READY;
++		goto out;
+ 	}
+ 	/* Fill export parameters */
+ 	eth_hdr = (struct ethernet_hdr *)net_rx_packet;
+@@ -265,18 +504,24 @@ static efi_status_t EFIAPI efi_net_receive(struct efi_simple_network *this,
  	if (protocol)
  		*protocol = protlen;
  	if (*buffer_size < net_rx_packet_len) {
 -		/* Packet doesn't fit, try again with bigger buf */
 +		/* Packet doesn't fit, try again with bigger buffer */
  		*buffer_size = net_rx_packet_len;
- 		return EFI_EXIT(EFI_BUFFER_TOO_SMALL);
+-		return EFI_EXIT(EFI_BUFFER_TOO_SMALL);
++		ret = EFI_BUFFER_TOO_SMALL;
++		goto out;
  	}
-@@ -273,10 +509,15 @@ static efi_status_t EFIAPI efi_net_receive(struct efi_simple_network *this,
+ 	/* Copy packet */
  	memcpy(buffer, net_rx_packet, net_rx_packet_len);
  	*buffer_size = net_rx_packet_len;
  	new_rx_packet = false;
@@ -839,7 +864,7 @@ index 5a3d7be86cf..7879952b260 100644
  void efi_net_set_dhcp_ack(void *pkt, int len)
  {
  	int maxsize = sizeof(*dhcp_ack);
-@@ -287,8 +528,22 @@ void efi_net_set_dhcp_ack(void *pkt, int len)
+@@ -287,8 +532,22 @@ void efi_net_set_dhcp_ack(void *pkt, int len)
  	memcpy(dhcp_ack, pkt, min(len, maxsize));
  }
  
@@ -864,7 +889,7 @@ index 5a3d7be86cf..7879952b260 100644
   *
   * This notification function is called in every timer cycle.
   *
-@@ -298,8 +553,17 @@ void efi_net_set_dhcp_ack(void *pkt, int len)
+@@ -298,20 +557,34 @@ void efi_net_set_dhcp_ack(void *pkt, int len)
  static void EFIAPI efi_network_timer_notify(struct efi_event *event,
  					    void *context)
  {
@@ -877,12 +902,14 @@ index 5a3d7be86cf..7879952b260 100644
 +	 * initialization.
 +	 */
 +	if (!this || this->mode->state != EFI_NETWORK_INITIALIZED)
-+		return;
++		goto out;
 +
  	if (!new_rx_packet) {
  		push_packet = efi_net_push;
  		eth_rx();
-@@ -308,10 +572,14 @@ static void EFIAPI efi_network_timer_notify(struct efi_event *event,
+ 		push_packet = NULL;
+ 	}
++out:
  	EFI_EXIT(EFI_SUCCESS);
  }
  
@@ -899,7 +926,7 @@ index 5a3d7be86cf..7879952b260 100644
  	efi_status_t r;
  
  	if (!eth_get_dev()) {
-@@ -321,10 +589,15 @@ efi_status_t efi_net_register(void)
+@@ -321,10 +594,15 @@ efi_status_t efi_net_register(void)
  
  	/* We only expose the "active" eth device, so one is enough */
  	netobj = calloc(1, sizeof(*netobj));
@@ -919,7 +946,7 @@ index 5a3d7be86cf..7879952b260 100644
  
  	/* Hook net up to the device list */
  	efi_add_handle(&netobj->parent);
-@@ -387,13 +660,13 @@ efi_status_t efi_net_register(void)
+@@ -387,13 +665,13 @@ efi_status_t efi_net_register(void)
  	 * iPXE is running at TPL_CALLBACK most of the time. Use a higher TPL.
  	 */
  	r = efi_create_event(EVT_TIMER | EVT_NOTIFY_SIGNAL, TPL_NOTIFY,
@@ -935,7 +962,7 @@ index 5a3d7be86cf..7879952b260 100644
  	r = efi_set_timer(network_timer_event, EFI_TIMER_PERIODIC, 0);
  	if (r != EFI_SUCCESS) {
  		printf("ERROR: Failed to set network timer\n");
-@@ -404,4 +677,9 @@ efi_status_t efi_net_register(void)
+@@ -404,4 +682,9 @@ efi_status_t efi_net_register(void)
  failure_to_add_protocol:
  	printf("ERROR: Failure to add protocol\n");
  	return r;
