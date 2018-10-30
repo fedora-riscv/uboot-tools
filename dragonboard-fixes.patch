@@ -1,17 +1,17 @@
-From fbd0bffb20ca5edd21bbeb7cc20e24d091ab4280 Mon Sep 17 00:00:00 2001
+From 8b0274a733cd1ce39ad9ad18e1bd8efdd02a40b7 Mon Sep 17 00:00:00 2001
 From: Rob Clark <robdclark@gmail.com>
 Date: Wed, 21 Jun 2017 14:21:15 -0400
-Subject: [PATCH 1/4] WIP: fix usb
+Subject: [PATCH 1/3] WIP: fix usb
 
 ---
  common/usb_storage.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/common/usb_storage.c b/common/usb_storage.c
-index a91b1c0d2f..caea87a09f 100644
+index d92ebb6eb19..9df3c3daaf4 100644
 --- a/common/usb_storage.c
 +++ b/common/usb_storage.c
-@@ -1018,7 +1018,7 @@ static int usb_request_sense(struct scsi_cmd *srb, struct us_data *ss)
+@@ -1016,7 +1016,7 @@ static int usb_request_sense(struct scsi_cmd *srb, struct us_data *ss)
  
  static int usb_test_unit_ready(struct scsi_cmd *srb, struct us_data *ss)
  {
@@ -20,7 +20,7 @@ index a91b1c0d2f..caea87a09f 100644
  
  	do {
  		memset(&srb->cmd[0], 0, 12);
-@@ -1041,7 +1041,7 @@ static int usb_test_unit_ready(struct scsi_cmd *srb, struct us_data *ss)
+@@ -1039,7 +1039,7 @@ static int usb_test_unit_ready(struct scsi_cmd *srb, struct us_data *ss)
  		if ((srb->sense_buf[2] == 0x02) &&
  		    (srb->sense_buf[12] == 0x3a))
  			return -1;
@@ -30,12 +30,12 @@ index a91b1c0d2f..caea87a09f 100644
  
  	return -1;
 -- 
-2.14.3
+2.19.1
 
-From d1b25b8d6461c5278228d657de9c24e0979e4b9d Mon Sep 17 00:00:00 2001
+From 7bf41d74ca9d58bc2243b7688f8987c1d373ea56 Mon Sep 17 00:00:00 2001
 From: Rob Clark <robdclark@gmail.com>
 Date: Mon, 3 Jul 2017 08:34:37 -0400
-Subject: [PATCH 2/4] HACK: disable emmc
+Subject: [PATCH 2/3] HACK: disable emmc
 
 Hitting some timeout which makes boot take much longer.  And
 uefi/boot/rootfs partitions will be on sd-card or usb disk, etc,
@@ -45,18 +45,18 @@ so we can just ignore emmc.
  1 file changed, 2 insertions(+)
 
 diff --git a/arch/arm/dts/dragonboard410c.dts b/arch/arm/dts/dragonboard410c.dts
-index 5ccfe7f8c8..9e2d3f5d9b 100644
+index fa348bc621e..bfe7f15d5ed 100644
 --- a/arch/arm/dts/dragonboard410c.dts
 +++ b/arch/arm/dts/dragonboard410c.dts
-@@ -67,6 +67,7 @@
- 			reg = <0x78d9000 0x400>;
+@@ -106,6 +106,7 @@
+ 			#phy-cells = <0>;
  		};
  
 +/*
  		sdhci@07824000 {
  			compatible = "qcom,sdhci-msm-v4";
  			reg = <0x7824900 0x11c 0x7824000 0x800>;
-@@ -76,6 +77,7 @@
+@@ -115,6 +116,7 @@
  			clock = <&clkc 0>;
  			clock-frequency = <100000000>;
  		};
@@ -65,22 +65,23 @@ index 5ccfe7f8c8..9e2d3f5d9b 100644
  		sdhci@07864000 {
  			compatible = "qcom,sdhci-msm-v4";
 -- 
-2.14.3
-From 6baac1d73a20f880cb91f3bc03fe4f9cf88c61f6 Mon Sep 17 00:00:00 2001
+2.19.1
+
+From 871fe802cf3ab593b9332c4f36ab2b3f179d51ae Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Tue, 4 Sep 2018 12:21:59 +0100
-Subject: [PATCH] add options for dm410c config
+Subject: [PATCH 3/3] add options for dm410c config
 
 ---
  configs/dragonboard410c_defconfig | 10 ++++++++++
  1 file changed, 10 insertions(+)
 
 diff --git a/configs/dragonboard410c_defconfig b/configs/dragonboard410c_defconfig
-index 96a831443a..d167c765b1 100644
+index a55abaf8df5..4ece0cafbe4 100644
 --- a/configs/dragonboard410c_defconfig
 +++ b/configs/dragonboard410c_defconfig
-@@ -6,6 +6,8 @@ CONFIG_DISTRO_DEFAULTS=y
- CONFIG_NR_DRAM_BANKS=1
+@@ -7,6 +7,8 @@ CONFIG_NR_DRAM_BANKS=1
+ # CONFIG_ANDROID_BOOT_IMAGE is not set
  CONFIG_FIT=y
  CONFIG_OF_BOARD_SETUP=y
 +CONFIG_FAT_WRITE=y
@@ -88,7 +89,7 @@ index 96a831443a..d167c765b1 100644
  CONFIG_MISC_INIT_R=y
  # CONFIG_DISPLAY_CPUINFO is not set
  # CONFIG_DISPLAY_BOARDINFO is not set
-@@ -35,6 +37,13 @@ CONFIG_DM_PMIC=y
+@@ -41,6 +43,13 @@ CONFIG_DM_PMIC=y
  CONFIG_PMIC_PM8916=y
  CONFIG_MSM_SERIAL=y
  CONFIG_SPMI_MSM=y
@@ -102,7 +103,7 @@ index 96a831443a..d167c765b1 100644
  CONFIG_USB=y
  CONFIG_DM_USB=y
  CONFIG_USB_EHCI_HCD=y
-@@ -46,5 +55,6 @@ CONFIG_USB_HOST_ETHER=y
+@@ -57,5 +66,6 @@ CONFIG_USB_HOST_ETHER=y
  CONFIG_USB_ETHER_ASIX=y
  CONFIG_USB_ETHER_ASIX88179=y
  CONFIG_USB_ETHER_MCS7830=y
@@ -110,5 +111,5 @@ index 96a831443a..d167c765b1 100644
  CONFIG_USB_ETHER_SMSC95XX=y
  CONFIG_OF_LIBFDT_OVERLAY=y
 -- 
-2.19.0.rc0
+2.19.1
 

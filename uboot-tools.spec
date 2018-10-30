@@ -1,8 +1,8 @@
-#global candidate rc3
+%global candidate rc3
 
 Name:      uboot-tools
-Version:   2018.09
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Version:   2018.11
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -23,18 +23,12 @@ Patch3:    usb-kbd-fixes.patch
 
 # Board fixes and enablement
 Patch10:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-Patch11:   rockchip-make_fit_atf-fix-warning-unit_address_vs_reg.patch
-Patch12:   rockchip-make_fit_atf-use-elf-entry-point.patch
-Patch13:   rk3399-Rock960-Ficus-board-support.patch
-Patch14:   dragonboard-fixes.patch
-Patch15:   tegra186-jetson-tx2-disable-onboard-emmc.patch
-Patch16:   tegra-efi_loader-simplify-ifdefs.patch
-Patch17:   tegra-TXx-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
-Patch18:   tegra-fix-tx1.patch
-Patch19:   sunxi-DT-A64-add-Pine64-LTS-support.patch
-
-# Upstream UEFI fixes
-Patch20:   uefi-fixes.patch
+Patch11:   rk3399-Rock960-Ficus-board-support.patch
+Patch12:   dragonboard-fixes.patch
+Patch13:   tegra186-jetson-tx2-disable-onboard-emmc.patch
+Patch14:   tegra-TXx-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
+Patch15:   tegra-fix-tx1.patch
+Patch16:   sunxi-DT-A64-add-Pine64-LTS-support.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -321,6 +315,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Oct 30 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.11-0.1.rc3
+- 2018.11 RC3
+
 * Sun Sep 30 2018 Pablo Greco <pablo@fliagreco.com.ar>
 - Added conditional to enable devtoolset-7-gcc for .el7 build (Arrfab)
 - Added conditional BR, python2-pyelftools is python-pyelftools in .el7 (Arrfab)
