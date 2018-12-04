@@ -272,7 +272,7 @@ install -p -m 0755 %{SOURCE5} $RPM_BUILD_ROOT/lib/kernel/install.d/
 
 # Copy sone useful docs over
 mkdir -p builds/docs
-cp -p board/amlogic/odroid-c2/README builds/docs/README.odroid-c2
+cp -p board/amlogic/odroid-c2/README.odroid-c2 builds/docs/README.odroid-c2
 cp -p board/hisilicon/hikey/README builds/docs/README.hikey
 cp -p board/hisilicon/hikey/README builds/docs/README.hikey
 cp -p board/Marvell/db-88f6820-gp/README builds/docs/README.mvebu-db-88f6820
