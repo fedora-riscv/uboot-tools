@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate rc3
 
 Name:      uboot-tools
 Version:   2018.11
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -20,6 +20,7 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 # general fixes
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
+Patch4:    make-tools-all-defconfig-a-thing.patch
 
 # Board fixes and enablement
 Patch10:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
@@ -29,6 +30,7 @@ Patch13:   tegra186-jetson-tx2-disable-onboard-emmc.patch
 Patch14:   tegra-TXx-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
 Patch15:   tegra-fix-tx1.patch
 Patch16:   sunxi-DT-A64-add-Pine64-LTS-support.patch
+Patch17:   mmc-fsl_esdhc-Avoid-infinite-loop-in-esdhc_send_cmd_common.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -161,7 +163,7 @@ done
 
 %endif
 
-make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" defconfig V=1 O=builds/
+make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" tools-all_defconfig V=1 O=builds/
 make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" tools-all V=1 O=builds/
 
 %install
@@ -315,6 +317,11 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Dec  4 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.11-1
+- 2018.11
+- Build with ATF 2.0
+- Fix Hummingboard and CuBox-i devices
+
 * Tue Oct 30 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2018.11-0.1.rc3
 - 2018.11 RC3
 
