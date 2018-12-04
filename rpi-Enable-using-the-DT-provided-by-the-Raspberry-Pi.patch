@@ -1,6 +1,6 @@
-From 44dd1455f924aa99e6bff0b124a9be0a85dcfa89 Mon Sep 17 00:00:00 2001
+From 7bf054b1b2e1e4105e94642e18fc74a63eccce97 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 4 Sep 2018 11:59:18 +0100
+Date: Tue, 4 Dec 2018 15:26:59 +0000
 Subject: [PATCH] rpi: Use firmware provided device tree
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
@@ -13,70 +13,70 @@ Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
  5 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/configs/rpi_0_w_defconfig b/configs/rpi_0_w_defconfig
-index d5bf01b76e..08f177f34a 100644
+index 66b0de31b60..9446465fdf7 100644
 --- a/configs/rpi_0_w_defconfig
 +++ b/configs/rpi_0_w_defconfig
-@@ -13,7 +13,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
- CONFIG_CMD_GPIO=y
+@@ -14,7 +14,7 @@ CONFIG_CMD_GPIO=y
  CONFIG_CMD_MMC=y
  CONFIG_CMD_USB=y
+ CONFIG_CMD_FS_UUID=y
 -CONFIG_OF_EMBED=y
 +CONFIG_OF_BOARD=y
  CONFIG_DEFAULT_DEVICE_TREE="bcm2835-rpi-zero-w"
  CONFIG_ENV_FAT_INTERFACE="mmc"
  CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
 diff --git a/configs/rpi_2_defconfig b/configs/rpi_2_defconfig
-index a50a815759..0918c6c9ff 100644
+index ba75e52dda0..d324e2bdd33 100644
 --- a/configs/rpi_2_defconfig
 +++ b/configs/rpi_2_defconfig
-@@ -13,7 +13,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
- CONFIG_CMD_GPIO=y
+@@ -14,7 +14,7 @@ CONFIG_CMD_GPIO=y
  CONFIG_CMD_MMC=y
  CONFIG_CMD_USB=y
+ CONFIG_CMD_FS_UUID=y
 -CONFIG_OF_EMBED=y
 +CONFIG_OF_BOARD=y
  CONFIG_DEFAULT_DEVICE_TREE="bcm2836-rpi-2-b"
  CONFIG_ENV_FAT_INTERFACE="mmc"
  CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
 diff --git a/configs/rpi_3_32b_defconfig b/configs/rpi_3_32b_defconfig
-index ec395d29ed..22165bde53 100644
+index bbcdd91e909..46816cd1da7 100644
 --- a/configs/rpi_3_32b_defconfig
 +++ b/configs/rpi_3_32b_defconfig
-@@ -14,7 +14,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
- CONFIG_CMD_GPIO=y
+@@ -15,7 +15,7 @@ CONFIG_CMD_GPIO=y
  CONFIG_CMD_MMC=y
  CONFIG_CMD_USB=y
+ CONFIG_CMD_FS_UUID=y
 -CONFIG_OF_EMBED=y
 +CONFIG_OF_BOARD=y
  CONFIG_DEFAULT_DEVICE_TREE="bcm2837-rpi-3-b"
  CONFIG_ENV_FAT_INTERFACE="mmc"
  CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
 diff --git a/configs/rpi_3_defconfig b/configs/rpi_3_defconfig
-index ac99f2000a..0ca298cd54 100644
+index 54b6303c2d8..f05ddf8f61f 100644
 --- a/configs/rpi_3_defconfig
 +++ b/configs/rpi_3_defconfig
-@@ -14,7 +14,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
- CONFIG_CMD_GPIO=y
+@@ -15,7 +15,7 @@ CONFIG_CMD_GPIO=y
  CONFIG_CMD_MMC=y
  CONFIG_CMD_USB=y
+ CONFIG_CMD_FS_UUID=y
 -CONFIG_OF_EMBED=y
 +CONFIG_OF_BOARD=y
  CONFIG_DEFAULT_DEVICE_TREE="bcm2837-rpi-3-b"
  CONFIG_ENV_FAT_INTERFACE="mmc"
  CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
 diff --git a/configs/rpi_defconfig b/configs/rpi_defconfig
-index db42ffd135..0ec1365b1b 100644
+index e7820cb147b..d248873174d 100644
 --- a/configs/rpi_defconfig
 +++ b/configs/rpi_defconfig
-@@ -13,7 +13,7 @@ CONFIG_SYS_PROMPT="U-Boot> "
- CONFIG_CMD_GPIO=y
+@@ -14,7 +14,7 @@ CONFIG_CMD_GPIO=y
  CONFIG_CMD_MMC=y
  CONFIG_CMD_USB=y
+ CONFIG_CMD_FS_UUID=y
 -CONFIG_OF_EMBED=y
 +CONFIG_OF_BOARD=y
  CONFIG_DEFAULT_DEVICE_TREE="bcm2835-rpi-b"
  CONFIG_ENV_FAT_INTERFACE="mmc"
  CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
 -- 
-2.19.0.rc0
+2.19.2
 

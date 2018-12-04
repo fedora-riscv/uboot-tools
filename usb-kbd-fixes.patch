@@ -1,19 +1,19 @@
-From 1a8fa60aedff8a2368ac357a51dc15357065fabe Mon Sep 17 00:00:00 2001
+From a49845f198af088c4e5e0019edbf519344d78c97 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 5 Dec 2017 00:11:54 +0000
-Subject: [PATCH 3/5] usb kbd fixes
+Date: Tue, 4 Dec 2018 15:29:14 +0000
+Subject: [PATCH] usb kbd fixes
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- common/usb_kbd.c  | 66 +++++++++++++++++++++++++++++++++++++++++--------------
+ common/usb_kbd.c  | 66 +++++++++++++++++++++++++++++++++++------------
  include/console.h |  2 --
  2 files changed, 50 insertions(+), 18 deletions(-)
 
 diff --git a/common/usb_kbd.c b/common/usb_kbd.c
-index 8cbdba6ac2..82ad93f6ca 100644
+index 020f0d4117f..47674ce4458 100644
 --- a/common/usb_kbd.c
 +++ b/common/usb_kbd.c
-@@ -516,25 +516,59 @@ static int probe_usb_keyboard(struct usb_device *dev)
+@@ -518,25 +518,59 @@ static int probe_usb_keyboard(struct usb_device *dev)
  		return error;
  
  	stdinname = env_get("stdin");
@@ -87,8 +87,8 @@ index 8cbdba6ac2..82ad93f6ca 100644
 +#endif
  }
  
- #ifndef CONFIG_DM_USB
-@@ -640,7 +674,7 @@ static int usb_kbd_remove(struct udevice *dev)
+ #if !CONFIG_IS_ENABLED(DM_USB)
+@@ -642,7 +676,7 @@ static int usb_kbd_remove(struct udevice *dev)
  
  	return 0;
  err:
@@ -98,10 +98,10 @@ index 8cbdba6ac2..82ad93f6ca 100644
  }
  
 diff --git a/include/console.h b/include/console.h
-index cea29ed6dc..7dfd36d7d1 100644
+index e935c601f12..6382ec8e0d6 100644
 --- a/include/console.h
 +++ b/include/console.h
-@@ -57,8 +57,6 @@ int console_announce_r(void);
+@@ -56,8 +56,6 @@ int console_announce_r(void);
  /*
   * CONSOLE multiplexing.
   */
@@ -111,5 +111,5 @@ index cea29ed6dc..7dfd36d7d1 100644
  
  #endif
 -- 
-2.14.3
+2.19.2
 
