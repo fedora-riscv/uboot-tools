@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.01
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -133,17 +133,17 @@ do
   echo "Building board: $board"
   mkdir builds/$(echo $board)/
   # ATF selection, needs improving, suggestions of ATF SoC to Board matrix welcome
-  sun50i=(a64-olinuxino bananapi_m64 libretech_all_h3_cc_h5 nanopi_neo2 nanopi_neo_plus2 orangepi_pc2 orangepi_prime orangepi_win orangepi_zero_plus orangepi_zero_plus2 pine64_plus sopine_baseboard)
+  sun50i=(a64-olinuxino amarula_a64_relic bananapi_m64 nanopi_a64 orangepi_win pine64-lts pine64_plus pinebook sopine_baseboard libretech_all_h3_cc_h5 nanopi_neo2 nanopi_neo_plus2 orangepi_pc2 orangepi_prime orangepi_zero_plus2 orangepi_zero_plus)
   if [[ " ${sun50i[*]} " == *" $board "* ]]; then
     echo "Board: $board using sun50i_a64"
     cp /usr/share/arm-trusted-firmware/sun50i_a64/* builds/$(echo $board)/
   fi
-  sun50i=(orangepi_one_plus pine_h64)
-  if [[ " ${sun50i[*]} " == *" $board "* ]]; then
+  sun50h6=(orangepi_lite2 orangepi_one_plus pine_h64)
+  if [[ " ${sun50h6[*]} " == *" $board "* ]]; then
     echo "Board: $board using sun50i_h6"
     cp /usr/share/arm-trusted-firmware/sun50i_h6/* builds/$(echo $board)/
   fi
-  rk3399=(evb-rk3399 firefly-rk3399 rock960-rk3399)
+  rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 puma-rk3399 rock960-rk3399)
   if [[ " ${rk3399[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3399"
     cp /usr/share/arm-trusted-firmware/rk3399/* builds/$(echo $board)/
@@ -316,6 +316,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Dec 12 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2019.01-0.2-rc1
+- ATF tweaks and fixes
+- Enable amarula_a64_relic, nanopi_a64, puma-rk3399
+
 * Tue Dec  4 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2019.01-0.1-rc1
 - 2019.01 RC1
 - Enable new devices
