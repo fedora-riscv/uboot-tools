@@ -1,8 +1,8 @@
-%global candidate rc1
+%global candidate rc2
 
 Name:      uboot-tools
 Version:   2019.01
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -20,11 +20,10 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 # general fixes
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
-Patch4:    tools-add-a-generic-config-for-native-tools-building.patch
+Patch4:    efi_loader-Make-RTS-relocation-more-robust.patch
 
 # Board fixes and enablement
 Patch10:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-Patch11:   rk3399-Rock960-Ficus-board-support.patch
 Patch12:   dragonboard-fixes.patch
 Patch13:   tegra186-jetson-tx2-disable-onboard-emmc.patch
 Patch14:   tegra-TXx-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
@@ -162,8 +161,8 @@ done
 
 %endif
 
-make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" tools-all_defconfig V=1 O=builds/
-make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" tools-all V=1 O=builds/
+make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" tools-only_defconfig V=1 O=builds/
+make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" tools-only V=1 O=builds/
 
 %install
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
@@ -316,6 +315,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Dec 18 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2019.01-0.3-rc2
+- 2019.01 RC2
+
 * Wed Dec 12 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2019.01-0.2-rc1
 - ATF tweaks and fixes
 - Enable amarula_a64_relic, nanopi_a64, puma-rk3399
