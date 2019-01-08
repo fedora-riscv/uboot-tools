@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2019.01
-Release:   0.3%{?candidate:.%{candidate}}%{?dist}
+Release:   0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -20,7 +20,7 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 # general fixes
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
-Patch4:    efi_loader-Make-RTS-relocation-more-robust.patch
+Patch4:    mmc-bring-back-partition-init-for-non-DM-MMC-drivers.patch
 
 # Board fixes and enablement
 Patch10:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
@@ -162,7 +162,7 @@ done
 %endif
 
 make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" tools-only_defconfig V=1 O=builds/
-make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" tools-only V=1 O=builds/
+make HOSTCC="gcc $RPM_OPT_FLAGS" %{?_smp_mflags} CROSS_COMPILE="" tools-all V=1 O=builds/
 
 %install
 mkdir -p $RPM_BUILD_ROOT%{_bindir}
@@ -315,6 +315,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Jan  8 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.01-0.4-rc3
+- 2019.01 RC3
+
 * Tue Dec 18 2018 Peter Robinson <pbrobinson@fedoraproject.org> 2019.01-0.3-rc2
 - 2019.01 RC2
 

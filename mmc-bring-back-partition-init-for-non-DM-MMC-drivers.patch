@@ -1,0 +1,47 @@
+From patchwork Mon Dec 17 10:05:45 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,2/2] mmc: bring back partition init for non-DM MMC drivers
+X-Patchwork-Submitter: Andre Przywara <andre.przywara@arm.com>
+X-Patchwork-Id: 1014381
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Message-Id: <20181217100545.28369-3-andre.przywara@arm.com>
+To: Maxime Ripard <maxime.ripard@bootlin.com>,
+ Jagan Teki <jagan@openedev.com>, Jaehoon Chung <jh80.chung@samsung.com>
+Cc: Tom Rini <trini@konsulko.com>, u-boot@lists.denx.de
+Date: Mon, 17 Dec 2018 10:05:45 +0000
+From: Andre Przywara <andre.przywara@arm.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Commit d0851c893706 ("blk: Call part_init() in the post_probe() method")
+removed the call to part_init() in mmc.c, as this is done by the DM_MMC
+framework.
+However Allwinner is (still) relying on a non-DM MMC driver, so we are
+now missing the implicit partition init, leading to failing MMC accesses
+due to the missing partition information.
+
+Bring the call back just for non-DM MMC driver to fix this regression.
+
+Signed-off-by: Andre Przywara <andre.przywara@arm.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+Tested-by: Soeren Moch <smoch@web.de>
+---
+ drivers/mmc/mmc.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/mmc/mmc.c b/drivers/mmc/mmc.c
+index f5c821e308..d858127132 100644
+--- a/drivers/mmc/mmc.c
++++ b/drivers/mmc/mmc.c
+@@ -2449,6 +2449,10 @@ static int mmc_startup(struct mmc *mmc)
+ 	bdesc->revision[0] = 0;
+ #endif
+ 
++#if !defined(CONFIG_DM_MMC) && (!defined(CONFIG_SPL_BUILD) || defined(CONFIG_SPL_LIBDISK_SUPPORT))
++	part_init(bdesc);
++#endif
++
+ 	return 0;
+ }
+ 
