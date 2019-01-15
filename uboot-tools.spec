@@ -1,8 +1,8 @@
-%global candidate rc3
+#global candidate rc3
 
 Name:      uboot-tools
 Version:   2019.01
-Release:   0.4%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -20,15 +20,13 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 # general fixes
 Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:    usb-kbd-fixes.patch
-Patch4:    mmc-bring-back-partition-init-for-non-DM-MMC-drivers.patch
 
 # Board fixes and enablement
 Patch10:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-Patch12:   dragonboard-fixes.patch
-Patch13:   tegra186-jetson-tx2-disable-onboard-emmc.patch
-Patch14:   tegra-TXx-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
-Patch15:   tegra-fix-tx1.patch
-Patch16:   mmc-fsl_esdhc-Avoid-infinite-loop-in-esdhc_send_cmd_common.patch
+Patch11:   dragonboard-fixes.patch
+Patch12:   tegra186-jetson-tx2-disable-onboard-emmc.patch
+Patch13:   tegra-TXx-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
+Patch14:   tegra-fix-tx1.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -315,6 +313,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Jan 15 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.01-1
+- 2019.01
+
 * Tue Jan  8 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.01-0.4-rc3
 - 2019.01 RC3
 
