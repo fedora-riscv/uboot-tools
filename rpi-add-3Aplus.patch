@@ -1,0 +1,32 @@
+From d61cf138bce890b0b79745e48a908062bc36b99f Mon Sep 17 00:00:00 2001
+From: Jonathan Gray <jsg@jsg.id.au>
+Date: Fri, 16 Nov 2018 23:07:39 +1100
+Subject: [PATCH] rpi: add 3 Model A+
+
+Add Raspberry Pi 3 Model A+ to list of models, the revision code is 0xE
+according to the list on raspberrypi.org.
+
+Signed-off-by: Jonathan Gray <jsg@jsg.id.au>
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ board/raspberrypi/rpi/rpi.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/board/raspberrypi/rpi/rpi.c b/board/raspberrypi/rpi/rpi.c
+index 5062486..153a1fd 100644
+--- a/board/raspberrypi/rpi/rpi.c
++++ b/board/raspberrypi/rpi/rpi.c
+@@ -138,6 +138,11 @@ static const struct rpi_model rpi_models_new_scheme[] = {
+ 		DTB_DIR "bcm2837-rpi-3-b-plus.dtb",
+ 		true,
+ 	},
++	[0xE] = {
++		"3 Model A+",
++		DTB_DIR "bcm2837-rpi-3-a-plus.dtb",
++		false,
++	},
+ };
+ 
+ static const struct rpi_model rpi_models_old_scheme[] = {
+-- 
+2.7.4
