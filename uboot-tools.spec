@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.01
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -313,6 +313,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Feb 03 2019 Fedora Release Engineering <releng@fedoraproject.org> - 2019.01-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
+
 * Tue Jan 15 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.01-1
 - 2019.01
 
