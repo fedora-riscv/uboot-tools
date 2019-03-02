@@ -130,7 +130,7 @@ do
   echo "Building board: $board"
   mkdir builds/$(echo $board)/
   # ATF selection, needs improving, suggestions of ATF SoC to Board matrix welcome
-  sun50i=(a64-olinuxino amarula_a64_relic bananapi_m64 nanopi_a64 orangepi_win pine64-lts pine64_plus pinebook sopine_baseboard libretech_all_h3_cc_h5 nanopi_neo2 nanopi_neo_plus2 orangepi_pc2 orangepi_prime orangepi_zero_plus2 orangepi_zero_plus)
+  sun50i=(a64-olinuxino amarula_a64_relic bananapi_m2_plus_h5 bananapi_m64 nanopi_a64 orangepi_win pine64-lts pine64_plus pinebook sopine_baseboard libretech_all_h3_cc_h5 nanopi_neo2 nanopi_neo_plus2 orangepi_pc2 orangepi_prime orangepi_zero_plus2 orangepi_zero_plus)
   if [[ " ${sun50i[*]} " == *" $board "* ]]; then
     echo "Board: $board using sun50i_a64"
     cp /usr/share/arm-trusted-firmware/sun50i_a64/* builds/$(echo $board)/
