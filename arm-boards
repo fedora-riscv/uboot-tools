@@ -14,9 +14,12 @@ Auxtek-T003
 Auxtek-T004
 ba10_tv_box
 Bananapi
+bananapi_m1_plus
 bananapi_m2_berry
+bananapi_m2_plus_h3
 bananapi_m2_zero
 Bananapi_M2_Ultra
+Bananapi_m2m
 Bananapro
 chiliboard
 CHIP
@@ -116,7 +119,6 @@ rpi_2
 rpi_3_32b
 Sinlinx_SinA31s
 Sinovoip_BPI_M2
-Sinovoip_BPI_M2_Plus
 Sinovoip_BPI_M3
 smdkv310
 stih410-b2260
