@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2018.09
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Release:   3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -33,9 +33,6 @@ Patch17:   tegra-TXx-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
 Patch18:   tegra-fix-tx1.patch
 Patch19:   sunxi-DT-A64-add-Pine64-LTS-support.patch
 Patch20:   rpi-add-3Aplus.patch
-
-# Upstream UEFI fixes
-Patch21:   uefi-fixes.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -322,6 +319,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Mar 17 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2018.09-3
+- Drop problematic UEFI patch
+
 * Sun Jan 27 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2018.09-2
 - Add support for Raspberry Pi 3A+
 
