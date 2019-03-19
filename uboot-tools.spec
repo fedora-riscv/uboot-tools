@@ -1,8 +1,8 @@
-%global candidate rc3
+%global candidate rc4
 
 Name:      uboot-tools
 Version:   2019.04
-Release:   0.4%{?candidate:.%{candidate}}%{?dist}
+Release:   0.5%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -40,7 +40,6 @@ BuildRequires:  devtoolset-7-gcc
 BuildRequires:  gcc
 %endif
 BuildRequires:  flex bison
-BuildRequires:  git-core
 BuildRequires:  openssl-devel
 %if 0%{?fedora}
 BuildRequires:  python-unversioned-command
@@ -101,18 +100,7 @@ u-boot bootloader ELF binaries for use with qemu and other platforms
 %endif
 
 %prep
-%setup -q -n u-boot-%{version}%{?candidate:-%{candidate}}
-
-git init
-git config --global gc.auto 0
-git config user.email "noone@example.com"
-git config user.name "no one"
-git add .
-git commit -a -q -m "%{version} baseline"
-git am %{patches} </dev/null
-git config --unset user.email
-git config --unset user.name
-rm -rf .git
+%autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
 
 cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 .
 
@@ -313,6 +301,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Mar 19 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-0.5-rc4
+- 2019.04 RC4
+
 * Tue Mar  5 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-0.4-rc3
 - 2019.04 RC3
 

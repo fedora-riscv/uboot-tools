@@ -1,27 +1,30 @@
-From 2b411f6edf298899098e2077a5ca2dfdaf3d882f Mon Sep 17 00:00:00 2001
+From c8e3063259c19e8f03c9f3e053ec6384d2d3f861 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Wed, 7 Feb 2018 12:37:58 +0000
+Date: Tue, 19 Mar 2019 10:48:48 +0000
 Subject: [PATCH] use Fedora specific EFI path/name
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- include/config_distro_bootcmd.h | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ include/config_distro_bootcmd.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index f567cebd38..7746366ec8 100644
+index 4993303f4d..1aba509962 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
-@@ -93,7 +93,7 @@
+@@ -92,9 +92,9 @@
  
  #ifdef CONFIG_EFI_LOADER
  #if defined(CONFIG_ARM64)
 -#define BOOTEFI_NAME "bootaa64.efi"
 +#define BOOTEFI_NAME "grubaa64.efi"
  #elif defined(CONFIG_ARM)
- #define BOOTEFI_NAME "bootarm.efi"
+-#define BOOTEFI_NAME "bootarm.efi"
++#define BOOTEFI_NAME "grubarm.efi"
  #elif defined(CONFIG_X86_RUN_32BIT)
-@@ -127,7 +127,7 @@
+ #define BOOTEFI_NAME "bootia32.efi"
+ #elif defined(CONFIG_X86_RUN_64BIT)
+@@ -130,7 +130,7 @@
  			"bootefi bootmgr ${fdtcontroladdr};"              \
  		"fi;"                                                     \
  		"load ${devtype} ${devnum}:${distro_bootpart} "           \
@@ -30,7 +33,7 @@ index f567cebd38..7746366ec8 100644
  		"if fdt addr ${fdt_addr_r}; then "                        \
  			"bootefi ${kernel_addr_r} ${fdt_addr_r};"         \
  		"else "                                                   \
-@@ -150,9 +150,9 @@
+@@ -153,9 +153,9 @@
  			"fi;"                                             \
  		"done;"                                                   \
  		"if test -e ${devtype} ${devnum}:${distro_bootpart} "     \
@@ -43,5 +46,5 @@ index f567cebd38..7746366ec8 100644
  				"echo EFI LOAD FAILED: continuing...; "   \
  		"fi; "                                                    \
 -- 
-2.14.3
+2.20.1
 
