@@ -1,0 +1,147 @@
+From patchwork Fri Mar  8 19:51:25 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,
+ 1/3] net: eth-uclass: Write MAC address to hardware after probe
+X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
+X-Patchwork-Id: 1053669
+Message-Id: <20190308195127.32711-1-thierry.reding@gmail.com>
+To: Joe Hershberger <joe.hershberger@ni.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Tom Warren <twarren@nvidia.com>
+Date: Fri,  8 Mar 2019 20:51:25 +0100
+From: Thierry Reding <thierry.reding@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+From: Thierry Reding <treding@nvidia.com>
+
+In order for the device to use the proper MAC address, which can have
+been configured in the environment prior to the device being registered,
+ensure that the MAC address is written after the device has been probed.
+For devices that are registered before the network stack is initialized,
+this is already done during eth_initialize(). If the Ethernet device is
+on a bus that is not initialized on early boot, such as PCI, the device
+is not available at the time eth_initialize() is called, so we need the
+MAC address programming to also happen after probe.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ net/eth-uclass.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/net/eth-uclass.c b/net/eth-uclass.c
+index 2ef20df19203..4225aabf1fa1 100644
+--- a/net/eth-uclass.c
++++ b/net/eth-uclass.c
+@@ -524,6 +524,8 @@ static int eth_post_probe(struct udevice *dev)
+ #endif
+ 	}
+ 
++	eth_write_hwaddr(dev);
++
+ 	return 0;
+ }
+ 
+
+From patchwork Fri Mar  8 19:51:26 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,2/3] net: rtl8169: Implement ->hwaddr_write() callback
+X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
+X-Patchwork-Id: 1053670
+Message-Id: <20190308195127.32711-2-thierry.reding@gmail.com>
+To: Joe Hershberger <joe.hershberger@ni.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Tom Warren <twarren@nvidia.com>
+Date: Fri,  8 Mar 2019 20:51:26 +0100
+From: Thierry Reding <thierry.reding@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+From: Thierry Reding <treding@nvidia.com>
+
+Implement this callback that allows the MAC address to be set for the
+Ethernet card. This is necessary in order for the device to be able to
+receive packets for the MAC address that U-Boot advertises.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ drivers/net/rtl8169.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/drivers/net/rtl8169.c b/drivers/net/rtl8169.c
+index a78f3d233f1a..27e27b34176b 100644
+--- a/drivers/net/rtl8169.c
++++ b/drivers/net/rtl8169.c
+@@ -941,6 +941,23 @@ static void rtl_halt(struct eth_device *dev)
+ }
+ #endif
+ 
++#ifdef CONFIG_DM_ETH
++static int rtl8169_write_hwaddr(struct udevice *dev)
++{
++	struct eth_pdata *plat = dev_get_platdata(dev);
++	unsigned int i;
++
++	RTL_W8(Cfg9346, Cfg9346_Unlock);
++
++	for (i = 0; i < MAC_ADDR_LEN; i++)
++		RTL_W8(MAC0 + i, plat->enetaddr[i]);
++
++	RTL_W8(Cfg9346, Cfg9346_Lock);
++
++	return 0;
++}
++#endif
++
+ /**************************************************************************
+ INIT - Look for an adapter, this routine's visible to the outside
+ ***************************************************************************/
+@@ -1195,6 +1212,7 @@ static const struct eth_ops rtl8169_eth_ops = {
+ 	.send	= rtl8169_eth_send,
+ 	.recv	= rtl8169_eth_recv,
+ 	.stop	= rtl8169_eth_stop,
++	.write_hwaddr = rtl8169_write_hwaddr,
+ };
+ 
+ static const struct udevice_id rtl8169_eth_ids[] = {
+
+From patchwork Fri Mar  8 19:51:27 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,3/3] net: rtl8169: Support RTL-8168h/8111h
+X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
+X-Patchwork-Id: 1053671
+Message-Id: <20190308195127.32711-3-thierry.reding@gmail.com>
+To: Joe Hershberger <joe.hershberger@ni.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Tom Warren <twarren@nvidia.com>
+Date: Fri,  8 Mar 2019 20:51:27 +0100
+From: Thierry Reding <thierry.reding@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+From: Thierry Reding <treding@nvidia.com>
+
+This version of the RTL-8168 is present on some development boards and
+is compatible with this driver. Add support for identifying this version
+of the chip so that U-Boot won't complain about it being unknown.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ drivers/net/rtl8169.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/rtl8169.c b/drivers/net/rtl8169.c
+index 27e27b34176b..bc052e72564b 100644
+--- a/drivers/net/rtl8169.c
++++ b/drivers/net/rtl8169.c
+@@ -257,6 +257,7 @@ static struct {
+ 	{"RTL-8168/8111g",	0x4c, 0xff7e1880,},
+ 	{"RTL-8101e",		0x34, 0xff7e1880,},
+ 	{"RTL-8100e",		0x32, 0xff7e1880,},
++	{"RTL-8168h/8111h",	0x54, 0xff7e1880,},
+ };
+ 
+ enum _DescStatusBit {

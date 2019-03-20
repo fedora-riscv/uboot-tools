@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.04
-Release:   0.5%{?candidate:.%{candidate}}%{?dist}
+Release:   0.6%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -24,9 +24,10 @@ Patch3:    usb-kbd-fixes.patch
 # Board fixes and enablement
 Patch10:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch11:   dragonboard-fixes.patch
-Patch12:   tegra186-jetson-tx2-disable-onboard-emmc.patch
-Patch13:   tegra-TXx-Add-CONFIG_EFI_LOADER_BOUNCE_BUFFER.patch
-Patch14:   tegra-fix-tx1.patch
+
+Patch12:   ARM-tegra-Add-NVIDIA-Jetson-Nano-Developer-Kit-support.patch
+Patch13:   tegra-p2371-2180-Build-position-independent-binary.patch
+Patch14:   net-eth-uclass-Write-MAC-address-to-hardware-after-probe.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -301,6 +302,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Mar 20 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-0.6-rc4
+- Tegra Jetson TX-series improvements
+
 * Tue Mar 19 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-0.5-rc4
 - 2019.04 RC4
 

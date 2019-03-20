@@ -1,0 +1,37 @@
+From patchwork Fri Mar  8 20:10:23 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] p2371-2180: Build position independent binary
+X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
+X-Patchwork-Id: 1053674
+Message-Id: <20190308201023.2145-1-thierry.reding@gmail.com>
+To: Tom Warren <twarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>
+Date: Fri,  8 Mar 2019 21:10:23 +0100
+From: Thierry Reding <thierry.reding@gmail.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+From: Thierry Reding <treding@nvidia.com>
+
+In order to support chainloading of U-Boot by an earlier bootloader,
+make sure the binary is position independent, so that the earlier boot-
+loader can relocate it if necessary.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ configs/p2371-2180_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/configs/p2371-2180_defconfig b/configs/p2371-2180_defconfig
+index b66459e379ac..8d7cf3fb5346 100644
+--- a/configs/p2371-2180_defconfig
++++ b/configs/p2371-2180_defconfig
+@@ -1,6 +1,7 @@
+ CONFIG_ARM=y
+ CONFIG_TEGRA=y
+ CONFIG_SYS_TEXT_BASE=0x80110000
++CONFIG_POSITION_INDEPENDENT=y
+ CONFIG_TEGRA210=y
+ CONFIG_TARGET_P2371_2180=y
+ CONFIG_NR_DRAM_BANKS=2
