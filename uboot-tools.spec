@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.04
-Release:   0.6%{?candidate:.%{candidate}}%{?dist}
+Release:   0.6%{?candidate:.%{candidate}}.0.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -13,6 +13,7 @@ Source2:   arm-chromebooks
 Source3:   aarch64-boards
 Source4:   aarch64-chromebooks
 Source5:   10-devicetree.install
+Source6:   riscv64-boards
 
 # Fedoraisms patches
 Patch1:    uefi-use-Fedora-specific-path-name.patch
@@ -89,7 +90,18 @@ BuildArch:   noarch
 u-boot bootloader binaries for armv7 boards
 %endif
 
-%ifarch %{arm} aarch64
+%ifarch riscv64
+%package     -n uboot-images-riscv64
+Summary:     u-boot bootloader images for riscv64 boards
+Requires:    uboot-tools
+BuildArch:   noarch
+
+%description -n uboot-images-riscv64
+u-boot bootloader binaries for riscv64 boards
+%endif
+
+
+%ifarch %{arm} aarch64 riscv64
 %package     -n uboot-images-elf
 Summary:     u-boot bootloader images for armv7 boards
 Requires:    uboot-tools
@@ -103,7 +115,7 @@ u-boot bootloader ELF binaries for use with qemu and other platforms
 %prep
 %autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
 
-cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 .
+cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 %SOURCE6 .
 
 %build
 mkdir builds
@@ -113,7 +125,7 @@ mkdir builds
 %{?enable_devtoolset7:%{enable_devtoolset7}}
 %endif
 
-%ifarch aarch64 %{arm}
+%ifarch aarch64 %{arm} riscv64
 for board in $(cat %{_arch}-boards)
 do
   echo "Building board: $board"
@@ -183,6 +195,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 
 done
 
+
 # Bit of a hack to remove binaries we don't use as they're large
 for board in $(cat %{_arch}-boards)
 do
@@ -198,6 +211,19 @@ do
   if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.imx ]; then
     rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.bin
   fi
+done
+%endif
+
+%ifarch riscv64
+for board in $(cat %{_arch}-boards)
+do
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+ for file in u-boot.bin u-boot-nodtb.bin
+ do
+  if [ -f builds/$(echo $board)/$(echo $file) ]; then
+    install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+  fi
+ done
 done
 %endif
 
@@ -241,6 +267,20 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/elf/$(echo $board)/
 done
 %endif
 
+%ifarch riscv64
+for board in $(cat %{_arch}-boards)
+do
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/elf/$(echo $board)/
+ for file in u-boot
+ do
+  if [ -f builds/$(echo $board)/$(echo $file) ]; then
+    install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/elf/$(echo $board)/
+  fi
+ done
+done
+%endif
+
+
 for tool in bmp_logo dumpimage easylogo/easylogo env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr gen_ethaddr_crc img2srec mkenvimage mkimage mksunxiboot ncb proftool sunxi-spl-image-builder ubsha1 xway-swap-bytes
 do
 install -p -m 0755 builds/tools/$tool $RPM_BUILD_ROOT%{_bindir}
@@ -278,6 +318,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %doc README doc/imx doc/README.kwbimage doc/README.distro doc/README.gpt
 %doc doc/README.odroid doc/README.rockchip doc/README.uefi doc/uImage.FIT doc/README.arm64
 %doc doc/README.chromium builds/docs/*
+%doc doc/README.qemu-riscv doc/README.sifive-fu540 doc/README.ae350
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
 /lib/kernel/install.d/10-devicetree.install
@@ -296,12 +337,21 @@ cp -p board/warp7/README builds/docs/README.warp7
 %exclude %{_datadir}/uboot/elf
 %endif
 
-%ifarch %{arm} aarch64
+%ifarch riscv64
+%files -n uboot-images-riscv64
+%{_datadir}/uboot/*
+%exclude %{_datadir}/uboot/elf
+%endif
+
+%ifarch %{arm} aarch64 riscv64
 %files -n uboot-images-elf
 %{_datadir}/uboot/elf
 %endif
 
 %changelog
+* Mon Mar 25 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-0.6-rc4.0.riscv64
+- Add support for RISC-V (riscv64)
+
 * Wed Mar 20 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-0.6-rc4
 - Tegra Jetson TX-series improvements
 
