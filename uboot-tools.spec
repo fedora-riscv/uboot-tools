@@ -30,6 +30,9 @@ Patch12:   ARM-tegra-Add-NVIDIA-Jetson-Nano-Developer-Kit-support.patch
 Patch13:   tegra-p2371-2180-Build-position-independent-binary.patch
 Patch14:   net-eth-uclass-Write-MAC-address-to-hardware-after-probe.patch
 
+# RISC-V (riscv64)
+Patch30:   u-boot-2019.04-rc4-riscv-bootz-fat.patch
+
 BuildRequires:  bc
 BuildRequires:  dtc
 BuildRequires:  make

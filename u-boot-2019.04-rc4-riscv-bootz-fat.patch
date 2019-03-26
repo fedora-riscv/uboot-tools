@@ -1,0 +1,10 @@
+diff --git a/configs/qemu-riscv64_smode_defconfig b/configs/qemu-riscv64_smode_defconfig
+index b012443..0ccc933 100644
+--- a/configs/qemu-riscv64_smode_defconfig
++++ b/configs/qemu-riscv64_smode_defconfig
+@@ -9,3 +9,5 @@ CONFIG_DISPLAY_CPUINFO=y
+ CONFIG_DISPLAY_BOARDINFO=y
+ # CONFIG_CMD_MII is not set
+ CONFIG_OF_PRIOR_STAGE=y
++CONFIG_CMD_BOOTZ=y
++CONFIG_CMD_FAT=y
