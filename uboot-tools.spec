@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.04
-Release:   0.6%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Release:   0.6%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -352,6 +352,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Mar 26 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-0.6-rc4.1.riscv64
+- Enable bootz and FAT fs commands for qemu-riscv64_smode
+
 * Mon Mar 25 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-0.6-rc4.0.riscv64
 - Add support for RISC-V (riscv64)
 
