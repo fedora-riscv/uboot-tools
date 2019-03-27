@@ -1,0 +1,245 @@
+From 306b16718edddd660b84bf3c6627ce5d41b53ce7 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Mon, 18 Mar 2019 20:01:59 +0100
+Subject: [PATCH 01/25] efi_loader: correct parameter size in efi_allocate_pool
+
+efi_allocate_pages() expects a (uint64_t *) pointer to pass the address of
+the assigned memory. If we pass the address of a pointer here, an illegal
+memory access occurs on 32bit systems.
+
+Fixes: 282a06cbcae8 ("efi_loader: Expose U-Boot addresses in memory map
+for sandbox")
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+---
+ lib/efi_loader/efi_memory.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/lib/efi_loader/efi_memory.c b/lib/efi_loader/efi_memory.c
+index ebd2b36c03..55622d2fb4 100644
+--- a/lib/efi_loader/efi_memory.c
++++ b/lib/efi_loader/efi_memory.c
+@@ -440,6 +440,7 @@ efi_status_t efi_free_pages(uint64_t memory, efi_uintn_t pages)
+ efi_status_t efi_allocate_pool(int pool_type, efi_uintn_t size, void **buffer)
+ {
+ 	efi_status_t r;
++	u64 addr;
+ 	struct efi_pool_allocation *alloc;
+ 	u64 num_pages = efi_size_in_pages(size +
+ 					  sizeof(struct efi_pool_allocation));
+@@ -453,9 +454,9 @@ efi_status_t efi_allocate_pool(int pool_type, efi_uintn_t size, void **buffer)
+ 	}
+ 
+ 	r = efi_allocate_pages(EFI_ALLOCATE_ANY_PAGES, pool_type, num_pages,
+-			       (uint64_t *)&alloc);
+-
++			       &addr);
+ 	if (r == EFI_SUCCESS) {
++		alloc = (struct efi_pool_allocation *)(uintptr_t)addr;
+ 		alloc->num_pages = num_pages;
+ 		*buffer = alloc->data;
+ 	}
+-- 
+2.20.1
+
+From bd3b7478d1e17b4d487d276f5cc0e4f4ef9fc4b7 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Tue, 19 Mar 2019 12:30:27 +0100
+Subject: [PATCH 02/25] efi_loader: endless loop in add_strings_package()
+
+Avoid an endless loop in add_strings_package().
+
+Suggested-by: Takahiro Akashi <takahiro.akashi@linaro.org>
+Reported-by: Coverity (CID 185833)
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+---
+ lib/efi_loader/efi_hii.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/lib/efi_loader/efi_hii.c b/lib/efi_loader/efi_hii.c
+index 3a966fa4df..61b71dec62 100644
+--- a/lib/efi_loader/efi_hii.c
++++ b/lib/efi_loader/efi_hii.c
+@@ -227,9 +227,8 @@ out:
+ error:
+ 	if (stbl) {
+ 		free(stbl->language);
+-		if (idx > 0)
+-			while (--idx >= 0)
+-				free(stbl->strings[idx].string);
++		while (idx > 0)
++			free(stbl->strings[--idx].string);
+ 		free(stbl->strings);
+ 	}
+ 	free(stbl);
+-- 
+2.20.1
+
+From e7dae584b05feaf507c5b85a704a2c1d25abffc9 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Tue, 19 Mar 2019 18:36:21 +0100
+Subject: [PATCH 03/25] efi_loader: missing return in
+ efi_get_next_variable_name()
+
+Add a missing return statement in efi_get_next_variable_name().
+
+Reported-by: Coverity (CID 185834)
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+---
+ lib/efi_loader/efi_variable.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/efi_loader/efi_variable.c b/lib/efi_loader/efi_variable.c
+index e0d7f5736d..699f4184d9 100644
+--- a/lib/efi_loader/efi_variable.c
++++ b/lib/efi_loader/efi_variable.c
+@@ -335,7 +335,7 @@ efi_status_t EFIAPI efi_get_next_variable_name(efi_uintn_t *variable_name_size,
+ 	EFI_ENTRY("%p \"%ls\" %pUl", variable_name_size, variable_name, vendor);
+ 
+ 	if (!variable_name_size || !variable_name || !vendor)
+-		EFI_EXIT(EFI_INVALID_PARAMETER);
++		return EFI_EXIT(EFI_INVALID_PARAMETER);
+ 
+ 	if (variable_name[0]) {
+ 		/* check null-terminated string */
+-- 
+2.20.1
+
+From 1fd7a4764103781e424ef687034da06de3cb60b7 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Tue, 19 Mar 2019 18:44:05 +0100
+Subject: [PATCH 04/25] efi_loader: memory leak in efi_dump_single_var()
+
+A misplaced return statement lead to a memory leak in
+efi_dump_single_var().
+
+Reported-by: Coverity (CID 185829)
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+---
+ cmd/nvedit_efi.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/cmd/nvedit_efi.c b/cmd/nvedit_efi.c
+index ca32566a61..e65b38dbf3 100644
+--- a/cmd/nvedit_efi.c
++++ b/cmd/nvedit_efi.c
+@@ -80,7 +80,6 @@ static void efi_dump_single_var(u16 *name, efi_guid_t *guid)
+ 	printf(", DataSize = 0x%zx\n", size);
+ 	print_hex_dump("    ", DUMP_PREFIX_OFFSET, 16, 1, data, size, true);
+ 
+-	return;
+ out:
+ 	free(data);
+ }
+-- 
+2.20.1
+
+From d5974af7f7626777b5c41894f75c813ff35c1793 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Tue, 19 Mar 2019 18:58:58 +0100
+Subject: [PATCH 05/25] efi_loader: remove superfluous check in
+ efi_setup_loaded_image()
+
+It does not make any sense to check if a pointer is NULL if we have
+dereferenced it before.
+
+Reported-by: Coverity (CID 185827)
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+---
+ lib/efi_loader/efi_boottime.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/lib/efi_loader/efi_boottime.c b/lib/efi_loader/efi_boottime.c
+index bd8b8a17ae..4fc550d9f3 100644
+--- a/lib/efi_loader/efi_boottime.c
++++ b/lib/efi_loader/efi_boottime.c
+@@ -1581,10 +1581,8 @@ efi_status_t efi_setup_loaded_image(struct efi_device_path *device_path,
+ 		goto failure;
+ #endif
+ 
+-	if (info_ptr)
+-		*info_ptr = info;
+-	if (handle_ptr)
+-		*handle_ptr = obj;
++	*info_ptr = info;
++	*handle_ptr = obj;
+ 
+ 	return ret;
+ failure:
+-- 
+2.20.1
+
+From 1646e0928c8eb052bfa2283a6ab8d9f2a92a10e9 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Tue, 19 Mar 2019 19:16:23 +0100
+Subject: [PATCH 06/25] efi_loader: superfluous conversion in efi_file_open()
+
+printf("%ls", ..) expects u16 * as argument to print. There is not need for
+a conversion to wchar_t *.
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+---
+ lib/efi_loader/efi_file.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/efi_loader/efi_file.c b/lib/efi_loader/efi_file.c
+index 3a7323765b..bc715218a1 100644
+--- a/lib/efi_loader/efi_file.c
++++ b/lib/efi_loader/efi_file.c
+@@ -226,7 +226,7 @@ static efi_status_t EFIAPI efi_file_open(struct efi_file_handle *file,
+ 	efi_status_t ret;
+ 
+ 	EFI_ENTRY("%p, %p, \"%ls\", %llx, %llu", file, new_handle,
+-		  (wchar_t *)file_name, open_mode, attributes);
++		  file_name, open_mode, attributes);
+ 
+ 	/* Check parameters */
+ 	if (!file || !new_handle || !file_name) {
+-- 
+2.20.1
+
+From d0bd87612f410a723d5ddb3001e805485e3efb4f Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Tue, 19 Mar 2019 20:08:46 +0100
+Subject: [PATCH 07/25] efi_selftest: fix test_hii_string_get_string()
+
+The check testing the string result of get_string() returned the wrong
+result. The result was ignored.
+
+Use efi_st_strcmp_16_8() for the string comparison.
+
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+---
+ lib/efi_selftest/efi_selftest_hii.c | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
+
+diff --git a/lib/efi_selftest/efi_selftest_hii.c b/lib/efi_selftest/efi_selftest_hii.c
+index 8a0b3bc353..f4b70f7950 100644
+--- a/lib/efi_selftest/efi_selftest_hii.c
++++ b/lib/efi_selftest/efi_selftest_hii.c
+@@ -783,19 +783,10 @@ static int test_hii_string_get_string(void)
+ 		goto out;
+ 	}
+ 
+-#if 1
+-	u16 *c1, *c2;
+-
+-	for (c1 = string, c2 = L"Japanese"; *c1 == *c2; c1++, c2++)
+-		;
+-	if (!*c1 && !*c2)
+-		result = EFI_ST_SUCCESS;
+-	else
+-		result = EFI_ST_FAILURE;
+-#else
+-	/* TODO: %ls */
+-	efi_st_printf("got string is %s (can be wrong)\n", string);
+-#endif
++	if (efi_st_strcmp_16_8(string, "Japanese")) {
++		efi_st_error("get_string returned incorrect string\n");
++		goto out;
++	}
+ 
+ 	result = EFI_ST_SUCCESS;
+ 
+-- 
+2.20.1
+
