@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.04
-Release:   0.6%{?candidate:.%{candidate}}.1.riscv64%{?dist}
+Release:   0.6%{?candidate:.%{candidate}}.2.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -31,7 +31,7 @@ Patch13:   tegra-p2371-2180-Build-position-independent-binary.patch
 Patch14:   net-eth-uclass-Write-MAC-address-to-hardware-after-probe.patch
 
 # RISC-V (riscv64)
-Patch30:   u-boot-2019.04-rc4-riscv-bootz-fat.patch
+Patch30:   u-boot-2019.04-rc4-riscv.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -352,6 +352,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sat Mar 30 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-0.6-rc4.2.riscv64
+- Disable bootz (not supported)
+- Add CONFIG_PREBOOT for qemu-riscv to set fdt_addr for extlinux boot
+
 * Tue Mar 26 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-0.6-rc4.1.riscv64
 - Enable bootz and FAT fs commands for qemu-riscv64_smode
 

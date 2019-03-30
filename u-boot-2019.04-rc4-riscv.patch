@@ -1,0 +1,13 @@
+diff --git a/include/configs/qemu-riscv.h b/include/configs/qemu-riscv.h
+index 2588c5a..0a3b098 100644
+--- a/include/configs/qemu-riscv.h
++++ b/include/configs/qemu-riscv.h
+@@ -48,4 +48,8 @@
+ 	"ramdisk_addr_r=0x82300000\0" \
+ 	BOOTENV
+ 
++#define CONFIG_PREBOOT \
++	"setenv fdt_addr ${fdtcontroladdr};" \
++	"fdt addr ${fdtcontroladdr};"
++
+ #endif /* __CONFIG_H */
