@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.04
-Release:   0.7%{?candidate:.%{candidate}}%{?dist}
+Release:   0.8%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -303,6 +303,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Mar 31 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-0.8-rc4
+- Add ability to make creation of boot/dtb symlink configurable
+
 * Sun Mar 24 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-0.7-rc4
 - Minor UEFI fixes, Tegra Jetson TX series rebase
 
