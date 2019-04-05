@@ -1,15 +1,16 @@
-From patchwork Thu Mar 21 18:01:00 2019
+From patchwork Thu Apr  4 11:59:24 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,v3,01/19] ARM: tegra: Use common header for PMU declarations
+Subject: [U-Boot,v4,01/19] ARM: tegra: Use common header for PMU declarations
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060337
+X-Patchwork-Id: 1077183
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-2-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:00 +0100
+Message-Id: <20190404115942.17947-2-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:24 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -166,18 +167,19 @@ index 6697909d9a3e..66628933b653 100644
  
  DECLARE_GLOBAL_DATA_PTR;
 
-From patchwork Thu Mar 21 18:01:01 2019
+From patchwork Thu Apr  4 11:59:25 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,v3,02/19] ARM: tegra: Guard clock code with a Kconfig symbol
+Subject: [U-Boot,v4,02/19] ARM: tegra: Guard clock code with a Kconfig symbol
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060347
+X-Patchwork-Id: 1077185
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-3-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:01 +0100
+Message-Id: <20190404115942.17947-3-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:25 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -307,19 +309,20 @@ index b8d5ef0322cb..b94077221f77 100644
  	pinmux_init();
  	board_init_uart_f();
 
-From patchwork Thu Mar 21 18:01:02 2019
+From patchwork Thu Apr  4 11:59:26 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot, v3,
+Subject: [U-Boot, v4,
  03/19] ARM: tegra: Guard GP pad control code with a Kconfig symbol
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060338
+X-Patchwork-Id: 1077187
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-4-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:02 +0100
+Message-Id: <20190404115942.17947-4-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:26 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -397,19 +400,20 @@ index be414e4e4aca..d7063490e222 100644
  #ifndef CONFIG_ARM64
  void config_cache(void)
 
-From patchwork Thu Mar 21 18:01:03 2019
+From patchwork Thu Apr  4 11:59:27 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot, v3,
+Subject: [U-Boot, v4,
  04/19] ARM: tegra: Guard memory controller code with a Kconfig symbol
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060339
+X-Patchwork-Id: 1077188
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-5-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:03 +0100
+Message-Id: <20190404115942.17947-5-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:27 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -497,19 +501,20 @@ index ecd5001de4c5..7ef5a67edd1f 100644
  }
  
 
-From patchwork Thu Mar 21 18:01:04 2019
+From patchwork Thu Apr  4 11:59:28 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot, v3,
+Subject: [U-Boot, v4,
  05/19] ARM: tegra: Guard pin controller code with a Kconfig symbol
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060345
+X-Patchwork-Id: 1077207
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-6-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:04 +0100
+Message-Id: <20190404115942.17947-6-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:28 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -631,19 +636,20 @@ index b94077221f77..ce1c9346959d 100644
  #ifdef CONFIG_TEGRA_CLOCK_SCALING
  #include <asm/arch/emc.h>
 
-From patchwork Thu Mar 21 18:01:05 2019
+From patchwork Thu Apr  4 11:59:29 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot, v3,
+Subject: [U-Boot, v4,
  06/19] ARM: tegra: Guard powergate code with a Kconfig symbol
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060355
+X-Patchwork-Id: 1077193
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-7-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:05 +0100
+Message-Id: <20190404115942.17947-7-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:29 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -706,18 +712,19 @@ index 395e0191a458..517be21ee5f5 100644
  endif
  
 
-From patchwork Thu Mar 21 18:01:06 2019
+From patchwork Thu Apr  4 11:59:30 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,v3,07/19] ARM: tegra: Fix save_boot_params() prototype
+Subject: [U-Boot,v4,07/19] ARM: tegra: Fix save_boot_params() prototype
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060346
+X-Patchwork-Id: 1077195
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-8-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:06 +0100
+Message-Id: <20190404115942.17947-8-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:30 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -751,19 +758,20 @@ index b65bdde5a78d..59d2f347485d 100644
  	from_spl = r0 != UBOOT_NOT_LOADED_FROM_SPL;
  	save_boot_params_ret();
 
-From patchwork Thu Mar 21 18:01:07 2019
+From patchwork Thu Apr  4 11:59:31 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot, v3,
+Subject: [U-Boot, v4,
  08/19] ARM: tegra: Allow boards to override boot target devices
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060348
+X-Patchwork-Id: 1077192
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-9-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:07 +0100
+Message-Id: <20190404115942.17947-9-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:31 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -798,18 +806,19 @@ index e54428ba43e2..9685ee5059ab 100644
  #else
  #define BOOTENV
 
-From patchwork Thu Mar 21 18:01:08 2019
+From patchwork Thu Apr  4 11:59:32 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,v3,09/19] ARM: tegra: Support TZ-only access to PMC
+Subject: [U-Boot,v4,09/19] ARM: tegra: Support TZ-only access to PMC
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060350
+X-Patchwork-Id: 1077197
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-10-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:08 +0100
+Message-Id: <20190404115942.17947-10-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:32 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -1257,19 +1266,20 @@ index e45f0961b242..761c9ef19e3b 100644
  	return 0;
  }
 
-From patchwork Thu Mar 21 18:01:09 2019
+From patchwork Thu Apr  4 11:59:33 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot, v3,
+Subject: [U-Boot, v4,
  10/19] ARM: tegra: Workaround UDC boot issues only if necessary
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060352
+X-Patchwork-Id: 1077191
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-11-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:09 +0100
+Message-Id: <20190404115942.17947-11-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:33 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -1300,18 +1310,19 @@ index 28914a34a1b5..faa73559fd42 100644
  	help
  	  When loading U-Boot into RAM over USB protocols using tools such as
 
-From patchwork Thu Mar 21 18:01:10 2019
+From patchwork Thu Apr  4 11:59:34 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,v3,11/19] ARM: tegra: Restore DRAM bank count
+Subject: [U-Boot,v4,11/19] ARM: tegra: Restore DRAM bank count
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060341
+X-Patchwork-Id: 1077194
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-12-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:10 +0100
+Message-Id: <20190404115942.17947-12-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:34 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -1362,18 +1373,19 @@ index df4d914d85cf..459b67fd195f 100644
  CONFIG_CONSOLE_MUX=y
  CONFIG_SYS_STDIO_DEREGISTER=y
 
-From patchwork Thu Mar 21 18:01:11 2019
+From patchwork Thu Apr  4 11:59:35 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,v3,12/19] ARM: tegra: Unify Tegra186 builds
+Subject: [U-Boot,v4,12/19] ARM: tegra: Unify Tegra186 builds
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060344
+X-Patchwork-Id: 1077204
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-13-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:11 +0100
+Message-Id: <20190404115942.17947-13-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:35 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -1397,6 +1409,9 @@ this to avoid confusion. The implemented protocols are unchanged.
 
 Signed-off-by: Thierry Reding <treding@nvidia.com>
 ---
+Changes in v4:
+- consistently use /chosen/nvidia,ether-mac property
+
 Changes in v3:
 - load cboot DTB address to fdt_addr instead of fdtaddr
 
@@ -1634,7 +1649,7 @@ diff --git a/arch/arm/mach-tegra/tegra186/nvtboot_board.c b/arch/arm/mach-tegra/
 similarity index 56%
 rename from arch/arm/mach-tegra/tegra186/nvtboot_board.c
 rename to arch/arm/mach-tegra/cboot.c
-index 83c0e931ea24..95a097584ac6 100644
+index 83c0e931ea24..3ebf7b055553 100644
 --- a/arch/arm/mach-tegra/tegra186/nvtboot_board.c
 +++ b/arch/arm/mach-tegra/cboot.c
 @@ -3,14 +3,182 @@
@@ -1863,7 +1878,7 @@ index 83c0e931ea24..95a097584ac6 100644
  
  /*
 - * Attempt to use /chosen/nvidia,ether-mac in the nvtboot DTB to U-Boot's
-+ * Attempt to use /chosen/nvidia,ethernet-mac in the cboot DTB to U-Boot's
++ * Attempt to use /chosen/nvidia,ether-mac in the cboot DTB to U-Boot's
   * ethaddr environment variable if possible.
   */
 -static int set_ethaddr_from_nvtboot(void)
@@ -1886,7 +1901,7 @@ index 83c0e931ea24..95a097584ac6 100644
  		return node;
  	}
 -	prop = fdt_getprop(nvtboot_blob, node, "nvidia,ether-mac", &len);
-+	prop = fdt_getprop(cboot_blob, node, "nvidia,ethernet-mac", &len);
++	prop = fdt_getprop(cboot_blob, node, "nvidia,ether-mac", &len);
  	if (!prop) {
 -		printf("Can't find nvidia,ether-mac property in nvtboot DTB\n");
 +		printf("Can't find nvidia,ether-mac property in cboot DTB\n");
@@ -2183,19 +2198,20 @@ index 496e8a02111e..6f88010c18c3 100644
  }
 +#endif
 
-From patchwork Thu Mar 21 18:01:12 2019
+From patchwork Thu Apr  4 11:59:36 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot, v3,
+Subject: [U-Boot, v4,
  13/19] ARM: tegra: Implement cboot_save_boot_params() in C
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060342
+X-Patchwork-Id: 1077211
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-14-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:12 +0100
+Message-Id: <20190404115942.17947-14-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:36 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -2226,7 +2242,7 @@ index 41ba674edff4..7165d70a60da 100644
  obj-$(CONFIG_TEGRA_CLOCK_SCALING) += emc.o
  obj-$(CONFIG_TEGRA_GPU) += gpu.o
 diff --git a/arch/arm/mach-tegra/cboot.c b/arch/arm/mach-tegra/cboot.c
-index 95a097584ac6..acf33b4c4e0c 100644
+index 3ebf7b055553..a302ca45f39b 100644
 --- a/arch/arm/mach-tegra/cboot.c
 +++ b/arch/arm/mach-tegra/cboot.c
 @@ -52,6 +52,18 @@ static u64 ram_top __attribute__((section(".data")));
@@ -2275,18 +2291,19 @@ index 4c9ddacc2b39..000000000000
 -	b	save_boot_params_ret
 -ENDPROC(cboot_save_boot_params)
 
-From patchwork Thu Mar 21 18:01:13 2019
+From patchwork Thu Apr  4 11:59:37 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,v3,14/19] ARM: tegra: Implement cboot_get_ethaddr()
+Subject: [U-Boot,v4,14/19] ARM: tegra: Implement cboot_get_ethaddr()
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060340
+X-Patchwork-Id: 1077213
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-15-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:13 +0100
+Message-Id: <20190404115942.17947-15-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:37 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -2300,16 +2317,21 @@ alias) and if found, reads the "local-mac-address" property. If the
 that doesn't exist, or if the device tree node that it points to does
 not have a "local-mac-address" property or if the value is invalid, it
 will fall back to the legacy mechanism of looking for the MAC address
-stored in the "nvidia,ethernet-mac" property of the "/chosen" node.
+stored in the "nvidia,ethernet-mac" or "nvidia,ether-mac" properties of
+the "/chosen" node.
 
 Signed-off-by: Thierry Reding <treding@nvidia.com>
 ---
+Changes in v4:
+- also check the /chosen/nvidia,ethernet-mac property for compatibility
+  with Tegra210
+
 Changes in v2:
 - make dummy static inline to avoid duplicate definitions
 
  arch/arm/include/asm/arch-tegra/cboot.h |  6 ++
- arch/arm/mach-tegra/cboot.c             | 78 ++++++++++++++++++++-----
- 2 files changed, 69 insertions(+), 15 deletions(-)
+ arch/arm/mach-tegra/cboot.c             | 92 ++++++++++++++++++++-----
+ 2 files changed, 81 insertions(+), 17 deletions(-)
 
 diff --git a/arch/arm/include/asm/arch-tegra/cboot.h b/arch/arm/include/asm/arch-tegra/cboot.h
 index b3441ec178b3..021c24617575 100644
@@ -2336,7 +2358,7 @@ index b3441ec178b3..021c24617575 100644
  
  #endif
 diff --git a/arch/arm/mach-tegra/cboot.c b/arch/arm/mach-tegra/cboot.c
-index acf33b4c4e0c..9735380bda59 100644
+index a302ca45f39b..6c6d06d89a5d 100644
 --- a/arch/arm/mach-tegra/cboot.c
 +++ b/arch/arm/mach-tegra/cboot.c
 @@ -4,6 +4,7 @@
@@ -2347,8 +2369,8 @@ index acf33b4c4e0c..9735380bda59 100644
  #include <fdt_support.h>
  #include <fdtdec.h>
  #include <stdlib.h>
-@@ -465,46 +466,93 @@ static int set_fdt_addr(void)
-  * Attempt to use /chosen/nvidia,ethernet-mac in the cboot DTB to U-Boot's
+@@ -465,46 +466,103 @@ static int set_fdt_addr(void)
+  * Attempt to use /chosen/nvidia,ether-mac in the cboot DTB to U-Boot's
   * ethaddr environment variable if possible.
   */
 -static int set_ethaddr_from_cboot(void)
@@ -2361,20 +2383,32 @@ index acf33b4c4e0c..9735380bda59 100644
 -	/* Already a valid address in the environment? If so, keep it */
 -	if (env_get("ethaddr"))
 -		return 0;
-+	const char *prop;
-+	int node, len;
- 
+-
 -	node = fdt_path_offset(cboot_blob, "/chosen");
++	const char *const properties[] = {
++		"nvidia,ethernet-mac",
++		"nvidia,ether-mac",
++	};
++	const char *prop;
++	unsigned int i;
++	int node, len;
++
 +	node = fdt_path_offset(fdt, "/chosen");
  	if (node < 0) {
  		printf("Can't find /chosen node in cboot DTB\n");
  		return node;
  	}
--	prop = fdt_getprop(cboot_blob, node, "nvidia,ethernet-mac", &len);
+-	prop = fdt_getprop(cboot_blob, node, "nvidia,ether-mac", &len);
 +
-+	prop = fdt_getprop(fdt, node, "nvidia,ethernet-mac", &len);
++	for (i = 0; i < ARRAY_SIZE(properties); i++) {
++		prop = fdt_getprop(fdt, node, properties[i], &len);
++		if (prop)
++			break;
++	}
++
  	if (!prop) {
- 		printf("Can't find nvidia,ether-mac property in cboot DTB\n");
+-		printf("Can't find nvidia,ether-mac property in cboot DTB\n");
++		printf("Can't find Ethernet MAC address in cboot DTB\n");
  		return -ENOENT;
  	}
  
@@ -2457,19 +2491,20 @@ index acf33b4c4e0c..9735380bda59 100644
  	return 0;
  }
 
-From patchwork Thu Mar 21 18:01:14 2019
+From patchwork Thu Apr  4 11:59:38 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot, v3,
+Subject: [U-Boot, v4,
  15/19] ARM: tegra: Enable position independent build for 64-bit
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060357
+X-Patchwork-Id: 1077212
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-16-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:14 +0100
+Message-Id: <20190404115942.17947-16-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:38 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -2504,7 +2539,7 @@ index faa73559fd42..97e22ead5985 100644
  
  if TEGRA_ARMV8_COMMON
 diff --git a/configs/e2220-1170_defconfig b/configs/e2220-1170_defconfig
-index fbca72ace6ed..87668f8e517f 100644
+index af3f80edb117..baabb0ccf8cc 100644
 --- a/configs/e2220-1170_defconfig
 +++ b/configs/e2220-1170_defconfig
 @@ -1,6 +1,6 @@
@@ -2516,7 +2551,7 @@ index fbca72ace6ed..87668f8e517f 100644
  CONFIG_NR_DRAM_BANKS=2
  CONFIG_OF_SYSTEM_SETUP=y
 diff --git a/configs/p2371-0000_defconfig b/configs/p2371-0000_defconfig
-index c25872128e07..979cb8ec0a25 100644
+index 6b564366a825..aa8b73a2ba08 100644
 --- a/configs/p2371-0000_defconfig
 +++ b/configs/p2371-0000_defconfig
 @@ -1,6 +1,6 @@
@@ -2528,7 +2563,7 @@ index c25872128e07..979cb8ec0a25 100644
  CONFIG_TARGET_P2371_0000=y
  CONFIG_NR_DRAM_BANKS=2
 diff --git a/configs/p2371-2180_defconfig b/configs/p2371-2180_defconfig
-index b662ef143141..2fac69917a92 100644
+index a790cd83b82d..4923d330de6c 100644
 --- a/configs/p2371-2180_defconfig
 +++ b/configs/p2371-2180_defconfig
 @@ -1,6 +1,6 @@
@@ -2540,7 +2575,7 @@ index b662ef143141..2fac69917a92 100644
  CONFIG_TARGET_P2371_2180=y
  CONFIG_NR_DRAM_BANKS=2
 diff --git a/configs/p2571_defconfig b/configs/p2571_defconfig
-index 5f0f8c519b4c..ff4654cea9b4 100644
+index e48e0a1a14ec..8e9c45690dce 100644
 --- a/configs/p2571_defconfig
 +++ b/configs/p2571_defconfig
 @@ -1,6 +1,6 @@
@@ -2552,18 +2587,19 @@ index 5f0f8c519b4c..ff4654cea9b4 100644
  CONFIG_TARGET_P2571=y
  CONFIG_NR_DRAM_BANKS=2
 
-From patchwork Thu Mar 21 18:01:15 2019
+From patchwork Thu Apr  4 11:59:39 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,v3,16/19] p2371-2180: Pass Ethernet MAC to the kernel
+Subject: [U-Boot,v4,16/19] p2371-2180: Pass Ethernet MAC to the kernel
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060351
+X-Patchwork-Id: 1077196
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-17-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:15 +0100
+Message-Id: <20190404115942.17947-17-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:39 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -2650,7 +2686,7 @@ index 212037da5ac0..a444d692d7ea 100644
 +	return 0;
 +}
 diff --git a/configs/p2371-2180_defconfig b/configs/p2371-2180_defconfig
-index 2fac69917a92..16afbba68ae7 100644
+index 4923d330de6c..0ee4913a0469 100644
 --- a/configs/p2371-2180_defconfig
 +++ b/configs/p2371-2180_defconfig
 @@ -5,6 +5,7 @@ CONFIG_TEGRA210=y
@@ -2662,18 +2698,19 @@ index 2fac69917a92..16afbba68ae7 100644
  CONFIG_SYS_STDIO_DEREGISTER=y
  CONFIG_SYS_PROMPT="Tegra210 (P2371-2180) # "
 
-From patchwork Thu Mar 21 18:01:16 2019
+From patchwork Thu Apr  4 11:59:40 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,v3,17/19] p2771-0000: Pass Ethernet MAC to the kernel
+Subject: [U-Boot,v4,17/19] p2771-0000: Pass Ethernet MAC to the kernel
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060356
+X-Patchwork-Id: 1077208
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-18-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:16 +0100
+Message-Id: <20190404115942.17947-18-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:40 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -2776,18 +2813,19 @@ index 459b67fd195f..20d4393838d6 100644
  CONFIG_SYS_STDIO_DEREGISTER=y
  CONFIG_SYS_PROMPT="Tegra186 (P2771-0000-500) # "
 
-From patchwork Thu Mar 21 18:01:17 2019
+From patchwork Thu Apr  4 11:59:41 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,v3,18/19] lib: Implement strndup()
+Subject: [U-Boot,v4,18/19] lib: Implement strndup()
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060343
+X-Patchwork-Id: 1077221
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-19-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:17 +0100
+Message-Id: <20190404115942.17947-19-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:41 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -2846,18 +2884,19 @@ index af17c16f616d..9b779ddc3bbe 100644
  /**
   * strspn - Calculate the length of the initial substring of @s which only
 
-From patchwork Thu Mar 21 18:01:18 2019
+From patchwork Thu Apr  4 11:59:42 2019
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [U-Boot,v3,19/19] ARM: tegra: Import cbootargs value from cboot DTB
+Subject: [U-Boot,v4,19/19] ARM: tegra: Import cbootargs value from cboot DTB
 X-Patchwork-Submitter: Thierry Reding <thierry.reding@gmail.com>
-X-Patchwork-Id: 1060349
+X-Patchwork-Id: 1077205
 X-Patchwork-Delegate: twarren@nvidia.com
-Message-Id: <20190321180118.26475-20-thierry.reding@gmail.com>
-To: Tom Warren <twarren@nvidia.com>
-Cc: u-boot@lists.denx.de
-Date: Thu, 21 Mar 2019 19:01:18 +0100
+Message-Id: <20190404115942.17947-20-thierry.reding@gmail.com>
+To: Tom Warren <TWarren@nvidia.com>
+Cc: u-boot@lists.denx.de, Stephen Warren <swarren@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>
+Date: Thu,  4 Apr 2019 13:59:42 +0200
 From: Thierry Reding <thierry.reding@gmail.com>
 List-Id: U-Boot discussion <u-boot.lists.denx.de>
 
@@ -2872,7 +2911,7 @@ Signed-off-by: Thierry Reding <treding@nvidia.com>
  1 file changed, 47 insertions(+)
 
 diff --git a/arch/arm/mach-tegra/cboot.c b/arch/arm/mach-tegra/cboot.c
-index 9735380bda59..8bfcbcdc6e6d 100644
+index 6c6d06d89a5d..3f42ffeb73c0 100644
 --- a/arch/arm/mach-tegra/cboot.c
 +++ b/arch/arm/mach-tegra/cboot.c
 @@ -8,7 +8,9 @@
@@ -2885,7 +2924,7 @@ index 9735380bda59..8bfcbcdc6e6d 100644
  #include <linux/sizes.h>
  
  #include <asm/arch/tegra.h>
-@@ -536,10 +538,49 @@ out:
+@@ -546,10 +548,49 @@ out:
  	return err;
  }
  
@@ -2935,7 +2974,7 @@ index 9735380bda59..8bfcbcdc6e6d 100644
  	int err;
  
  	set_calculated_env_vars();
-@@ -554,5 +595,11 @@ int cboot_late_init(void)
+@@ -564,5 +605,11 @@ int cboot_late_init(void)
  	if (!err)
  		eth_env_set_enetaddr("ethaddr", mac);
  
