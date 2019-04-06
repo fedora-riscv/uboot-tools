@@ -1,5 +1,5 @@
 diff --git a/include/configs/qemu-riscv.h b/include/configs/qemu-riscv.h
-index 2588c5a..d93ce9e 100644
+index 2588c5a..b7110ed 100644
 --- a/include/configs/qemu-riscv.h
 +++ b/include/configs/qemu-riscv.h
 @@ -15,7 +15,7 @@
@@ -11,18 +11,20 @@ index 2588c5a..d93ce9e 100644
  
  #define CONFIG_STANDALONE_LOAD_ADDR	0x80200000
  
-@@ -42,10 +42,14 @@
+@@ -41,11 +41,15 @@
+ #define CONFIG_EXTRA_ENV_SETTINGS \
  	"fdt_high=0xffffffffffffffff\0" \
  	"initrd_high=0xffffffffffffffff\0" \
- 	"kernel_addr_r=0x81000000\0" \
+-	"kernel_addr_r=0x81000000\0" \
 -	"fdt_addr_r=0x82000000\0" \
 -	"scriptaddr=0x82100000\0" \
 -	"pxefile_addr_r=0x82200000\0" \
 -	"ramdisk_addr_r=0x82300000\0" \
-+	"fdt_addr_r=0x85000000\0" \
-+	"scriptaddr=0x85100000\0" \
-+	"pxefile_addr_r=0x85200000\0" \
-+	"ramdisk_addr_r=0x85300000\0" \
++	"kernel_addr_r=0x84000000\0" \
++	"fdt_addr_r=0x88000000\0" \
++	"scriptaddr=0x88100000\0" \
++	"pxefile_addr_r=0x88200000\0" \
++	"ramdisk_addr_r=0x88300000\0" \
  	BOOTENV
  
 +#define CONFIG_PREBOOT \
