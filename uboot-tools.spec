@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.04
-Release:   0.6%{?candidate:.%{candidate}}.4.riscv64%{?dist}
+Release:   0.6%{?candidate:.%{candidate}}.5.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -32,6 +32,8 @@ Patch14:   net-eth-uclass-Write-MAC-address-to-hardware-after-probe.patch
 
 # RISC-V (riscv64)
 Patch30:   u-boot-2019.04-rc4-riscv.patch
+# See: https://lists.denx.de/pipermail/u-boot/2019-April/364281.html
+Patch31:   uboot-riscv-apr8-smp.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -352,6 +354,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Apr 08 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-0.6-rc4.5.riscv64
+- Apply pull request which incl. SMP support
+  See: https://lists.denx.de/pipermail/u-boot/2019-April/364281.html
+
 * Fri Apr 05 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-0.6-rc4.3.riscv64
 - Set CONFIG_SYS_BOOTM_LEN to SZ_64M for qemu-riscv
 
