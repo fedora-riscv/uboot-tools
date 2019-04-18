@@ -1,8 +1,8 @@
-%global candidate rc4
+#global candidate rc4
 
 Name:      uboot-tools
 Version:   2019.04
-Release:   0.9%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -18,17 +18,19 @@ Source5:   10-devicetree.install
 Patch1:    uefi-use-Fedora-specific-path-name.patch
 
 # general fixes
-Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
-Patch3:    usb-kbd-fixes.patch
-Patch4:    uefi-rc5-fixes.patch
+Patch2:    usb-kbd-fixes.patch
+Patch3:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+Patch4:    uefi-fix-memory-calculation-overflow-on-32-bit-systems.patch
+Patch5:    uefi-Change-FDT-memory-type-from-runtime-data-to-boot-services-data.patch
 
 # Board fixes and enablement
 Patch10:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch11:   dragonboard-fixes.patch
-Patch12:   ARM-tegra-Miscellaneous-improvements.patch
-Patch13:   ARM-tegra-Add-support-for-framebuffer-carveouts.patch
-Patch14:   ARM-tegra-Add-NVIDIA-Jetson-Nano-Developer-Kit-support.patch
+Patch12:   ARM-tegra-Add-support-for-framebuffer-carveouts.patch
+Patch13:   ARM-tegra-Miscellaneous-improvements.patch
 Patch15:   net-eth-uclass-Write-MAC-address-to-hardware-after-probe.patch
+Patch16:   net-rtl8169-Implement---hwaddr_write-callback.patch
+Patch17:   arm-tegra-defaine-fdtfile-for-all-devices.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -303,6 +305,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Apr 14 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-1
+- 2019.04
+- Fixes for AllWinner and NVIDIA Jetson devices
+
 * Thu Apr  4 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-0.9-rc4
 - Latest Tegra patch revision
 
