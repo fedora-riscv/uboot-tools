@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.04
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -140,7 +140,7 @@ do
   # End ATF
   make $(echo $board)_defconfig O=builds/$(echo $board)/
   make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
-  rk33xx=(evb-rk3399 firefly-rk3399)
+  rk33xx=(evb-rk3399 ficus-rk3399 firefly-rk3399 puma-rk3399 rock960-rk3399)
   if [[ " ${rk33xx[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk33xx"
     make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" u-boot.itb V=1 O=builds/$(echo $board)/
@@ -305,6 +305,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sat May  4 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-2
+- Build and ship pre built SD/SPI SPL bits for all rk3399 boards
+
 * Sun Apr 14 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-1
 - 2019.04
 - Fixes for AllWinner and NVIDIA Jetson devices
