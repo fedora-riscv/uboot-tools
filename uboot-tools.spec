@@ -21,13 +21,10 @@ Patch1:    uefi-use-Fedora-specific-path-name.patch
 # general fixes
 Patch2:    usb-kbd-fixes.patch
 Patch3:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
-Patch4:    uefi-fix-memory-calculation-overflow-on-32-bit-systems.patch
-Patch5:    uefi-Change-FDT-memory-type-from-runtime-data-to-boot-services-data.patch
 
 # Board fixes and enablement
 Patch10:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch11:   dragonboard-fixes.patch
-Patch12:   ARM-tegra-Add-support-for-framebuffer-carveouts.patch
 Patch13:   ARM-tegra-Miscellaneous-improvements.patch
 Patch15:   net-eth-uclass-Write-MAC-address-to-hardware-after-probe.patch
 Patch16:   net-rtl8169-Implement---hwaddr_write-callback.patch
