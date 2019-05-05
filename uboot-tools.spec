@@ -1,8 +1,8 @@
-#global candidate rc4
+%global candidate rc1
 
 Name:      uboot-tools
-Version:   2019.04
-Release:   2%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Version:   2019.07
+Release:   0.1%{?candidate:.%{candidate}}.0.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -35,8 +35,6 @@ Patch17:   arm-tegra-defaine-fdtfile-for-all-devices.patch
 
 # RISC-V (riscv64)
 Patch30:   u-boot-2019.04-rc4-riscv.patch
-# See: https://lists.denx.de/pipermail/u-boot/2019-April/364281.html
-Patch31:   uboot-riscv-apr8-smp.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -357,6 +355,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun May 05 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.07-0.1.0.riscv64
+- Update to 2019.07 RC 1
+
 * Sun May 05 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-2.0.riscv64
 - Apply pull request which incl. SMP support
   See: https://lists.denx.de/pipermail/u-boot/2019-April/364281.html
