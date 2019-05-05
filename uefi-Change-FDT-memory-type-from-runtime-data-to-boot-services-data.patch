@@ -1,0 +1,54 @@
+From patchwork Fri Apr 12 18:26:28 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot,
+ U-boot] : Change FDT memory type from runtime data to boot services
+ data
+X-Patchwork-Submitter: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+X-Patchwork-Id: 1084888
+X-Patchwork-Delegate: xypron.glpk@gmx.de
+Message-Id: <1555093588-21916-1-git-send-email-ilias.apalodimas@linaro.org>
+To: u-boot@lists.denx.de,
+	xypron.glpk@gmx.de
+Cc: Ilias Apalodimas <ilias.apalodimas@linaro.org>, agraf@csgraf.de,
+ ard.biesheuvel@linaro.org
+Date: Fri, 12 Apr 2019 21:26:28 +0300
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Following Ard's suggestion:
+Runtime data sections are intended for data that is used by the runtime
+services implementation.
+Let's change the type to EFI_BOOT_SERVICES_DATA
+
+This also fixes booting of armv7 using efi and fdtcontroladdr
+
+Suggested-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Acked-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+---
+ cmd/bootefi.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/cmd/bootefi.c b/cmd/bootefi.c
+index 3619a20e6433..15ee4af45667 100644
+--- a/cmd/bootefi.c
++++ b/cmd/bootefi.c
+@@ -111,13 +111,13 @@ static efi_status_t copy_fdt(void **fdtp)
+ 	new_fdt_addr = (uintptr_t)map_sysmem(fdt_ram_start + 0x7f00000 +
+ 					     fdt_size, 0);
+ 	ret = efi_allocate_pages(EFI_ALLOCATE_MAX_ADDRESS,
+-				 EFI_RUNTIME_SERVICES_DATA, fdt_pages,
++				 EFI_BOOT_SERVICES_DATA, fdt_pages,
+ 				 &new_fdt_addr);
+ 	if (ret != EFI_SUCCESS) {
+ 		/* If we can't put it there, put it somewhere */
+ 		new_fdt_addr = (ulong)memalign(EFI_PAGE_SIZE, fdt_size);
+ 		ret = efi_allocate_pages(EFI_ALLOCATE_MAX_ADDRESS,
+-					 EFI_RUNTIME_SERVICES_DATA, fdt_pages,
++					 EFI_BOOT_SERVICES_DATA, fdt_pages,
+ 					 &new_fdt_addr);
+ 		if (ret != EFI_SUCCESS) {
+ 			printf("ERROR: Failed to reserve space for FDT\n");

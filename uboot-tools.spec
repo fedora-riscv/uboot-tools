@@ -1,8 +1,8 @@
-%global candidate rc4
+#global candidate rc4
 
 Name:      uboot-tools
 Version:   2019.04
-Release:   0.6%{?candidate:.%{candidate}}.5.riscv64%{?dist}
+Release:   2%{?candidate:.%{candidate}}.0.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -19,16 +19,19 @@ Source6:   riscv64-boards
 Patch1:    uefi-use-Fedora-specific-path-name.patch
 
 # general fixes
-Patch2:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
-Patch3:    usb-kbd-fixes.patch
+Patch2:    usb-kbd-fixes.patch
+Patch3:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+Patch4:    uefi-fix-memory-calculation-overflow-on-32-bit-systems.patch
+Patch5:    uefi-Change-FDT-memory-type-from-runtime-data-to-boot-services-data.patch
 
 # Board fixes and enablement
 Patch10:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch11:   dragonboard-fixes.patch
-
-Patch12:   ARM-tegra-Add-NVIDIA-Jetson-Nano-Developer-Kit-support.patch
-Patch13:   tegra-p2371-2180-Build-position-independent-binary.patch
-Patch14:   net-eth-uclass-Write-MAC-address-to-hardware-after-probe.patch
+Patch12:   ARM-tegra-Add-support-for-framebuffer-carveouts.patch
+Patch13:   ARM-tegra-Miscellaneous-improvements.patch
+Patch15:   net-eth-uclass-Write-MAC-address-to-hardware-after-probe.patch
+Patch16:   net-rtl8169-Implement---hwaddr_write-callback.patch
+Patch17:   arm-tegra-defaine-fdtfile-for-all-devices.patch
 
 # RISC-V (riscv64)
 Patch30:   u-boot-2019.04-rc4-riscv.patch
@@ -154,7 +157,7 @@ do
   # End ATF
   make $(echo $board)_defconfig O=builds/$(echo $board)/
   make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
-  rk33xx=(evb-rk3399 firefly-rk3399)
+  rk33xx=(evb-rk3399 ficus-rk3399 firefly-rk3399 puma-rk3399 rock960-rk3399)
   if [[ " ${rk33xx[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk33xx"
     make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" u-boot.itb V=1 O=builds/$(echo $board)/
@@ -354,22 +357,28 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Mon Apr 08 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-0.6-rc4.5.riscv64
+* Sun May 05 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-2.0.riscv64
 - Apply pull request which incl. SMP support
   See: https://lists.denx.de/pipermail/u-boot/2019-April/364281.html
-
-* Fri Apr 05 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-0.6-rc4.3.riscv64
 - Set CONFIG_SYS_BOOTM_LEN to SZ_64M for qemu-riscv
-
-* Sat Mar 30 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-0.6-rc4.2.riscv64
-- Disable bootz (not supported)
 - Add CONFIG_PREBOOT for qemu-riscv to set fdt_addr for extlinux boot
-
-* Tue Mar 26 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-0.6-rc4.1.riscv64
-- Enable bootz and FAT fs commands for qemu-riscv64_smode
-
-* Mon Mar 25 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-0.6-rc4.0.riscv64
 - Add support for RISC-V (riscv64)
+
+* Sat May  4 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-2
+- Build and ship pre built SD/SPI SPL bits for all rk3399 boards
+
+* Sun Apr 14 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-1
+- 2019.04
+- Fixes for AllWinner and NVIDIA Jetson devices
+
+* Thu Apr  4 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-0.9-rc4
+- Latest Tegra patch revision
+
+* Sun Mar 31 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-0.8-rc4
+- Add ability to make creation of boot/dtb symlink configurable
+
+* Sun Mar 24 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-0.7-rc4
+- Minor UEFI fixes, Tegra Jetson TX series rebase
 
 * Wed Mar 20 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-0.6-rc4
 - Tegra Jetson TX-series improvements

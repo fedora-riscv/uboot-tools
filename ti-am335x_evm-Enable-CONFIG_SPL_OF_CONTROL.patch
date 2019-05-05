@@ -1,0 +1,183 @@
+From patchwork Tue Mar 19 11:19:21 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [U-Boot] ti: am335x_evm: Enable CONFIG_SPL_OF_CONTROL
+X-Patchwork-Submitter: Tom Rini <trini@konsulko.com>
+X-Patchwork-Id: 1058350
+X-Patchwork-Delegate: trini@ti.com
+Message-Id: <1552994361-32058-1-git-send-email-trini@konsulko.com>
+To: u-boot@lists.denx.de
+Date: Tue, 19 Mar 2019 07:19:21 -0400
+From: Tom Rini <trini@konsulko.com>
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+
+Enable support for SPL_OF_CONTROL on this platform.  That means doing a
+few things:
+- Add u-boot,dm-pre-reloc to a number of nodes
+- Drop static platdata in the board file.
+- A lot of tweaks to the defconfig.  We remove some things such as
+  SPL_USE_ARCH_MEMCPY/SET for space.  Increase our malloc len.
+- Drop, for now at least, USB SPL support as it's causing a hang.
+
+Cc: Faiz Abbas <faiz_abbas@ti.com>
+Cc: Lokesh Vutla <lokeshvutla@ti.com>
+Signed-off-by: Tom Rini <trini@konsulko.com>
+---
+ arch/arm/dts/am335x-evm-u-boot.dtsi | 45 +++++++++++++++++++++++++++++++++++--
+ board/ti/am335x/board.c             | 30 -------------------------
+ configs/am335x_evm_defconfig        | 14 ++++++++----
+ 3 files changed, 53 insertions(+), 36 deletions(-)
+
+diff --git a/arch/arm/dts/am335x-evm-u-boot.dtsi b/arch/arm/dts/am335x-evm-u-boot.dtsi
+index b6b97ed16d91..16a9f855ad1f 100644
+--- a/arch/arm/dts/am335x-evm-u-boot.dtsi
++++ b/arch/arm/dts/am335x-evm-u-boot.dtsi
+@@ -3,11 +3,52 @@
+  * Copyright (C) 2017 Texas Instruments Incorporated - http://www.ti.com/
+  */
+ 
++#include "am33xx-u-boot.dtsi"
+ 
+-&mmc3 {
+-	status = "disabled";
++&l4_wkup {
++	u-boot,dm-pre-reloc;
++};
++
++&scm {
++	u-boot,dm-pre-reloc;
++};
++
++&am33xx_pinmux {
++	u-boot,dm-pre-reloc;
++};
++
++&uart0_pins {
++	u-boot,dm-pre-reloc;
++};
++
++&uart0 {
++	u-boot,dm-pre-reloc;
++};
++
++&gpio0 {
++	u-boot,dm-pre-reloc;
++};
++
++&i2c0 {
++	u-boot,dm-pre-reloc;
++};
++
++&i2c0_pins {
++	u-boot,dm-pre-reloc;
+ };
+ 
+ &usb0 {
+ 	dr_mode = "peripheral";
+ };
++
++&mmc1 {
++	u-boot,dm-pre-reloc;
++};
++
++&mmc1_pins {
++	u-boot,dm-pre-reloc;
++};
++
++&mmc3 {
++	status = "disabled";
++};
+diff --git a/board/ti/am335x/board.c b/board/ti/am335x/board.c
+index d67f94ad47ba..bfad1a75a456 100644
+--- a/board/ti/am335x/board.c
++++ b/board/ti/am335x/board.c
+@@ -1054,33 +1054,3 @@ void board_fit_image_post_process(void **p_image, size_t *p_size)
+ 	secure_boot_verify_image(p_image, p_size);
+ }
+ #endif
+-
+-#if !CONFIG_IS_ENABLED(OF_CONTROL)
+-static const struct omap_hsmmc_plat am335x_mmc0_platdata = {
+-	.base_addr = (struct hsmmc *)OMAP_HSMMC1_BASE,
+-	.cfg.host_caps = MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_4BIT,
+-	.cfg.f_min = 400000,
+-	.cfg.f_max = 52000000,
+-	.cfg.voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195,
+-	.cfg.b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT,
+-};
+-
+-U_BOOT_DEVICE(am335x_mmc0) = {
+-	.name = "omap_hsmmc",
+-	.platdata = &am335x_mmc0_platdata,
+-};
+-
+-static const struct omap_hsmmc_plat am335x_mmc1_platdata = {
+-	.base_addr = (struct hsmmc *)OMAP_HSMMC2_BASE,
+-	.cfg.host_caps = MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_8BIT,
+-	.cfg.f_min = 400000,
+-	.cfg.f_max = 52000000,
+-	.cfg.voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195,
+-	.cfg.b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT,
+-};
+-
+-U_BOOT_DEVICE(am335x_mmc1) = {
+-	.name = "omap_hsmmc",
+-	.platdata = &am335x_mmc1_platdata,
+-};
+-#endif
+diff --git a/configs/am335x_evm_defconfig b/configs/am335x_evm_defconfig
+index 924116835251..dd690dcb495c 100644
+--- a/configs/am335x_evm_defconfig
++++ b/configs/am335x_evm_defconfig
+@@ -1,23 +1,26 @@
+ CONFIG_ARM=y
++# CONFIG_SPL_USE_ARCH_MEMCPY is not set
++# CONFIG_SPL_USE_ARCH_MEMSET is not set
+ CONFIG_ARCH_OMAP2PLUS=y
+ CONFIG_TI_COMMON_CMD_OPTIONS=y
++CONFIG_SYS_MALLOC_F_LEN=0x4000
+ CONFIG_AM33XX=y
++CONFIG_SPL_SYS_MALLOC_F_LEN=0x1000
+ CONFIG_SPL=y
+ CONFIG_DISTRO_DEFAULTS=y
++CONFIG_TPL_SYS_MALLOC_F_LEN=0x1000
+ CONFIG_SPL_LOAD_FIT=y
+ CONFIG_OF_BOARD_SETUP=y
+ CONFIG_BOOTCOMMAND="if test ${boot_fit} -eq 1; then run update_to_fit; fi; run findfdt; run init_console; run envboot; run distro_bootcmd"
++CONFIG_LOGLEVEL=3
+ CONFIG_SYS_CONSOLE_INFO_QUIET=y
+ CONFIG_VERSION_VARIABLE=y
+ CONFIG_ARCH_MISC_INIT=y
+ # CONFIG_SPL_FS_EXT4 is not set
+ CONFIG_SPL_MTD_SUPPORT=y
+-CONFIG_SPL_MUSB_NEW_SUPPORT=y
+ CONFIG_SPL_NET_SUPPORT=y
+ CONFIG_SPL_NET_VCI_STRING="AM33xx U-Boot SPL"
+ CONFIG_SPL_OS_BOOT=y
+-CONFIG_SPL_USB_GADGET=y
+-CONFIG_SPL_USB_ETHER=y
+ CONFIG_CMD_SPL=y
+ CONFIG_CMD_SPL_NAND_OFS=0x00080000
+ # CONFIG_CMD_FLASH is not set
+@@ -28,10 +31,12 @@ CONFIG_MTDIDS_DEFAULT="nand0=nand.0"
+ CONFIG_MTDPARTS_DEFAULT="mtdparts=nand.0:128k(NAND.SPL),128k(NAND.SPL.backup1),128k(NAND.SPL.backup2),128k(NAND.SPL.backup3),256k(NAND.u-boot-spl-os),1m(NAND.u-boot),128k(NAND.u-boot-env),128k(NAND.u-boot-env.backup1),8m(NAND.kernel),-(NAND.file-system)"
+ # CONFIG_SPL_EFI_PARTITION is not set
+ CONFIG_OF_CONTROL=y
++CONFIG_SPL_OF_CONTROL=y
+ CONFIG_DEFAULT_DEVICE_TREE="am335x-evm"
+ CONFIG_OF_LIST="am335x-evm am335x-bone am335x-boneblack am335x-evmsk am335x-bonegreen am335x-icev2"
++CONFIG_OF_SPL_REMOVE_PROPS="clocks clock-names interrupt-parent"
+ CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
+-# CONFIG_BLK is not set
++CONFIG_SPL_OF_TRANSLATE=y
+ CONFIG_BOOTCOUNT_LIMIT=y
+ CONFIG_DFU_MMC=y
+ CONFIG_DFU_NAND=y
+@@ -68,5 +73,6 @@ CONFIG_USB_GADGET_VENDOR_NUM=0x0451
+ CONFIG_USB_GADGET_PRODUCT_NUM=0xd022
+ CONFIG_USB_ETHER=y
+ CONFIG_DYNAMIC_CRC_TABLE=y
++CONFIG_SPL_TINY_MEMSET=y
+ CONFIG_RSA=y
+ CONFIG_LZO=y
