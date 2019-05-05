@@ -25,7 +25,6 @@ Patch3:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 # Board fixes and enablement
 Patch10:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch11:   dragonboard-fixes.patch
-Patch13:   ARM-tegra-Miscellaneous-improvements.patch
 Patch15:   net-eth-uclass-Write-MAC-address-to-hardware-after-probe.patch
 Patch16:   net-rtl8169-Implement---hwaddr_write-callback.patch
 Patch17:   arm-tegra-defaine-fdtfile-for-all-devices.patch
