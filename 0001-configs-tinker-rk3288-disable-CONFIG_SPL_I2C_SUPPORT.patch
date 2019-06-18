@@ -1,0 +1,34 @@
+From 68b90e57bc034e237923b02acb633dc4e91d44cb Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Wed, 27 Feb 2019 20:05:43 +0100
+Subject: [PATCH] configs: tinker-rk3288 disable CONFIG_SPL_I2C_SUPPORT
+
+The SPL for the Tinker Board has to fit into 32 KiB. Currently this limit
+is exceeded.
+
+CONFIG_SPL_I2C_SUPPORT is not needed to move to main U-Boot. So let's
+disable it.
+
+Suggested-by: David Wu <david.wu@rock-chips.com>
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Reviewed-by: David Wu <david.wu@rock-chips.com>
+Reviewed-by: Philipp Tomsich <philipp.tomsich@theobroma-systems.com>
+---
+ configs/tinker-rk3288_defconfig | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/configs/tinker-rk3288_defconfig b/configs/tinker-rk3288_defconfig
+index 4b48689ee8..0e8cf73fe9 100644
+--- a/configs/tinker-rk3288_defconfig
++++ b/configs/tinker-rk3288_defconfig
+@@ -20,7 +20,6 @@ CONFIG_DISPLAY_BOARDINFO_LATE=y
+ CONFIG_SPL_TEXT_BASE=0xff704000
+ CONFIG_SPL_STACK_R=y
+ CONFIG_SPL_STACK_R_MALLOC_SIMPLE_LEN=0x2000
+-CONFIG_SPL_I2C_SUPPORT=y
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_GPT=y
+ CONFIG_CMD_I2C=y
+-- 
+2.21.0
+

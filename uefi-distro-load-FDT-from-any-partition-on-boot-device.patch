@@ -1,7 +1,7 @@
-From 8bc6f62541436ebaf87133792726d9b48f878d09 Mon Sep 17 00:00:00 2001
+From 67c05a07288ef24b3ac9d013f35a0868d26a34c7 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 5 Dec 2017 00:11:08 +0000
-Subject: [PATCH] distro: load FDT from any partition on boot device
+Date: Tue, 18 Jun 2019 11:51:21 +0100
+Subject: [PATCH 1/2] distro: load FDT from any partition on boot device
 
 In the EFI_LOADER boot path, we were only checking the FAT partition
 containing the EFI payload for dtb files.  But this is somewhat of a
@@ -22,14 +22,14 @@ knows) and SoC/board specific ${fdtfile} (which grub does not know).
 Signed-off-by: Rob Clark <robdclark@gmail.com>
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- include/config_distro_bootcmd.h | 34 +++++++++++++++++++++++-----------
+ include/config_distro_bootcmd.h | 34 ++++++++++++++++++++++-----------
  1 file changed, 23 insertions(+), 11 deletions(-)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index 7746366ec8..c87f7c2a42 100644
+index 4993303f4d..f4b3b62fca 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
-@@ -135,25 +135,37 @@
+@@ -138,25 +138,37 @@
  		"fi\0"                                                    \
  	\
  	"load_efi_dtb="                                                   \
@@ -70,14 +70,14 @@ index 7746366ec8..c87f7c2a42 100644
 +		"run boot_efi_binary\0"                                   \
 +	"scan_dev_for_efi="                                               \
  		"if test -e ${devtype} ${devnum}:${distro_bootpart} "     \
- 					"efi/fedora/"BOOTEFI_NAME"; then "  \
+ 					"efi/boot/"BOOTEFI_NAME"; then "  \
  				"echo Found EFI removable media binary "  \
- 					"efi/fedora/"BOOTEFI_NAME"; "       \
+ 					"efi/boot/"BOOTEFI_NAME"; "       \
 -				"run boot_efi_binary; "                   \
 +				"run scan_dev_for_dtb; "                  \
  				"echo EFI LOAD FAILED: continuing...; "   \
  		"fi; "                                                    \
  		"setenv efi_fdtfile\0"
 -- 
-2.14.3
+2.21.0
 

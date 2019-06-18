@@ -9,6 +9,7 @@ A20-OLinuXino_MICRO
 am335x_evm
 am57xx_evm
 Ampe_A76
+apalis_imx6
 arndale
 Auxtek-T003
 Auxtek-T004
@@ -25,7 +26,6 @@ chiliboard
 CHIP
 Chuwi_V7_CW0825
 clearfog
-cl-som-am57x
 cm_fx6
 Colombus
 colorfly_e708_q1

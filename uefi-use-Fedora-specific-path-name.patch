@@ -1,7 +1,7 @@
-From c8e3063259c19e8f03c9f3e053ec6384d2d3f861 Mon Sep 17 00:00:00 2001
+From 3cc3f7de06dcf9614554d63b159f0cd6710b96b0 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 19 Mar 2019 10:48:48 +0000
-Subject: [PATCH] use Fedora specific EFI path/name
+Date: Tue, 18 Jun 2019 12:08:57 +0100
+Subject: [PATCH 2/2] use Fedora specific EFI path/name
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
  1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index 4993303f4d..1aba509962 100644
+index f4b3b62fca..2dc8be9815 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
 @@ -92,9 +92,9 @@
@@ -33,18 +33,18 @@ index 4993303f4d..1aba509962 100644
  		"if fdt addr ${fdt_addr_r}; then "                        \
  			"bootefi ${kernel_addr_r} ${fdt_addr_r};"         \
  		"else "                                                   \
-@@ -153,9 +153,9 @@
- 			"fi;"                                             \
- 		"done;"                                                   \
+@@ -165,9 +165,9 @@
+ 		"run boot_efi_binary\0"                                   \
+ 	"scan_dev_for_efi="                                               \
  		"if test -e ${devtype} ${devnum}:${distro_bootpart} "     \
 -					"efi/boot/"BOOTEFI_NAME"; then "  \
 +					"efi/fedora/"BOOTEFI_NAME"; then "  \
  				"echo Found EFI removable media binary "  \
 -					"efi/boot/"BOOTEFI_NAME"; "       \
 +					"efi/fedora/"BOOTEFI_NAME"; "       \
- 				"run boot_efi_binary; "                   \
+ 				"run scan_dev_for_dtb; "                  \
  				"echo EFI LOAD FAILED: continuing...; "   \
  		"fi; "                                                    \
 -- 
-2.20.1
+2.21.0
 
