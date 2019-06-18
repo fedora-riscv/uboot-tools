@@ -21,11 +21,10 @@ Patch2:    uefi-use-Fedora-specific-path-name.patch
 # Board fixes and enablement
 Patch5:    usb-kbd-fixes.patch
 Patch6:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-Patch7:    raspberrypi-add-serial-and-revision-to-the-device-tree.patch
-Patch8:    dragonboard-fixes.patch
-Patch9:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
-Patch10:   arm-tegra-defaine-fdtfile-for-all-devices.patch
-Patch11:   0001-configs-tinker-rk3288-disable-CONFIG_SPL_I2C_SUPPORT.patch
+Patch7:    dragonboard-fixes.patch
+Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
+Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
+Patch10:   0001-configs-tinker-rk3288-disable-CONFIG_SPL_I2C_SUPPORT.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
