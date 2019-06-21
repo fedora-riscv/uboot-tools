@@ -27,9 +27,6 @@ Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 Patch10:   0001-configs-tinker-rk3288-disable-CONFIG_SPL_I2C_SUPPORT.patch
 
-# RISC-V (riscv64)
-Patch30:   u-boot-2019.04-rc4-riscv.patch
-
 BuildRequires:  bc
 BuildRequires:  dtc
 BuildRequires:  make
