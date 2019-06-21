@@ -1,4 +1,4 @@
-%global candidate rc1
+%global candidate rc4
 
 Name:      uboot-tools
 Version:   2019.07
@@ -16,18 +16,16 @@ Source5:   10-devicetree.install
 Source6:   riscv64-boards
 
 # Fedoraisms patches
-Patch1:    uefi-use-Fedora-specific-path-name.patch
-
-# general fixes
-Patch2:    usb-kbd-fixes.patch
-Patch3:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+Patch1:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+Patch2:    uefi-use-Fedora-specific-path-name.patch
 
 # Board fixes and enablement
-Patch10:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-Patch11:   dragonboard-fixes.patch
-Patch15:   net-eth-uclass-Write-MAC-address-to-hardware-after-probe.patch
-Patch16:   net-rtl8169-Implement---hwaddr_write-callback.patch
-Patch17:   arm-tegra-defaine-fdtfile-for-all-devices.patch
+Patch5:    usb-kbd-fixes.patch
+Patch6:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+Patch7:    dragonboard-fixes.patch
+Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
+Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
+Patch10:   0001-configs-tinker-rk3288-disable-CONFIG_SPL_I2C_SUPPORT.patch
 
 # RISC-V (riscv64)
 Patch30:   u-boot-2019.04-rc4-riscv.patch
@@ -67,6 +65,10 @@ BuildRequires:  arm-trusted-firmware-armv8
 
 Requires:       dtc
 Requires:       systemd
+%ifarch aarch64 %{arm}
+Obsoletes:      uboot-images-elf < 2019.07
+Provides:       uboot-images-elf < 2019.07
+%endif
 
 %description
 This package contains a few U-Boot utilities - mkimage for creating boot images
@@ -102,18 +104,6 @@ BuildArch:   noarch
 u-boot bootloader binaries for riscv64 boards
 %endif
 
-
-%ifarch %{arm} aarch64 riscv64
-%package     -n uboot-images-elf
-Summary:     u-boot bootloader images for armv7 boards
-Requires:    uboot-tools
-Obsoletes:   uboot-images-qemu
-Provides:    uboot-images-qemu
-
-%description -n uboot-images-elf
-u-boot bootloader ELF binaries for use with qemu and other platforms
-%endif
-
 %prep
 %autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
 
@@ -133,7 +123,7 @@ do
   echo "Building board: $board"
   mkdir builds/$(echo $board)/
   # ATF selection, needs improving, suggestions of ATF SoC to Board matrix welcome
-  sun50i=(a64-olinuxino amarula_a64_relic bananapi_m2_plus_h5 bananapi_m64 nanopi_a64 orangepi_win pine64-lts pine64_plus pinebook sopine_baseboard libretech_all_h3_cc_h5 nanopi_neo2 nanopi_neo_plus2 orangepi_pc2 orangepi_prime orangepi_zero_plus2 orangepi_zero_plus)
+  sun50i=(a64-olinuxino amarula_a64_relic bananapi_m2_plus_h5 bananapi_m64 libretech_all_h3_cc_h5 nanopi_a64 nanopi_neo2 nanopi_neo_plus2 orangepi_pc2 orangepi_prime orangepi_win orangepi_zero_plus orangepi_zero_plus2 pine64-lts pine64_plus pinebook sopine_baseboard teres_i)
   if [[ " ${sun50i[*]} " == *" $board "* ]]; then
     echo "Board: $board using sun50i_a64"
     cp /usr/share/arm-trusted-firmware/sun50i_a64/* builds/$(echo $board)/
@@ -143,7 +133,7 @@ do
     echo "Board: $board using sun50i_h6"
     cp /usr/share/arm-trusted-firmware/sun50i_h6/* builds/$(echo $board)/
   fi
-  rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 puma-rk3399 rock960-rk3399)
+  rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 nanopc-t4-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 orangepi-rk3399 orangepi-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4-rk3399 rockpro64-rk3399)
   if [[ " ${rk3399[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3399"
     cp /usr/share/arm-trusted-firmware/rk3399/* builds/$(echo $board)/
@@ -151,7 +141,7 @@ do
   # End ATF
   make $(echo $board)_defconfig O=builds/$(echo $board)/
   make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
-  rk33xx=(evb-rk3399 ficus-rk3399 firefly-rk3399 puma-rk3399 rock960-rk3399)
+  rk33xx=(evb-rk3399 ficus-rk3399 firefly-rk3399 nanopc-t4-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 orangepi-rk3399 orangepi-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4-rk3399 rockpro64-rk3399)
   if [[ " ${rk33xx[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk33xx"
     make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" u-boot.itb V=1 O=builds/$(echo $board)/
@@ -197,7 +187,6 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 
 done
 
-
 # Bit of a hack to remove binaries we don't use as they're large
 for board in $(cat %{_arch}-boards)
 do
@@ -241,47 +230,6 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
  done
 done
 %endif
-
-# ELF binaries
-%ifarch %{arm}
-for board in vexpress_ca15_tc2 vexpress_ca9x4
-do
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/elf/$(echo $board)/
- for file in u-boot
- do
-  if [ -f builds/$(echo $board)/$(echo $file) ]; then
-    install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/elf/$(echo $board)/
-  fi
- done
-done
-%endif
-
-%ifarch aarch64
-for board in $(cat %{_arch}-boards)
-do
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/elf/$(echo $board)/
- for file in u-boot
- do
-  if [ -f builds/$(echo $board)/$(echo $file) ]; then
-    install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/elf/$(echo $board)/
-  fi
- done
-done
-%endif
-
-%ifarch riscv64
-for board in $(cat %{_arch}-boards)
-do
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/elf/$(echo $board)/
- for file in u-boot
- do
-  if [ -f builds/$(echo $board)/$(echo $file) ]; then
-    install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/elf/$(echo $board)/
-  fi
- done
-done
-%endif
-
 
 for tool in bmp_logo dumpimage easylogo/easylogo env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr gen_ethaddr_crc img2srec mkenvimage mkimage mksunxiboot ncb proftool sunxi-spl-image-builder ubsha1 xway-swap-bytes
 do
@@ -330,36 +278,26 @@ cp -p board/warp7/README builds/docs/README.warp7
 %ifarch aarch64
 %files -n uboot-images-armv8
 %{_datadir}/uboot/*
-%exclude %{_datadir}/uboot/elf
 %endif
 
 %ifarch %{arm}
 %files -n uboot-images-armv7
 %{_datadir}/uboot/*
-%exclude %{_datadir}/uboot/elf
 %endif
 
 %ifarch riscv64
 %files -n uboot-images-riscv64
 %{_datadir}/uboot/*
-%exclude %{_datadir}/uboot/elf
-%endif
-
-%ifarch %{arm} aarch64 riscv64
-%files -n uboot-images-elf
-%{_datadir}/uboot/elf
 %endif
 
 %changelog
-* Sun May 05 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.07-0.1.0.riscv64
-- Update to 2019.07 RC 1
-
-* Sun May 05 2019 David Abdurachmanov <david.abdurachmanov@gmail.com> 2019.04-2.0.riscv64
-- Apply pull request which incl. SMP support
-  See: https://lists.denx.de/pipermail/u-boot/2019-April/364281.html
-- Set CONFIG_SYS_BOOTM_LEN to SZ_64M for qemu-riscv
-- Add CONFIG_PREBOOT for qemu-riscv to set fdt_addr for extlinux boot
+* Fri Jun 21 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.07-0.1-rc4.0.riscv64
 - Add support for RISC-V (riscv64)
+
+* Tue Jun 18 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.07-0.1-rc4
+- 2019.07 RC4
+- Obsolete unused elf packages
+- A number of new rk3399 devices
 
 * Sat May  4 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.04-2
 - Build and ship pre built SD/SPI SPL bits for all rk3399 boards
