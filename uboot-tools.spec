@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.07
-Release:   0.1%{?candidate:.%{candidate}}%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -41,9 +41,6 @@ BuildRequires:  gcc
 %endif
 BuildRequires:  flex bison
 BuildRequires:  openssl-devel
-%if 0%{?fedora}
-BuildRequires:  python-unversioned-command
-%endif
 BuildRequires:  python2-devel
 BuildRequires:  python2-setuptools
 BuildRequires:  python2-libfdt
@@ -96,6 +93,8 @@ u-boot bootloader binaries for armv7 boards
 %autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
 
 cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 .
+
+sed -i 's/python/python2/' arch/arm/mach-rockchip/make_fit_atf.py
 
 %build
 mkdir builds
@@ -260,6 +259,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Fri Jun 28 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.07-0.2-rc4
+- Fix build with explicit python2
+- Drop a couple of unused boards
+
 * Tue Jun 18 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.07-0.1-rc4
 - 2019.07 RC4
 - Obsolete unused elf packages
