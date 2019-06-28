@@ -15,7 +15,9 @@ Source4:   aarch64-chromebooks
 Source5:   10-devicetree.install
 
 # Fedoraisms patches
+# Needed to find DT on boot partition that's not the first partition
 Patch1:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+# Needed due to issues with shim
 Patch2:    uefi-use-Fedora-specific-path-name.patch
 
 # Board fixes and enablement
