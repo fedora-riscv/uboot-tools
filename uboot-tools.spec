@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.07
-Release:   0.1%{?candidate:.%{candidate}}.1.riscv64%{?dist}
+Release:   0.1%{?candidate:.%{candidate}}.2.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -28,6 +28,7 @@ Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 Patch10:   0001-configs-tinker-rk3288-disable-CONFIG_SPL_I2C_SUPPORT.patch
 
 Patch20:   u-boot-2019.07-rc4-riscv-imply-VIRTIO_PCI.patch
+Patch21:   u-boot-2019.07-rc4-fix-virtio.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -290,6 +291,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Fri Jun 28 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.07-0.1-rc4.2.riscv64
+- Run "virtio scan" before booting from VirtIO Block Device over PCIe transport
+
 * Wed Jun 26 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.07-0.1-rc4.1.riscv64
 - Add VIRTIO_PCI for RISC-V QEMU emulation
 

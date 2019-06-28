@@ -1,0 +1,37 @@
+diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
+index 8f4c70e9..b44ec333 100644
+--- a/include/config_distro_bootcmd.h
++++ b/include/config_distro_bootcmd.h
+@@ -282,10 +282,23 @@
+ #endif
+ 
+ #ifdef CONFIG_CMD_VIRTIO
+-#define BOOTENV_SHARED_VIRTIO	BOOTENV_SHARED_BLKDEV(virtio)
++#define BOOTENV_RUN_VIRTIO_INIT "run virtio_init; "
++#define BOOTENV_SET_VIRTIO_NEED_INIT "virtio_need_init=; "
++#define BOOTENV_SHARED_VIRTIO \
++	"virtio_init=" \
++		"if ${virtio_need_init}; then " \
++			"virtio_need_init=false; " \
++			"virtio scan; " \
++		"fi\0" \
++	\
++	"virtio_boot=" \
++		BOOTENV_RUN_VIRTIO_INIT \
++		BOOTENV_SHARED_BLKDEV_BODY(virtio)
+ #define BOOTENV_DEV_VIRTIO	BOOTENV_DEV_BLKDEV
+ #define BOOTENV_DEV_NAME_VIRTIO	BOOTENV_DEV_NAME_BLKDEV
+ #else
++#define BOOTENV_RUN_VIRTIO_INIT
++#define BOOTENV_SET_VIRTIO_NEED_INIT
+ #define BOOTENV_SHARED_VIRTIO
+ #define BOOTENV_DEV_VIRTIO \
+ 	BOOT_TARGET_DEVICES_references_VIRTIO_without_CONFIG_CMD_VIRTIO
+@@ -465,6 +478,7 @@
+ 	\
+ 	"distro_bootcmd=" BOOTENV_SET_SCSI_NEED_INIT                      \
+ 		BOOTENV_SET_NVME_NEED_INIT                                \
++		BOOTENV_SET_VIRTIO_NEED_INIT                              \
+ 		"for target in ${boot_targets}; do "                      \
+ 			"run bootcmd_${target}; "                         \
+ 		"done\0"
