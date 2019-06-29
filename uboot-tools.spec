@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.07
-Release:   0.1%{?candidate:.%{candidate}}.3.riscv64%{?dist}
+Release:   0.1%{?candidate:.%{candidate}}.4.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -291,6 +291,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sat Jun 29 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.07-0.1-rc4.4.riscv64
+- Go back to local variables (to avoid pollution environment) and call pci enum before
+  virtio scan.
+
 * Sat Jun 29 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.07-0.1-rc4.3.riscv64
 - Uset sentenv instead of local variable for virtio_need_init
 
