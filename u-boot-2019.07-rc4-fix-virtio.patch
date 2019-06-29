@@ -8,11 +8,11 @@ index 8f4c70e9..b44ec333 100644
  #ifdef CONFIG_CMD_VIRTIO
 -#define BOOTENV_SHARED_VIRTIO	BOOTENV_SHARED_BLKDEV(virtio)
 +#define BOOTENV_RUN_VIRTIO_INIT "run virtio_init; "
-+#define BOOTENV_SET_VIRTIO_NEED_INIT "virtio_need_init=; "
++#define BOOTENV_SET_VIRTIO_NEED_INIT "setenv virtio_need_init; "
 +#define BOOTENV_SHARED_VIRTIO \
 +	"virtio_init=" \
 +		"if ${virtio_need_init}; then " \
-+			"virtio_need_init=false; " \
++			"setenv virtio_need_init false; " \
 +			"virtio scan; " \
 +		"fi\0" \
 +	\
