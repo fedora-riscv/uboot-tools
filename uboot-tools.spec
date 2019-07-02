@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.07
-Release:   0.1%{?candidate:.%{candidate}}.4.riscv64%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}.0.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -16,7 +16,9 @@ Source5:   10-devicetree.install
 Source6:   riscv64-boards
 
 # Fedoraisms patches
+# Needed to find DT on boot partition that's not the first partition
 Patch1:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+# Needed due to issues with shim
 Patch2:    uefi-use-Fedora-specific-path-name.patch
 
 # Board fixes and enablement
@@ -43,9 +45,6 @@ BuildRequires:  gcc
 %endif
 BuildRequires:  flex bison
 BuildRequires:  openssl-devel
-%if 0%{?fedora}
-BuildRequires:  python-unversioned-command
-%endif
 BuildRequires:  python2-devel
 BuildRequires:  python2-setuptools
 BuildRequires:  python2-libfdt
@@ -108,6 +107,8 @@ u-boot bootloader binaries for riscv64 boards
 %autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
 
 cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 %SOURCE6 .
+
+sed -i 's/python/python2/' arch/arm/mach-rockchip/make_fit_atf.py
 
 %build
 mkdir builds
@@ -291,21 +292,14 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Sat Jun 29 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.07-0.1-rc4.4.riscv64
-- Go back to local variables (to avoid pollution environment) and call pci enum before
-  virtio scan.
-
-* Sat Jun 29 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.07-0.1-rc4.3.riscv64
-- Uset sentenv instead of local variable for virtio_need_init
-
-* Fri Jun 28 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.07-0.1-rc4.2.riscv64
+* Tue Jul  2 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.07-0.2-rc4.0.riscv64
 - Run "virtio scan" before booting from VirtIO Block Device over PCIe transport
-
-* Wed Jun 26 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.07-0.1-rc4.1.riscv64
 - Add VIRTIO_PCI for RISC-V QEMU emulation
-
-* Fri Jun 21 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.07-0.1-rc4.0.riscv64
 - Add support for RISC-V (riscv64)
+
+* Fri Jun 28 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.07-0.2-rc4
+- Fix build with explicit python2
+- Drop a couple of unused boards
 
 * Tue Jun 18 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.07-0.1-rc4
 - 2019.07 RC4
