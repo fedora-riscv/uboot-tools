@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.07
-Release:   0.2%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Release:   0.2%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -29,8 +29,8 @@ Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 Patch10:   0001-configs-tinker-rk3288-disable-CONFIG_SPL_I2C_SUPPORT.patch
 
-Patch20:   u-boot-2019.07-rc4-riscv-imply-VIRTIO_PCI.patch
-Patch21:   u-boot-2019.07-rc4-fix-virtio.patch
+Patch20:   0002-distro_bootcmd-refactor-virtio-to-support-PCI-block-.patch
+Patch21:   0001-qemu-riscv-enable-VIRTIO_PCI.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -292,7 +292,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Tue Jul  2 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.07-0.2-rc4.0.riscv64
+* Thu Jul  4 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.07-0.2-rc4.1.riscv64
 - Run "virtio scan" before booting from VirtIO Block Device over PCIe transport
 - Add VIRTIO_PCI for RISC-V QEMU emulation
 - Add support for RISC-V (riscv64)
