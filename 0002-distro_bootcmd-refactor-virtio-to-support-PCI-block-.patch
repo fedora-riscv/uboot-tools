@@ -1,27 +1,8 @@
-From b78b7bc61723cd3df66cc2cc55948564eda8381e Mon Sep 17 00:00:00 2001
-From: David Abdurachmanov <david.abdurachmanov@sifive.com>
-Date: Thu, 4 Jul 2019 15:04:28 +0300
-Subject: [PATCH 2/2] distro_bootcmd: refactor virtio to support PCI	block
- devices
-
-libvirt v5.3.0 with QEMU 4.0.0 use PCI automatically and thus storage
-is connected via PCI, which is not visible to U-Boot automatically.
-Refactor to do "pci enum" followed by "virtio scan" to see PCI
-connected storage.
-
-Tested with Fedora/RISCV using the latest releases: libvirt 5.4.0,
-QEMU 4.0.0 and U-Boot 2019.07 RC4.
-
-Signed-off-by: David Abdurachmanov <david.abdurachmanov@sifive.com>
----
- include/config_distro_bootcmd.h | 31 +++++++++++++++++++++++++------
- 1 file changed, 25 insertions(+), 6 deletions(-)
-
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index 26e61ef196..047f7595cf 100644
+index 8f4c70e9..4259af8e 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
-@@ -254,11 +254,11 @@
+@@ -255,11 +255,11 @@
  #endif
  
  #if defined(CONFIG_DM_PCI)
@@ -36,7 +17,7 @@ index 26e61ef196..047f7595cf 100644
  #define BOOTENV_SHARED_PCI
  #endif
  
-@@ -281,7 +281,25 @@
+@@ -282,7 +282,25 @@
  #endif
  
  #ifdef CONFIG_CMD_VIRTIO
@@ -63,7 +44,7 @@ index 26e61ef196..047f7595cf 100644
  #define BOOTENV_DEV_VIRTIO	BOOTENV_DEV_BLKDEV
  #define BOOTENV_DEV_NAME_VIRTIO	BOOTENV_DEV_NAME_BLKDEV
  #else
-@@ -350,7 +368,7 @@
+@@ -351,7 +369,7 @@
  #define BOOTENV_DEV_DHCP(devtypeu, devtypel, instance) \
  	"bootcmd_dhcp=" \
  		BOOTENV_RUN_NET_USB_START \
@@ -72,7 +53,7 @@ index 26e61ef196..047f7595cf 100644
  		"if dhcp ${scriptaddr} ${boot_script_dhcp}; then " \
  			"source ${scriptaddr}; " \
  		"fi;" \
-@@ -369,7 +387,7 @@
+@@ -370,7 +388,7 @@
  #define BOOTENV_DEV_PXE(devtypeu, devtypel, instance) \
  	"bootcmd_pxe=" \
  		BOOTENV_RUN_NET_USB_START \
@@ -82,13 +63,10 @@ index 26e61ef196..047f7595cf 100644
  		"if pxe get; then " \
  			"pxe boot; " \
 @@ -465,6 +483,7 @@
+ 	\
  	"distro_bootcmd=" BOOTENV_SET_SCSI_NEED_INIT                      \
  		BOOTENV_SET_NVME_NEED_INIT                                \
- 		BOOTENV_SET_IDE_NEED_INIT                                 \
 +		BOOTENV_SET_VIRTIO_NEED_INIT                              \
  		"for target in ${boot_targets}; do "                      \
  			"run bootcmd_${target}; "                         \
  		"done\0"
--- 
-2.21.0
-
