@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.07
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Release:   3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -28,6 +28,8 @@ Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 Patch10:   rockchip-rk3399-Fix-USB3-support.patch
 Patch11:   rockchip-rock960.patch
+Patch12:   rock960-Enable-booting-from-eMMC-when-using-SPL.patch
+Patch13:   Raspberry-Pi-32-64-support.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -263,6 +265,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Aug  4 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.07-3
+- Fixes for Rock960
+- Iniital Raspberry Pi 4 support
+
 * Sat Jul 27 2019 Fedora Release Engineering <releng@fedoraproject.org> - 2019.07-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
 

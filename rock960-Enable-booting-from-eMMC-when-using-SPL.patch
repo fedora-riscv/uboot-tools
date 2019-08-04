@@ -1,0 +1,262 @@
+From patchwork Mon Jul 29 13:52:27 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+X-Patchwork-Id: 1138381
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=linaro.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org
+ header.b="WyWxUYr0"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 45y1NM4Q0Qz9sBt
+ for <incoming@patchwork.ozlabs.org>;
+ Mon, 29 Jul 2019 23:52:51 +1000 (AEST)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 3FE81C21DCA; Mon, 29 Jul 2019 13:52:48 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.0 required=5.0 tests=RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no
+ version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 744C2C21D56;
+ Mon, 29 Jul 2019 13:52:45 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 4CD6EC21D56; Mon, 29 Jul 2019 13:52:44 +0000 (UTC)
+Received: from mail-pf1-f193.google.com (mail-pf1-f193.google.com
+ [209.85.210.193])
+ by lists.denx.de (Postfix) with ESMTPS id A797CC21CB6
+ for <u-boot@lists.denx.de>; Mon, 29 Jul 2019 13:52:43 +0000 (UTC)
+Received: by mail-pf1-f193.google.com with SMTP id i189so28084100pfg.10
+ for <u-boot@lists.denx.de>; Mon, 29 Jul 2019 06:52:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google; 
+ h=from:to:cc:subject:date:message-id;
+ bh=3FPv5tbwMZSlglyfdX7Tp9nk6Cmnwv8xAql9ei/9XMI=;
+ b=WyWxUYr0OxZM2s1uFdLeSMmcp5oyNnL8MU4JHdEwgNt1lJd7Utgi3AQ3Lzc7gFM0BL
+ XMcezhoSk3X3IeUtcJhysMP3DP7sbY5roK8NFp1oTVNKPvCneRKiAVtqgHQMXuzVV+nb
+ 078IoKyU10IHRfQUEtrjZ4p2lwaQPPnC07YzMtENo+uGH6y0Zs76Wxj4Kx0IUhxYZa8O
+ APPOKpyDCtM0+D1TowK0w39vyWoF5ORjfsn8KHDaq6Xkkgu6Lor0pNA4N1NtrHjid3V4
+ l1Qqe+1arhC9hkEp8ZegM8NKpk5z94MRxtSX0M+hcNz0CXCSEE8sfrQ+A/ndY7gvLn3L
+ Yajg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=3FPv5tbwMZSlglyfdX7Tp9nk6Cmnwv8xAql9ei/9XMI=;
+ b=kGpw9+JaJZ7VhtOe4HxM/24olmF5cPFaw94JpSXNUxVtSBAx45xFv4eymfEVtCBswg
+ tqAXbRuIfaOceGoIbtZA5pgcnwnRB1d6Vv0zbF5eoiXCtjjn+3xKx2sbPM0kdIPNtJph
+ dr+5gKiLRUOqvGCMKEvmBtU/gTqa+3oMGQ3alzpd5QjPnfIj3eYmCWpXjCg1sOSUbvdx
+ DxKGKqCk2EAYLRBVI+r3RGlea1Ccyrdma6G+KjhwAS1E9KnTw4Pt0ehttBAEHylukS21
+ vMVC54pX1tuKHLI5q5Q2hqXBf1I6AaZ0saGg3h5iO+MBUz6CgzSBu6yfHvyuJhR/JdtK
+ 6w3g==
+X-Gm-Message-State: APjAAAXrm30Hcs5qRxqy46mx7q1uHtii+pHCdOM+5yq8fhHcHocjMIJn
+ A2hlX799KPgmg40gXYkCkQCW
+X-Google-Smtp-Source: APXvYqxt2EtMzNxTXZlfwUpo1lD/FyVZHuM5wM5aogloWnIt7GCC/yn8I0XXZ7c9Gx5++D2yLhrvJw==
+X-Received: by 2002:a63:1765:: with SMTP id 37mr35777700pgx.447.1564408361779; 
+ Mon, 29 Jul 2019 06:52:41 -0700 (PDT)
+Received: from localhost.localdomain ([103.59.133.81])
+ by smtp.googlemail.com with ESMTPSA id
+ i137sm62554902pgc.4.2019.07.29.06.52.38
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Mon, 29 Jul 2019 06:52:41 -0700 (PDT)
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+To: kever.yang@rock-chips.com,
+	philipp.tomsich@theobroma-systems.com
+Date: Mon, 29 Jul 2019 19:22:27 +0530
+Message-Id: <20190729135228.2878-1-manivannan.sadhasivam@linaro.org>
+X-Mailer: git-send-email 2.17.1
+Cc: sahaj.sarup@linaro.org, u-boot@lists.denx.de,
+ Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Subject: [U-Boot] [PATCH v2 1/2] arm: dts: rock960: Enable booting from eMMC
+ when using SPL
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+This commits enables booting from eMMC when using SPL on 96Boards
+Rock960 board by adding SDHCI to boot order. Since the SDHCI driver
+already has the reloc flag, this works straightaway. While we are at it,
+let's also include the common u-boot dtsi for rk3399.
+
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+---
+
+Changes in v2:
+
+* Moved the change to <board>-u-boot.dtsi as spotted by Peter.
+
+ arch/arm/dts/rk3399-rock960-u-boot.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm/dts/rk3399-rock960-u-boot.dtsi b/arch/arm/dts/rk3399-rock960-u-boot.dtsi
+index 5256f6d3f2..4850debdf0 100644
+--- a/arch/arm/dts/rk3399-rock960-u-boot.dtsi
++++ b/arch/arm/dts/rk3399-rock960-u-boot.dtsi
+@@ -3,4 +3,11 @@
+  * Copyright (C) 2019 Jagan Teki <jagan@amarulasolutions.com>
+  */
+ 
++#include "rk3399-u-boot.dtsi"
+ #include "rk3399-sdram-lpddr3-2GB-1600.dtsi"
++
++/ {
++	chosen {
++		u-boot,spl-boot-order = &sdhci, &sdmmc;
++	};
++};
+
+From patchwork Mon Jul 29 13:52:28 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+X-Patchwork-Id: 1138382
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=linaro.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org
+ header.b="I/oZzIEr"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 45y1Ns4wdXz9sBt
+ for <incoming@patchwork.ozlabs.org>;
+ Mon, 29 Jul 2019 23:53:17 +1000 (AEST)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 68C65C21DDC; Mon, 29 Jul 2019 13:53:01 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.0 required=5.0 tests=RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no
+ version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id E09FFC21DB5;
+ Mon, 29 Jul 2019 13:52:59 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 81FF8C21DFB; Mon, 29 Jul 2019 13:52:51 +0000 (UTC)
+Received: from mail-pg1-f196.google.com (mail-pg1-f196.google.com
+ [209.85.215.196])
+ by lists.denx.de (Postfix) with ESMTPS id 4A806C21E31
+ for <u-boot@lists.denx.de>; Mon, 29 Jul 2019 13:52:48 +0000 (UTC)
+Received: by mail-pg1-f196.google.com with SMTP id s1so22006632pgr.2
+ for <u-boot@lists.denx.de>; Mon, 29 Jul 2019 06:52:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=gt12XFZLAmGoM4GrNfchORnQFKGUVndeEjBMHCG7lcE=;
+ b=I/oZzIEr7tYSrBDPxym2AlLU8ZdN3EGquuY5N/ry7Vv5U5riF6Q2yHuBCa6xZK4zZS
+ pIy9wesXLpKQcLxrUvpu6SnZeEh6EKlq//AojFiDGFwINxgC/IYvny7F/9xU0k2EgwQt
+ FSM859QYUEM22zEtk8tFWFYJjP1k0wKB4mWoXCyK7NP/LkdrAvprlMSKFpmoeV37mvRs
+ ajFaVQbBwluibDwuST7sH2huCwaP4AuMor4IXlLIXHVA+J27ghX4k7n+6Oj23L8LPc4y
+ 6bPJnPvAHlx4jUco3/IK1IBAvZwFAylGAM1qEoWSiiV2iLmjYsrcrBRm3XRy1IbZ1cq8
+ G6Sw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=gt12XFZLAmGoM4GrNfchORnQFKGUVndeEjBMHCG7lcE=;
+ b=JfG8sw0VQKGTtXTXhpi8k/WlOzJ4Us5POL/f4501qVIY3emIvOTb5Ce7q49YhIQ+LL
+ zN84aZJVYIpRlbfoxcXzWpYKlfI87yV/GUkck1PJGVHaK80t76wkie9uL/8GRdCawNgS
+ b1B5SgBU4hsIsDGd+xV0mExbWNvsy/h6fvZkfrtARhWgjzL49xgnUd841/iWp8teLfw4
+ /OqF+dxLcNgPRCQlbRmiFU/i9ywonwEH3NVLaygUqh8lxw1U4o4QhTwOOfzK0mx91Ybp
+ jWmqLakr4wXO5Ih2tBjdQ1b4e07UBgGR8SzdD5n24WUrvy3fBzSIeqlnAss+70EoOGML
+ ixYw==
+X-Gm-Message-State: APjAAAViCoU69CbeN+RPaNsqwOd6kKu6iQicolMLDsc/nDNpWj8X2pDZ
+ Q88+Mu1ogtYsvYb63814wt4G
+X-Google-Smtp-Source: APXvYqyS8NrywDBj415S/KbF/5oGplbBDQdupMHZ/JrZfmw72r4T5Ifq/+OdJUaph2elH1tzrs99cg==
+X-Received: by 2002:a63:a346:: with SMTP id v6mr58285420pgn.57.1564408366723; 
+ Mon, 29 Jul 2019 06:52:46 -0700 (PDT)
+Received: from localhost.localdomain ([103.59.133.81])
+ by smtp.googlemail.com with ESMTPSA id
+ i137sm62554902pgc.4.2019.07.29.06.52.43
+ (version=TLS1_3 cipher=AEAD-AES256-GCM-SHA384 bits=256/256);
+ Mon, 29 Jul 2019 06:52:46 -0700 (PDT)
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+To: kever.yang@rock-chips.com,
+	philipp.tomsich@theobroma-systems.com
+Date: Mon, 29 Jul 2019 19:22:28 +0530
+Message-Id: <20190729135228.2878-2-manivannan.sadhasivam@linaro.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190729135228.2878-1-manivannan.sadhasivam@linaro.org>
+References: <20190729135228.2878-1-manivannan.sadhasivam@linaro.org>
+Cc: sahaj.sarup@linaro.org, u-boot@lists.denx.de,
+ Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Subject: [U-Boot] [PATCH v2 2/2] arm: dts: ficus: Enable booting from eMMC
+ when using SPL
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+This commits enables booting from eMMC when using SPL on 96Boards
+Ficus board by adding SDHCI to boot order. Since the SDHCI driver
+already has the reloc flag, this works straightaway. While we are at it,
+let's also include the common u-boot dtsi for rk3399.
+
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+---
+
+Changes in v2:
+
+* Moved the change to <board>-u-boot.dtsi as spotted by Peter.
+
+ arch/arm/dts/rk3399-ficus-u-boot.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm/dts/rk3399-ficus-u-boot.dtsi b/arch/arm/dts/rk3399-ficus-u-boot.dtsi
+index eab86bdb30..f3f7aa7c45 100644
+--- a/arch/arm/dts/rk3399-ficus-u-boot.dtsi
++++ b/arch/arm/dts/rk3399-ficus-u-boot.dtsi
+@@ -3,4 +3,11 @@
+  * Copyright (C) 2019 Jagan Teki <jagan@amarulasolutions.com>
+  */
+ 
++#include "rk3399-u-boot.dtsi"
+ #include "rk3399-sdram-ddr3-1600.dtsi"
++
++/ {
++	chosen {
++		u-boot,spl-boot-order = &sdhci, &sdmmc;
++	};
++};
