@@ -1153,3 +1153,40 @@ index a63b76befc..68110e1963 100644
  alias m68k           uboot, alisonwang, angelo_ts
  alias coldfire       m68k
  
+From 970baf16d1322d3930a57fc78ddfb15d594d690c Mon Sep 17 00:00:00 2001
+From: Fabian Vogt <fvogt@suse.com>
+Date: Thu, 11 Jul 2019 16:56:24 +0200
+Subject: [PATCH] video: arm: rpi: Bail out early if querying video information
+ fails
+
+When probing we query for the width and hight of the display. If the
+firmware does not report any connected display the system will crash.
+See https://github.com/raspberrypi/firmware/issues/1157 for details.
+
+Signed-off-by: Fabian Vogt <fvogt@suse.com>
+[mb: update commit message]
+Signed-off-by: Matthias Brugger <mbrugger@suse.com>
+Reviewed-by: Andre Przywara <andre.przywara@arm.com>
+Tested-by: Andre Przywara <andre.przywara@arm.com>
+
+diff --git a/drivers/video/bcm2835.c b/drivers/video/bcm2835.c
+index bc41090aed..1d2eda084c 100644
+--- a/drivers/video/bcm2835.c
++++ b/drivers/video/bcm2835.c
+@@ -19,13 +19,15 @@ static int bcm2835_video_probe(struct udevice *dev)
+ 
+ 	debug("bcm2835: Query resolution...\n");
+ 	ret = bcm2835_get_video_size(&w, &h);
+-	if (ret)
++	if (ret || w == 0 || h == 0)
+ 		return -EIO;
+ 
+ 	debug("bcm2835: Setting up display for %d x %d\n", w, h);
+ 	ret = bcm2835_set_video_params(&w, &h, 32, BCM2835_MBOX_PIXEL_ORDER_RGB,
+ 				       BCM2835_MBOX_ALPHA_MODE_IGNORED,
+ 				       &fb_base, &fb_size, &pitch);
++	if (ret)
++		return -EIO;
+ 
+ 	debug("bcm2835: Final resolution is %d x %d\n", w, h);
+ 
