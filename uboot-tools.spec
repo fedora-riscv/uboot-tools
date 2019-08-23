@@ -28,8 +28,7 @@ Patch7:    dragonboard-fixes.patch
 Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 
-Patch20:   0002-distro_bootcmd-refactor-virtio-to-support-PCI-block-.patch
-Patch21:   0001-qemu-riscv-enable-VIRTIO_PCI.patch
+Patch20:   fix-extlinux-kconfig-preboot.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
