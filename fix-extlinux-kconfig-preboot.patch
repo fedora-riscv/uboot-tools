@@ -1,121 +1,5 @@
-From patchwork Wed Aug 21 19:07:20 2019
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-Patchwork-Submitter: David Abdurachmanov <david.abdurachmanov@gmail.com>
-X-Patchwork-Id: 1151125
-X-Patchwork-Delegate: uboot@andestech.com
-Return-Path: <u-boot-bounces@lists.denx.de>
-X-Original-To: incoming@patchwork.ozlabs.org
-Delivered-To: patchwork-incoming@bilbo.ozlabs.org
-Authentication-Results: ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lists.denx.de
- (client-ip=81.169.180.215; helo=lists.denx.de;
- envelope-from=u-boot-bounces@lists.denx.de;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=gmail.com
-Authentication-Results: ozlabs.org;
- dkim=fail reason="signature verification failed" (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com
- header.b="rMinxp3y"; dkim-atps=neutral
-Received: from lists.denx.de (dione.denx.de [81.169.180.215])
- by ozlabs.org (Postfix) with ESMTP id 46DHH26Db1z9s4Y
- for <incoming@patchwork.ozlabs.org>;
- Thu, 22 Aug 2019 05:07:40 +1000 (AEST)
-Received: by lists.denx.de (Postfix, from userid 105)
- id D340FC21FDC; Wed, 21 Aug 2019 19:07:35 +0000 (UTC)
-X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
-X-Spam-Level: 
-X-Spam-Status: No, score=-0.0 required=5.0 tests=FREEMAIL_FROM,
- RCVD_IN_MSPIKE_H3, RCVD_IN_MSPIKE_WL,
- T_DKIM_INVALID autolearn=unavailable
- autolearn_force=no version=3.4.0
-Received: from lists.denx.de (localhost [IPv6:::1])
- by lists.denx.de (Postfix) with ESMTP id 8F978C21F29;
- Wed, 21 Aug 2019 19:07:33 +0000 (UTC)
-Received: by lists.denx.de (Postfix, from userid 105)
- id 301CEC21F29; Wed, 21 Aug 2019 19:07:32 +0000 (UTC)
-Received: from mail-pf1-f196.google.com (mail-pf1-f196.google.com
- [209.85.210.196])
- by lists.denx.de (Postfix) with ESMTPS id 668BBC21E0B
- for <u-boot@lists.denx.de>; Wed, 21 Aug 2019 19:07:31 +0000 (UTC)
-Received: by mail-pf1-f196.google.com with SMTP id w2so2046616pfi.3
- for <u-boot@lists.denx.de>; Wed, 21 Aug 2019 12:07:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025; 
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=DyhlXafKkjxsUHZ+UaYZJ9HAh3ClmuP7hD4QKwoX7i0=;
- b=rMinxp3yO8EwlClKPTXaek+4su8+Fz07rc8ZaU5Rv/8UR1wThNNnH89GpMHpru65aw
- Z+PDYRiCOYZ0vfFNuFREwlEKVqdHAzyb0lyEJ4vakKWeDls2Jh+GlXIWXfncxgkxx8Bi
- HfLu+dTsoZWRjvHGJM/uVVd61YrAUfnhRRaiHyLLku8I8NMLkHBrREzOdfFlfhwpd5Mx
- kj+QJZr6FEjQFF5EtDK4Ya/o8rdiKdnR3uP0PK5QGYohmq0ULFun/MxNxdV2vkBCrY5G
- Vn1o01kFaNWzMuL2U4xanixMkuaIK3QMPMDSpBkUMwTzYdfzJHQZ/+CiLyWTa1iF5kss
- nr5Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=DyhlXafKkjxsUHZ+UaYZJ9HAh3ClmuP7hD4QKwoX7i0=;
- b=VmQWf+vz1Q3YYgHjRTwPu/ZtgwLfSGLSiqetTrso9Et//Y5mGqA2pGx/u4IDV68KJW
- KDc7KGvGj0ZuEvxJixwYWHbW54DyarNRe5aFiyAfoL4YnnIvWZ+7CTA7xWTFE3a49VTV
- khlH5D22Z+I7B7lN25q1uwwM/6OrabypK87h8+ITFyxUmr19bZtfTYGw2jQI67ePYjIh
- henD23MZLgGUzOUOW78cagOKE0CNmVkRYijiQxWn7RncAF/H+8LNBbhnLx5cGrui/Q7o
- i+m3ijtbcpuEclLETi9A2Mw2H5nyByTGo3W6tb5jlc5nolS9LNee16jKPJ/ABYPtH32p
- 469A==
-X-Gm-Message-State: APjAAAXl9I4ePbFOA9PCtvfWF9EFUSar/ub4B8uPCOT9kfs0O0DNatNC
- iHnIIwWZCPb/++ywTLtoPR8=
-X-Google-Smtp-Source: APXvYqygw23g4iZs0CA0hpLfKAIRZUYtJWYZ3IYs5IPtRiw1cRzdT96rkyqdRJyDgJwPVEd3lurQFQ==
-X-Received: by 2002:a63:a35c:: with SMTP id v28mr582206pgn.144.1566414449458; 
- Wed, 21 Aug 2019 12:07:29 -0700 (PDT)
-Received: from localhost.localdomain.com ([12.206.222.2])
- by smtp.gmail.com with ESMTPSA id
- t4sm41577278pfq.153.2019.08.21.12.07.27
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 21 Aug 2019 12:07:28 -0700 (PDT)
-From: David Abdurachmanov <david.abdurachmanov@gmail.com>
-X-Google-Original-From: David Abdurachmanov <david.abdurachmanov@sifive.com>
-To: bmeng.cn@gmail.com, paul.walmsley@sifive.com, palmer@sifive.com,
- anup.patel@wdc.com, atish.patra@wdc.com, sjg@chromium.org,
- u-boot@lists.denx.de
-Date: Wed, 21 Aug 2019 12:07:20 -0700
-Message-Id: <20190821190720.4286-1-david.abdurachmanov@sifive.com>
-X-Mailer: git-send-email 2.21.0
-MIME-Version: 1.0
-Cc: David Abdurachmanov <david.abdurachmanov@sifive.com>
-Subject: [U-Boot] [PATCH] qemu-riscv64_smode,
- sifive-fu540: fix extlinux (define preboot)
-X-BeenThere: u-boot@lists.denx.de
-X-Mailman-Version: 2.1.18
-Precedence: list
-List-Id: U-Boot discussion <u-boot.lists.denx.de>
-List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
- <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
-List-Archive: <http://lists.denx.de/pipermail/u-boot/>
-List-Post: <mailto:u-boot@lists.denx.de>
-List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
-List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
- <mailto:u-boot-request@lists.denx.de?subject=subscribe>
-Content-Type: text/plain; charset="utf-8"
-Errors-To: u-boot-bounces@lists.denx.de
-Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
-
-Commit 37304aaf60bf92a5dc3ef222ba520698bd862a44 removed preboot
-commands in RISC-V targets and broke extlinux support as reported
-by Fu Wei <wefu@redhat.com>.
-
-The patch finishes migration of CONFIG_USE_PREBOOT and CONFIG_REBOOT
-to Kconfig.
-
-Signed-off-by: David Abdurachmanov <david.abdurachmanov@sifive.com>
----
- configs/qemu-riscv64_smode_defconfig | 2 ++
- configs/sifive_fu540_defconfig       | 2 ++
- include/configs/sifive-fu540.h       | 4 ----
- 3 files changed, 4 insertions(+), 4 deletions(-)
-
 diff --git a/configs/qemu-riscv64_smode_defconfig b/configs/qemu-riscv64_smode_defconfig
-index 74743a5ebe..2e1f7fa91f 100644
+index 74743a5e..2e1f7fa9 100644
 --- a/configs/qemu-riscv64_smode_defconfig
 +++ b/configs/qemu-riscv64_smode_defconfig
 @@ -9,3 +9,5 @@ CONFIG_DISPLAY_CPUINFO=y
@@ -125,17 +9,17 @@ index 74743a5ebe..2e1f7fa91f 100644
 +CONFIG_USE_PREBOOT=y
 +CONFIG_PREBOOT="setenv fdt_addr ${fdtcontroladdr}; fdt addr ${fdtcontroladdr};"
 diff --git a/configs/sifive_fu540_defconfig b/configs/sifive_fu540_defconfig
-index 48865e5f11..a852579309 100644
+index f1920374..5ff8e099 100644
 --- a/configs/sifive_fu540_defconfig
 +++ b/configs/sifive_fu540_defconfig
-@@ -9,3 +9,5 @@ CONFIG_MISC_INIT_R=y
- CONFIG_DISPLAY_CPUINFO=y
+@@ -9,3 +9,5 @@ CONFIG_DISPLAY_CPUINFO=y
  CONFIG_DISPLAY_BOARDINFO=y
+ CONFIG_MISC_INIT_R=y
  CONFIG_OF_PRIOR_STAGE=y
 +CONFIG_USE_PREBOOT=y
 +CONFIG_PREBOOT="setenv fdt_addr ${fdtcontroladdr}; fdt addr ${fdtcontroladdr};"
 diff --git a/include/configs/sifive-fu540.h b/include/configs/sifive-fu540.h
-index 858b7a7da1..ba4aa0652c 100644
+index 858b7a7d..ba4aa065 100644
 --- a/include/configs/sifive-fu540.h
 +++ b/include/configs/sifive-fu540.h
 @@ -40,8 +40,4 @@
