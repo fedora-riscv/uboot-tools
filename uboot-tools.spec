@@ -1,8 +1,8 @@
-%global candidate rc4
+%global candidate rc2
 
 Name:      uboot-tools
-Version:   2019.07
-Release:   0.2%{?candidate:.%{candidate}}.1.riscv64%{?dist}
+Version:   2019.10
+Release:   0.1%{?candidate:.%{candidate}}.0.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -27,7 +27,6 @@ Patch6:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch7:    dragonboard-fixes.patch
 Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
-Patch10:   0001-configs-tinker-rk3288-disable-CONFIG_SPL_I2C_SUPPORT.patch
 
 Patch20:   0002-distro_bootcmd-refactor-virtio-to-support-PCI-block-.patch
 Patch21:   0001-qemu-riscv-enable-VIRTIO_PCI.patch
@@ -134,6 +133,11 @@ do
     echo "Board: $board using sun50i_h6"
     cp /usr/share/arm-trusted-firmware/sun50i_h6/* builds/$(echo $board)/
   fi
+  rk3328=(rock64-rk3328)
+  if [[ " ${rk3328[*]} " == *" $board "* ]]; then
+    echo "Board: $board using rk3328"
+    cp /usr/share/arm-trusted-firmware/rk3328/* builds/$(echo $board)/
+  fi
   rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 nanopc-t4-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 orangepi-rk3399 orangepi-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4-rk3399 rockpro64-rk3399)
   if [[ " ${rk3399[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3399"
@@ -142,10 +146,8 @@ do
   # End ATF
   make $(echo $board)_defconfig O=builds/$(echo $board)/
   make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
-  rk33xx=(evb-rk3399 ficus-rk3399 firefly-rk3399 nanopc-t4-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 orangepi-rk3399 orangepi-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4-rk3399 rockpro64-rk3399)
-  if [[ " ${rk33xx[*]} " == *" $board "* ]]; then
-    echo "Board: $board using rk33xx"
-    make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" u-boot.itb V=1 O=builds/$(echo $board)/
+  if [[ " ${rk3399[*]} " == *" $board "* ]]; then
+    echo "Board: $board using rk3399"
     builds/$(echo $board)/tools/mkimage -n rk3399 -T rksd  -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_sd.img
     builds/$(echo $board)/tools/mkimage -n rk3399 -T rkspi -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_spi.img
   fi
@@ -292,10 +294,25 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Thu Jul  4 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.07-0.2-rc4.1.riscv64
+* Fri Aug 23 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-0.1-rc2.0.riscv64
 - Run "virtio scan" before booting from VirtIO Block Device over PCIe transport
 - Add VIRTIO_PCI for RISC-V QEMU emulation
 - Add support for RISC-V (riscv64)
+
+* Wed Aug 14 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-0.1-rc2
+- 2019.10 RC2
+
+* Sun Aug  4 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.07-3
+- Fixes for Rock960
+- Iniital Raspberry Pi 4 support
+
+* Sat Jul 27 2019 Fedora Release Engineering <releng@fedoraproject.org> - 2019.07-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
+
+* Mon Jul  8 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.07-1
+- 2019.07
+- Enable Rock64
+- Rock960 enhancements
 
 * Fri Jun 28 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.07-0.2-rc4
 - Fix build with explicit python2
