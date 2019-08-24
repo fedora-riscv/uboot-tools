@@ -29,6 +29,7 @@ Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 
 Patch20:   fix-extlinux-kconfig-preboot.patch
+Patch21:   env-fix-build-error-for-envtools.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc

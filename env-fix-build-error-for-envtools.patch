@@ -1,0 +1,456 @@
+From patchwork Fri Aug 23 21:03:16 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Patchwork-Submitter: Pierre-Jean Texier <pjtexier@koncepto.io>
+X-Patchwork-Id: 1152434
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=quarantine dis=none)
+ header.from=koncepto.io
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=koncepto.io header.i=@koncepto.io
+ header.b="pNQdPEmE"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 46FYnW5SRZz9s7T
+ for <incoming@patchwork.ozlabs.org>;
+ Sat, 24 Aug 2019 07:05:03 +1000 (AEST)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 6AC85C22128; Fri, 23 Aug 2019 21:04:09 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=SPF_HELO_PASS, T_DKIM_INVALID
+ autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 22BCCC2211C;
+ Fri, 23 Aug 2019 21:04:03 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id C539FC220FB; Fri, 23 Aug 2019 21:03:59 +0000 (UTC)
+Received: from koncepto.io (koncepto.io [195.154.119.111])
+ by lists.denx.de (Postfix) with ESMTPS id 00EFDC21C29
+ for <u-boot@lists.denx.de>; Fri, 23 Aug 2019 21:03:58 +0000 (UTC)
+Received: from menoah.home (lfbn-1-8923-205.w193-250.abo.wanadoo.fr
+ [193.250.65.205])
+ by koncepto.io (Postfix) with ESMTPSA id 6577E6027E;
+ Fri, 23 Aug 2019 23:03:57 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=koncepto.io;
+ s=default; t=1566594237;
+ bh=1A6uYtcv7poOVUlwbsHD8uICjE/sD7eKsXfiKdjIzE0=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=pNQdPEmEp/YVx2uHZaOLlkfc+yoEMwug74Mi62v19dvMw1UAykCHu1Ex/mk/7w9wF
+ 8mpXN+1P2wpCWIyTN86BNbmBUrEE1q18nJL1xMalMn0CQXXaL/o5aBAMDDUto3shoL
+ FhuP0+U2ky+BeHGMr/YZZQhaOHR9HtxYZGIr9D4IRsX0jqRJxTzxmcyaJr9jzOSus9
+ SrRFMD9Thr8uxv1tPOXk1vtMtUrUYhlulvxF3tRFwr6S/nPZEfJP5F4A9iJDoobPTn
+ LQrE0JRQKALig+LKrec4hi8gRn20HinWxj/dl2utVwsJdtxA4C4nG1aCL+PghaEh0+
+ APc7DCJINwsJA==
+From: Pierre-Jean Texier <pjtexier@koncepto.io>
+To: u-boot@lists.denx.de
+Date: Fri, 23 Aug 2019 23:03:16 +0200
+Message-Id: <1566594199-25314-2-git-send-email-pjtexier@koncepto.io>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1566594199-25314-1-git-send-email-pjtexier@koncepto.io>
+References: <1566594199-25314-1-git-send-email-pjtexier@koncepto.io>
+MIME-Version: 1.0
+Cc: bjorn@haxx.se, michal.simek@xilinx.com, joe.hershberger@ni.com,
+ philip@philipmolloy.com
+Subject: [U-Boot] [PATCH 1/4] fw_env: remove duplicated definitions
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Content-Type: text/plain; charset="utf-8"
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Since commit d3716dd ("env: Rename the redundancy flags"), the
+definitions of ENV_REDUND_OBSOLETE & ENV_REDUND_ACTIVE was moved
+to env.h.
+
+Fixes:
+
+tools/env/fw_env.c:122:22: error: ‘ENV_REDUND_ACTIVE’ redeclared as different kind of symbol
+ static unsigned char ENV_REDUND_ACTIVE = 1;
+                      ^~~~~~~~~~~~~~~~~
+In file included from tools/env/fw_env.c:13:
+include/env.h:63:2: note: previous definition of ‘ENV_REDUND_ACTIVE’ was here
+  ENV_REDUND_ACTIVE = 1,
+  ^~~~~~~~~~~~~~~~~
+tools/env/fw_env.c:127:22: error: ‘ENV_REDUND_OBSOLETE’ redeclared as different kind of symbol
+ static unsigned char ENV_REDUND_OBSOLETE;
+                      ^~~~~~~~~~~~~~~~~~~
+In file included from tools/env/fw_env.c:13:
+include/env.h:62:2: note: previous definition of ‘ENV_REDUND_OBSOLETE’ was here
+  ENV_REDUND_OBSOLETE = 0,
+
+Signed-off-by: Pierre-Jean Texier <pjtexier@koncepto.io>
+---
+ tools/env/fw_env.c | 7 -------
+ 1 file changed, 7 deletions(-)
+
+diff --git a/tools/env/fw_env.c b/tools/env/fw_env.c
+index 95c9984..876bf2b 100644
+--- a/tools/env/fw_env.c
++++ b/tools/env/fw_env.c
+@@ -119,13 +119,6 @@ static struct environment environment = {
+ 
+ static int have_redund_env;
+ 
+-static unsigned char ENV_REDUND_ACTIVE = 1;
+-/*
+- * ENV_REDUND_OBSOLETE must be 0 to efficiently set it on NOR flash without
+- * erasing
+- */
+-static unsigned char ENV_REDUND_OBSOLETE;
+-
+ #define DEFAULT_ENV_INSTANCE_STATIC
+ #include <env_default.h>
+ 
+
+From patchwork Fri Aug 23 21:03:17 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Patchwork-Submitter: Pierre-Jean Texier <pjtexier@koncepto.io>
+X-Patchwork-Id: 1152435
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=quarantine dis=none)
+ header.from=koncepto.io
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=koncepto.io header.i=@koncepto.io
+ header.b="t2Jp3XnT"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 46FYnm6pJhz9s7T
+ for <incoming@patchwork.ozlabs.org>;
+ Sat, 24 Aug 2019 07:05:16 +1000 (AEST)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id A2545C2213B; Fri, 23 Aug 2019 21:04:18 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=SPF_HELO_PASS, T_DKIM_INVALID
+ autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id B8E03C2211C;
+ Fri, 23 Aug 2019 21:04:10 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 35EB6C22132; Fri, 23 Aug 2019 21:04:01 +0000 (UTC)
+Received: from koncepto.io (koncepto.io [195.154.119.111])
+ by lists.denx.de (Postfix) with ESMTPS id 0782CC220F3
+ for <u-boot@lists.denx.de>; Fri, 23 Aug 2019 21:03:59 +0000 (UTC)
+Received: from menoah.home (lfbn-1-8923-205.w193-250.abo.wanadoo.fr
+ [193.250.65.205])
+ by koncepto.io (Postfix) with ESMTPSA id 553C9602A2;
+ Fri, 23 Aug 2019 23:03:58 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=koncepto.io;
+ s=default; t=1566594238;
+ bh=LfOe92dihVLTQdy8KYc5qePwlSi19PPHReqod3h7au4=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=t2Jp3XnT4Ey+6E5wPqOGWDgmA1pvZqePipaMfSC5KSGsgfn44sKDCiX2+pYNXwKAY
+ DGEOt8Kvzy7BS2KzyWFFH5rKgjX5EU30Tq/+4oE/tPKPCyguVzLTX6jyvvFQgXeT0q
+ 1R7C7KDH6AUGiGsjoAjs3NFvo42kokk4f6IuWSUd7uUgDsd1YIHfLE4wnANk6SxP6e
+ yiqCppqBbsgV7CHu1gb+uxz2gccEX9SCU3Dkj/bGxMepPySe0NEfow34IvtOHspvp1
+ uj9eJQ3LjuVA5XqXzbk4yHIALwgoH7QpSryDdHGjlYOVnVE4YFscKBDpS9XpzStLFZ
+ xL3WOZAJt/dJQ==
+From: Pierre-Jean Texier <pjtexier@koncepto.io>
+To: u-boot@lists.denx.de
+Date: Fri, 23 Aug 2019 23:03:17 +0200
+Message-Id: <1566594199-25314-3-git-send-email-pjtexier@koncepto.io>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1566594199-25314-1-git-send-email-pjtexier@koncepto.io>
+References: <1566594199-25314-1-git-send-email-pjtexier@koncepto.io>
+MIME-Version: 1.0
+Cc: bjorn@haxx.se, michal.simek@xilinx.com, joe.hershberger@ni.com,
+ philip@philipmolloy.com
+Subject: [U-Boot] [PATCH 2/4] fw_env: fix build error
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Content-Type: text/plain; charset="utf-8"
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+The following error appears:
+
+tools/env/fw_env.c:1149:25: error: lvalue required as unary ‘&’ operand
+  rc = write(fd, &ENV_REDUND_OBSOLETE, sizeof(ENV_REDUND_OBSOLETE));
+
+Fixes: d3716dd ("env: Rename the redundancy flags")
+
+Signed-off-by: Pierre-Jean Texier <pjtexier@koncepto.io>
+---
+ tools/env/fw_env.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/env/fw_env.c b/tools/env/fw_env.c
+index 876bf2b..b8b936f 100644
+--- a/tools/env/fw_env.c
++++ b/tools/env/fw_env.c
+@@ -1146,7 +1146,7 @@ static int flash_flag_obsolete(int dev, int fd, off_t offset)
+ 		return rc;
+ 	}
+ 	ioctl(fd, MEMUNLOCK, &erase);
+-	rc = write(fd, &ENV_REDUND_OBSOLETE, sizeof(ENV_REDUND_OBSOLETE));
++	rc = write(fd, ENV_REDUND_OBSOLETE, sizeof(ENV_REDUND_OBSOLETE));
+ 	ioctl(fd, MEMLOCK, &erase);
+ 	if (rc < 0)
+ 		perror("Could not set obsolete flag");
+
+From patchwork Fri Aug 23 21:03:18 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-Patchwork-Submitter: Pierre-Jean Texier <pjtexier@koncepto.io>
+X-Patchwork-Id: 1152436
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=quarantine dis=none)
+ header.from=koncepto.io
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=koncepto.io header.i=@koncepto.io
+ header.b="pjwIphoI"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 46FYpN1t0Fz9s7T
+ for <incoming@patchwork.ozlabs.org>;
+ Sat, 24 Aug 2019 07:05:48 +1000 (AEST)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id EEDEEC22149; Fri, 23 Aug 2019 21:04:35 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=SPF_HELO_PASS, T_DKIM_INVALID
+ autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 10E42C22119;
+ Fri, 23 Aug 2019 21:04:24 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 10AC6C22100; Fri, 23 Aug 2019 21:04:02 +0000 (UTC)
+Received: from koncepto.io (koncepto.io [195.154.119.111])
+ by lists.denx.de (Postfix) with ESMTPS id C1716C2211C
+ for <u-boot@lists.denx.de>; Fri, 23 Aug 2019 21:03:59 +0000 (UTC)
+Received: from menoah.home (lfbn-1-8923-205.w193-250.abo.wanadoo.fr
+ [193.250.65.205])
+ by koncepto.io (Postfix) with ESMTPSA id 28492602CF;
+ Fri, 23 Aug 2019 23:03:59 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=koncepto.io;
+ s=default; t=1566594239;
+ bh=vz6qm8CT1Bzb32KpNR3krs97Ns4VK4eOovt/tpxnm9I=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=pjwIphoIjS3ugkAK2bwHZnPfDdBTCvl7rQ1RaVUrjWIkHLSwB6q8rDp/sqMiVEqTD
+ lwSZuMtsOibIY+2cE7O1lIw0NDrav4ltJLgGYZBUfU+pG5ZudRHc4SF+sGVSgk1NXJ
+ sS3alNbxsA4rPghfOTrgx07pF9RmlHYv+Zoe+oPL2z2GvWDRYgRuZ8bXOWo4LCdieh
+ WxGIhYhbQyf7Gy7EQjotwyabUstOYMlv4gVVFLeWAbGOWPfuckOSF8IbsusNDFHTdz
+ lN6/RNx1HK/JNlxawIZklpeO4BtLBMTBVgbBGkpuwi0th6Hq0IfGc/oETpvfnlQjZ0
+ UFebqc7lSAWIA==
+From: Pierre-Jean Texier <pjtexier@koncepto.io>
+To: u-boot@lists.denx.de
+Date: Fri, 23 Aug 2019 23:03:18 +0200
+Message-Id: <1566594199-25314-4-git-send-email-pjtexier@koncepto.io>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1566594199-25314-1-git-send-email-pjtexier@koncepto.io>
+References: <1566594199-25314-1-git-send-email-pjtexier@koncepto.io>
+MIME-Version: 1.0
+Cc: bjorn@haxx.se, michal.simek@xilinx.com, joe.hershberger@ni.com,
+ philip@philipmolloy.com
+Subject: [U-Boot] [PATCH 3/4] env: add missing <compiler.h> header file
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Content-Type: text/plain; charset="utf-8"
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Since commit af95f20 ("env: Create a new file for environment functions"),
+a new header file exists.
+
+So, this commit add a missing header file.
+
+Fixes:
+
+include/env.h:158:1: error: unknown type name ‘ulong’; did you mean ‘long’?
+ ulong env_get_ulong(const char *name, int base, ulong default_val);
+ ^~~~~
+ long
+include/env.h:158:49: error: unknown type name ‘ulong’; did you mean ‘long’?
+ ulong env_get_ulong(const char *name, int base, ulong default_val);
+
+Signed-off-by: Pierre-Jean Texier <pjtexier@koncepto.io>
+---
+ include/env.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/env.h b/include/env.h
+index a74a261..b72239f 100644
+--- a/include/env.h
++++ b/include/env.h
+@@ -9,6 +9,7 @@
+ #ifndef __ENV_H
+ #define __ENV_H
+ 
++#include <compiler.h>
+ #include <stdbool.h>
+ #include <linux/types.h>
+ 
+
+From patchwork Fri Aug 23 21:03:19 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Pierre-Jean Texier <pjtexier@koncepto.io>
+X-Patchwork-Id: 1152433
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=quarantine dis=none)
+ header.from=koncepto.io
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=koncepto.io header.i=@koncepto.io
+ header.b="MLoR0pLn"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 46FYnH1vcVz9s7T
+ for <incoming@patchwork.ozlabs.org>;
+ Sat, 24 Aug 2019 07:04:51 +1000 (AEST)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id EA07BC22119; Fri, 23 Aug 2019 21:04:27 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=SPF_HELO_PASS, T_DKIM_INVALID
+ autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 5017BC22128;
+ Fri, 23 Aug 2019 21:04:20 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 28D29C21D74; Fri, 23 Aug 2019 21:04:02 +0000 (UTC)
+Received: from koncepto.io (koncepto.io [195.154.119.111])
+ by lists.denx.de (Postfix) with ESMTPS id 8C956C22127
+ for <u-boot@lists.denx.de>; Fri, 23 Aug 2019 21:04:00 +0000 (UTC)
+Received: from menoah.home (lfbn-1-8923-205.w193-250.abo.wanadoo.fr
+ [193.250.65.205])
+ by koncepto.io (Postfix) with ESMTPSA id E9520602D0;
+ Fri, 23 Aug 2019 23:03:59 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=koncepto.io;
+ s=default; t=1566594240;
+ bh=Mc23EDVcZaZMYgrrKwCQSFQQ7Ha0pSbWk3NULDE15hk=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=MLoR0pLn287FS4CiPTiVfu2Iqk3PldkFZkPW5rY0dTpiQFpSl15wRVyerSbmxDp1n
+ 4Erl2YMzlJwPQH/W1IuVqdYpsjX8/6qLUmK547M9G9meCW3aBy0yTsZYZ+oRFnh2cb
+ gI+jpjZkarOAsfTjMIpZoRSpkrys1TiWf2tJnwAnZNoze8FnGsdT7YyB9xniMekdmV
+ UhKOrY5eZTx/FyRfwVVB18sZ/lBfVda+X8yNzXlUdCGFiK4MSixCPCepZAzaZsI7/K
+ pHWsz47HljX7jEoNpa/kUcPbNTIwf5fSFbVaoFGgXGPlu25t3iFiyjWJOfVX/pzin/
+ wXRG/9pPQ5XEQ==
+From: Pierre-Jean Texier <pjtexier@koncepto.io>
+To: u-boot@lists.denx.de
+Date: Fri, 23 Aug 2019 23:03:19 +0200
+Message-Id: <1566594199-25314-5-git-send-email-pjtexier@koncepto.io>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1566594199-25314-1-git-send-email-pjtexier@koncepto.io>
+References: <1566594199-25314-1-git-send-email-pjtexier@koncepto.io>
+Cc: bjorn@haxx.se, michal.simek@xilinx.com, joe.hershberger@ni.com,
+ philip@philipmolloy.com
+Subject: [U-Boot] [PATCH 4/4] ci: add envtools support
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+This commit add envtools suppport to CI to verify if there
+is no build issues.
+
+Signed-off-by: Pierre-Jean Texier <pjtexier@koncepto.io>
+---
+ .gitlab-ci.yml | 7 +++++++
+ .travis.yml    | 4 ++++
+ 2 files changed, 11 insertions(+)
+
+diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
+index 84e79bf..a1c5b4f 100644
+--- a/.gitlab-ci.yml
++++ b/.gitlab-ci.yml
+@@ -145,6 +145,13 @@ Build tools-only:
+   script:
+     - make tools-only_config tools-only -j$(nproc)
+ 
++# Ensure env tools build
++Build envtools:
++  tags: [ 'all' ]
++  stage: testsuites
++  script:
++    - make tools-only_config envtools -j$(nproc)
++
+ Run binman, buildman, dtoc and patman testsuites:
+   tags: [ 'all' ]
+   stage: testsuites
+diff --git a/.travis.yml b/.travis.yml
+index d330dda..6adc754 100644
+--- a/.travis.yml
++++ b/.travis.yml
+@@ -361,6 +361,10 @@ matrix:
+     - name: "Build tools-only"
+       script:
+         - make tools-only_config tools-only -j$(nproc)
++    # Ensure env tools build
++    - name: "Build envtools"
++      script:
++        - make tools-only_config envtools -j$(nproc)
+ 
+     # test/py
+     - name: "test/py sandbox"
