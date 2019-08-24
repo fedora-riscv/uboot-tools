@@ -269,9 +269,8 @@ cp -p board/warp7/README builds/docs/README.warp7
 
 %files
 %doc README doc/imx doc/README.kwbimage doc/README.distro doc/README.gpt
-%doc doc/README.odroid doc/README.rockchip doc/README.uefi doc/uImage.FIT doc/README.arm64
+%doc doc/README.odroid doc/README.rockchip doc/uImage.FIT
 %doc doc/README.chromium builds/docs/*
-%doc doc/README.qemu-riscv doc/README.sifive-fu540 doc/README.ae350
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
 /lib/kernel/install.d/10-devicetree.install
