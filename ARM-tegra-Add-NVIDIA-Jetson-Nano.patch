@@ -298,7 +298,7 @@ index 000000000000..432179e92605
 + */
 +
 +#include <common.h>
-+#include <environment.h>
++#include <env.h>
 +#include <fdtdec.h>
 +#include <i2c.h>
 +#include <linux/libfdt.h>
