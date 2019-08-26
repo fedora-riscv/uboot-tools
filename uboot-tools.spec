@@ -27,6 +27,7 @@ Patch7:    dragonboard-fixes.patch
 Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 Patch10:   env-fix-build-error-for-envtools.patch
+Patch11:   Raspberry-Pi-32-64-support.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
