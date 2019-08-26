@@ -26,6 +26,7 @@ Patch6:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch7:    dragonboard-fixes.patch
 Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
+Patch10:   env-fix-build-error-for-envtools.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -242,7 +243,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 
 %files
 %doc README doc/imx doc/README.kwbimage doc/README.distro doc/README.gpt
-%doc doc/README.odroid doc/README.rockchip doc/README.uefi doc/uImage.FIT doc/README.arm64
+%doc doc/README.odroid doc/README.rockchip doc/uefi doc/uImage.FIT doc/arch/arm64.rst
 %doc doc/README.chromium builds/docs/*
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
