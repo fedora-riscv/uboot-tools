@@ -9,12 +9,12 @@ index 74743a5e..2e1f7fa9 100644
 +CONFIG_USE_PREBOOT=y
 +CONFIG_PREBOOT="setenv fdt_addr ${fdtcontroladdr}; fdt addr ${fdtcontroladdr};"
 diff --git a/configs/sifive_fu540_defconfig b/configs/sifive_fu540_defconfig
-index f1920374..5ff8e099 100644
+index 48865e5f..a8525793 100644
 --- a/configs/sifive_fu540_defconfig
 +++ b/configs/sifive_fu540_defconfig
-@@ -9,3 +9,5 @@ CONFIG_DISPLAY_CPUINFO=y
+@@ -9,3 +9,5 @@ CONFIG_MISC_INIT_R=y
+ CONFIG_DISPLAY_CPUINFO=y
  CONFIG_DISPLAY_BOARDINFO=y
- CONFIG_MISC_INIT_R=y
  CONFIG_OF_PRIOR_STAGE=y
 +CONFIG_USE_PREBOOT=y
 +CONFIG_PREBOOT="setenv fdt_addr ${fdtcontroladdr}; fdt addr ${fdtcontroladdr};"

@@ -30,6 +30,7 @@ Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 
 Patch20:   fix-extlinux-kconfig-preboot.patch
 Patch21:   env-fix-build-error-for-envtools.patch
+Patch22:   fu540-boot-mmc-pxe.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc

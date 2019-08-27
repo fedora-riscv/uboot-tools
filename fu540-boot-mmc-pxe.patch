@@ -1,0 +1,13 @@
+diff --git a/include/configs/sifive-fu540.h b/include/configs/sifive-fu540.h
+index ba4aa065..7eedc765 100644
+--- a/include/configs/sifive-fu540.h
++++ b/include/configs/sifive-fu540.h
+@@ -26,6 +26,8 @@
+ #define CONFIG_ENV_SIZE			SZ_128K
+ 
+ #define BOOT_TARGET_DEVICES(func) \
++	func(MMC, mmc, 0) \
++	func(PXE, pxe, na) \
+ 	func(DHCP, dhcp, na)
+ 
+ #include <config_distro_bootcmd.h>
