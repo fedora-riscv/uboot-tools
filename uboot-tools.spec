@@ -1,4 +1,4 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2019.10
@@ -293,6 +293,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Aug 26 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-0.1-rc3.0.riscv64
+- 2019.10 RC3
+
 * Fri Aug 23 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-0.1-rc2.0.riscv64
 - Run "virtio scan" before booting from VirtIO Block Device over PCIe transport
 - Add VIRTIO_PCI for RISC-V QEMU emulation
