@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2019.10
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -48,7 +48,7 @@ BuildRequires:  python2-libfdt
 BuildRequires:  SDL-devel
 BuildRequires:  swig
 %ifarch %{arm} aarch64
-#BuildRequires:  vboot-utils
+BuildRequires:  vboot-utils
 %endif
 %ifarch aarch64
 BuildRequires:  arm-trusted-firmware-armv8
@@ -258,6 +258,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Aug 27 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-0.3-rc3
+- 2019.10 RC3
+
 * Mon Aug 26 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-0.2-rc2
 - Temporarily disable Chrome devices due to unexpected retirement of vboot-utils
 
