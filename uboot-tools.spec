@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.10
-Release:   0.1%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Release:   0.1%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -28,7 +28,7 @@ Patch7:    dragonboard-fixes.patch
 Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 
-Patch20:   fix-extlinux-kconfig-preboot.patch
+Patch20:   sifive-fu540-remove-CONFIG_PREBOOT.patch
 Patch21:   env-fix-build-error-for-envtools.patch
 Patch22:   fu540-boot-mmc-pxe.patch
 
@@ -294,6 +294,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Fri Aug 30 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-0.1-rc3.1.riscv64
+- Remove CONFIG_PREBOOT for SiFive FU540
+
 * Mon Aug 26 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-0.1-rc3.0.riscv64
 - 2019.10 RC3
 
