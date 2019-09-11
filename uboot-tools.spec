@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.10
-Release:   0.3%{?candidate:.%{candidate}}%{?dist}
+Release:   0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -44,7 +44,7 @@ BuildRequires:  flex bison
 BuildRequires:  openssl-devel
 BuildRequires:  python2-devel
 BuildRequires:  python2-setuptools
-BuildRequires:  python2-libfdt
+#BuildRequires:  python2-libfdt
 BuildRequires:  SDL-devel
 BuildRequires:  swig
 %ifarch %{arm} aarch64
@@ -258,6 +258,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Sep 11 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-0.4-rc3
+- Minor fixes
+
 * Tue Aug 27 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-0.3-rc3
 - 2019.10 RC3
 
