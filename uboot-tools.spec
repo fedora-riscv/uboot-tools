@@ -29,10 +29,6 @@ Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 Patch10:   env-fix-build-error-for-envtools.patch
 
-Patch20:   sifive-fu540-remove-CONFIG_PREBOOT.patch
-Patch21:   env-fix-build-error-for-envtools.patch
-Patch22:   fu540-boot-mmc-pxe.patch
-
 BuildRequires:  bc
 BuildRequires:  dtc
 BuildRequires:  make
