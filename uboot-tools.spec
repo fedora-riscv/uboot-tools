@@ -1,8 +1,8 @@
-%global candidate rc3
+%global candidate rc4
 
 Name:      uboot-tools
 Version:   2019.10
-Release:   0.1%{?candidate:.%{candidate}}.1.riscv64%{?dist}
+Release:   0.5%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -27,6 +27,7 @@ Patch6:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch7:    dragonboard-fixes.patch
 Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
+Patch10:   env-fix-build-error-for-envtools.patch
 
 Patch20:   sifive-fu540-remove-CONFIG_PREBOOT.patch
 Patch21:   env-fix-build-error-for-envtools.patch
@@ -47,12 +48,7 @@ BuildRequires:  flex bison
 BuildRequires:  openssl-devel
 BuildRequires:  python2-devel
 BuildRequires:  python2-setuptools
-BuildRequires:  python2-libfdt
-%if 0%{?rhel} == 7
-BuildRequires:  python-pyelftools
-%else
-BuildRequires:  python2-pyelftools
-%endif
+#BuildRequires:  python2-libfdt
 BuildRequires:  SDL-devel
 BuildRequires:  swig
 %ifarch %{arm} aarch64
@@ -270,7 +266,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 
 %files
 %doc README doc/imx doc/README.kwbimage doc/README.distro doc/README.gpt
-%doc doc/README.odroid doc/README.rockchip doc/uImage.FIT
+%doc doc/README.odroid doc/README.rockchip doc/uefi doc/uImage.FIT doc/arch/arm64.rst
 %doc doc/README.chromium builds/docs/*
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
@@ -294,16 +290,20 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Fri Aug 30 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-0.1-rc3.1.riscv64
-- Remove CONFIG_PREBOOT for SiFive FU540
+* Tue Sep 24 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-0.5-rc4.0.riscv64
+- Add support for RISC-V (riscv64)
 
-* Mon Aug 26 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-0.1-rc3.0.riscv64
+* Mon Sep 23 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-0.5-rc4
+- 2019.10 RC4
+
+* Wed Sep 11 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-0.4-rc3
+- Minor fixes
+
+* Tue Aug 27 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-0.3-rc3
 - 2019.10 RC3
 
-* Fri Aug 23 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-0.1-rc2.0.riscv64
-- Run "virtio scan" before booting from VirtIO Block Device over PCIe transport
-- Add VIRTIO_PCI for RISC-V QEMU emulation
-- Add support for RISC-V (riscv64)
+* Mon Aug 26 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-0.2-rc2
+- Temporarily disable Chrome devices due to unexpected retirement of vboot-utils
 
 * Wed Aug 14 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-0.1-rc2
 - 2019.10 RC2
