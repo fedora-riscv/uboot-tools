@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.10
-Release:   0.5%{?candidate:.%{candidate}}%{?dist}
+Release:   0.5%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -28,6 +28,15 @@ Patch7:    dragonboard-fixes.patch
 Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 Patch10:   env-fix-build-error-for-envtools.patch
+
+# PXE depends on fdt_addr (mandatory)
+# fdt_addr is an address to DTB in HW (e.g. ROM)
+# While off-chip NVM QSPI Flash is mapped to the memory our DTB comes from
+# FSBL or OpenSBI (most likely).
+# Both (FSBL and OpenSBI) incl. the latest DTB directly from the kernel build.
+# Thus we have to set fdt_addr to the save value as fdt_addr_r which matches
+# the location where OpenSBI will place embedded DTB.
+Patch20:   riscv64-set-fdt_addr.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -286,6 +295,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Sep 26 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-0.5-rc4.1.riscv64
+- Set fdt_addr to fdt_addr_r value for PXE/EXTLINUX
+
 * Tue Sep 24 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-0.5-rc4.0.riscv64
 - Add support for RISC-V (riscv64)
 
