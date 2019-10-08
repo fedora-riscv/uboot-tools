@@ -1,0 +1,106 @@
+From patchwork Tue Sep 24 15:10:24 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Mian Yousaf Kaukab <ykaukab@suse.de>
+X-Patchwork-Id: 1166676
+X-Patchwork-Delegate: xypron.glpk@gmx.de
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 46d4Ps4qsmz9sP3
+ for <incoming@patchwork.ozlabs.org>;
+ Wed, 25 Sep 2019 01:10:41 +1000 (AEST)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 23898C21E2F; Tue, 24 Sep 2019 15:10:34 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=none autolearn=unavailable
+ autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id A6013C21C4A;
+ Tue, 24 Sep 2019 15:10:32 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id CEBD7C21C4A; Tue, 24 Sep 2019 15:10:30 +0000 (UTC)
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ by lists.denx.de (Postfix) with ESMTPS id EC062C21C38
+ for <u-boot@lists.denx.de>; Tue, 24 Sep 2019 15:10:26 +0000 (UTC)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 6EC7DABF4;
+ Tue, 24 Sep 2019 15:10:26 +0000 (UTC)
+From: Mian Yousaf Kaukab <ykaukab@suse.de>
+To: u-boot@lists.denx.de
+Date: Tue, 24 Sep 2019 17:10:24 +0200
+Message-Id: <20190924151024.13297-1-ykaukab@suse.de>
+X-Mailer: git-send-email 2.16.4
+Cc: xypron.glpk@gmx.de, swarren@nvidia.com
+Subject: [U-Boot] [PATCH] Revert "ARM: tegra: reserve unmapped RAM so EFI
+ doesn't use it"
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+MIME-Version: 1.0
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+This reverts commit 0797f7f0b7e1d7853e2842ddc235ffef139fa792.
+
+Tegra specific solution is not required any more as efi core has been
+made aware of ram_top with the following commit:
+7b78d6438a efi_loader: Reserve unaccessible memory
+
+Signed-off-by: Mian Yousaf Kaukab <ykaukab@suse.de>
+Tested-by: Stephen Warren <swarren@nvidia.com>
+---
+ arch/arm/mach-tegra/board2.c | 14 --------------
+ 1 file changed, 14 deletions(-)
+
+diff --git a/arch/arm/mach-tegra/board2.c b/arch/arm/mach-tegra/board2.c
+index f13bd256cc..07f54f0684 100644
+--- a/arch/arm/mach-tegra/board2.c
++++ b/arch/arm/mach-tegra/board2.c
+@@ -6,7 +6,6 @@
+ 
+ #include <common.h>
+ #include <dm.h>
+-#include <efi_loader.h>
+ #include <env.h>
+ #include <errno.h>
+ #include <ns16550.h>
+@@ -224,19 +223,6 @@ int board_early_init_f(void)
+ 
+ int board_late_init(void)
+ {
+-#if CONFIG_IS_ENABLED(EFI_LOADER)
+-	if (gd->bd->bi_dram[1].start) {
+-		/*
+-		 * Only bank 0 is below board_get_usable_ram_top(), so all of
+-		 * bank 1 is not mapped by the U-Boot MMU configuration, and so
+-		 * we must prevent EFI from using it.
+-		 */
+-		efi_add_memory_map(gd->bd->bi_dram[1].start,
+-				   gd->bd->bi_dram[1].size >> EFI_PAGE_SHIFT,
+-				   EFI_BOOT_SERVICES_DATA, false);
+-	}
+-#endif
+-
+ #if defined(CONFIG_TEGRA_SUPPORT_NON_SECURE)
+ 	if (tegra_cpu_is_non_secure()) {
+ 		printf("CPU is in NS mode\n");

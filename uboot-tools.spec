@@ -1,8 +1,8 @@
-%global candidate rc4
+#global candidate rc1
 
 Name:      uboot-tools
 Version:   2019.10
-Release:   0.5%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -26,7 +26,8 @@ Patch6:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch7:    dragonboard-fixes.patch
 Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
-Patch10:   env-fix-build-error-for-envtools.patch
+Patch10:   Revert-spl-imx6-Let-spl_boot_device-return-USDHC1-or.patch
+Patch11:   Revert-ARM-tegra-reserve-unmapped-RAM-so-EFI-doesn-t-use-it.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -257,6 +258,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Oct  7 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-1
+- 2019.10
+
 * Mon Sep 23 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-0.5-rc4
 - 2019.10 RC4
 
