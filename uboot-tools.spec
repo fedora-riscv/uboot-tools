@@ -1,8 +1,8 @@
-%global candidate rc4
+#global candidate rc1
 
 Name:      uboot-tools
 Version:   2019.10
-Release:   0.5%{?candidate:.%{candidate}}.1.riscv64%{?dist}
+Release:   1%{?candidate:.%{candidate}}.0.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -27,7 +27,8 @@ Patch6:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch7:    dragonboard-fixes.patch
 Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
-Patch10:   env-fix-build-error-for-envtools.patch
+Patch10:   Revert-spl-imx6-Let-spl_boot_device-return-USDHC1-or.patch
+Patch11:   Revert-ARM-tegra-reserve-unmapped-RAM-so-EFI-doesn-t-use-it.patch
 
 # PXE depends on fdt_addr (mandatory)
 # fdt_addr is an address to DTB in HW (e.g. ROM)
@@ -295,11 +296,11 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Thu Sep 26 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-0.5-rc4.1.riscv64
-- Set fdt_addr to fdt_addr_r value for PXE/EXTLINUX
-
-* Tue Sep 24 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-0.5-rc4.0.riscv64
+* Wed Oct  9 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-1.0.riscv64
 - Add support for RISC-V (riscv64)
+
+* Mon Oct  7 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-1
+- 2019.10
 
 * Mon Sep 23 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-0.5-rc4
 - 2019.10 RC4
