@@ -39,6 +39,17 @@ Patch11:   Revert-ARM-tegra-reserve-unmapped-RAM-so-EFI-doesn-t-use-it.patch
 # the location where OpenSBI will place embedded DTB.
 Patch20:   riscv64-set-fdt_addr.patch
 
+# Set bootargs (console and earlycon)
+# Fix fdt by use cp.l on QEMU (fixed in 5.4, corruption of DTB happens in
+# kernel)
+# https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?h=v5.4-rc2&id=922b0375fc93fb1a20c5617e37c389c26bbccb70
+# https://patchwork.kernel.org/patch/11165207/
+Patch21:   riscv-bootargs-preboot.patch
+
+# https://patchwork.ozlabs.org/patch/1173557/
+# https://lists.denx.de/pipermail/u-boot/2019-October/385906.html
+Patch22:   riscv-align-boot-image-header.patch
+
 BuildRequires:  bc
 BuildRequires:  dtc
 BuildRequires:  make

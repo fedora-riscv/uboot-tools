@@ -1,0 +1,141 @@
+From patchwork Wed Oct  9 01:14:02 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Atish Patra <atish.patra@wdc.com>
+X-Patchwork-Id: 1173557
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=wdc.com
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=wdc.com header.i=@wdc.com header.b="gtFhR2Pl";
+ dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 46nx9M2gjMz9sPJ
+ for <incoming@patchwork.ozlabs.org>;
+ Wed,  9 Oct 2019 12:15:33 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id E8E79C21EF7; Wed,  9 Oct 2019 01:15:23 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=T_DKIM_INVALID
+ autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 0C1C6C21DEC;
+ Wed,  9 Oct 2019 01:15:22 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id CC46CC21DEC; Wed,  9 Oct 2019 01:15:19 +0000 (UTC)
+Received: from esa3.hgst.iphmx.com (esa3.hgst.iphmx.com [216.71.153.141])
+ by lists.denx.de (Postfix) with ESMTPS id C8941C21C38
+ for <u-boot@lists.denx.de>; Wed,  9 Oct 2019 01:15:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+ d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
+ t=1570583719; x=1602119719;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=svAg//dsQ1xSEGIXIiHkuIHltzOaETv1pGmecUe8B9g=;
+ b=gtFhR2Plcfn/+ugh0ZySqZ2uPyFAKoSPRAr1i9Ns8gxJceu1whMVdkzl
+ srFuy8/er88wP3FYxeU7AGFT3suYndiT3nbArtM1N6McHyzgYU/qVs5HD
+ CVM1IaH8z3w/4fkiU9wCsrw1guGNWyrf9roAg2knx3piFhNDcVZM62Vp+
+ UEpDFRJztTgPl0QIhoFVky0+Hf3KdmXV+OOOzzm0Z7Q5v50aXSE1vD1+J
+ ln+KR4SsqhtiQQf8UJI77INRz2Lxs7TNdtv3vfjoyXr8H1H86BFejeEyp
+ 0HU5xbyaxQhEuOqW9Yxo7PY4KefFfH7UdQX4utU4QfnBbRePmlt27ZrKG w==;
+IronPort-SDR: sgogNYpUsZGzLeDJAWo084U0k0ZU9wpDWm3t4S454aWfuYpvgVUqpjsMDz8EIKqqvGWKYIEeXn
+ dcI7HvYw88Li02yYVMZ3EgWbSdYyB6eH0Y2A5iQ9GkweAgHHdlGDKeFMkR15U0zZ3ykgENByCh
+ fwVVSj21S10S0JA8Kj78n//9wJ8ilZY73VZK5xfmPp667JpJkR9qeQHHX0xRbyuclLP4vZq8Aj
+ Q5mZFiCs9B/Bc5rHVqKwnFxb4GmA47eecNgTraHiPVP5F+LNWvX6Pp6v4f9DQ2XSyRALVZXBLr
+ zjs=
+X-IronPort-AV: E=Sophos;i="5.67,273,1566835200"; d="scan'208";a="124526357"
+Received: from uls-op-cesaip02.wdc.com (HELO uls-op-cesaep02.wdc.com)
+ ([199.255.45.15])
+ by ob1.hgst.iphmx.com with ESMTP; 09 Oct 2019 09:15:16 +0800
+IronPort-SDR: Buy5knbyrOlIPw883De4JQRCyL13MC+JUKv2QQHfk2RqqRn47FtggQ3q0Vym3kSgxnxeA7Yc8x
+ riyH9+bdnQg6eihgDLKWH/vRjEHs/Z0ERN27PJ2uKZyqtzxM7HSXwvh3RC0gdL/qfIzo2i9GJm
+ F0RQsBIbtZdpDd/eEfImVJs7RIYMYgPB1LwqfxvjDCybjznjURM3tJbCGGAK5Xjqd3UwSO1rz+
+ Aiw96+5ut5Px6otY5gmqnIIqaUh8WaH5y8DsfxEZYXy5cVFkOzvuR9clYRIe7kZ5/9lWkODh+i
+ mQYFP6OQprMQCadWgutUuUbq
+Received: from uls-op-cesaip01.wdc.com ([10.248.3.36])
+ by uls-op-cesaep02.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Oct 2019 18:11:16 -0700
+IronPort-SDR: 6InoWq/jhVafNMtixHXFGtBARFkZWd63qbIi4fZHmKXP/zR0GpGae73S7qZZgZMwBjMELgmlUq
+ N0P84XWhIgTwZTu5mhZ72pljZkiUDKdRrA441zR0F+quzmQpoCTUlzjxUUNjgnpu3DygmWNH6Y
+ bFdk85ApZmnCKpQWCotp2eTzsFpIOFWJJY0EAHJTKBEgGPqo47vtoz9bEKxtXPOZBk+LxDmPBx
+ ncKAhnuEoHrNlqPFbE7BYRK3Kz6A9odnkc9D4JXN9UBnjD9v4f6m0mg4Lqr4vYAtjB/AkV3PU9
+ mBc=
+WDCIronportException: Internal
+Received: from jedi-01.sdcorp.global.sandisk.com (HELO
+ jedi-01.int.fusionio.com) ([10.11.143.218])
+ by uls-op-cesaip01.wdc.com with ESMTP; 08 Oct 2019 18:15:16 -0700
+From: Atish Patra <atish.patra@wdc.com>
+To: u-boot@lists.denx.de
+Date: Tue,  8 Oct 2019 18:14:02 -0700
+Message-Id: <20191009011402.13728-1-atish.patra@wdc.com>
+X-Mailer: git-send-email 2.21.0
+MIME-Version: 1.0
+Cc: David Abdurachmanov <david.abdurachmanov@sifive.com>
+Subject: [U-Boot] [PATCH] RISC-V: Align boot image header with Linux.
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+The release linux boot image header in v5.3 is different from the
+one present in U-boot. Align the header with the new version. The
+changes in Linux are backward compatible. Previous u-boot releases
+with older header will continue to work as well. As v5.3 kernel is
+the first one to support image header, there is no compatibility
+issue between new U-boot (with this patch) and older kernel.
+
+Signed-off-by: Atish Patra <atish.patra@wdc.com>
+---
+ arch/riscv/lib/image.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/arch/riscv/lib/image.c b/arch/riscv/lib/image.c
+index d063beb7dfbe..41fca5939020 100644
+--- a/arch/riscv/lib/image.c
++++ b/arch/riscv/lib/image.c
+@@ -14,20 +14,21 @@
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+-/* ASCII version of "RISCV" defined in Linux kernel */
+-#define LINUX_RISCV_IMAGE_MAGIC 0x5643534952
++/* ASCII version of "RSC\0x5" defined in Linux kernel */
++#define LINUX_RISCV_IMAGE_MAGIC 0x05435352
+ 
+ struct linux_image_h {
+ 	uint32_t	code0;		/* Executable code */
+ 	uint32_t	code1;		/* Executable code */
+ 	uint64_t	text_offset;	/* Image load offset */
+ 	uint64_t	image_size;	/* Effective Image size */
+-	uint64_t	res1;		/* reserved */
++	uint64_t	flags;		/* kernel flags(little endian) */
++	uint32_t	version;	/* version of the header */
++	uint32_t	res1;		/* reserved */
+ 	uint64_t	res2;		/* reserved */
+ 	uint64_t	res3;		/* reserved */
+-	uint64_t	magic;		/* Magic number */
++	uint32_t	magic;		/* Magic number */
+ 	uint32_t	res4;		/* reserved */
+-	uint32_t	res5;		/* reserved */
+ };
+ 
+ int booti_setup(ulong image, ulong *relocated_addr, ulong *size,
