@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.10
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -28,6 +28,9 @@ Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 Patch10:   Revert-spl-imx6-Let-spl_boot_device-return-USDHC1-or.patch
 Patch11:   Revert-ARM-tegra-reserve-unmapped-RAM-so-EFI-doesn-t-use-it.patch
+Patch12:   rockchip-rk3399-rock960-Update-config-for-TPL.patch
+Patch13:   rockchip-dts-rk3328-rock64-Add-same-as-spl-order.patch
+Patch14:   rockchip-rk3328-Fix-memory-instability-on-ROCK64.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -129,6 +132,9 @@ do
   # End ATF
   make $(echo $board)_defconfig O=builds/$(echo $board)/
   make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
+  if [[ " ${rk3328[*]} " == *" $board "* ]]; then
+    make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} u-boot.itb V=1 O=builds/$(echo $board)/
+  fi
   if [[ " ${rk3399[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3399"
     builds/$(echo $board)/tools/mkimage -n rk3399 -T rksd  -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_sd.img
@@ -195,7 +201,7 @@ done
 for board in $(cat %{_arch}-boards)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
- for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/smdkv310-spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin spl_sd.img spl_spi.img
+ for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/smdkv310-spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-nodtb-tegra.bin u-boot-spl.kwb u-boot-sunxi-with-spl.bin spl_sd.img spl_spi.img idbloader.img
  do
   if [ -f builds/$(echo $board)/$(echo $file) ]; then
     install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
@@ -258,6 +264,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Oct  9 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-2
+- Fixes for Rockchips rk3328 and rk3399 platforms
+
 * Mon Oct  7 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-1
 - 2019.10
 
