@@ -1,0 +1,290 @@
+From patchwork Thu Oct 10 21:23:17 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Atish Patra <atish.patra@wdc.com>
+X-Patchwork-Id: 1174807
+X-Patchwork-Delegate: trini@ti.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=wdc.com
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=wdc.com header.i=@wdc.com header.b="jLbUoQO5";
+ dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 46q3wm58g1z9s7T
+ for <incoming@patchwork.ozlabs.org>;
+ Fri, 11 Oct 2019 08:23:34 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 936A1C21E13; Thu, 10 Oct 2019 21:23:31 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=T_DKIM_INVALID
+ autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id E723AC21C38;
+ Thu, 10 Oct 2019 21:23:27 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 385B1C21C38; Thu, 10 Oct 2019 21:23:26 +0000 (UTC)
+Received: from esa4.hgst.iphmx.com (esa4.hgst.iphmx.com [216.71.154.42])
+ by lists.denx.de (Postfix) with ESMTPS id 37872C21C27
+ for <u-boot@lists.denx.de>; Thu, 10 Oct 2019 21:23:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+ d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
+ t=1570742605; x=1602278605;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=Kp4i9HSKZ54C5mzMriNg89Nhk+VaBisYH/XOTqfSl4E=;
+ b=jLbUoQO5C/ZQCZ0SR+j5DgTnEkj86ErU1+lf8lxjyoIKLzn66uEknDG9
+ /tRe9acH8qooP2fdyOLs8QsHTFfaf10P/0Ys5FUIKeD1DFVksnIkH3dIj
+ A2m5arryrA5KvhdYMJqZkmV7Yj5X7B1i/Ceptnyn1GWAgjuCfQuiaG9cx
+ Barh2ZenBQkpTpa+SE5lnNcTQiJDpnvxhoiKkiSvaECx0Mv8qFFCBlZTf
+ Ztgz4Geld8p+8DSqxfuevNbzwU03CwAishA5lyCqRsn4TKYTLiQSsUjJa
+ ulZoeJWT0NKwC9qr13OwYgmmvHyAivnN6StRmLwQRmqOUe4EFlCM3H6jr g==;
+IronPort-SDR: TwtnnsJy/N00N83EtuiWHVWsh2VFqg7rc28xVqFc7H/NBZMX//1pVrhxcRdYwAY1REc3H45wX9
+ vzCshumIJa7Lb++uKHaWfUrIKnJfJv2fz8JdA9GMtSqgjebXPthQAedOM+gMDahv1Zb6q+o1vV
+ p6YRbznrXtzqlIwPnbaoqs+6BkfMxWSzRABM6ydvqQ7a9lYpcGOuVHWRPR4xq7/I8z4lN1pZAM
+ RHOQu7NPPaippZV/eKdblYChITakYGJwd5Pkk8bb4ODcMpE+uU32JB+yjCH1vc7LFpa0wz+OF3
+ ZmM=
+X-IronPort-AV: E=Sophos;i="5.67,281,1566835200"; d="scan'208";a="120282489"
+Received: from h199-255-45-15.hgst.com (HELO uls-op-cesaep02.wdc.com)
+ ([199.255.45.15])
+ by ob1.hgst.iphmx.com with ESMTP; 11 Oct 2019 05:23:23 +0800
+IronPort-SDR: 1LgY18tiY3vOm+mPdKRhTMfwqngixI4mOg6LEGQawZgPnwtSvk30LW5mGAhjr71XS1VNnWitJo
+ ZnvWLumBpWTvrcMGLbslV5jVqZQ+NOfA5NVOGRUVVjd7ARikTNZlRy8ytdJoCnHzXPYXkVCIX+
+ oznGSQBvjfnL3bg9tFmS62GpVy1zbAgKdzVC1LZCEjUrXN1wF9qt1zOEEgRefKOpCXi+vT4iT2
+ 6sPzJIL4z9CBm7gBsh8qYpjGG68mKEzWbLZwcIu1OY3OkSB3fLw+uc0NCUvl5CUVNU50tq/pTB
+ K0THcmrxb75ovie2yGWsDvwz
+Received: from uls-op-cesaip01.wdc.com ([10.248.3.36])
+ by uls-op-cesaep02.wdc.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 10 Oct 2019 14:19:20 -0700
+IronPort-SDR: mHx+paImtg13Y6VpyjKx/DHfspMkO9tPvRKNExNKsGOi2npXC0K7EvZvyX7BgEjaAn2qWUC9ca
+ rsWGJjDp6SLRYIveYCVqRTlL2sUTMv5dhS8VQxBAr/bXFZTns4kTSObcoQ+CUg1Rcsnx1URNGJ
+ NITy8IWCmmxM432KYP7c9G1dAqm2mCYcEJs6YaQcXtJYdZ9rHqE8Q4kfrGsAgssIW9XMrAquLi
+ dLhyXKTsqSMt/v+6RMbgzH58kiGy+EScEWfjsZ7BpDRoNDczEvPqXq+kvSW3SXx0X+Wx4tNzkt
+ PMk=
+WDCIronportException: Internal
+Received: from jedi-01.sdcorp.global.sandisk.com (HELO
+ jedi-01.int.fusionio.com) ([10.11.143.218])
+ by uls-op-cesaip01.wdc.com with ESMTP; 10 Oct 2019 14:23:23 -0700
+From: Atish Patra <atish.patra@wdc.com>
+To: u-boot@lists.denx.de
+Date: Thu, 10 Oct 2019 14:23:17 -0700
+Message-Id: <20191010212317.3884-1-atish.patra@wdc.com>
+X-Mailer: git-send-email 2.21.0
+MIME-Version: 1.0
+Cc: david.abdurachmanov@sifive.com, Joe Hershberger <joe.hershberger@ni.com>, 
+ Alexander Graf <agraf@csgraf.de>
+Subject: [U-Boot] [RFC/RFT U-Boot PATCH] image: Add Image.gz parsing support
+ in booti.
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Add gz parsing logic so that booti can parse both Image
+and Image.gz to boot Linux. Currently, it is difficult to calculate
+a safe address for every board where the Image.gz can be decompressed.
+It is also not possible to figure out the size of the compressed file
+as well. Thus, user need to set two additional environment variables
+kernel_gz_addr_r and kernel_gz_size to make Image.gz work.
+
+Tested on HiFive Unleashed and Qemu for RISC-V.
+
+Signed-off-by: Atish Patra <atish.patra@wdc.com>
+---
+I could not test this patch on any ARM64 devices due to lack of
+access to any ARM64 board. If anybody can test it on ARM64, that
+would be great.
+---
+ cmd/booti.c                | 39 ++++++++++++++++++++++++++-
+ doc/README.distro          | 11 ++++++++
+ doc/board/sifive/fu540.rst | 55 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 104 insertions(+), 1 deletion(-)
+
+diff --git a/cmd/booti.c b/cmd/booti.c
+index c36b0235df8c..6c37f84833d0 100644
+--- a/cmd/booti.c
++++ b/cmd/booti.c
+@@ -13,6 +13,9 @@
+ #include <linux/kernel.h>
+ #include <linux/sizes.h>
+ 
++DECLARE_GLOBAL_DATA_PTR;
++#define GZ_HEADER_0 0x1f
++#define GZ_HEADER_1 0x8b
+ /*
+  * Image booting support
+  */
+@@ -23,6 +26,10 @@ static int booti_start(cmd_tbl_t *cmdtp, int flag, int argc,
+ 	ulong ld;
+ 	ulong relocated_addr;
+ 	ulong image_size;
++	uint8_t *temp;
++	ulong dest;
++	ulong dest_end;
++	unsigned long gz_len;
+ 
+ 	ret = do_bootm_states(cmdtp, flag, argc, argv, BOOTM_STATE_START,
+ 			      images, 1);
+@@ -37,6 +44,34 @@ static int booti_start(cmd_tbl_t *cmdtp, int flag, int argc,
+ 		debug("*  kernel: cmdline image address = 0x%08lx\n", ld);
+ 	}
+ 
++	temp = map_sysmem(ld, 0);
++
++	if (*(temp)  == GZ_HEADER_0 && *(temp+1) == GZ_HEADER_1) {
++		dest = env_get_ulong("kernel_gz_addr_r", 16, 0);
++		gz_len = env_get_ulong("kernel_gz_size", 16, 0);
++		if (!dest || !gz_len) {
++			puts("kernel_gz_addr_r or kernel_gz_size is not provided for Image.gz!\n");
++			return -EINVAL;
++		}
++		if (dest < gd->ram_base || dest > gd->ram_top) {
++			puts("kernel_gz_addr_r size is outside of dram range!\n");
++			return -EINVAL;
++		}
++
++		debug("Image.gz of size = 0x%08lx will be decompressed at 0x%08lx\n",
++		      gz_len, (ulong)dest);
++
++		ret = image_decomp(IH_COMP_GZIP, 0, ld, IH_TYPE_KERNEL,
++					 (void *)dest, (void *)ld, gz_len,
++					 CONFIG_SYS_BOOTM_LEN, &dest_end);
++		if (ret)
++			return ret;
++		/* dest_end contains the uncompressed Image size */
++		memmove((void *) ld, (void *)dest, dest_end);
++		unmap_sysmem((void *)dest);
++	}
++	unmap_sysmem((void *)ld);
++
+ 	ret = booti_setup(ld, &relocated_addr, &image_size, false);
+ 	if (ret != 0)
+ 		return 1;
+@@ -96,10 +131,12 @@ int do_booti(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+ #ifdef CONFIG_SYS_LONGHELP
+ static char booti_help_text[] =
+ 	"[addr [initrd[:size]] [fdt]]\n"
+-	"    - boot Linux 'Image' stored at 'addr'\n"
++	"    - boot Linux 'Image' or Image.gz stored at 'addr'\n"
+ 	"\tThe argument 'initrd' is optional and specifies the address\n"
+ 	"\tof an initrd in memory. The optional parameter ':size' allows\n"
+ 	"\tspecifying the size of a RAW initrd.\n"
++	"\tIn order to boot from Image.gz, user have to set kernel_gz_addr_r\n"
++	"\tand kernel_gz_size enviornment variables beforehand.\n"
+ #if defined(CONFIG_OF_LIBFDT)
+ 	"\tSince booting a Linux kernel requires a flat device-tree, a\n"
+ 	"\tthird argument providing the address of the device-tree blob\n"
+diff --git a/doc/README.distro b/doc/README.distro
+index ab6e6f4e74be..dbf6eef07e35 100644
+--- a/doc/README.distro
++++ b/doc/README.distro
+@@ -246,6 +246,17 @@ kernel_addr_r:
+ 
+   A size of 16MB for the kernel is likely adequate.
+ 
++kernel_gz_addr_r:
++  Optional. This is only required if user wants to boot Linux from a Image.gz
++  using booti command. It represents the location in RAM where a Image.gz will
++  be decompressed temporarily. Once the decompression is complete, decompressed
++  data will be moved kernel_addr_r for booting.
++
++kernel_gz_size:
++  Optional. This is only required if user wants to boot Linux from a Image.gz
++  using booti command. It represents the size of the Image.gz file. The size
++  has to at least the size of Image.gz file for decompression to succeed.
++
+ pxefile_addr_r:
+ 
+   Mandatory. The location in RAM where extlinux.conf will be loaded to prior
+diff --git a/doc/board/sifive/fu540.rst b/doc/board/sifive/fu540.rst
+index 7807f5b2c128..ad4485eb7cdb 100644
+--- a/doc/board/sifive/fu540.rst
++++ b/doc/board/sifive/fu540.rst
+@@ -138,6 +138,10 @@ load uImage.
+    => setenv netmask 255.255.252.0
+    => setenv serverip 10.206.4.143
+    => setenv gateway 10.206.4.1
++
++If you want to use a flat kernel image such as Image file
++
++.. code-block:: none
+    => tftpboot ${kernel_addr_r} /sifive/fu540/Image
+    ethernet@10090000: PHY present at 0
+    ethernet@10090000: Starting autonegotiation...
+@@ -177,6 +181,57 @@ load uImage.
+             1.2 MiB/s
+    done
+    Bytes transferred = 8867100 (874d1c hex)
++
++Or if you want to use a compressed kernel image file such as Image.gz
++
++.. code-block:: none
++   => tftpboot ${kernel_addr_r} /sifive/fu540/Image
++   ethernet@10090000: PHY present at 0
++   ethernet@10090000: Starting autonegotiation...
++   ethernet@10090000: Autonegotiation complete
++   ethernet@10090000: link up, 1000Mbps full-duplex (lpa: 0x3c00)
++   Using ethernet@10090000 device
++   TFTP from server 10.206.4.143; our IP address is 10.206.7.133
++   Filename '/sifive/fu540/Image'.
++   Load address: 0x84000000
++   Loading: #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            #################################################################
++            ##########################################
++            1.2 MiB/s
++   done
++   Bytes transferred = 4809458 (4962f2 hex)
++   =>setenv kernel_gz_addr_r 0x90000000
++   =>setenv kernel_gz_size 0x500000
++
++By this time, correct kernel image is loaded and required enviornment variables
++are set. You can proceed to load the ramdisk and device tree from the tftp server
++as well.
++
++.. code-block:: none
+    => tftpboot ${ramdisk_addr_r} /sifive/fu540/uRamdisk
+    ethernet@10090000: PHY present at 0
+    ethernet@10090000: Starting autonegotiation...

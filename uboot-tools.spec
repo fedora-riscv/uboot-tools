@@ -53,6 +53,16 @@ Patch21:   riscv-bootargs-preboot.patch
 # https://lists.denx.de/pipermail/u-boot/2019-October/385906.html
 Patch22:   riscv-align-boot-image-header.patch
 
+# Not upstream
+# Adds support for Image.gz to booti (RFC/RFT)
+# See: https://patchwork.ozlabs.org/patch/1174807/
+Patch23:   image-add-image.gz-parsing-support-in-booti.patch
+
+# Not upstream
+# See: https://lore.kernel.org/linux-riscv/mvm5zkrhe8q.fsf@suse.de/T/#t
+# Increase stack from 8KiB to 16KiB to avoid issues bringing up harts online
+Patch24:   riscv-increase-stack-size-to-16KiB.patch
+
 BuildRequires:  bc
 BuildRequires:  dtc
 BuildRequires:  make
