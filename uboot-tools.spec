@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.10
-Release:   2%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Release:   2%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -62,6 +62,10 @@ Patch23:   image-add-image.gz-parsing-support-in-booti.patch
 # See: https://lore.kernel.org/linux-riscv/mvm5zkrhe8q.fsf@suse.de/T/#t
 # Increase stack from 8KiB to 16KiB to avoid issues bringing up harts online
 Patch24:   riscv-increase-stack-size-to-16KiB.patch
+
+# Not upstream
+# Add 'addappend' label to  PXE/EXTLINUX configuration
+Patch25: uboot-addappend.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -323,6 +327,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Oct 28 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-2.1.riscv64
+- Add 'addappend' label to PXE/EXTLINUX configuration
+
 * Thu Oct 17 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-2.0.riscv64
 - Add support for RISC-V (riscv64)
 
