@@ -1,5 +1,5 @@
 diff --git a/cmd/pxe.c b/cmd/pxe.c
-index 2059975446..a25c966afd 100644
+index 2059975446..213a15b64e 100644
 --- a/cmd/pxe.c
 +++ b/cmd/pxe.c
 @@ -467,6 +467,7 @@ static int get_relfile_envaddr(cmd_tbl_t *cmdtp, const char *file_path, const ch
@@ -86,7 +86,12 @@ index 2059975446..a25c966afd 100644
   */
  static int label_boot(cmd_tbl_t *cmdtp, struct pxe_label *label)
  {
-@@ -691,10 +719,11 @@ static int label_boot(cmd_tbl_t *cmdtp, struct pxe_label *label)
+@@ -687,18 +715,26 @@ static int label_boot(cmd_tbl_t *cmdtp, struct pxe_label *label)
+ 	}
+ #endif
+ 
+-	if ((label->ipappend & 0x3) || label->append) {
++	if ((label->ipappend & 0x3) || label->append || label->addappend) {
  		char bootargs[CONFIG_SYS_CBSIZE] = "";
  		char finalbootargs[CONFIG_SYS_CBSIZE];
  
@@ -100,20 +105,18 @@ index 2059975446..a25c966afd 100644
  			       strlen(ip_str), strlen(mac_str),
  			       sizeof(bootargs));
  			return 1;
-@@ -702,6 +731,12 @@ static int label_boot(cmd_tbl_t *cmdtp, struct pxe_label *label)
- 			if (label->append)
- 				strncpy(bootargs, label->append,
- 					sizeof(bootargs));
+ 		} else {
 +			if (label->addappend) {
++				strncat(bootargs, env_get("bootargs"), CONFIG_SYS_CBSIZE - 1);
 +				if (strlen(bootargs) + 1 < CONFIG_SYS_CBSIZE)
 +					strcat(bootargs, " ");
 +				strncat(bootargs, label->addappend,
 +						CONFIG_SYS_CBSIZE - strlen(bootargs) - 1);
 +			}
- 			strcat(bootargs, ip_str);
- 			strcat(bootargs, mac_str);
- 
-@@ -849,6 +884,7 @@ enum token_type {
+ 			if (label->append)
+ 				strncpy(bootargs, label->append,
+ 					sizeof(bootargs));
+@@ -849,6 +885,7 @@ enum token_type {
  	T_KERNEL,
  	T_LINUX,
  	T_APPEND,
@@ -121,7 +124,7 @@ index 2059975446..a25c966afd 100644
  	T_INITRD,
  	T_LOCALBOOT,
  	T_DEFAULT,
-@@ -884,6 +920,7 @@ static const struct token keywords[] = {
+@@ -884,6 +921,7 @@ static const struct token keywords[] = {
  	{"linux", T_LINUX},
  	{"localboot", T_LOCALBOOT},
  	{"append", T_APPEND},
@@ -129,7 +132,7 @@ index 2059975446..a25c966afd 100644
  	{"initrd", T_INITRD},
  	{"include", T_INCLUDE},
  	{"devicetree", T_FDT},
-@@ -1308,6 +1345,10 @@ static int parse_label(char **c, struct pxe_menu *cfg)
+@@ -1308,6 +1346,10 @@ static int parse_label(char **c, struct pxe_menu *cfg)
  
  			break;
  
