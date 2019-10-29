@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.10
-Release:   2%{?candidate:.%{candidate}}.2.riscv64%{?dist}
+Release:   2%{?candidate:.%{candidate}}.3.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
