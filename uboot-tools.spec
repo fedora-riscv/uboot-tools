@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2019.10
-Release:   2%{?candidate:.%{candidate}}.3.riscv64%{?dist}
+Release:   2%{?candidate:.%{candidate}}.4.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -66,6 +66,10 @@ Patch24:   riscv-increase-stack-size-to-16KiB.patch
 # Not upstream
 # Add 'addappend' label to  PXE/EXTLINUX configuration
 Patch25: uboot-addappend.patch
+
+# Not upstream
+# Define kernel_gz_addr_r and kernel_gz_size for booti Image.gz support
+Patch26: uboot-riscv-def-kernel_gz_addr_r-kernel_gz_size.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -327,6 +331,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Oct 30 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-2.4.riscv64
+- Define kernel_gz_size and kernel_gz_addr_r for QEMU virt and SiFive FU540 boards
+  to support Image.gz with booti
+
 * Mon Oct 28 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2019.10-2.1.riscv64
 - Add 'addappend' label to PXE/EXTLINUX configuration
 
