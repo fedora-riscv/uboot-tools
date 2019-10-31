@@ -1,8 +1,8 @@
-#global candidate rc1
+%global candidate rc1
 
 Name:      uboot-tools
-Version:   2019.10
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Version:   2020.01
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -21,33 +21,37 @@ Patch1:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch2:    uefi-use-Fedora-specific-path-name.patch
 
 # Board fixes and enablement
-Patch5:    usb-kbd-fixes.patch
-Patch6:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-Patch7:    dragonboard-fixes.patch
-Patch8:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
-Patch9:    arm-tegra-defaine-fdtfile-for-all-devices.patch
-Patch10:   Revert-spl-imx6-Let-spl_boot_device-return-USDHC1-or.patch
-Patch11:   Revert-ARM-tegra-reserve-unmapped-RAM-so-EFI-doesn-t-use-it.patch
-Patch12:   rockchip-rk3399-rock960-Update-config-for-TPL.patch
-Patch13:   rockchip-dts-rk3328-rock64-Add-same-as-spl-order.patch
-Patch14:   rockchip-rk3328-Fix-memory-instability-on-ROCK64.patch
+Patch4:    usb-kbd-fixes.patch
+Patch5:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+Patch6:    dragonboard-fixes.patch
+Patch7:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
+Patch8:    arm-tegra-defaine-fdtfile-for-all-devices.patch
+Patch9:    rockchip-rk3399-rock960-Update-config-for-TPL.patch
+Patch10:   rockchip-dts-rk3328-rock64-Add-same-as-spl-order.patch
+Patch11:   rockchip-rk3328-Fix-memory-instability-on-ROCK64.patch
+Patch12:   fdt-Switch-to-the-latest-libfdt-sort-of.patch
+Patch13:   scripts-Convert-to-Python-3.patch
+Patch14:   tools-fix-version.h.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
 BuildRequires:  make
-# Added for .el7 rebuild, so newer gcc is used
+# Requirements for building on el7
 %if 0%{?rhel} == 7
 BuildRequires:  devtoolset-7-build
 BuildRequires:  devtoolset-7-binutils
 BuildRequires:  devtoolset-7-gcc
+BuildRequires:  python2-devel
+BuildRequires:  python3-setuptools
+BuildRequires:  python2-libfdt
 %else
 BuildRequires:  gcc
+BuildRequires:  python3-devel
+BuildRequires:  python3-setuptools
+BuildRequires:  python3-libfdt
 %endif
 BuildRequires:  flex bison
 BuildRequires:  openssl-devel
-BuildRequires:  python2-devel
-BuildRequires:  python2-setuptools
-#BuildRequires:  python2-libfdt
 BuildRequires:  SDL-devel
 BuildRequires:  swig
 %ifarch %{arm} aarch64
@@ -93,7 +97,7 @@ u-boot bootloader binaries for armv7 boards
 
 cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 .
 
-sed -i 's/python/python2/' arch/arm/mach-rockchip/make_fit_atf.py
+sed -i 's/python/python3/' arch/arm/mach-rockchip/make_fit_atf.py
 
 %build
 mkdir builds
@@ -264,6 +268,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Oct 30 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.1
+- 2020.01 RC1
+- Initial migration to python3
+
 * Wed Oct  9 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2019.10-2
 - Fixes for Rockchips rk3328 and rk3399 platforms
 

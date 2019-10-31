@@ -1,0 +1,3834 @@
+From patchwork Sun Oct 27 15:47:39 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1185044
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="OLvv7vbo"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 471Mj80TRNz9sP4
+ for <incoming@patchwork.ozlabs.org>;
+ Mon, 28 Oct 2019 02:49:16 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id C1488C21DE8; Sun, 27 Oct 2019 15:48:05 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 0832EC21DED;
+ Sun, 27 Oct 2019 15:48:04 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 48FAAC21E0B; Sun, 27 Oct 2019 15:47:57 +0000 (UTC)
+Received: from mail-io1-f65.google.com (mail-io1-f65.google.com
+ [209.85.166.65])
+ by lists.denx.de (Postfix) with ESMTPS id 07655C21D56
+ for <u-boot@lists.denx.de>; Sun, 27 Oct 2019 15:47:55 +0000 (UTC)
+Received: by mail-io1-f65.google.com with SMTP id s17so595539iol.12
+ for <u-boot@lists.denx.de>; Sun, 27 Oct 2019 08:47:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=abahsZfnM1sq5uDot8XlGXsVk6VOC5rkZagrEAXmrmY=;
+ b=OLvv7vbosEdFXyAm1n6xMHTkO7qmeEHLPLlsrw3tSOIPjiM9bsV0nRtz+sUqjIsFcB
+ EvRahajsrIIUh/GJAfcg/1Fw89weIlDo+Zp8BX80fovwImeO8CwMqHx72XCBkkv9BZr0
+ Ji4YRraMEmgcEWz6O7D6njjOEHAZAi3FhVxQ4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=abahsZfnM1sq5uDot8XlGXsVk6VOC5rkZagrEAXmrmY=;
+ b=ruvh1y4bGF8xgPcpZSR1z0qJyJYiIt+GWyaK1pevtpycG855kw6yDY+kQOD3XUJCli
+ 9QAsm7GJoBkWsECDMozC07Lv8543hh0EAC3knuXGpxuV/m5GBm6v+f+CswKzmlHeZlDP
+ 2+A3gMxMGPtLT8xq79e3SJ0fWVbzudBpT/pjWJpGFfveMhs6QKNIcvccpPvq88OwGQp5
+ Pe5Jtp+26Z0VayJP+6Chy0dkvO4CqDpvZ//2b1T7uMELi9wjeg4CDRBRqVy64Lwpevh1
+ u7almPHkrCDThJjOSfH+vJyIRDidS4t+1jmRNq8dnXuYfHq+nV2U/q75il5GRZTrhZnw
+ lhew==
+X-Gm-Message-State: APjAAAU1BKU3O4ZePyrr04Yx5Py0xIYfugtOXnmvoQCyKONrVJIX3SR3
+ O5XZIVRoLBlJRJNTES9CLsYNZb8G1BO0eQ==
+X-Google-Smtp-Source: APXvYqxUVsRrnUvkiaiXBmHYiGVUSGUIpaeReWu2LXcvxANHJUqCOHz/zamp7WBecv48liNYzE6yAQ==
+X-Received: by 2002:a5d:81c3:: with SMTP id t3mr11477950iol.300.1572191273768; 
+ Sun, 27 Oct 2019 08:47:53 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ v10sm1105693ila.81.2019.10.27.08.47.53
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 27 Oct 2019 08:47:53 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Sun, 27 Oct 2019 09:47:39 -0600
+Message-Id: <20191027154742.185672-2-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191027154742.185672-1-sjg@chromium.org>
+References: <20191027154742.185672-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>, Jerry Van Baren <vanbaren@cideas.com>
+Subject: [U-Boot] [PATCH 1/4] fdt: Add INT32_MAX to kernel.h for libfdt
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Unfortunately libfdt needs this value now, which is present in the
+stdint.h header. That file is just a placeholder in U-Boot and these sorts
+of constants appear in the linux/kernel.h header instead.
+
+To keep libfdt happy, add INT32_MAX too.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+Reviewed-by: Tom Rini <trini@konsulko.com>
+---
+
+ include/linux/kernel.h     | 2 ++
+ include/linux/libfdt_env.h | 1 +
+ 2 files changed, 3 insertions(+)
+
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index a85c15d8dc..5c7e5f635b 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -37,6 +37,8 @@
+ #define UINT32_MAX	U32_MAX
+ #define UINT64_MAX	U64_MAX
+ 
++#define INT32_MAX	S32_MAX
++
+ #define STACK_MAGIC	0xdeadbeef
+ 
+ #define REPEAT_BYTE(x)	((~0ul / 0xff) * (x))
+diff --git a/include/linux/libfdt_env.h b/include/linux/libfdt_env.h
+index e2bf79c7ee..cca7792acd 100644
+--- a/include/linux/libfdt_env.h
++++ b/include/linux/libfdt_env.h
+@@ -10,6 +10,7 @@
+ #define LIBFDT_ENV_H
+ 
+ #include <linux/string.h>
++#include <linux/kernel.h>
+ 
+ #include <asm/byteorder.h>
+ 
+
+From patchwork Sun Oct 27 15:47:40 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1185045
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="MqEvxjtp"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 471MjR57Jhz9sP4
+ for <incoming@patchwork.ozlabs.org>;
+ Mon, 28 Oct 2019 02:49:31 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 6686EC21DF3; Sun, 27 Oct 2019 15:48:24 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 1869DC21E08;
+ Sun, 27 Oct 2019 15:48:12 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id E6D8FC21DD7; Sun, 27 Oct 2019 15:47:58 +0000 (UTC)
+Received: from mail-io1-f68.google.com (mail-io1-f68.google.com
+ [209.85.166.68])
+ by lists.denx.de (Postfix) with ESMTPS id 7C972C21D83
+ for <u-boot@lists.denx.de>; Sun, 27 Oct 2019 15:47:56 +0000 (UTC)
+Received: by mail-io1-f68.google.com with SMTP id c6so7675309ioo.13
+ for <u-boot@lists.denx.de>; Sun, 27 Oct 2019 08:47:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=LIiA5MaJRaAEXdBlkgBiaOcAgQTDUT+yndeUQWFpJlE=;
+ b=MqEvxjtpT2gcgKufp7i5k40LlobyZHTglq8mBgj7hDw6YL7jxok6pAeyDhPnpJIgSw
+ 4uO7BupXeXWIBO62Xu35QcG7/FRcoTNqJIqhXe8LM3VBaPos2ZcRVqww5D5hAhDK4AQw
+ bNTQsJ3qG+tHEP5A+Dj6HOt2kGrabU0dqzNcU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=LIiA5MaJRaAEXdBlkgBiaOcAgQTDUT+yndeUQWFpJlE=;
+ b=LKYhXmb3hOgnMDMvNjbbIS9+7/I9fEyk39FyKebsFbzrpuWA15Q/s/oqyH4AlsqdkE
+ mLRsC5SvH6vdcrX8ur+1b2A3s7dt1WtXBejoFR3KtWp8883CIj9aRo1rgX1zjVtJyV6C
+ xHAeVlvBFLZcUSuvLLGCiiQ7MfL94du13QLBqRSf8ZNQYIgiJDJTW9ldP63YmYc2wai3
+ Fe0GxI6wUkCLIcz5NtWvRxPY5VYKSr2Mdo//q/A8XvaRgODQ/hnZV1h9lgA2uiAKFlpk
+ CEMDJAnY9cPpuBl30VLSkKpeLgVDsPtSc/CovBh2fWOL0CMDFPo92g673pOZJe2mKLg+
+ NtXg==
+X-Gm-Message-State: APjAAAXcLwAOSgi7r8fE5wdgwctme7q85Yw0gRWPD+JwbVkvJykvxCmW
+ N75OG3KTgtSseu1SeMCPJnWCu9HWvyyyPA==
+X-Google-Smtp-Source: APXvYqwxmm5wv0EptXFCNgTROuIExhbxeqKCssYocmrhkgwxbMtnYBmUqIgMZ/bhRGgK9+7iXfdlog==
+X-Received: by 2002:a6b:ab45:: with SMTP id
+ u66mr10352010ioe.282.1572191275234; 
+ Sun, 27 Oct 2019 08:47:55 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ v10sm1105693ila.81.2019.10.27.08.47.54
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 27 Oct 2019 08:47:54 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Sun, 27 Oct 2019 09:47:40 -0600
+Message-Id: <20191027154742.185672-3-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191027154742.185672-1-sjg@chromium.org>
+References: <20191027154742.185672-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>, Heinrich Schuchardt <xypron.glpk@gmx.de>, 
+ Jerry Van Baren <vanbaren@cideas.com>,
+ Chris Packham <judge.packham@gmail.com>, 
+ Marek Vasut <marek.vasut+renesas@gmail.com>
+Subject: [U-Boot] [PATCH 2/4] fdt: Add Kconfig options to control code size
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+For better or worse libfdt recent grew a lot of code that checks the
+validity of the device tree in great detail. When using unsigned or
+unverified data this makes things safer, but it does add to code size.
+
+Add some controls to select the trade-off between safety and code size.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+Reviewed-by: Tom Rini <trini@konsulko.com>
+---
+
+ lib/Kconfig         | 33 +++++++++++++++++++++++++++++++++
+ lib/libfdt/Makefile |  3 ++-
+ 2 files changed, 35 insertions(+), 1 deletion(-)
+
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 135f0b372b..b8a8509d72 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -464,6 +464,17 @@ config OF_LIBFDT
+ 	  particular compatible nodes. The library operates on a flattened
+ 	  version of the device tree.
+ 
++config OF_LIBFDT_ASSUME_MASK
++	hex "Mask of conditions to assume for libfdt"
++	depends on OF_LIBFDT || FIT
++	default 0
++	help
++	  Use this to change the assumptions made by libfdt about the
++	  device tree it is working with. A value of 0 means that no assumptions
++	  are made, and libfdt is able to deal with malicious data. A value of
++	  0xff means all assumptions are made and any invalid data may cause
++	  unsafe execution. See FDT_ASSUME_PERFECT, etc. in libfdt_internal.h
++
+ config OF_LIBFDT_OVERLAY
+ 	bool "Enable the FDT library overlay support"
+ 	depends on OF_LIBFDT
+@@ -481,6 +492,17 @@ config SPL_OF_LIBFDT
+ 	  particular compatible nodes. The library operates on a flattened
+ 	  version of the device tree.
+ 
++config SPL_OF_LIBFDT_ASSUME_MASK
++	hex "Mask of conditions to assume for libfdt"
++	depends on SPL_OF_LIBFDT || FIT
++	default 0xff
++	help
++	  Use this to change the assumptions made by libfdt in SPL about the
++	  device tree it is working with. A value of 0 means that no assumptions
++	  are made, and libfdt is able to deal with malicious data. A value of
++	  0xff means all assumptions are made and any invalid data may cause
++	  unsafe execution. See FDT_ASSUME_PERFECT, etc. in libfdt_internal.h
++
+ config TPL_OF_LIBFDT
+ 	bool "Enable the FDT library for TPL"
+ 	default y if TPL_OF_CONTROL
+@@ -491,6 +513,17 @@ config TPL_OF_LIBFDT
+ 	  particular compatible nodes. The library operates on a flattened
+ 	  version of the device tree.
+ 
++config TPL_OF_LIBFDT_ASSUME_MASK
++	hex "Mask of conditions to assume for libfdt"
++	depends on TPL_OF_LIBFDT || FIT
++	default 0xff
++	help
++	  Use this to change the assumptions made by libfdt in TPL about the
++	  device tree it is working with. A value of 0 means that no assumptions
++	  are made, and libfdt is able to deal with malicious data. A value of
++	  0xff means all assumptions are made and any invalid data may cause
++	  unsafe execution. See FDT_ASSUME_PERFECT, etc. in libfdt_internal.h
++
+ config FDT_FIXUP_PARTITIONS
+ 	bool "overwrite MTD partitions in DTS through defined in 'mtdparts'"
+ 	depends on OF_LIBFDT
+diff --git a/lib/libfdt/Makefile b/lib/libfdt/Makefile
+index ef5b6e29d4..5d3ae4e2f1 100644
+--- a/lib/libfdt/Makefile
++++ b/lib/libfdt/Makefile
+@@ -22,4 +22,5 @@ obj-y += fdt_ro.o
+ # U-Boot own file
+ obj-y += fdt_region.o
+ 
+-ccflags-y := -I$(srctree)/scripts/dtc/libfdt
++ccflags-y := -I$(srctree)/scripts/dtc/libfdt \
++	-DFDT_ASSUME_MASK=$(CONFIG_$(SPL_TPL_)OF_LIBFDT_ASSUME_MASK)
+
+From patchwork Sun Oct 27 15:47:41 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1185043
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="Km3HLVFS"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 471Mj24GRjz9sP4
+ for <incoming@patchwork.ozlabs.org>;
+ Mon, 28 Oct 2019 02:49:10 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 36A0FC21C57; Sun, 27 Oct 2019 15:48:15 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 91C75C21DCA;
+ Sun, 27 Oct 2019 15:48:08 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 10267C21C3F; Sun, 27 Oct 2019 15:48:00 +0000 (UTC)
+Received: from mail-il1-f196.google.com (mail-il1-f196.google.com
+ [209.85.166.196])
+ by lists.denx.de (Postfix) with ESMTPS id AA1EDC21DA1
+ for <u-boot@lists.denx.de>; Sun, 27 Oct 2019 15:47:57 +0000 (UTC)
+Received: by mail-il1-f196.google.com with SMTP id m16so5828165iln.13
+ for <u-boot@lists.denx.de>; Sun, 27 Oct 2019 08:47:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=f9j091HGp2Ydr+1kzeQuiITkGDV0YFlbsH5MDe99sOw=;
+ b=Km3HLVFSddKwc8pXuFSDPGBbjeCic5DMqZun5O47cczvgJrQ8LlBl4pfJ7xZcS7RTe
+ 9cYtAPvcvUIQD+txS2hu6LQEB2GDoNlhjct9vWfs6T8batEMjeAMwwH/AqRH3qpSoWzO
+ hUkcf8QeKggt4h+cxKR1Y0Zmn4bfvF661kIgw=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=f9j091HGp2Ydr+1kzeQuiITkGDV0YFlbsH5MDe99sOw=;
+ b=Fm5OiEv6zUL01KoYQ4mkFScsuXMrLVlwryyMxdEAKhFJdSBOkz2VcDsri9tNswdYPW
+ 6YT3sCaSPxoDUogXTsc48bvaXllzt0HwrCYj2SablIG6WLwktx9pHD/vJ4C/bTNdXr1o
+ 5Ns4KgGryZopUQlPIKSxObBNm0AQ8k1LQC9xNxrMfeIgFtxcLrxYIPSa1uW+st3pktLy
+ 60WtvpFHfA5HLglASuSM2RlTdzqDlyVy6CZs+limrgusYDX6Rw6aoJoiA42DHlmO9INe
+ 1nYssZBcPTbovBLG0Kgms03H+kTKDKYghvdSjJP+exFdEpHPmdq5Ul9JImq0KH5ZC8HL
+ DSlA==
+X-Gm-Message-State: APjAAAX1/R1KXBqSAQrU74E5Co3NNEI+5N+dPA+ePB0CmTwFnb3zXYM0
+ kH/4417dmJiutIe0MVT3WiMiu1RoelGDag==
+X-Google-Smtp-Source: APXvYqyido6MX2KqtrWHE9SmOQktkQVs0a3SjpTcVTVTqwoMM/gnKK0IfC2HT5Dfo5pfVjsPJE+aUQ==
+X-Received: by 2002:a92:91d3:: with SMTP id e80mr16494307ill.77.1572191276379; 
+ Sun, 27 Oct 2019 08:47:56 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ v10sm1105693ila.81.2019.10.27.08.47.55
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 27 Oct 2019 08:47:56 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Sun, 27 Oct 2019 09:47:41 -0600
+Message-Id: <20191027154742.185672-4-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191027154742.185672-1-sjg@chromium.org>
+References: <20191027154742.185672-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>, Soeren Moch <smoch@web.de>
+Subject: [U-Boot] [PATCH 3/4] mx6: tbs2910: Minimise libfdt code size
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+This board appears to be very near its size limit and cannot accept the
+new checking code in libfdt. Disable this code so this the board can
+continue to build.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+ configs/tbs2910_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/configs/tbs2910_defconfig b/configs/tbs2910_defconfig
+index 42e6f58eee..6d4d4c8f9f 100644
+--- a/configs/tbs2910_defconfig
++++ b/configs/tbs2910_defconfig
+@@ -78,4 +78,5 @@ CONFIG_USB_GADGET_DOWNLOAD=y
+ CONFIG_I2C_EDID=y
+ CONFIG_VIDEO_IPUV3=y
+ CONFIG_VIDEO=y
++CONFIG_OF_LIBFDT_ASSUME_MASK=0xff
+ # CONFIG_EFI_LOADER is not set
+
+From patchwork Sun Oct 27 15:47:42 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1185048
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="KBJm1X+z"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 471MqG6wsZz9sP4
+ for <incoming@patchwork.ozlabs.org>;
+ Mon, 28 Oct 2019 02:54:34 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 87964C21C8B; Sun, 27 Oct 2019 15:54:33 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id EBD47C21C3F;
+ Sun, 27 Oct 2019 15:54:11 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 0531DC21C2C; Sun, 27 Oct 2019 15:48:03 +0000 (UTC)
+Received: from mail-il1-f194.google.com (mail-il1-f194.google.com
+ [209.85.166.194])
+ by lists.denx.de (Postfix) with ESMTPS id 66118C21DDC
+ for <u-boot@lists.denx.de>; Sun, 27 Oct 2019 15:48:01 +0000 (UTC)
+Received: by mail-il1-f194.google.com with SMTP id a13so5887398ilp.1
+ for <u-boot@lists.denx.de>; Sun, 27 Oct 2019 08:48:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=0h++bg8fzMGfmQeBdSZLMSQtdbnEbv4E12MIMrMmPC8=;
+ b=KBJm1X+zQmRrrt7wzQLl4M9bxwax5NzbYjk9+M8X1lwUCtGJDhwGmAAtjHC7B9s/9+
+ wHsE8xdUu7dNndUYoMHexKZjIjGo5Q0yiL9VMLcIRdUyStkfeXAS8DI8fu35tSmVA99x
+ 8imNXf79krOMlhR3YcKysI6XZI+8jv+A1jJAQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=0h++bg8fzMGfmQeBdSZLMSQtdbnEbv4E12MIMrMmPC8=;
+ b=T6o4v1SpZTiD+2kQUzX4derPTXP4bjKGBUI1kCQrD+nF7pnW8EQtmSWoli1g78keJa
+ CzlV2oJY8PNCQjIIKeIGkJQ5hpVM7pdRweY7qEh/i1rL2yd73q4OI7gdG8w2l/FMyyXl
+ x72qDFz7VpQA6uLdbkHNMxfktNVP5h5YHZtRM5D6/R8zzCvlHYHzlty0Hzv9O6q2UKpq
+ N4nQtdUVzwXQz/vOwhMoghsOOw/KA84Jl+zJm1EgAiJdLi3Qtp1tv+m1VRe9eB1I3AX9
+ 59oi4TWBeg6B5XINr/DxMbWu0MEmBFM8bBvqLcbc2KNdhiex98xS14hCyjGUUzhRTR1v
+ ytjg==
+X-Gm-Message-State: APjAAAUMUuSHmY1/bOKVYn9AUHTkElwRejSZ2Q2gxoVBsf7cTiUj78Ij
+ IcuhV20H59m6/bDdTPWRiQO/DoI9ZLwRWA==
+X-Google-Smtp-Source: APXvYqwbD7plRKFXx5UbcezUo/qkVoZ5csQW6hLr9pzOsAZwrPXzhdC0m4mmqqr1Ym1aCKoqTWF37g==
+X-Received: by 2002:a92:831d:: with SMTP id
+ f29mr16183912ild.263.1572191277829; 
+ Sun, 27 Oct 2019 08:47:57 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ v10sm1105693ila.81.2019.10.27.08.47.57
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 27 Oct 2019 08:47:57 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Sun, 27 Oct 2019 09:47:42 -0600
+Message-Id: <20191027154742.185672-5-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191027154742.185672-1-sjg@chromium.org>
+References: <20191027154742.185672-1-sjg@chromium.org>
+MIME-Version: 1.0
+X-Mailman-Approved-At: Sun, 27 Oct 2019 15:54:09 +0000
+Cc: Tom Rini <trini@konsulko.com>, Matthias Brugger <mbrugger@suse.com>,
+ Jerry Van Baren <vanbaren@cideas.com>, Thierry Reding <treding@nvidia.com>
+Subject: [U-Boot] [PATCH 4/4] fdt: Sync up to the latest libfdt
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Bring over the fdt from this commit:
+
+430419c (origin/master) tests: fix some python warnings
+
+adding in the 'assumptions' series designed to reduce code size.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+ lib/libfdt/fdt_ro.c                  | 420 ++++++++++++++++++++-------
+ scripts/dtc/libfdt/Makefile.libfdt   |   7 +
+ scripts/dtc/libfdt/fdt.c             | 182 ++++++++----
+ scripts/dtc/libfdt/fdt.h             |  47 +--
+ scripts/dtc/libfdt/fdt_addresses.c   |  94 +++---
+ scripts/dtc/libfdt/fdt_empty_tree.c  |  47 +--
+ scripts/dtc/libfdt/fdt_overlay.c     |  91 ++----
+ scripts/dtc/libfdt/fdt_ro.c          | 341 +++++++++++++++-------
+ scripts/dtc/libfdt/fdt_rw.c          | 119 ++++----
+ scripts/dtc/libfdt/fdt_strerror.c    |  47 +--
+ scripts/dtc/libfdt/fdt_sw.c          | 241 ++++++++++-----
+ scripts/dtc/libfdt/fdt_wip.c         |  47 +--
+ scripts/dtc/libfdt/libfdt.h          | 268 +++++++++++++----
+ scripts/dtc/libfdt/libfdt_env.h      |  48 +--
+ scripts/dtc/libfdt/libfdt_internal.h | 144 +++++----
+ tools/libfdt/fdt_rw.c                |   3 +-
+ 16 files changed, 1275 insertions(+), 871 deletions(-)
+
+diff --git a/lib/libfdt/fdt_ro.c b/lib/libfdt/fdt_ro.c
+index 693de9aa5a..560041b603 100644
+--- a/lib/libfdt/fdt_ro.c
++++ b/lib/libfdt/fdt_ro.c
+@@ -14,12 +14,13 @@
+ 
+ #include "libfdt_internal.h"
+ 
+-static int _fdt_nodename_eq(const void *fdt, int offset,
++static int fdt_nodename_eq_(const void *fdt, int offset,
+ 			    const char *s, int len)
+ {
+-	const char *p = fdt_offset_ptr(fdt, offset + FDT_TAGSIZE, len+1);
++	int olen;
++	const char *p = fdt_get_name(fdt, offset, &olen);
+ 
+-	if (!p)
++	if (!p || (fdt_chk_extra() && olen < len))
+ 		/* short match */
+ 		return 0;
+ 
+@@ -34,46 +35,85 @@ static int _fdt_nodename_eq(const void *fdt, int offset,
+ 		return 0;
+ }
+ 
+-const char *fdt_string(const void *fdt, int stroffset)
+-{
+-	return (const char *)fdt + fdt_off_dt_strings(fdt) + stroffset;
+-}
+-
+-static int _fdt_string_eq(const void *fdt, int stroffset,
+-			  const char *s, int len)
++const char *fdt_get_string(const void *fdt, int stroffset, int *lenp)
+ {
+-	const char *p = fdt_string(fdt, stroffset);
++	int32_t totalsize;
++	uint32_t absoffset;
++	size_t len;
++	int err;
++	const char *s, *n;
+ 
+-	return (strnlen(p, len + 1) == len) && (memcmp(p, s, len) == 0);
+-}
++	if (!fdt_chk_extra()) {
++		s = (const char *)fdt + fdt_off_dt_strings(fdt) + stroffset;
+ 
+-uint32_t fdt_get_max_phandle(const void *fdt)
+-{
+-	uint32_t max_phandle = 0;
+-	int offset;
++		if (lenp)
++			*lenp = strlen(s);
++		return s;
++	}
++	totalsize = fdt_ro_probe_(fdt);
++	err = totalsize;
++	if (totalsize < 0)
++		goto fail;
++
++	err = -FDT_ERR_BADOFFSET;
++	absoffset = stroffset + fdt_off_dt_strings(fdt);
++	if (absoffset >= totalsize)
++		goto fail;
++	len = totalsize - absoffset;
++
++	if (fdt_magic(fdt) == FDT_MAGIC) {
++		if (stroffset < 0)
++			goto fail;
++		if (!fdt_chk_version() || fdt_version(fdt) >= 17) {
++			if (stroffset >= fdt_size_dt_strings(fdt))
++				goto fail;
++			if ((fdt_size_dt_strings(fdt) - stroffset) < len)
++				len = fdt_size_dt_strings(fdt) - stroffset;
++		}
++	} else if (fdt_magic(fdt) == FDT_SW_MAGIC) {
++		if ((stroffset >= 0)
++		    || (stroffset < -fdt_size_dt_strings(fdt)))
++			goto fail;
++		if ((-stroffset) < len)
++			len = -stroffset;
++	} else {
++		err = -FDT_ERR_INTERNAL;
++		goto fail;
++	}
+ 
+-	for (offset = fdt_next_node(fdt, -1, NULL);;
+-	     offset = fdt_next_node(fdt, offset, NULL)) {
+-		uint32_t phandle;
++	s = (const char *)fdt + absoffset;
++	n = memchr(s, '\0', len);
++	if (!n) {
++		/* missing terminating NULL */
++		err = -FDT_ERR_TRUNCATED;
++		goto fail;
++	}
+ 
+-		if (offset == -FDT_ERR_NOTFOUND)
+-			return max_phandle;
++	if (lenp)
++		*lenp = n - s;
++	return s;
+ 
+-		if (offset < 0)
+-			return (uint32_t)-1;
++fail:
++	if (lenp)
++		*lenp = err;
++	return NULL;
++}
+ 
+-		phandle = fdt_get_phandle(fdt, offset);
+-		if (phandle == (uint32_t)-1)
+-			continue;
++const char *fdt_string(const void *fdt, int stroffset)
++{
++	return fdt_get_string(fdt, stroffset, NULL);
++}
+ 
+-		if (phandle > max_phandle)
+-			max_phandle = phandle;
+-	}
++static int fdt_string_eq_(const void *fdt, int stroffset,
++			  const char *s, int len)
++{
++	int slen;
++	const char *p = fdt_get_string(fdt, stroffset, &slen);
+ 
+-	return 0;
++	return p && (slen == len) && (memcmp(p, s, len) == 0);
+ }
+ 
+-int fdt_generate_phandle(const void *fdt, uint32_t *phandle)
++int fdt_find_max_phandle(const void *fdt, uint32_t *phandle)
+ {
+ 	uint32_t max = 0;
+ 	int offset = -1;
+@@ -95,6 +135,21 @@ int fdt_generate_phandle(const void *fdt, uint32_t *phandle)
+ 			max = value;
+ 	}
+ 
++	if (phandle)
++		*phandle = max;
++
++	return 0;
++}
++
++int fdt_generate_phandle(const void *fdt, uint32_t *phandle)
++{
++	uint32_t max;
++	int err;
++
++	err = fdt_find_max_phandle(fdt, &max);
++	if (err < 0)
++		return err;
++
+ 	if (max == FDT_MAX_PHANDLE)
+ 		return -FDT_ERR_NOPHANDLES;
+ 
+@@ -104,24 +159,48 @@ int fdt_generate_phandle(const void *fdt, uint32_t *phandle)
+ 	return 0;
+ }
+ 
++static const struct fdt_reserve_entry *fdt_mem_rsv(const void *fdt, int n)
++{
++	int offset = n * sizeof(struct fdt_reserve_entry);
++	int absoffset = fdt_off_mem_rsvmap(fdt) + offset;
++
++	if (fdt_chk_extra()) {
++		if (absoffset < fdt_off_mem_rsvmap(fdt))
++			return NULL;
++		if (absoffset > fdt_totalsize(fdt) -
++		    sizeof(struct fdt_reserve_entry))
++			return NULL;
++	}
++	return fdt_mem_rsv_(fdt, n);
++}
++
+ int fdt_get_mem_rsv(const void *fdt, int n, uint64_t *address, uint64_t *size)
+ {
+-	FDT_CHECK_HEADER(fdt);
+-	*address = fdt64_to_cpu(fdt_mem_rsv_(fdt, n)->address);
+-	*size = fdt64_to_cpu(fdt_mem_rsv_(fdt, n)->size);
++	const struct fdt_reserve_entry *re;
++
++	FDT_RO_PROBE(fdt);
++	re = fdt_mem_rsv(fdt, n);
++	if (fdt_chk_extra() && !re)
++		return -FDT_ERR_BADOFFSET;
++
++	*address = fdt64_ld(&re->address);
++	*size = fdt64_ld(&re->size);
+ 	return 0;
+ }
+ 
+ int fdt_num_mem_rsv(const void *fdt)
+ {
+-	int i = 0;
++	int i;
++	const struct fdt_reserve_entry *re;
+ 
+-	while (fdt64_to_cpu(fdt_mem_rsv_(fdt, i)->size) != 0)
+-		i++;
+-	return i;
++	for (i = 0; (re = fdt_mem_rsv(fdt, i)) != NULL; i++) {
++		if (fdt64_ld(&re->size) == 0)
++			return i;
++	}
++	return -FDT_ERR_TRUNCATED;
+ }
+ 
+-static int _nextprop(const void *fdt, int offset)
++static int nextprop_(const void *fdt, int offset)
+ {
+ 	uint32_t tag;
+ 	int nextoffset;
+@@ -150,13 +229,13 @@ int fdt_subnode_offset_namelen(const void *fdt, int offset,
+ {
+ 	int depth;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	for (depth = 0;
+ 	     (offset >= 0) && (depth >= 0);
+ 	     offset = fdt_next_node(fdt, offset, &depth))
+ 		if ((depth == 1)
+-		    && _fdt_nodename_eq(fdt, offset, name, namelen))
++		    && fdt_nodename_eq_(fdt, offset, name, namelen))
+ 			return offset;
+ 
+ 	if (depth < 0)
+@@ -170,36 +249,17 @@ int fdt_subnode_offset(const void *fdt, int parentoffset,
+ 	return fdt_subnode_offset_namelen(fdt, parentoffset, name, strlen(name));
+ }
+ 
+-/*
+- * Find the next of path separator, note we need to search for both '/' and ':'
+- * and then take the first one so that we do the right thing for e.g.
+- * "foo/bar:option" and "bar:option/otheroption", both of which happen, so
+- * first searching for either ':' or '/' does not work.
+- */
+-static const char *fdt_path_next_separator(const char *path, int len)
+-{
+-	const void *sep1 = memchr(path, '/', len);
+-	const void *sep2 = memchr(path, ':', len);
+-
+-	if (sep1 && sep2)
+-		return (sep1 < sep2) ? sep1 : sep2;
+-	else if (sep1)
+-		return sep1;
+-	else
+-		return sep2;
+-}
+-
+ int fdt_path_offset_namelen(const void *fdt, const char *path, int namelen)
+ {
+ 	const char *end = path + namelen;
+ 	const char *p = path;
+ 	int offset = 0;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	/* see if we have an alias */
+ 	if (*path != '/') {
+-		const char *q = fdt_path_next_separator(path, namelen);
++		const char *q = memchr(path, '/', end - p);
+ 
+ 		if (!q)
+ 			q = end;
+@@ -212,17 +272,16 @@ int fdt_path_offset_namelen(const void *fdt, const char *path, int namelen)
+ 		p = q;
+ 	}
+ 
+-	while (*p && (p < end)) {
++	while (p < end) {
+ 		const char *q;
+ 
+-		while (*p == '/')
++		while (*p == '/') {
+ 			p++;
+-
+-		if (*p == '\0' || *p == ':')
+-			return offset;
+-
+-		q = fdt_path_next_separator(p, end - p);
+-		if (!q)
++			if (p == end)
++				return offset;
++		}
++		q = memchr(p, '/', end - p);
++		if (! q)
+ 			q = end;
+ 
+ 		offset = fdt_subnode_offset_namelen(fdt, offset, p, q-p);
+@@ -243,16 +302,35 @@ int fdt_path_offset(const void *fdt, const char *path)
+ const char *fdt_get_name(const void *fdt, int nodeoffset, int *len)
+ {
+ 	const struct fdt_node_header *nh = fdt_offset_ptr_(fdt, nodeoffset);
++	const char *nameptr;
+ 	int err;
+ 
+-	if (((err = fdt_check_header(fdt)) != 0)
+-	    || ((err = fdt_check_node_offset_(fdt, nodeoffset)) < 0))
++	if (fdt_chk_extra() &&
++	    (((err = fdt_ro_probe_(fdt)) < 0)
++	     || ((err = fdt_check_node_offset_(fdt, nodeoffset)) < 0)))
++		goto fail;
++
++	nameptr = nh->name;
++
++	if (fdt_chk_version() && fdt_version(fdt) < 0x10) {
++		/*
++		 * For old FDT versions, match the naming conventions of V16:
++		 * give only the leaf name (after all /). The actual tree
++		 * contents are loosely checked.
++		 */
++		const char *leaf;
++		leaf = strrchr(nameptr, '/');
++		if (leaf == NULL) {
++			err = -FDT_ERR_BADSTRUCTURE;
+ 			goto fail;
++		}
++		nameptr = leaf+1;
++	}
+ 
+ 	if (len)
+-		*len = strlen(nh->name);
++		*len = strlen(nameptr);
+ 
+-	return nh->name;
++	return nameptr;
+ 
+  fail:
+ 	if (len)
+@@ -267,7 +345,7 @@ int fdt_first_property_offset(const void *fdt, int nodeoffset)
+ 	if ((offset = fdt_check_node_offset_(fdt, nodeoffset)) < 0)
+ 		return offset;
+ 
+-	return _nextprop(fdt, offset);
++	return nextprop_(fdt, offset);
+ }
+ 
+ int fdt_next_property_offset(const void *fdt, int offset)
+@@ -275,17 +353,17 @@ int fdt_next_property_offset(const void *fdt, int offset)
+ 	if ((offset = fdt_check_prop_offset_(fdt, offset)) < 0)
+ 		return offset;
+ 
+-	return _nextprop(fdt, offset);
++	return nextprop_(fdt, offset);
+ }
+ 
+-const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
+-						      int offset,
+-						      int *lenp)
++static const struct fdt_property *fdt_get_property_by_offset_(const void *fdt,
++						              int offset,
++						              int *lenp)
+ {
+ 	int err;
+ 	const struct fdt_property *prop;
+ 
+-	if ((err = fdt_check_prop_offset_(fdt, offset)) < 0) {
++	if (fdt_chk_basic() && (err = fdt_check_prop_offset_(fdt, offset)) < 0) {
+ 		if (lenp)
+ 			*lenp = err;
+ 		return NULL;
+@@ -294,28 +372,50 @@ const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
+ 	prop = fdt_offset_ptr_(fdt, offset);
+ 
+ 	if (lenp)
+-		*lenp = fdt32_to_cpu(prop->len);
++		*lenp = fdt32_ld(&prop->len);
+ 
+ 	return prop;
+ }
+ 
+-const struct fdt_property *fdt_get_property_namelen(const void *fdt,
+-						    int offset,
+-						    const char *name,
+-						    int namelen, int *lenp)
++const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
++						      int offset,
++						      int *lenp)
++{
++	/* Prior to version 16, properties may need realignment
++	 * and this API does not work. fdt_getprop_*() will, however. */
++
++	if (fdt_chk_version() && fdt_version(fdt) < 0x10) {
++		if (lenp)
++			*lenp = -FDT_ERR_BADVERSION;
++		return NULL;
++	}
++
++	return fdt_get_property_by_offset_(fdt, offset, lenp);
++}
++
++static const struct fdt_property *fdt_get_property_namelen_(const void *fdt,
++						            int offset,
++						            const char *name,
++						            int namelen,
++							    int *lenp,
++							    int *poffset)
+ {
+ 	for (offset = fdt_first_property_offset(fdt, offset);
+ 	     (offset >= 0);
+ 	     (offset = fdt_next_property_offset(fdt, offset))) {
+ 		const struct fdt_property *prop;
+ 
+-		if (!(prop = fdt_get_property_by_offset(fdt, offset, lenp))) {
++		prop = fdt_get_property_by_offset_(fdt, offset, lenp);
++		if (fdt_chk_extra() && !prop) {
+ 			offset = -FDT_ERR_INTERNAL;
+ 			break;
+ 		}
+-		if (_fdt_string_eq(fdt, fdt32_to_cpu(prop->nameoff),
+-				   name, namelen))
++		if (fdt_string_eq_(fdt, fdt32_ld(&prop->nameoff),
++				   name, namelen)) {
++			if (poffset)
++				*poffset = offset;
+ 			return prop;
++		}
+ 	}
+ 
+ 	if (lenp)
+@@ -323,6 +423,25 @@ const struct fdt_property *fdt_get_property_namelen(const void *fdt,
+ 	return NULL;
+ }
+ 
++
++const struct fdt_property *fdt_get_property_namelen(const void *fdt,
++						    int offset,
++						    const char *name,
++						    int namelen, int *lenp)
++{
++	/* Prior to version 16, properties may need realignment
++	 * and this API does not work. fdt_getprop_*() will, however. */
++	if (fdt_chk_version() && fdt_version(fdt) < 0x10) {
++		if (lenp)
++			*lenp = -FDT_ERR_BADVERSION;
++		return NULL;
++	}
++
++	return fdt_get_property_namelen_(fdt, offset, name, namelen, lenp,
++					 NULL);
++}
++
++
+ const struct fdt_property *fdt_get_property(const void *fdt,
+ 					    int nodeoffset,
+ 					    const char *name, int *lenp)
+@@ -334,12 +453,18 @@ const struct fdt_property *fdt_get_property(const void *fdt,
+ const void *fdt_getprop_namelen(const void *fdt, int nodeoffset,
+ 				const char *name, int namelen, int *lenp)
+ {
++	int poffset;
+ 	const struct fdt_property *prop;
+ 
+-	prop = fdt_get_property_namelen(fdt, nodeoffset, name, namelen, lenp);
++	prop = fdt_get_property_namelen_(fdt, nodeoffset, name, namelen, lenp,
++					 &poffset);
+ 	if (!prop)
+ 		return NULL;
+ 
++	/* Handle realignment */
++	if (fdt_chk_version() && fdt_version(fdt) < 0x10 &&
++	    (poffset + sizeof(*prop)) % 8 && fdt32_ld(&prop->len) >= 8)
++		return prop->data + 4;
+ 	return prop->data;
+ }
+ 
+@@ -348,11 +473,31 @@ const void *fdt_getprop_by_offset(const void *fdt, int offset,
+ {
+ 	const struct fdt_property *prop;
+ 
+-	prop = fdt_get_property_by_offset(fdt, offset, lenp);
++	prop = fdt_get_property_by_offset_(fdt, offset, lenp);
+ 	if (!prop)
+ 		return NULL;
+-	if (namep)
+-		*namep = fdt_string(fdt, fdt32_to_cpu(prop->nameoff));
++	if (namep) {
++		const char *name;
++		int namelen;
++
++		if (fdt_chk_extra()) {
++			name = fdt_get_string(fdt, fdt32_ld(&prop->nameoff),
++					      &namelen);
++			if (!name) {
++				if (lenp)
++					*lenp = namelen;
++				return NULL;
++			}
++			*namep = name;
++		} else {
++			*namep = fdt_string(fdt, fdt32_ld(&prop->nameoff));
++		}
++	}
++
++	/* Handle realignment */
++	if (fdt_chk_version() && fdt_version(fdt) < 0x10 &&
++	    (offset + sizeof(*prop)) % 8 && fdt32_ld(&prop->len) >= 8)
++		return prop->data + 4;
+ 	return prop->data;
+ }
+ 
+@@ -376,7 +521,7 @@ uint32_t fdt_get_phandle(const void *fdt, int nodeoffset)
+ 			return 0;
+ 	}
+ 
+-	return fdt32_to_cpu(*php);
++	return fdt32_ld(php);
+ }
+ 
+ const char *fdt_get_alias_namelen(const void *fdt,
+@@ -402,7 +547,7 @@ int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen)
+ 	int offset, depth, namelen;
+ 	const char *name;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	if (buflen < 2)
+ 		return -FDT_ERR_NOSPACE;
+@@ -454,7 +599,7 @@ int fdt_supernode_atdepth_offset(const void *fdt, int nodeoffset,
+ 	int offset, depth;
+ 	int supernodeoffset = -FDT_ERR_INTERNAL;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	if (supernodedepth < 0)
+ 		return -FDT_ERR_NOTFOUND;
+@@ -476,10 +621,12 @@ int fdt_supernode_atdepth_offset(const void *fdt, int nodeoffset,
+ 		}
+ 	}
+ 
+-	if ((offset == -FDT_ERR_NOTFOUND) || (offset >= 0))
+-		return -FDT_ERR_BADOFFSET;
+-	else if (offset == -FDT_ERR_BADOFFSET)
+-		return -FDT_ERR_BADSTRUCTURE;
++	if (fdt_chk_extra()) {
++		if ((offset == -FDT_ERR_NOTFOUND) || (offset >= 0))
++			return -FDT_ERR_BADOFFSET;
++		else if (offset == -FDT_ERR_BADOFFSET)
++			return -FDT_ERR_BADSTRUCTURE;
++	}
+ 
+ 	return offset; /* error from fdt_next_node() */
+ }
+@@ -491,7 +638,7 @@ int fdt_node_depth(const void *fdt, int nodeoffset)
+ 
+ 	err = fdt_supernode_atdepth_offset(fdt, nodeoffset, 0, &nodedepth);
+ 	if (err)
+-		return (err < 0) ? err : -FDT_ERR_INTERNAL;
++		return (!fdt_chk_extra() || err < 0) ? err : -FDT_ERR_INTERNAL;
+ 	return nodedepth;
+ }
+ 
+@@ -513,7 +660,7 @@ int fdt_node_offset_by_prop_value(const void *fdt, int startoffset,
+ 	const void *val;
+ 	int len;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	/* FIXME: The algorithm here is pretty horrible: we scan each
+ 	 * property of a node in fdt_getprop(), then if that didn't
+@@ -539,7 +686,7 @@ int fdt_node_offset_by_phandle(const void *fdt, uint32_t phandle)
+ 	if ((phandle == 0) || (phandle == -1))
+ 		return -FDT_ERR_BADPHANDLE;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	/* FIXME: The algorithm here is pretty horrible: we
+ 	 * potentially scan each property of a node in
+@@ -692,7 +839,7 @@ int fdt_node_offset_by_compatible(const void *fdt, int startoffset,
+ {
+ 	int offset, err;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	/* FIXME: The algorithm here is pretty horrible: we scan each
+ 	 * property of a node in fdt_node_check_compatible(), then if
+@@ -711,3 +858,68 @@ int fdt_node_offset_by_compatible(const void *fdt, int startoffset,
+ 
+ 	return offset; /* error from fdt_next_node() */
+ }
++
++#if !defined(CHECK_LEVEL) || CHECK_LEVEL > 0
++int fdt_check_full(const void *fdt, size_t bufsize)
++{
++	int err;
++	int num_memrsv;
++	int offset, nextoffset = 0;
++	uint32_t tag;
++	unsigned depth = 0;
++	const void *prop;
++	const char *propname;
++
++	if (bufsize < FDT_V1_SIZE)
++		return -FDT_ERR_TRUNCATED;
++	err = fdt_check_header(fdt);
++	if (err != 0)
++		return err;
++	if (bufsize < fdt_totalsize(fdt))
++		return -FDT_ERR_TRUNCATED;
++
++	num_memrsv = fdt_num_mem_rsv(fdt);
++	if (num_memrsv < 0)
++		return num_memrsv;
++
++	while (1) {
++		offset = nextoffset;
++		tag = fdt_next_tag(fdt, offset, &nextoffset);
++
++		if (nextoffset < 0)
++			return nextoffset;
++
++		switch (tag) {
++		case FDT_NOP:
++			break;
++
++		case FDT_END:
++			if (depth != 0)
++				return -FDT_ERR_BADSTRUCTURE;
++			return 0;
++
++		case FDT_BEGIN_NODE:
++			depth++;
++			if (depth > INT_MAX)
++				return -FDT_ERR_BADSTRUCTURE;
++			break;
++
++		case FDT_END_NODE:
++			if (depth == 0)
++				return -FDT_ERR_BADSTRUCTURE;
++			depth--;
++			break;
++
++		case FDT_PROP:
++			prop = fdt_getprop_by_offset(fdt, offset, &propname,
++						     &err);
++			if (!prop)
++				return err;
++			break;
++
++		default:
++			return -FDT_ERR_INTERNAL;
++		}
++	}
++}
++#endif
+diff --git a/scripts/dtc/libfdt/Makefile.libfdt b/scripts/dtc/libfdt/Makefile.libfdt
+index 098b3f36e6..e54639738c 100644
+--- a/scripts/dtc/libfdt/Makefile.libfdt
++++ b/scripts/dtc/libfdt/Makefile.libfdt
+@@ -1,3 +1,4 @@
++# SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+ # Makefile.libfdt
+ #
+ # This is not a complete Makefile of itself.  Instead, it is designed to
+@@ -9,3 +10,9 @@ LIBFDT_VERSION = version.lds
+ LIBFDT_SRCS = fdt.c fdt_ro.c fdt_wip.c fdt_sw.c fdt_rw.c fdt_strerror.c fdt_empty_tree.c \
+ 	fdt_addresses.c fdt_overlay.c
+ LIBFDT_OBJS = $(LIBFDT_SRCS:%.c=%.o)
++LIBFDT_LIB = libfdt-$(DTC_VERSION).$(SHAREDLIB_EXT)
++
++libfdt_clean:
++	@$(VECHO) CLEAN "(libfdt)"
++	rm -f $(STD_CLEANFILES:%=$(LIBFDT_dir)/%)
++	rm -f $(LIBFDT_dir)/$(LIBFDT_soname)
+diff --git a/scripts/dtc/libfdt/fdt.c b/scripts/dtc/libfdt/fdt.c
+index 7855a17877..8e4cce3b9b 100644
+--- a/scripts/dtc/libfdt/fdt.c
++++ b/scripts/dtc/libfdt/fdt.c
+@@ -1,52 +1,7 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2006 David Gibson, IBM Corporation.
+- *
+- * libfdt is dual licensed: you can use it either under the terms of
+- * the GPL, or the BSD license, at your option.
+- *
+- *  a) This library is free software; you can redistribute it and/or
+- *     modify it under the terms of the GNU General Public License as
+- *     published by the Free Software Foundation; either version 2 of the
+- *     License, or (at your option) any later version.
+- *
+- *     This library is distributed in the hope that it will be useful,
+- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *     GNU General Public License for more details.
+- *
+- *     You should have received a copy of the GNU General Public
+- *     License along with this library; if not, write to the Free
+- *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+- *     MA 02110-1301 USA
+- *
+- * Alternatively,
+- *
+- *  b) Redistribution and use in source and binary forms, with or
+- *     without modification, are permitted provided that the following
+- *     conditions are met:
+- *
+- *     1. Redistributions of source code must retain the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer.
+- *     2. Redistributions in binary form must reproduce the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer in the documentation and/or other materials
+- *        provided with the distribution.
+- *
+- *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+- *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+- *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+- *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+- *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+- *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+- *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+- *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ #include "libfdt_env.h"
+ 
+@@ -55,14 +10,24 @@
+ 
+ #include "libfdt_internal.h"
+ 
+-int fdt_check_header(const void *fdt)
++/*
++ * Minimal sanity check for a read-only tree. fdt_ro_probe_() checks
++ * that the given buffer contains what appears to be a flattened
++ * device tree with sane information in its header.
++ */
++int32_t fdt_ro_probe_(const void *fdt)
+ {
++	uint32_t totalsize = fdt_totalsize(fdt);
++
+ 	if (fdt_magic(fdt) == FDT_MAGIC) {
+ 		/* Complete tree */
+-		if (fdt_version(fdt) < FDT_FIRST_SUPPORTED_VERSION)
+-			return -FDT_ERR_BADVERSION;
+-		if (fdt_last_comp_version(fdt) > FDT_LAST_SUPPORTED_VERSION)
+-			return -FDT_ERR_BADVERSION;
++		if (fdt_chk_version()) {
++			if (fdt_version(fdt) < FDT_FIRST_SUPPORTED_VERSION)
++				return -FDT_ERR_BADVERSION;
++			if (fdt_last_comp_version(fdt) >
++					FDT_LAST_SUPPORTED_VERSION)
++				return -FDT_ERR_BADVERSION;
++		}
+ 	} else if (fdt_magic(fdt) == FDT_SW_MAGIC) {
+ 		/* Unfinished sequential-write blob */
+ 		if (fdt_size_dt_struct(fdt) == 0)
+@@ -71,6 +36,96 @@ int fdt_check_header(const void *fdt)
+ 		return -FDT_ERR_BADMAGIC;
+ 	}
+ 
++	if (totalsize < INT32_MAX)
++		return totalsize;
++	else
++		return -FDT_ERR_TRUNCATED;
++}
++
++static int check_off_(uint32_t hdrsize, uint32_t totalsize, uint32_t off)
++{
++	return (off >= hdrsize) && (off <= totalsize);
++}
++
++static int check_block_(uint32_t hdrsize, uint32_t totalsize,
++			uint32_t base, uint32_t size)
++{
++	if (!check_off_(hdrsize, totalsize, base))
++		return 0; /* block start out of bounds */
++	if ((base + size) < base)
++		return 0; /* overflow */
++	if (!check_off_(hdrsize, totalsize, base + size))
++		return 0; /* block end out of bounds */
++	return 1;
++}
++
++size_t fdt_header_size_(uint32_t version)
++{
++	if (version <= 1)
++		return FDT_V1_SIZE;
++	else if (version <= 2)
++		return FDT_V2_SIZE;
++	else if (version <= 3)
++		return FDT_V3_SIZE;
++	else if (version <= 16)
++		return FDT_V16_SIZE;
++	else
++		return FDT_V17_SIZE;
++}
++
++size_t fdt_header_size(const void *fdt)
++{
++	return fdt_chk_version() ? fdt_header_size_(fdt_version(fdt)) :
++		FDT_V17_SIZE;
++}
++
++int fdt_check_header(const void *fdt)
++{
++	size_t hdrsize;
++
++	if (fdt_magic(fdt) != FDT_MAGIC)
++		return -FDT_ERR_BADMAGIC;
++	if (fdt_chk_version()) {
++		if ((fdt_version(fdt) < FDT_FIRST_SUPPORTED_VERSION)
++		    || (fdt_last_comp_version(fdt) >
++			FDT_LAST_SUPPORTED_VERSION))
++			return -FDT_ERR_BADVERSION;
++		if (fdt_version(fdt) < fdt_last_comp_version(fdt))
++			return -FDT_ERR_BADVERSION;
++	}
++	hdrsize = fdt_header_size(fdt);
++	if (fdt_chk_basic()) {
++
++		if ((fdt_totalsize(fdt) < hdrsize)
++		    || (fdt_totalsize(fdt) > INT_MAX))
++			return -FDT_ERR_TRUNCATED;
++
++		/* Bounds check memrsv block */
++		if (!check_off_(hdrsize, fdt_totalsize(fdt),
++				fdt_off_mem_rsvmap(fdt)))
++			return -FDT_ERR_TRUNCATED;
++	}
++
++	if (fdt_chk_extra()) {
++		/* Bounds check structure block */
++		if (fdt_chk_version() && fdt_version(fdt) < 17) {
++			if (!check_off_(hdrsize, fdt_totalsize(fdt),
++					fdt_off_dt_struct(fdt)))
++				return -FDT_ERR_TRUNCATED;
++		} else {
++			if (!check_block_(hdrsize, fdt_totalsize(fdt),
++					  fdt_off_dt_struct(fdt),
++					  fdt_size_dt_struct(fdt)))
++				return -FDT_ERR_TRUNCATED;
++		}
++
++		/* Bounds check strings block */
++		if (!check_block_(hdrsize, fdt_totalsize(fdt),
++				  fdt_off_dt_strings(fdt),
++				  fdt_size_dt_strings(fdt)))
++			return -FDT_ERR_TRUNCATED;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -78,12 +133,13 @@ const void *fdt_offset_ptr(const void *fdt, int offset, unsigned int len)
+ {
+ 	unsigned absoffset = offset + fdt_off_dt_struct(fdt);
+ 
+-	if ((absoffset < offset)
+-	    || ((absoffset + len) < absoffset)
+-	    || (absoffset + len) > fdt_totalsize(fdt))
+-		return NULL;
++	if (fdt_chk_basic())
++		if ((absoffset < offset)
++		    || ((absoffset + len) < absoffset)
++		    || (absoffset + len) > fdt_totalsize(fdt))
++			return NULL;
+ 
+-	if (fdt_version(fdt) >= 0x11)
++	if (!fdt_chk_version() || fdt_version(fdt) >= 0x11)
+ 		if (((offset + len) < offset)
+ 		    || ((offset + len) > fdt_size_dt_struct(fdt)))
+ 			return NULL;
+@@ -100,7 +156,7 @@ uint32_t fdt_next_tag(const void *fdt, int startoffset, int *nextoffset)
+ 
+ 	*nextoffset = -FDT_ERR_TRUNCATED;
+ 	tagp = fdt_offset_ptr(fdt, offset, FDT_TAGSIZE);
+-	if (!tagp)
++	if (fdt_chk_basic() && !tagp)
+ 		return FDT_END; /* premature end */
+ 	tag = fdt32_to_cpu(*tagp);
+ 	offset += FDT_TAGSIZE;
+@@ -112,18 +168,19 @@ uint32_t fdt_next_tag(const void *fdt, int startoffset, int *nextoffset)
+ 		do {
+ 			p = fdt_offset_ptr(fdt, offset++, 1);
+ 		} while (p && (*p != '\0'));
+-		if (!p)
++		if (fdt_chk_basic() && !p)
+ 			return FDT_END; /* premature end */
+ 		break;
+ 
+ 	case FDT_PROP:
+ 		lenp = fdt_offset_ptr(fdt, offset, sizeof(*lenp));
+-		if (!lenp)
++		if (fdt_chk_basic() && !lenp)
+ 			return FDT_END; /* premature end */
+ 		/* skip-name offset, length and value */
+ 		offset += sizeof(struct fdt_property) - FDT_TAGSIZE
+ 			+ fdt32_to_cpu(*lenp);
+-		if (fdt_version(fdt) < 0x10 && fdt32_to_cpu(*lenp) >= 8 &&
++		if (fdt_chk_version() &&
++		    fdt_version(fdt) < 0x10 && fdt32_to_cpu(*lenp) >= 8 &&
+ 		    ((offset - fdt32_to_cpu(*lenp)) % 8) != 0)
+ 			offset += 4;
+ 		break;
+@@ -137,7 +194,8 @@ uint32_t fdt_next_tag(const void *fdt, int startoffset, int *nextoffset)
+ 		return FDT_END;
+ 	}
+ 
+-	if (!fdt_offset_ptr(fdt, startoffset, offset - startoffset))
++	if (fdt_chk_basic() &&
++	    !fdt_offset_ptr(fdt, startoffset, offset - startoffset))
+ 		return FDT_END; /* premature end */
+ 
+ 	*nextoffset = FDT_TAGALIGN(offset);
+@@ -244,7 +302,7 @@ const char *fdt_find_string_(const char *strtab, int tabsize, const char *s)
+ 
+ int fdt_move(const void *fdt, void *buf, int bufsize)
+ {
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	if (fdt_totalsize(fdt) > bufsize)
+ 		return -FDT_ERR_NOSPACE;
+diff --git a/scripts/dtc/libfdt/fdt.h b/scripts/dtc/libfdt/fdt.h
+index 74961f9026..f2e68807f2 100644
+--- a/scripts/dtc/libfdt/fdt.h
++++ b/scripts/dtc/libfdt/fdt.h
+@@ -1,55 +1,10 @@
++/* SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause) */
+ #ifndef FDT_H
+ #define FDT_H
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2006 David Gibson, IBM Corporation.
+  * Copyright 2012 Kim Phillips, Freescale Semiconductor.
+- *
+- * libfdt is dual licensed: you can use it either under the terms of
+- * the GPL, or the BSD license, at your option.
+- *
+- *  a) This library is free software; you can redistribute it and/or
+- *     modify it under the terms of the GNU General Public License as
+- *     published by the Free Software Foundation; either version 2 of the
+- *     License, or (at your option) any later version.
+- *
+- *     This library is distributed in the hope that it will be useful,
+- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *     GNU General Public License for more details.
+- *
+- *     You should have received a copy of the GNU General Public
+- *     License along with this library; if not, write to the Free
+- *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+- *     MA 02110-1301 USA
+- *
+- * Alternatively,
+- *
+- *  b) Redistribution and use in source and binary forms, with or
+- *     without modification, are permitted provided that the following
+- *     conditions are met:
+- *
+- *     1. Redistributions of source code must retain the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer.
+- *     2. Redistributions in binary form must reproduce the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer in the documentation and/or other materials
+- *        provided with the distribution.
+- *
+- *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+- *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+- *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+- *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+- *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+- *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+- *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+- *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+ #ifndef __ASSEMBLY__
+diff --git a/scripts/dtc/libfdt/fdt_addresses.c b/scripts/dtc/libfdt/fdt_addresses.c
+index 788c143113..9a82cd0ba2 100644
+--- a/scripts/dtc/libfdt/fdt_addresses.c
++++ b/scripts/dtc/libfdt/fdt_addresses.c
+@@ -1,53 +1,8 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2014 David Gibson <david@gibson.dropbear.id.au>
+  * Copyright (C) 2018 embedded brains GmbH
+- *
+- * libfdt is dual licensed: you can use it either under the terms of
+- * the GPL, or the BSD license, at your option.
+- *
+- *  a) This library is free software; you can redistribute it and/or
+- *     modify it under the terms of the GNU General Public License as
+- *     published by the Free Software Foundation; either version 2 of the
+- *     License, or (at your option) any later version.
+- *
+- *     This library is distributed in the hope that it will be useful,
+- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *     GNU General Public License for more details.
+- *
+- *     You should have received a copy of the GNU General Public
+- *     License along with this library; if not, write to the Free
+- *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+- *     MA 02110-1301 USA
+- *
+- * Alternatively,
+- *
+- *  b) Redistribution and use in source and binary forms, with or
+- *     without modification, are permitted provided that the following
+- *     conditions are met:
+- *
+- *     1. Redistributions of source code must retain the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer.
+- *     2. Redistributions in binary form must reproduce the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer in the documentation and/or other materials
+- *        provided with the distribution.
+- *
+- *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+- *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+- *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+- *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+- *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+- *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+- *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+- *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ #include "libfdt_env.h"
+ 
+@@ -97,3 +52,50 @@ int fdt_size_cells(const void *fdt, int nodeoffset)
+ 		return 1;
+ 	return val;
+ }
++
++/* This function assumes that [address|size]_cells is 1 or 2 */
++int fdt_appendprop_addrrange(void *fdt, int parent, int nodeoffset,
++			     const char *name, uint64_t addr, uint64_t size)
++{
++	int addr_cells, size_cells, ret;
++	uint8_t data[sizeof(fdt64_t) * 2], *prop;
++
++	ret = fdt_address_cells(fdt, parent);
++	if (ret < 0)
++		return ret;
++	addr_cells = ret;
++
++	ret = fdt_size_cells(fdt, parent);
++	if (ret < 0)
++		return ret;
++	size_cells = ret;
++
++	/* check validity of address */
++	prop = data;
++	if (addr_cells == 1) {
++		if ((addr > UINT32_MAX) || ((UINT32_MAX + 1 - addr) < size))
++			return -FDT_ERR_BADVALUE;
++
++		fdt32_st(prop, (uint32_t)addr);
++	} else if (addr_cells == 2) {
++		fdt64_st(prop, addr);
++	} else {
++		return -FDT_ERR_BADNCELLS;
++	}
++
++	/* check validity of size */
++	prop += addr_cells * sizeof(fdt32_t);
++	if (size_cells == 1) {
++		if (size > UINT32_MAX)
++			return -FDT_ERR_BADVALUE;
++
++		fdt32_st(prop, (uint32_t)size);
++	} else if (size_cells == 2) {
++		fdt64_st(prop, size);
++	} else {
++		return -FDT_ERR_BADNCELLS;
++	}
++
++	return fdt_appendprop(fdt, nodeoffset, name, data,
++			      (addr_cells + size_cells) * sizeof(fdt32_t));
++}
+diff --git a/scripts/dtc/libfdt/fdt_empty_tree.c b/scripts/dtc/libfdt/fdt_empty_tree.c
+index f2ae9b77c2..49d54d44b8 100644
+--- a/scripts/dtc/libfdt/fdt_empty_tree.c
++++ b/scripts/dtc/libfdt/fdt_empty_tree.c
+@@ -1,52 +1,7 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2012 David Gibson, IBM Corporation.
+- *
+- * libfdt is dual licensed: you can use it either under the terms of
+- * the GPL, or the BSD license, at your option.
+- *
+- *  a) This library is free software; you can redistribute it and/or
+- *     modify it under the terms of the GNU General Public License as
+- *     published by the Free Software Foundation; either version 2 of the
+- *     License, or (at your option) any later version.
+- *
+- *     This library is distributed in the hope that it will be useful,
+- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *     GNU General Public License for more details.
+- *
+- *     You should have received a copy of the GNU General Public
+- *     License along with this library; if not, write to the Free
+- *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+- *     MA 02110-1301 USA
+- *
+- * Alternatively,
+- *
+- *  b) Redistribution and use in source and binary forms, with or
+- *     without modification, are permitted provided that the following
+- *     conditions are met:
+- *
+- *     1. Redistributions of source code must retain the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer.
+- *     2. Redistributions in binary form must reproduce the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer in the documentation and/or other materials
+- *        provided with the distribution.
+- *
+- *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+- *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+- *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+- *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+- *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+- *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+- *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+- *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ #include "libfdt_env.h"
+ 
+diff --git a/scripts/dtc/libfdt/fdt_overlay.c b/scripts/dtc/libfdt/fdt_overlay.c
+index bf75388ec9..be71873366 100644
+--- a/scripts/dtc/libfdt/fdt_overlay.c
++++ b/scripts/dtc/libfdt/fdt_overlay.c
+@@ -1,53 +1,8 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2016 Free Electrons
+  * Copyright (C) 2016 NextThing Co.
+- *
+- * libfdt is dual licensed: you can use it either under the terms of
+- * the GPL, or the BSD license, at your option.
+- *
+- *  a) This library is free software; you can redistribute it and/or
+- *     modify it under the terms of the GNU General Public License as
+- *     published by the Free Software Foundation; either version 2 of the
+- *     License, or (at your option) any later version.
+- *
+- *     This library is distributed in the hope that it will be useful,
+- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *     GNU General Public License for more details.
+- *
+- *     You should have received a copy of the GNU General Public
+- *     License along with this library; if not, write to the Free
+- *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+- *     MA 02110-1301 USA
+- *
+- * Alternatively,
+- *
+- *  b) Redistribution and use in source and binary forms, with or
+- *     without modification, are permitted provided that the following
+- *     conditions are met:
+- *
+- *     1. Redistributions of source code must retain the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer.
+- *     2. Redistributions in binary form must reproduce the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer in the documentation and/or other materials
+- *        provided with the distribution.
+- *
+- *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+- *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+- *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+- *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+- *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+- *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+- *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+- *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ #include "libfdt_env.h"
+ 
+@@ -93,11 +48,11 @@ static uint32_t overlay_get_target_phandle(const void *fdto, int fragment)
+  * @pathp: pointer which receives the path of the target (or NULL)
+  *
+  * overlay_get_target() retrieves the target offset in the base
+- * device tree of a fragment, no matter how the actual targetting is
++ * device tree of a fragment, no matter how the actual targeting is
+  * done (through a phandle or a path)
+  *
+  * returns:
+- *      the targetted node offset in the base device tree
++ *      the targeted node offset in the base device tree
+  *      Negative error code on error
+  */
+ static int overlay_get_target(const void *fdt, const void *fdto,
+@@ -697,7 +652,7 @@ static int get_path_len(const void *fdt, int nodeoffset)
+ 	int len = 0, namelen;
+ 	const char *name;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	for (;;) {
+ 		name = fdt_get_name(fdt, nodeoffset, &namelen);
+@@ -778,26 +733,36 @@ static int overlay_symbol_update(void *fdt, void *fdto)
+ 		/* keep end marker to avoid strlen() */
+ 		e = path + path_len;
+ 
+-		/* format: /<fragment-name>/__overlay__/<relative-subnode-path> */
+-
+ 		if (*path != '/')
+ 			return -FDT_ERR_BADVALUE;
+ 
+ 		/* get fragment name first */
+ 		s = strchr(path + 1, '/');
+-		if (!s)
+-			return -FDT_ERR_BADOVERLAY;
++		if (!s) {
++			/* Symbol refers to something that won't end
++			 * up in the target tree */
++			continue;
++		}
+ 
+ 		frag_name = path + 1;
+ 		frag_name_len = s - path - 1;
+ 
+ 		/* verify format; safe since "s" lies in \0 terminated prop */
+ 		len = sizeof("/__overlay__/") - 1;
+-		if ((e - s) < len || memcmp(s, "/__overlay__/", len))
+-			return -FDT_ERR_BADOVERLAY;
+-
+-		rel_path = s + len;
+-		rel_path_len = e - rel_path;
++		if ((e - s) > len && (memcmp(s, "/__overlay__/", len) == 0)) {
++			/* /<fragment-name>/__overlay__/<relative-subnode-path> */
++			rel_path = s + len;
++			rel_path_len = e - rel_path;
++		} else if ((e - s) == len
++			   && (memcmp(s, "/__overlay__", len - 1) == 0)) {
++			/* /<fragment-name>/__overlay__ */
++			rel_path = "";
++			rel_path_len = 0;
++		} else {
++			/* Symbol refers to something that won't end
++			 * up in the target tree */
++			continue;
++		}
+ 
+ 		/* find the fragment index in which the symbol lies */
+ 		ret = fdt_subnode_offset_namelen(fdto, 0, frag_name,
+@@ -863,11 +828,15 @@ static int overlay_symbol_update(void *fdt, void *fdto)
+ 
+ int fdt_overlay_apply(void *fdt, void *fdto)
+ {
+-	uint32_t delta = fdt_get_max_phandle(fdt);
++	uint32_t delta;
+ 	int ret;
+ 
+-	FDT_CHECK_HEADER(fdt);
+-	FDT_CHECK_HEADER(fdto);
++	FDT_RO_PROBE(fdt);
++	FDT_RO_PROBE(fdto);
++
++	ret = fdt_find_max_phandle(fdt, &delta);
++	if (ret)
++		goto err;
+ 
+ 	ret = overlay_adjust_local_phandles(fdto, delta);
+ 	if (ret)
+diff --git a/scripts/dtc/libfdt/fdt_ro.c b/scripts/dtc/libfdt/fdt_ro.c
+index dc499884e4..e398815485 100644
+--- a/scripts/dtc/libfdt/fdt_ro.c
++++ b/scripts/dtc/libfdt/fdt_ro.c
+@@ -1,52 +1,7 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2006 David Gibson, IBM Corporation.
+- *
+- * libfdt is dual licensed: you can use it either under the terms of
+- * the GPL, or the BSD license, at your option.
+- *
+- *  a) This library is free software; you can redistribute it and/or
+- *     modify it under the terms of the GNU General Public License as
+- *     published by the Free Software Foundation; either version 2 of the
+- *     License, or (at your option) any later version.
+- *
+- *     This library is distributed in the hope that it will be useful,
+- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *     GNU General Public License for more details.
+- *
+- *     You should have received a copy of the GNU General Public
+- *     License along with this library; if not, write to the Free
+- *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+- *     MA 02110-1301 USA
+- *
+- * Alternatively,
+- *
+- *  b) Redistribution and use in source and binary forms, with or
+- *     without modification, are permitted provided that the following
+- *     conditions are met:
+- *
+- *     1. Redistributions of source code must retain the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer.
+- *     2. Redistributions in binary form must reproduce the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer in the documentation and/or other materials
+- *        provided with the distribution.
+- *
+- *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+- *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+- *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+- *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+- *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+- *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+- *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+- *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ #include "libfdt_env.h"
+ 
+@@ -61,7 +16,7 @@ static int fdt_nodename_eq_(const void *fdt, int offset,
+ 	int olen;
+ 	const char *p = fdt_get_name(fdt, offset, &olen);
+ 
+-	if (!p || olen < len)
++	if (!p || (fdt_chk_extra() && olen < len))
+ 		/* short match */
+ 		return 0;
+ 
+@@ -76,46 +31,85 @@ static int fdt_nodename_eq_(const void *fdt, int offset,
+ 		return 0;
+ }
+ 
+-const char *fdt_string(const void *fdt, int stroffset)
+-{
+-	return (const char *)fdt + fdt_off_dt_strings(fdt) + stroffset;
+-}
+-
+-static int fdt_string_eq_(const void *fdt, int stroffset,
+-			  const char *s, int len)
++const char *fdt_get_string(const void *fdt, int stroffset, int *lenp)
+ {
+-	const char *p = fdt_string(fdt, stroffset);
++	int32_t totalsize;
++	uint32_t absoffset;
++	size_t len;
++	int err;
++	const char *s, *n;
+ 
+-	return (strlen(p) == len) && (memcmp(p, s, len) == 0);
+-}
++	if (!fdt_chk_extra()) {
++		s = (const char *)fdt + fdt_off_dt_strings(fdt) + stroffset;
+ 
+-uint32_t fdt_get_max_phandle(const void *fdt)
+-{
+-	uint32_t max_phandle = 0;
+-	int offset;
++		if (lenp)
++			*lenp = strlen(s);
++		return s;
++	}
++	totalsize = fdt_ro_probe_(fdt);
++	err = totalsize;
++	if (totalsize < 0)
++		goto fail;
++
++	err = -FDT_ERR_BADOFFSET;
++	absoffset = stroffset + fdt_off_dt_strings(fdt);
++	if (absoffset >= totalsize)
++		goto fail;
++	len = totalsize - absoffset;
++
++	if (fdt_magic(fdt) == FDT_MAGIC) {
++		if (stroffset < 0)
++			goto fail;
++		if (!fdt_chk_version() || fdt_version(fdt) >= 17) {
++			if (stroffset >= fdt_size_dt_strings(fdt))
++				goto fail;
++			if ((fdt_size_dt_strings(fdt) - stroffset) < len)
++				len = fdt_size_dt_strings(fdt) - stroffset;
++		}
++	} else if (fdt_magic(fdt) == FDT_SW_MAGIC) {
++		if ((stroffset >= 0)
++		    || (stroffset < -fdt_size_dt_strings(fdt)))
++			goto fail;
++		if ((-stroffset) < len)
++			len = -stroffset;
++	} else {
++		err = -FDT_ERR_INTERNAL;
++		goto fail;
++	}
+ 
+-	for (offset = fdt_next_node(fdt, -1, NULL);;
+-	     offset = fdt_next_node(fdt, offset, NULL)) {
+-		uint32_t phandle;
++	s = (const char *)fdt + absoffset;
++	n = memchr(s, '\0', len);
++	if (!n) {
++		/* missing terminating NULL */
++		err = -FDT_ERR_TRUNCATED;
++		goto fail;
++	}
+ 
+-		if (offset == -FDT_ERR_NOTFOUND)
+-			return max_phandle;
++	if (lenp)
++		*lenp = n - s;
++	return s;
+ 
+-		if (offset < 0)
+-			return (uint32_t)-1;
++fail:
++	if (lenp)
++		*lenp = err;
++	return NULL;
++}
+ 
+-		phandle = fdt_get_phandle(fdt, offset);
+-		if (phandle == (uint32_t)-1)
+-			continue;
++const char *fdt_string(const void *fdt, int stroffset)
++{
++	return fdt_get_string(fdt, stroffset, NULL);
++}
+ 
+-		if (phandle > max_phandle)
+-			max_phandle = phandle;
+-	}
++static int fdt_string_eq_(const void *fdt, int stroffset,
++			  const char *s, int len)
++{
++	int slen;
++	const char *p = fdt_get_string(fdt, stroffset, &slen);
+ 
+-	return 0;
++	return p && (slen == len) && (memcmp(p, s, len) == 0);
+ }
+ 
+-int fdt_generate_phandle(const void *fdt, uint32_t *phandle)
++int fdt_find_max_phandle(const void *fdt, uint32_t *phandle)
+ {
+ 	uint32_t max = 0;
+ 	int offset = -1;
+@@ -137,6 +131,21 @@ int fdt_generate_phandle(const void *fdt, uint32_t *phandle)
+ 			max = value;
+ 	}
+ 
++	if (phandle)
++		*phandle = max;
++
++	return 0;
++}
++
++int fdt_generate_phandle(const void *fdt, uint32_t *phandle)
++{
++	uint32_t max;
++	int err;
++
++	err = fdt_find_max_phandle(fdt, &max);
++	if (err < 0)
++		return err;
++
+ 	if (max == FDT_MAX_PHANDLE)
+ 		return -FDT_ERR_NOPHANDLES;
+ 
+@@ -146,21 +155,45 @@ int fdt_generate_phandle(const void *fdt, uint32_t *phandle)
+ 	return 0;
+ }
+ 
++static const struct fdt_reserve_entry *fdt_mem_rsv(const void *fdt, int n)
++{
++	int offset = n * sizeof(struct fdt_reserve_entry);
++	int absoffset = fdt_off_mem_rsvmap(fdt) + offset;
++
++	if (fdt_chk_extra()) {
++		if (absoffset < fdt_off_mem_rsvmap(fdt))
++			return NULL;
++		if (absoffset > fdt_totalsize(fdt) -
++		    sizeof(struct fdt_reserve_entry))
++			return NULL;
++	}
++	return fdt_mem_rsv_(fdt, n);
++}
++
+ int fdt_get_mem_rsv(const void *fdt, int n, uint64_t *address, uint64_t *size)
+ {
+-	FDT_CHECK_HEADER(fdt);
+-	*address = fdt64_to_cpu(fdt_mem_rsv_(fdt, n)->address);
+-	*size = fdt64_to_cpu(fdt_mem_rsv_(fdt, n)->size);
++	const struct fdt_reserve_entry *re;
++
++	FDT_RO_PROBE(fdt);
++	re = fdt_mem_rsv(fdt, n);
++	if (fdt_chk_extra() && !re)
++		return -FDT_ERR_BADOFFSET;
++
++	*address = fdt64_ld(&re->address);
++	*size = fdt64_ld(&re->size);
+ 	return 0;
+ }
+ 
+ int fdt_num_mem_rsv(const void *fdt)
+ {
+-	int i = 0;
++	int i;
++	const struct fdt_reserve_entry *re;
+ 
+-	while (fdt64_to_cpu(fdt_mem_rsv_(fdt, i)->size) != 0)
+-		i++;
+-	return i;
++	for (i = 0; (re = fdt_mem_rsv(fdt, i)) != NULL; i++) {
++		if (fdt64_ld(&re->size) == 0)
++			return i;
++	}
++	return -FDT_ERR_TRUNCATED;
+ }
+ 
+ static int nextprop_(const void *fdt, int offset)
+@@ -192,7 +225,7 @@ int fdt_subnode_offset_namelen(const void *fdt, int offset,
+ {
+ 	int depth;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	for (depth = 0;
+ 	     (offset >= 0) && (depth >= 0);
+@@ -218,7 +251,7 @@ int fdt_path_offset_namelen(const void *fdt, const char *path, int namelen)
+ 	const char *p = path;
+ 	int offset = 0;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	/* see if we have an alias */
+ 	if (*path != '/') {
+@@ -268,13 +301,14 @@ const char *fdt_get_name(const void *fdt, int nodeoffset, int *len)
+ 	const char *nameptr;
+ 	int err;
+ 
+-	if (((err = fdt_check_header(fdt)) != 0)
+-	    || ((err = fdt_check_node_offset_(fdt, nodeoffset)) < 0))
+-			goto fail;
++	if (fdt_chk_extra() &&
++	    (((err = fdt_ro_probe_(fdt)) < 0)
++	     || ((err = fdt_check_node_offset_(fdt, nodeoffset)) < 0)))
++		goto fail;
+ 
+ 	nameptr = nh->name;
+ 
+-	if (fdt_version(fdt) < 0x10) {
++	if (fdt_chk_version() && fdt_version(fdt) < 0x10) {
+ 		/*
+ 		 * For old FDT versions, match the naming conventions of V16:
+ 		 * give only the leaf name (after all /). The actual tree
+@@ -325,7 +359,7 @@ static const struct fdt_property *fdt_get_property_by_offset_(const void *fdt,
+ 	int err;
+ 	const struct fdt_property *prop;
+ 
+-	if ((err = fdt_check_prop_offset_(fdt, offset)) < 0) {
++	if (fdt_chk_basic() && (err = fdt_check_prop_offset_(fdt, offset)) < 0) {
+ 		if (lenp)
+ 			*lenp = err;
+ 		return NULL;
+@@ -334,7 +368,7 @@ static const struct fdt_property *fdt_get_property_by_offset_(const void *fdt,
+ 	prop = fdt_offset_ptr_(fdt, offset);
+ 
+ 	if (lenp)
+-		*lenp = fdt32_to_cpu(prop->len);
++		*lenp = fdt32_ld(&prop->len);
+ 
+ 	return prop;
+ }
+@@ -346,7 +380,7 @@ const struct fdt_property *fdt_get_property_by_offset(const void *fdt,
+ 	/* Prior to version 16, properties may need realignment
+ 	 * and this API does not work. fdt_getprop_*() will, however. */
+ 
+-	if (fdt_version(fdt) < 0x10) {
++	if (fdt_chk_version() && fdt_version(fdt) < 0x10) {
+ 		if (lenp)
+ 			*lenp = -FDT_ERR_BADVERSION;
+ 		return NULL;
+@@ -367,11 +401,12 @@ static const struct fdt_property *fdt_get_property_namelen_(const void *fdt,
+ 	     (offset = fdt_next_property_offset(fdt, offset))) {
+ 		const struct fdt_property *prop;
+ 
+-		if (!(prop = fdt_get_property_by_offset_(fdt, offset, lenp))) {
++		prop = fdt_get_property_by_offset_(fdt, offset, lenp);
++		if (fdt_chk_extra() && !prop) {
+ 			offset = -FDT_ERR_INTERNAL;
+ 			break;
+ 		}
+-		if (fdt_string_eq_(fdt, fdt32_to_cpu(prop->nameoff),
++		if (fdt_string_eq_(fdt, fdt32_ld(&prop->nameoff),
+ 				   name, namelen)) {
+ 			if (poffset)
+ 				*poffset = offset;
+@@ -392,7 +427,7 @@ const struct fdt_property *fdt_get_property_namelen(const void *fdt,
+ {
+ 	/* Prior to version 16, properties may need realignment
+ 	 * and this API does not work. fdt_getprop_*() will, however. */
+-	if (fdt_version(fdt) < 0x10) {
++	if (fdt_chk_version() && fdt_version(fdt) < 0x10) {
+ 		if (lenp)
+ 			*lenp = -FDT_ERR_BADVERSION;
+ 		return NULL;
+@@ -423,8 +458,8 @@ const void *fdt_getprop_namelen(const void *fdt, int nodeoffset,
+ 		return NULL;
+ 
+ 	/* Handle realignment */
+-	if (fdt_version(fdt) < 0x10 && (poffset + sizeof(*prop)) % 8 &&
+-	    fdt32_to_cpu(prop->len) >= 8)
++	if (fdt_chk_version() && fdt_version(fdt) < 0x10 &&
++	    (poffset + sizeof(*prop)) % 8 && fdt32_ld(&prop->len) >= 8)
+ 		return prop->data + 4;
+ 	return prop->data;
+ }
+@@ -437,12 +472,27 @@ const void *fdt_getprop_by_offset(const void *fdt, int offset,
+ 	prop = fdt_get_property_by_offset_(fdt, offset, lenp);
+ 	if (!prop)
+ 		return NULL;
+-	if (namep)
+-		*namep = fdt_string(fdt, fdt32_to_cpu(prop->nameoff));
++	if (namep) {
++		const char *name;
++		int namelen;
++
++		if (fdt_chk_extra()) {
++			name = fdt_get_string(fdt, fdt32_ld(&prop->nameoff),
++					      &namelen);
++			if (!name) {
++				if (lenp)
++					*lenp = namelen;
++				return NULL;
++			}
++			*namep = name;
++		} else {
++			*namep = fdt_string(fdt, fdt32_ld(&prop->nameoff));
++		}
++	}
+ 
+ 	/* Handle realignment */
+-	if (fdt_version(fdt) < 0x10 && (offset + sizeof(*prop)) % 8 &&
+-	    fdt32_to_cpu(prop->len) >= 8)
++	if (fdt_chk_version() && fdt_version(fdt) < 0x10 &&
++	    (offset + sizeof(*prop)) % 8 && fdt32_ld(&prop->len) >= 8)
+ 		return prop->data + 4;
+ 	return prop->data;
+ }
+@@ -467,7 +517,7 @@ uint32_t fdt_get_phandle(const void *fdt, int nodeoffset)
+ 			return 0;
+ 	}
+ 
+-	return fdt32_to_cpu(*php);
++	return fdt32_ld(php);
+ }
+ 
+ const char *fdt_get_alias_namelen(const void *fdt,
+@@ -493,7 +543,7 @@ int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen)
+ 	int offset, depth, namelen;
+ 	const char *name;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	if (buflen < 2)
+ 		return -FDT_ERR_NOSPACE;
+@@ -545,7 +595,7 @@ int fdt_supernode_atdepth_offset(const void *fdt, int nodeoffset,
+ 	int offset, depth;
+ 	int supernodeoffset = -FDT_ERR_INTERNAL;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	if (supernodedepth < 0)
+ 		return -FDT_ERR_NOTFOUND;
+@@ -567,10 +617,12 @@ int fdt_supernode_atdepth_offset(const void *fdt, int nodeoffset,
+ 		}
+ 	}
+ 
+-	if ((offset == -FDT_ERR_NOTFOUND) || (offset >= 0))
+-		return -FDT_ERR_BADOFFSET;
+-	else if (offset == -FDT_ERR_BADOFFSET)
+-		return -FDT_ERR_BADSTRUCTURE;
++	if (fdt_chk_extra()) {
++		if ((offset == -FDT_ERR_NOTFOUND) || (offset >= 0))
++			return -FDT_ERR_BADOFFSET;
++		else if (offset == -FDT_ERR_BADOFFSET)
++			return -FDT_ERR_BADSTRUCTURE;
++	}
+ 
+ 	return offset; /* error from fdt_next_node() */
+ }
+@@ -582,7 +634,7 @@ int fdt_node_depth(const void *fdt, int nodeoffset)
+ 
+ 	err = fdt_supernode_atdepth_offset(fdt, nodeoffset, 0, &nodedepth);
+ 	if (err)
+-		return (err < 0) ? err : -FDT_ERR_INTERNAL;
++		return (!fdt_chk_extra() || err < 0) ? err : -FDT_ERR_INTERNAL;
+ 	return nodedepth;
+ }
+ 
+@@ -604,7 +656,7 @@ int fdt_node_offset_by_prop_value(const void *fdt, int startoffset,
+ 	const void *val;
+ 	int len;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	/* FIXME: The algorithm here is pretty horrible: we scan each
+ 	 * property of a node in fdt_getprop(), then if that didn't
+@@ -630,7 +682,7 @@ int fdt_node_offset_by_phandle(const void *fdt, uint32_t phandle)
+ 	if ((phandle == 0) || (phandle == -1))
+ 		return -FDT_ERR_BADPHANDLE;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	/* FIXME: The algorithm here is pretty horrible: we
+ 	 * potentially scan each property of a node in
+@@ -783,7 +835,7 @@ int fdt_node_offset_by_compatible(const void *fdt, int startoffset,
+ {
+ 	int offset, err;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	/* FIXME: The algorithm here is pretty horrible: we scan each
+ 	 * property of a node in fdt_node_check_compatible(), then if
+@@ -802,3 +854,68 @@ int fdt_node_offset_by_compatible(const void *fdt, int startoffset,
+ 
+ 	return offset; /* error from fdt_next_node() */
+ }
++
++#if !defined(FDT_ASSUME_MASK) || FDT_ASSUME_MASK != 0xff
++int fdt_check_full(const void *fdt, size_t bufsize)
++{
++	int err;
++	int num_memrsv;
++	int offset, nextoffset = 0;
++	uint32_t tag;
++	unsigned depth = 0;
++	const void *prop;
++	const char *propname;
++
++	if (bufsize < FDT_V1_SIZE)
++		return -FDT_ERR_TRUNCATED;
++	err = fdt_check_header(fdt);
++	if (err != 0)
++		return err;
++	if (bufsize < fdt_totalsize(fdt))
++		return -FDT_ERR_TRUNCATED;
++
++	num_memrsv = fdt_num_mem_rsv(fdt);
++	if (num_memrsv < 0)
++		return num_memrsv;
++
++	while (1) {
++		offset = nextoffset;
++		tag = fdt_next_tag(fdt, offset, &nextoffset);
++
++		if (nextoffset < 0)
++			return nextoffset;
++
++		switch (tag) {
++		case FDT_NOP:
++			break;
++
++		case FDT_END:
++			if (depth != 0)
++				return -FDT_ERR_BADSTRUCTURE;
++			return 0;
++
++		case FDT_BEGIN_NODE:
++			depth++;
++			if (depth > INT_MAX)
++				return -FDT_ERR_BADSTRUCTURE;
++			break;
++
++		case FDT_END_NODE:
++			if (depth == 0)
++				return -FDT_ERR_BADSTRUCTURE;
++			depth--;
++			break;
++
++		case FDT_PROP:
++			prop = fdt_getprop_by_offset(fdt, offset, &propname,
++						     &err);
++			if (!prop)
++				return err;
++			break;
++
++		default:
++			return -FDT_ERR_INTERNAL;
++		}
++	}
++}
++#endif
+diff --git a/scripts/dtc/libfdt/fdt_rw.c b/scripts/dtc/libfdt/fdt_rw.c
+index 9b829051e4..08e2981a44 100644
+--- a/scripts/dtc/libfdt/fdt_rw.c
++++ b/scripts/dtc/libfdt/fdt_rw.c
+@@ -1,52 +1,7 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2006 David Gibson, IBM Corporation.
+- *
+- * libfdt is dual licensed: you can use it either under the terms of
+- * the GPL, or the BSD license, at your option.
+- *
+- *  a) This library is free software; you can redistribute it and/or
+- *     modify it under the terms of the GNU General Public License as
+- *     published by the Free Software Foundation; either version 2 of the
+- *     License, or (at your option) any later version.
+- *
+- *     This library is distributed in the hope that it will be useful,
+- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *     GNU General Public License for more details.
+- *
+- *     You should have received a copy of the GNU General Public
+- *     License along with this library; if not, write to the Free
+- *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+- *     MA 02110-1301 USA
+- *
+- * Alternatively,
+- *
+- *  b) Redistribution and use in source and binary forms, with or
+- *     without modification, are permitted provided that the following
+- *     conditions are met:
+- *
+- *     1. Redistributions of source code must retain the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer.
+- *     2. Redistributions in binary form must reproduce the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer in the documentation and/or other materials
+- *        provided with the distribution.
+- *
+- *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+- *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+- *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+- *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+- *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+- *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+- *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+- *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ #include "libfdt_env.h"
+ 
+@@ -58,6 +13,8 @@
+ static int fdt_blocks_misordered_(const void *fdt,
+ 				  int mem_rsv_size, int struct_size)
+ {
++	if (!fdt_chk_basic())
++		return false;
+ 	return (fdt_off_mem_rsvmap(fdt) < FDT_ALIGN(sizeof(struct fdt_header), 8))
+ 		|| (fdt_off_dt_struct(fdt) <
+ 		    (fdt_off_mem_rsvmap(fdt) + mem_rsv_size))
+@@ -67,25 +24,27 @@ static int fdt_blocks_misordered_(const void *fdt,
+ 		    (fdt_off_dt_strings(fdt) + fdt_size_dt_strings(fdt)));
+ }
+ 
+-static int fdt_rw_check_header_(void *fdt)
++static int fdt_rw_probe_(void *fdt)
+ {
+-	FDT_CHECK_HEADER(fdt);
++	if (!fdt_chk_basic())
++		return 0;
++	FDT_RO_PROBE(fdt);
+ 
+-	if (fdt_version(fdt) < 17)
++	if (fdt_chk_version() && fdt_version(fdt) < 17)
+ 		return -FDT_ERR_BADVERSION;
+ 	if (fdt_blocks_misordered_(fdt, sizeof(struct fdt_reserve_entry),
+ 				   fdt_size_dt_struct(fdt)))
+ 		return -FDT_ERR_BADLAYOUT;
+-	if (fdt_version(fdt) > 17)
++	if (fdt_chk_version() && fdt_version(fdt) > 17)
+ 		fdt_set_version(fdt, 17);
+ 
+ 	return 0;
+ }
+ 
+-#define FDT_RW_CHECK_HEADER(fdt) \
++#define FDT_RW_PROBE(fdt) \
+ 	{ \
+ 		int err_; \
+-		if ((err_ = fdt_rw_check_header_(fdt)) != 0) \
++		if (fdt_chk_extra() && (err_ = fdt_rw_probe_(fdt)) != 0) \
+ 			return err_; \
+ 	}
+ 
+@@ -136,6 +95,14 @@ static int fdt_splice_struct_(void *fdt, void *p,
+ 	return 0;
+ }
+ 
++/* Must only be used to roll back in case of error */
++static void fdt_del_last_string_(void *fdt, const char *s)
++{
++	int newlen = strlen(s) + 1;
++
++	fdt_set_size_dt_strings(fdt, fdt_size_dt_strings(fdt) - newlen);
++}
++
+ static int fdt_splice_string_(void *fdt, int newlen)
+ {
+ 	void *p = (char *)fdt
+@@ -149,7 +116,16 @@ static int fdt_splice_string_(void *fdt, int newlen)
+ 	return 0;
+ }
+ 
+-static int fdt_find_add_string_(void *fdt, const char *s)
++/**
++ * fdt_find_add_string_() - Find or allocate a string
++ *
++ * @fdt: pointer to the device tree to check/adjust
++ * @s: string to find/add
++ * @allocated: Set to 0 if the string was found, 1 if not found and so
++ *	allocated. Ignored if !fdt_chk_basic()
++ * @return offset of string in the string table (whether found or added)
++ */
++static int fdt_find_add_string_(void *fdt, const char *s, int *allocated)
+ {
+ 	char *strtab = (char *)fdt + fdt_off_dt_strings(fdt);
+ 	const char *p;
+@@ -157,6 +133,9 @@ static int fdt_find_add_string_(void *fdt, const char *s)
+ 	int len = strlen(s) + 1;
+ 	int err;
+ 
++	if (fdt_chk_basic())
++		*allocated = 0;
++
+ 	p = fdt_find_string_(strtab, fdt_size_dt_strings(fdt), s);
+ 	if (p)
+ 		/* found it */
+@@ -167,6 +146,9 @@ static int fdt_find_add_string_(void *fdt, const char *s)
+ 	if (err)
+ 		return err;
+ 
++	if (fdt_chk_basic())
++		*allocated = 1;
++
+ 	memcpy(new, s, len);
+ 	return (new - strtab);
+ }
+@@ -176,7 +158,7 @@ int fdt_add_mem_rsv(void *fdt, uint64_t address, uint64_t size)
+ 	struct fdt_reserve_entry *re;
+ 	int err;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	re = fdt_mem_rsv_w_(fdt, fdt_num_mem_rsv(fdt));
+ 	err = fdt_splice_mem_rsv_(fdt, re, 0, 1);
+@@ -192,7 +174,7 @@ int fdt_del_mem_rsv(void *fdt, int n)
+ {
+ 	struct fdt_reserve_entry *re = fdt_mem_rsv_w_(fdt, n);
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	if (n >= fdt_num_mem_rsv(fdt))
+ 		return -FDT_ERR_NOTFOUND;
+@@ -225,11 +207,12 @@ static int fdt_add_property_(void *fdt, int nodeoffset, const char *name,
+ 	int nextoffset;
+ 	int namestroff;
+ 	int err;
++	int allocated;
+ 
+ 	if ((nextoffset = fdt_check_node_offset_(fdt, nodeoffset)) < 0)
+ 		return nextoffset;
+ 
+-	namestroff = fdt_find_add_string_(fdt, name);
++	namestroff = fdt_find_add_string_(fdt, name, &allocated);
+ 	if (namestroff < 0)
+ 		return namestroff;
+ 
+@@ -237,8 +220,12 @@ static int fdt_add_property_(void *fdt, int nodeoffset, const char *name,
+ 	proplen = sizeof(**prop) + FDT_TAGALIGN(len);
+ 
+ 	err = fdt_splice_struct_(fdt, *prop, 0, proplen);
+-	if (err)
++	if (err) {
++		/* Delete the string if we failed to add it */
++		if (fdt_chk_basic() && allocated)
++			fdt_del_last_string_(fdt, name);
+ 		return err;
++	}
+ 
+ 	(*prop)->tag = cpu_to_fdt32(FDT_PROP);
+ 	(*prop)->nameoff = cpu_to_fdt32(namestroff);
+@@ -252,7 +239,7 @@ int fdt_set_name(void *fdt, int nodeoffset, const char *name)
+ 	int oldlen, newlen;
+ 	int err;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	namep = (char *)(uintptr_t)fdt_get_name(fdt, nodeoffset, &oldlen);
+ 	if (!namep)
+@@ -275,7 +262,7 @@ int fdt_setprop_placeholder(void *fdt, int nodeoffset, const char *name,
+ 	struct fdt_property *prop;
+ 	int err;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	err = fdt_resize_property_(fdt, nodeoffset, name, len, &prop);
+ 	if (err == -FDT_ERR_NOTFOUND)
+@@ -308,7 +295,7 @@ int fdt_appendprop(void *fdt, int nodeoffset, const char *name,
+ 	struct fdt_property *prop;
+ 	int err, oldlen, newlen;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	prop = fdt_get_property_w(fdt, nodeoffset, name, &oldlen);
+ 	if (prop) {
+@@ -334,7 +321,7 @@ int fdt_delprop(void *fdt, int nodeoffset, const char *name)
+ 	struct fdt_property *prop;
+ 	int len, proplen;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	prop = fdt_get_property_w(fdt, nodeoffset, name, &len);
+ 	if (!prop)
+@@ -354,7 +341,7 @@ int fdt_add_subnode_namelen(void *fdt, int parentoffset,
+ 	uint32_t tag;
+ 	fdt32_t *endtag;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	offset = fdt_subnode_offset_namelen(fdt, parentoffset, name, namelen);
+ 	if (offset >= 0)
+@@ -394,7 +381,7 @@ int fdt_del_node(void *fdt, int nodeoffset)
+ {
+ 	int endoffset;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	endoffset = fdt_node_end_offset_(fdt, nodeoffset);
+ 	if (endoffset < 0)
+@@ -435,12 +422,12 @@ int fdt_open_into(const void *fdt, void *buf, int bufsize)
+ 	const char *fdtend = fdtstart + fdt_totalsize(fdt);
+ 	char *tmp;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	mem_rsv_size = (fdt_num_mem_rsv(fdt)+1)
+ 		* sizeof(struct fdt_reserve_entry);
+ 
+-	if (fdt_version(fdt) >= 17) {
++	if (!fdt_chk_version() || fdt_version(fdt) >= 17) {
+ 		struct_size = fdt_size_dt_struct(fdt);
+ 	} else {
+ 		struct_size = 0;
+@@ -494,7 +481,7 @@ int fdt_pack(void *fdt)
+ {
+ 	int mem_rsv_size;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	mem_rsv_size = (fdt_num_mem_rsv(fdt)+1)
+ 		* sizeof(struct fdt_reserve_entry);
+diff --git a/scripts/dtc/libfdt/fdt_strerror.c b/scripts/dtc/libfdt/fdt_strerror.c
+index 9677a1887e..768db66ead 100644
+--- a/scripts/dtc/libfdt/fdt_strerror.c
++++ b/scripts/dtc/libfdt/fdt_strerror.c
+@@ -1,51 +1,7 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2006 David Gibson, IBM Corporation.
+- *
+- * libfdt is dual licensed: you can use it either under the terms of
+- * the GPL, or the BSD license, at your option.
+- *
+- *  a) This library is free software; you can redistribute it and/or
+- *     modify it under the terms of the GNU General Public License as
+- *     published by the Free Software Foundation; either version 2 of the
+- *     License, or (at your option) any later version.
+- *
+- *     This library is distributed in the hope that it will be useful,
+- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *     GNU General Public License for more details.
+- *
+- *     You should have received a copy of the GNU General Public
+- *     License along with this library; if not, write to the Free
+- *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+- *     MA 02110-1301 USA
+- *
+- * Alternatively,
+- *
+- *  b) Redistribution and use in source and binary forms, with or
+- *     without modification, are permitted provided that the following
+- *     conditions are met:
+- *
+- *     1. Redistributions of source code must retain the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer.
+- *     2. Redistributions in binary form must reproduce the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer in the documentation and/or other materials
+- *        provided with the distribution.
+- *
+- *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+- *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+- *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+- *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+- *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+- *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+- *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ #include "libfdt_env.h"
+@@ -82,6 +38,7 @@ static struct fdt_errtabent fdt_errtable[] = {
+ 	FDT_ERRTABENT(FDT_ERR_BADVALUE),
+ 	FDT_ERRTABENT(FDT_ERR_BADOVERLAY),
+ 	FDT_ERRTABENT(FDT_ERR_NOPHANDLES),
++	FDT_ERRTABENT(FDT_ERR_BADFLAGS),
+ };
+ #define FDT_ERRTABSIZE	(sizeof(fdt_errtable) / sizeof(fdt_errtable[0]))
+ 
+diff --git a/scripts/dtc/libfdt/fdt_sw.c b/scripts/dtc/libfdt/fdt_sw.c
+index d8ef748a72..a8c924675a 100644
+--- a/scripts/dtc/libfdt/fdt_sw.c
++++ b/scripts/dtc/libfdt/fdt_sw.c
+@@ -1,52 +1,7 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2006 David Gibson, IBM Corporation.
+- *
+- * libfdt is dual licensed: you can use it either under the terms of
+- * the GPL, or the BSD license, at your option.
+- *
+- *  a) This library is free software; you can redistribute it and/or
+- *     modify it under the terms of the GNU General Public License as
+- *     published by the Free Software Foundation; either version 2 of the
+- *     License, or (at your option) any later version.
+- *
+- *     This library is distributed in the hope that it will be useful,
+- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *     GNU General Public License for more details.
+- *
+- *     You should have received a copy of the GNU General Public
+- *     License along with this library; if not, write to the Free
+- *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+- *     MA 02110-1301 USA
+- *
+- * Alternatively,
+- *
+- *  b) Redistribution and use in source and binary forms, with or
+- *     without modification, are permitted provided that the following
+- *     conditions are met:
+- *
+- *     1. Redistributions of source code must retain the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer.
+- *     2. Redistributions in binary form must reproduce the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer in the documentation and/or other materials
+- *        provided with the distribution.
+- *
+- *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+- *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+- *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+- *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+- *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+- *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+- *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+- *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ #include "libfdt_env.h"
+ 
+@@ -55,21 +10,90 @@
+ 
+ #include "libfdt_internal.h"
+ 
+-static int fdt_sw_check_header_(void *fdt)
++static int fdt_sw_probe_(void *fdt)
++{
++	if (fdt_chk_basic()) {
++		if (fdt_magic(fdt) == FDT_MAGIC)
++			return -FDT_ERR_BADSTATE;
++		else if (fdt_magic(fdt) != FDT_SW_MAGIC)
++			return -FDT_ERR_BADMAGIC;
++	}
++
++	return 0;
++}
++
++#define FDT_SW_PROBE(fdt) \
++	{ \
++		int err; \
++		if (fdt_chk_basic() && (err = fdt_sw_probe_(fdt)) != 0) \
++			return err; \
++	}
++
++/* 'memrsv' state:	Initial state after fdt_create()
++ *
++ * Allowed functions:
++ *	fdt_add_reservmap_entry()
++ *	fdt_finish_reservemap()		[moves to 'struct' state]
++ */
++static int fdt_sw_probe_memrsv_(void *fdt)
++{
++	int err = fdt_sw_probe_(fdt);
++	if (err)
++		return err;
++
++	if (fdt_chk_extra() && fdt_off_dt_strings(fdt) != 0)
++		return -FDT_ERR_BADSTATE;
++	return 0;
++}
++
++#define FDT_SW_PROBE_MEMRSV(fdt) \
++	{ \
++		int err; \
++		if (fdt_chk_extra() && (err = fdt_sw_probe_memrsv_(fdt)) != 0) \
++			return err; \
++	}
++
++/* 'struct' state:	Enter this state after fdt_finish_reservemap()
++ *
++ * Allowed functions:
++ *	fdt_begin_node()
++ *	fdt_end_node()
++ *	fdt_property*()
++ *	fdt_finish()			[moves to 'complete' state]
++ */
++static int fdt_sw_probe_struct_(void *fdt)
+ {
+-	if (fdt_magic(fdt) != FDT_SW_MAGIC)
+-		return -FDT_ERR_BADMAGIC;
+-	/* FIXME: should check more details about the header state */
++	int err;
++
++	if (!fdt_chk_extra())
++		return 0;
++	err = fdt_sw_probe_(fdt);
++	if (err)
++		return err;
++
++	if (fdt_off_dt_strings(fdt) != fdt_totalsize(fdt))
++		return -FDT_ERR_BADSTATE;
+ 	return 0;
+ }
+ 
+-#define FDT_SW_CHECK_HEADER(fdt) \
++#define FDT_SW_PROBE_STRUCT(fdt) \
+ 	{ \
+ 		int err; \
+-		if ((err = fdt_sw_check_header_(fdt)) != 0) \
++		if (fdt_chk_extra() && (err = fdt_sw_probe_struct_(fdt)) != 0) \
+ 			return err; \
+ 	}
+ 
++static inline uint32_t sw_flags(void *fdt)
++{
++	/* assert: (fdt_magic(fdt) == FDT_SW_MAGIC) */
++	return fdt_last_comp_version(fdt);
++}
++
++/* 'complete' state:	Enter this state after fdt_finish()
++ *
++ * Allowed functions: none
++ */
++
+ static void *fdt_grab_space_(void *fdt, size_t len)
+ {
+ 	int offset = fdt_size_dt_struct(fdt);
+@@ -85,38 +109,58 @@ static void *fdt_grab_space_(void *fdt, size_t len)
+ 	return fdt_offset_ptr_w_(fdt, offset);
+ }
+ 
+-int fdt_create(void *buf, int bufsize)
++int fdt_create_with_flags(void *buf, int bufsize, uint32_t flags)
+ {
++	const size_t hdrsize = FDT_ALIGN(sizeof(struct fdt_header),
++					 sizeof(struct fdt_reserve_entry));
+ 	void *fdt = buf;
+ 
+-	if (bufsize < sizeof(struct fdt_header))
++	if (bufsize < hdrsize)
+ 		return -FDT_ERR_NOSPACE;
+ 
++	if (flags & ~FDT_CREATE_FLAGS_ALL)
++		return -FDT_ERR_BADFLAGS;
++
+ 	memset(buf, 0, bufsize);
+ 
++	/*
++	 * magic and last_comp_version keep intermediate state during the fdt
++	 * creation process, which is replaced with the proper FDT format by
++	 * fdt_finish().
++	 *
++	 * flags should be accessed with sw_flags().
++	 */
+ 	fdt_set_magic(fdt, FDT_SW_MAGIC);
+ 	fdt_set_version(fdt, FDT_LAST_SUPPORTED_VERSION);
+-	fdt_set_last_comp_version(fdt, FDT_FIRST_SUPPORTED_VERSION);
++	fdt_set_last_comp_version(fdt, flags);
++
+ 	fdt_set_totalsize(fdt,  bufsize);
+ 
+-	fdt_set_off_mem_rsvmap(fdt, FDT_ALIGN(sizeof(struct fdt_header),
+-					      sizeof(struct fdt_reserve_entry)));
++	fdt_set_off_mem_rsvmap(fdt, hdrsize);
+ 	fdt_set_off_dt_struct(fdt, fdt_off_mem_rsvmap(fdt));
+-	fdt_set_off_dt_strings(fdt, bufsize);
++	fdt_set_off_dt_strings(fdt, 0);
+ 
+ 	return 0;
+ }
+ 
++int fdt_create(void *buf, int bufsize)
++{
++	return fdt_create_with_flags(buf, bufsize, 0);
++}
++
+ int fdt_resize(void *fdt, void *buf, int bufsize)
+ {
+ 	size_t headsize, tailsize;
+ 	char *oldtail, *newtail;
+ 
+-	FDT_SW_CHECK_HEADER(fdt);
++	FDT_SW_PROBE(fdt);
+ 
+ 	headsize = fdt_off_dt_struct(fdt) + fdt_size_dt_struct(fdt);
+ 	tailsize = fdt_size_dt_strings(fdt);
+ 
++	if (fdt_chk_extra() && (headsize + tailsize) > fdt_totalsize(fdt))
++		return -FDT_ERR_INTERNAL;
++
+ 	if ((headsize + tailsize) > bufsize)
+ 		return -FDT_ERR_NOSPACE;
+ 
+@@ -133,8 +177,9 @@ int fdt_resize(void *fdt, void *buf, int bufsize)
+ 		memmove(buf, fdt, headsize);
+ 	}
+ 
+-	fdt_set_off_dt_strings(buf, bufsize);
+ 	fdt_set_totalsize(buf, bufsize);
++	if (fdt_off_dt_strings(buf))
++		fdt_set_off_dt_strings(buf, bufsize);
+ 
+ 	return 0;
+ }
+@@ -144,10 +189,7 @@ int fdt_add_reservemap_entry(void *fdt, uint64_t addr, uint64_t size)
+ 	struct fdt_reserve_entry *re;
+ 	int offset;
+ 
+-	FDT_SW_CHECK_HEADER(fdt);
+-
+-	if (fdt_size_dt_struct(fdt))
+-		return -FDT_ERR_BADSTATE;
++	FDT_SW_PROBE_MEMRSV(fdt);
+ 
+ 	offset = fdt_off_dt_struct(fdt);
+ 	if ((offset + sizeof(*re)) > fdt_totalsize(fdt))
+@@ -164,16 +206,23 @@ int fdt_add_reservemap_entry(void *fdt, uint64_t addr, uint64_t size)
+ 
+ int fdt_finish_reservemap(void *fdt)
+ {
+-	return fdt_add_reservemap_entry(fdt, 0, 0);
++	int err = fdt_add_reservemap_entry(fdt, 0, 0);
++
++	if (err)
++		return err;
++
++	fdt_set_off_dt_strings(fdt, fdt_totalsize(fdt));
++	return 0;
+ }
+ 
+ int fdt_begin_node(void *fdt, const char *name)
+ {
+ 	struct fdt_node_header *nh;
+-	int namelen = strlen(name) + 1;
++	int namelen;
+ 
+-	FDT_SW_CHECK_HEADER(fdt);
++	FDT_SW_PROBE_STRUCT(fdt);
+ 
++	namelen = strlen(name) + 1;
+ 	nh = fdt_grab_space_(fdt, sizeof(*nh) + FDT_TAGALIGN(namelen));
+ 	if (! nh)
+ 		return -FDT_ERR_NOSPACE;
+@@ -187,7 +236,7 @@ int fdt_end_node(void *fdt)
+ {
+ 	fdt32_t *en;
+ 
+-	FDT_SW_CHECK_HEADER(fdt);
++	FDT_SW_PROBE_STRUCT(fdt);
+ 
+ 	en = fdt_grab_space_(fdt, FDT_TAGSIZE);
+ 	if (! en)
+@@ -197,19 +246,13 @@ int fdt_end_node(void *fdt)
+ 	return 0;
+ }
+ 
+-static int fdt_find_add_string_(void *fdt, const char *s)
++static int fdt_add_string_(void *fdt, const char *s)
+ {
+ 	char *strtab = (char *)fdt + fdt_totalsize(fdt);
+-	const char *p;
+ 	int strtabsize = fdt_size_dt_strings(fdt);
+ 	int len = strlen(s) + 1;
+ 	int struct_top, offset;
+ 
+-	p = fdt_find_string_(strtab - strtabsize, strtabsize, s);
+-	if (p)
+-		return p - strtab;
+-
+-	/* Add it */
+ 	offset = -strtabsize - len;
+ 	struct_top = fdt_off_dt_struct(fdt) + fdt_size_dt_struct(fdt);
+ 	if (fdt_totalsize(fdt) + offset < struct_top)
+@@ -220,20 +263,56 @@ static int fdt_find_add_string_(void *fdt, const char *s)
+ 	return offset;
+ }
+ 
++/* Must only be used to roll back in case of error */
++static void fdt_del_last_string_(void *fdt, const char *s)
++{
++	int strtabsize = fdt_size_dt_strings(fdt);
++	int len = strlen(s) + 1;
++
++	fdt_set_size_dt_strings(fdt, strtabsize - len);
++}
++
++static int fdt_find_add_string_(void *fdt, const char *s, int *allocated)
++{
++	char *strtab = (char *)fdt + fdt_totalsize(fdt);
++	int strtabsize = fdt_size_dt_strings(fdt);
++	const char *p;
++
++	*allocated = 0;
++
++	p = fdt_find_string_(strtab - strtabsize, strtabsize, s);
++	if (p)
++		return p - strtab;
++
++	*allocated = 1;
++
++	return fdt_add_string_(fdt, s);
++}
++
+ int fdt_property_placeholder(void *fdt, const char *name, int len, void **valp)
+ {
+ 	struct fdt_property *prop;
+ 	int nameoff;
++	int allocated;
+ 
+-	FDT_SW_CHECK_HEADER(fdt);
++	FDT_SW_PROBE_STRUCT(fdt);
+ 
+-	nameoff = fdt_find_add_string_(fdt, name);
++	/* String de-duplication can be slow, _NO_NAME_DEDUP skips it */
++	if (sw_flags(fdt) & FDT_CREATE_FLAG_NO_NAME_DEDUP) {
++		allocated = 1;
++		nameoff = fdt_add_string_(fdt, name);
++	} else {
++		nameoff = fdt_find_add_string_(fdt, name, &allocated);
++	}
+ 	if (nameoff == 0)
+ 		return -FDT_ERR_NOSPACE;
+ 
+ 	prop = fdt_grab_space_(fdt, sizeof(*prop) + FDT_TAGALIGN(len));
+-	if (! prop)
++	if (! prop) {
++		if (allocated)
++			fdt_del_last_string_(fdt, name);
+ 		return -FDT_ERR_NOSPACE;
++	}
+ 
+ 	prop->tag = cpu_to_fdt32(FDT_PROP);
+ 	prop->nameoff = cpu_to_fdt32(nameoff);
+@@ -262,7 +341,7 @@ int fdt_finish(void *fdt)
+ 	uint32_t tag;
+ 	int offset, nextoffset;
+ 
+-	FDT_SW_CHECK_HEADER(fdt);
++	FDT_SW_PROBE_STRUCT(fdt);
+ 
+ 	/* Add terminator */
+ 	end = fdt_grab_space_(fdt, sizeof(*end));
+@@ -295,6 +374,10 @@ int fdt_finish(void *fdt)
+ 
+ 	/* Finally, adjust the header */
+ 	fdt_set_totalsize(fdt, newstroffset + fdt_size_dt_strings(fdt));
++
++	/* And fix up fields that were keeping intermediate state. */
++	fdt_set_last_comp_version(fdt, FDT_FIRST_SUPPORTED_VERSION);
+ 	fdt_set_magic(fdt, FDT_MAGIC);
++
+ 	return 0;
+ }
+diff --git a/scripts/dtc/libfdt/fdt_wip.c b/scripts/dtc/libfdt/fdt_wip.c
+index 534c1cbbb2..f64139e0b3 100644
+--- a/scripts/dtc/libfdt/fdt_wip.c
++++ b/scripts/dtc/libfdt/fdt_wip.c
+@@ -1,52 +1,7 @@
++// SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2006 David Gibson, IBM Corporation.
+- *
+- * libfdt is dual licensed: you can use it either under the terms of
+- * the GPL, or the BSD license, at your option.
+- *
+- *  a) This library is free software; you can redistribute it and/or
+- *     modify it under the terms of the GNU General Public License as
+- *     published by the Free Software Foundation; either version 2 of the
+- *     License, or (at your option) any later version.
+- *
+- *     This library is distributed in the hope that it will be useful,
+- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *     GNU General Public License for more details.
+- *
+- *     You should have received a copy of the GNU General Public
+- *     License along with this library; if not, write to the Free
+- *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+- *     MA 02110-1301 USA
+- *
+- * Alternatively,
+- *
+- *  b) Redistribution and use in source and binary forms, with or
+- *     without modification, are permitted provided that the following
+- *     conditions are met:
+- *
+- *     1. Redistributions of source code must retain the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer.
+- *     2. Redistributions in binary form must reproduce the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer in the documentation and/or other materials
+- *        provided with the distribution.
+- *
+- *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+- *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+- *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+- *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+- *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+- *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+- *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+- *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ #include "libfdt_env.h"
+ 
+diff --git a/scripts/dtc/libfdt/libfdt.h b/scripts/dtc/libfdt/libfdt.h
+index c400f2f5d5..36fadcdea5 100644
+--- a/scripts/dtc/libfdt/libfdt.h
++++ b/scripts/dtc/libfdt/libfdt.h
+@@ -1,54 +1,9 @@
++/* SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause) */
+ #ifndef LIBFDT_H
+ #define LIBFDT_H
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2006 David Gibson, IBM Corporation.
+- *
+- * libfdt is dual licensed: you can use it either under the terms of
+- * the GPL, or the BSD license, at your option.
+- *
+- *  a) This library is free software; you can redistribute it and/or
+- *     modify it under the terms of the GNU General Public License as
+- *     published by the Free Software Foundation; either version 2 of the
+- *     License, or (at your option) any later version.
+- *
+- *     This library is distributed in the hope that it will be useful,
+- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *     GNU General Public License for more details.
+- *
+- *     You should have received a copy of the GNU General Public
+- *     License along with this library; if not, write to the Free
+- *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+- *     MA 02110-1301 USA
+- *
+- * Alternatively,
+- *
+- *  b) Redistribution and use in source and binary forms, with or
+- *     without modification, are permitted provided that the following
+- *     conditions are met:
+- *
+- *     1. Redistributions of source code must retain the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer.
+- *     2. Redistributions in binary form must reproduce the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer in the documentation and/or other materials
+- *        provided with the distribution.
+- *
+- *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+- *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+- *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+- *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+- *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+- *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+- *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+- *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+ #include "libfdt_env.h"
+@@ -90,8 +45,9 @@
+ 
+ /* Error codes: codes for bad device tree blobs */
+ #define FDT_ERR_TRUNCATED	8
+-	/* FDT_ERR_TRUNCATED: Structure block of the given device tree
+-	 * ends without an FDT_END tag. */
++	/* FDT_ERR_TRUNCATED: FDT or a sub-block is improperly
++	 * terminated (overflows, goes outside allowed bounds, or
++	 * isn't properly terminated).  */
+ #define FDT_ERR_BADMAGIC	9
+ 	/* FDT_ERR_BADMAGIC: Given "device tree" appears not to be a
+ 	 * device tree at all - it is missing the flattened device
+@@ -137,7 +93,11 @@
+ 	/* FDT_ERR_NOPHANDLES: The device tree doesn't have any
+ 	 * phandle available anymore without causing an overflow */
+ 
+-#define FDT_ERR_MAX		17
++#define FDT_ERR_BADFLAGS	18
++	/* FDT_ERR_BADFLAGS: The function was passed a flags field that
++	 * contains invalid flags or an invalid combination of flags. */
++
++#define FDT_ERR_MAX		18
+ 
+ /* constants */
+ #define FDT_MAX_PHANDLE 0xfffffffe
+@@ -157,6 +117,61 @@ static inline void *fdt_offset_ptr_w(void *fdt, int offset, int checklen)
+ 
+ uint32_t fdt_next_tag(const void *fdt, int offset, int *nextoffset);
+ 
++/*
++ * Alignment helpers:
++ *     These helpers access words from a device tree blob.  They're
++ *     built to work even with unaligned pointers on platforms (ike
++ *     ARM) that don't like unaligned loads and stores
++ */
++
++static inline uint32_t fdt32_ld(const fdt32_t *p)
++{
++	const uint8_t *bp = (const uint8_t *)p;
++
++	return ((uint32_t)bp[0] << 24)
++		| ((uint32_t)bp[1] << 16)
++		| ((uint32_t)bp[2] << 8)
++		| bp[3];
++}
++
++static inline void fdt32_st(void *property, uint32_t value)
++{
++	uint8_t *bp = (uint8_t *)property;
++
++	bp[0] = value >> 24;
++	bp[1] = (value >> 16) & 0xff;
++	bp[2] = (value >> 8) & 0xff;
++	bp[3] = value & 0xff;
++}
++
++static inline uint64_t fdt64_ld(const fdt64_t *p)
++{
++	const uint8_t *bp = (const uint8_t *)p;
++
++	return ((uint64_t)bp[0] << 56)
++		| ((uint64_t)bp[1] << 48)
++		| ((uint64_t)bp[2] << 40)
++		| ((uint64_t)bp[3] << 32)
++		| ((uint64_t)bp[4] << 24)
++		| ((uint64_t)bp[5] << 16)
++		| ((uint64_t)bp[6] << 8)
++		| bp[7];
++}
++
++static inline void fdt64_st(void *property, uint64_t value)
++{
++	uint8_t *bp = (uint8_t *)property;
++
++	bp[0] = value >> 56;
++	bp[1] = (value >> 48) & 0xff;
++	bp[2] = (value >> 40) & 0xff;
++	bp[3] = (value >> 32) & 0xff;
++	bp[4] = (value >> 24) & 0xff;
++	bp[5] = (value >> 16) & 0xff;
++	bp[6] = (value >> 8) & 0xff;
++	bp[7] = value & 0xff;
++}
++
+ /**********************************************************************/
+ /* Traversal functions                                                */
+ /**********************************************************************/
+@@ -199,7 +214,7 @@ int fdt_next_subnode(const void *fdt, int offset);
+  *		...
+  *	}
+  *
+- *	if ((node < 0) && (node != -FDT_ERR_NOT_FOUND)) {
++ *	if ((node < 0) && (node != -FDT_ERR_NOTFOUND)) {
+  *		Error handling
+  *	}
+  *
+@@ -217,7 +232,7 @@ int fdt_next_subnode(const void *fdt, int offset);
+ /* General functions                                                  */
+ /**********************************************************************/
+ #define fdt_get_header(fdt, field) \
+-	(fdt32_to_cpu(((const struct fdt_header *)(fdt))->field))
++	(fdt32_ld(&((const struct fdt_header *)(fdt))->field))
+ #define fdt_magic(fdt)			(fdt_get_header(fdt, magic))
+ #define fdt_totalsize(fdt)		(fdt_get_header(fdt, totalsize))
+ #define fdt_off_dt_struct(fdt)		(fdt_get_header(fdt, off_dt_struct))
+@@ -248,18 +263,32 @@ fdt_set_hdr_(size_dt_struct);
+ #undef fdt_set_hdr_
+ 
+ /**
+- * fdt_check_header - sanity check a device tree or possible device tree
++ * fdt_header_size - return the size of the tree's header
++ * @fdt: pointer to a flattened device tree
++ */
++size_t fdt_header_size(const void *fdt);
++
++/**
++ * fdt_header_size_ - internal function which takes a version number
++ */
++size_t fdt_header_size_(uint32_t version);
++
++/**
++ * fdt_check_header - sanity check a device tree header
++
+  * @fdt: pointer to data which might be a flattened device tree
+  *
+  * fdt_check_header() checks that the given buffer contains what
+- * appears to be a flattened device tree with sane information in its
+- * header.
++ * appears to be a flattened device tree, and that the header contains
++ * valid information (to the extent that can be determined from the
++ * header alone).
+  *
+  * returns:
+  *     0, if the buffer appears to contain a valid device tree
+  *     -FDT_ERR_BADMAGIC,
+  *     -FDT_ERR_BADVERSION,
+- *     -FDT_ERR_BADSTATE, standard meanings, as above
++ *     -FDT_ERR_BADSTATE,
++ *     -FDT_ERR_TRUNCATED, standard meanings, as above
+  */
+ int fdt_check_header(const void *fdt);
+ 
+@@ -288,6 +317,24 @@ int fdt_move(const void *fdt, void *buf, int bufsize);
+ /* Read-only functions                                                */
+ /**********************************************************************/
+ 
++int fdt_check_full(const void *fdt, size_t bufsize);
++
++/**
++ * fdt_get_string - retrieve a string from the strings block of a device tree
++ * @fdt: pointer to the device tree blob
++ * @stroffset: offset of the string within the strings block (native endian)
++ * @lenp: optional pointer to return the string's length
++ *
++ * fdt_get_string() retrieves a pointer to a single string from the
++ * strings block of the device tree blob at fdt, and optionally also
++ * returns the string's length in *lenp.
++ *
++ * returns:
++ *     a pointer to the string, on success
++ *     NULL, if stroffset is out of bounds, or doesn't point to a valid string
++ */
++const char *fdt_get_string(const void *fdt, int stroffset, int *lenp);
++
+ /**
+  * fdt_string - retrieve a string from the strings block of a device tree
+  * @fdt: pointer to the device tree blob
+@@ -298,10 +345,24 @@ int fdt_move(const void *fdt, void *buf, int bufsize);
+  *
+  * returns:
+  *     a pointer to the string, on success
+- *     NULL, if stroffset is out of bounds
++ *     NULL, if stroffset is out of bounds, or doesn't point to a valid string
+  */
+ const char *fdt_string(const void *fdt, int stroffset);
+ 
++/**
++ * fdt_find_max_phandle - find and return the highest phandle in a tree
++ * @fdt: pointer to the device tree blob
++ * @phandle: return location for the highest phandle value found in the tree
++ *
++ * fdt_find_max_phandle() finds the highest phandle value in the given device
++ * tree. The value returned in @phandle is only valid if the function returns
++ * success.
++ *
++ * returns:
++ *     0 on success or a negative error code on failure
++ */
++int fdt_find_max_phandle(const void *fdt, uint32_t *phandle);
++
+ /**
+  * fdt_get_max_phandle - retrieves the highest phandle in a tree
+  * @fdt: pointer to the device tree blob
+@@ -310,12 +371,24 @@ const char *fdt_string(const void *fdt, int stroffset);
+  * device tree. This will ignore badly formatted phandles, or phandles
+  * with a value of 0 or -1.
+  *
++ * This function is deprecated in favour of fdt_find_max_phandle().
++ *
+  * returns:
+  *      the highest phandle on success
+  *      0, if no phandle was found in the device tree
+  *      -1, if an error occurred
+  */
+-uint32_t fdt_get_max_phandle(const void *fdt);
++static inline uint32_t fdt_get_max_phandle(const void *fdt)
++{
++	uint32_t phandle;
++	int err;
++
++	err = fdt_find_max_phandle(fdt, &phandle);
++	if (err < 0)
++		return (uint32_t)-1;
++
++	return phandle;
++}
+ 
+ /**
+  * fdt_generate_phandle - return a new, unused phandle for a device tree blob
+@@ -522,7 +595,7 @@ int fdt_next_property_offset(const void *fdt, int offset);
+  *		...
+  *	}
+  *
+- *	if ((property < 0) && (property != -FDT_ERR_NOT_FOUND)) {
++ *	if ((property < 0) && (property != -FDT_ERR_NOTFOUND)) {
+  *		Error handling
+  *	}
+  *
+@@ -625,7 +698,7 @@ static inline struct fdt_property *fdt_get_property_w(void *fdt, int nodeoffset,
+ /**
+  * fdt_getprop_by_offset - retrieve the value of a property at a given offset
+  * @fdt: pointer to the device tree blob
+- * @ffset: offset of the property to read
++ * @offset: offset of the property to read
+  * @namep: pointer to a string variable (will be overwritten) or NULL
+  * @lenp: pointer to an integer variable (will be overwritten) or NULL
+  *
+@@ -734,7 +807,7 @@ uint32_t fdt_get_phandle(const void *fdt, int nodeoffset);
+ /**
+  * fdt_get_alias_namelen - get alias based on substring
+  * @fdt: pointer to the device tree blob
+- * @name: name of the alias to look up
++ * @name: name of the alias th look up
+  * @namelen: number of characters of name to consider
+  *
+  * Identical to fdt_get_alias(), but only examine the first namelen
+@@ -1316,7 +1389,45 @@ int fdt_nop_node(void *fdt, int nodeoffset);
+ /* Sequential write functions                                         */
+ /**********************************************************************/
+ 
++/* fdt_create_with_flags flags */
++#define FDT_CREATE_FLAG_NO_NAME_DEDUP 0x1
++	/* FDT_CREATE_FLAG_NO_NAME_DEDUP: Do not try to de-duplicate property
++	 * names in the fdt. This can result in faster creation times, but
++	 * a larger fdt. */
++
++#define FDT_CREATE_FLAGS_ALL	(FDT_CREATE_FLAG_NO_NAME_DEDUP)
++
++/**
++ * fdt_create_with_flags - begin creation of a new fdt
++ * @fdt: pointer to memory allocated where fdt will be created
++ * @bufsize: size of the memory space at fdt
++ * @flags: a valid combination of FDT_CREATE_FLAG_ flags, or 0.
++ *
++ * fdt_create_with_flags() begins the process of creating a new fdt with
++ * the sequential write interface.
++ *
++ * fdt creation process must end with fdt_finished() to produce a valid fdt.
++ *
++ * returns:
++ *	0, on success
++ *	-FDT_ERR_NOSPACE, bufsize is insufficient for a minimal fdt
++ *	-FDT_ERR_BADFLAGS, flags is not valid
++ */
++int fdt_create_with_flags(void *buf, int bufsize, uint32_t flags);
++
++/**
++ * fdt_create - begin creation of a new fdt
++ * @fdt: pointer to memory allocated where fdt will be created
++ * @bufsize: size of the memory space at fdt
++ *
++ * fdt_create() is equivalent to fdt_create_with_flags() with flags=0.
++ *
++ * returns:
++ *	0, on success
++ *	-FDT_ERR_NOSPACE, bufsize is insufficient for a minimal fdt
++ */
+ int fdt_create(void *buf, int bufsize);
++
+ int fdt_resize(void *fdt, void *buf, int bufsize);
+ int fdt_add_reservemap_entry(void *fdt, uint64_t addr, uint64_t size);
+ int fdt_finish_reservemap(void *fdt);
+@@ -1787,6 +1898,43 @@ static inline int fdt_appendprop_cell(void *fdt, int nodeoffset,
+ #define fdt_appendprop_string(fdt, nodeoffset, name, str) \
+ 	fdt_appendprop((fdt), (nodeoffset), (name), (str), strlen(str)+1)
+ 
++/**
++ * fdt_appendprop_addrrange - append a address range property
++ * @fdt: pointer to the device tree blob
++ * @parent: offset of the parent node
++ * @nodeoffset: offset of the node to add a property at
++ * @name: name of property
++ * @addr: start address of a given range
++ * @size: size of a given range
++ *
++ * fdt_appendprop_addrrange() appends an address range value (start
++ * address and size) to the value of the named property in the given
++ * node, or creates a new property with that value if it does not
++ * already exist.
++ * If "name" is not specified, a default "reg" is used.
++ * Cell sizes are determined by parent's #address-cells and #size-cells.
++ *
++ * This function may insert data into the blob, and will therefore
++ * change the offsets of some existing nodes.
++ *
++ * returns:
++ *	0, on success
++ *	-FDT_ERR_BADLAYOUT,
++ *	-FDT_ERR_BADMAGIC,
++ *	-FDT_ERR_BADNCELLS, if the node has a badly formatted or invalid
++ *		#address-cells property
++ *	-FDT_ERR_BADOFFSET, nodeoffset did not point to FDT_BEGIN_NODE tag
++ *	-FDT_ERR_BADSTATE,
++ *	-FDT_ERR_BADSTRUCTURE,
++ *	-FDT_ERR_BADVERSION,
++ *	-FDT_ERR_BADVALUE, addr or size doesn't fit to respective cells size
++ *	-FDT_ERR_NOSPACE, there is insufficient free space in the blob to
++ *		contain a new property
++ *	-FDT_ERR_TRUNCATED, standard meanings
++ */
++int fdt_appendprop_addrrange(void *fdt, int parent, int nodeoffset,
++			     const char *name, uint64_t addr, uint64_t size);
++
+ /**
+  * fdt_delprop - delete a property
+  * @fdt: pointer to the device tree blob
+diff --git a/scripts/dtc/libfdt/libfdt_env.h b/scripts/dtc/libfdt/libfdt_env.h
+index 3ff9e28630..73b6d40450 100644
+--- a/scripts/dtc/libfdt/libfdt_env.h
++++ b/scripts/dtc/libfdt/libfdt_env.h
+@@ -1,55 +1,10 @@
++/* SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause) */
+ #ifndef LIBFDT_ENV_H
+ #define LIBFDT_ENV_H
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2006 David Gibson, IBM Corporation.
+  * Copyright 2012 Kim Phillips, Freescale Semiconductor.
+- *
+- * libfdt is dual licensed: you can use it either under the terms of
+- * the GPL, or the BSD license, at your option.
+- *
+- *  a) This library is free software; you can redistribute it and/or
+- *     modify it under the terms of the GNU General Public License as
+- *     published by the Free Software Foundation; either version 2 of the
+- *     License, or (at your option) any later version.
+- *
+- *     This library is distributed in the hope that it will be useful,
+- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *     GNU General Public License for more details.
+- *
+- *     You should have received a copy of the GNU General Public
+- *     License along with this library; if not, write to the Free
+- *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+- *     MA 02110-1301 USA
+- *
+- * Alternatively,
+- *
+- *  b) Redistribution and use in source and binary forms, with or
+- *     without modification, are permitted provided that the following
+- *     conditions are met:
+- *
+- *     1. Redistributions of source code must retain the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer.
+- *     2. Redistributions in binary form must reproduce the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer in the documentation and/or other materials
+- *        provided with the distribution.
+- *
+- *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+- *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+- *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+- *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+- *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+- *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+- *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+- *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+ #include <stdbool.h>
+@@ -57,6 +12,7 @@
+ #include <stdint.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <limits.h>
+ 
+ #ifdef __CHECKER__
+ #define FDT_FORCE __attribute__((force))
+diff --git a/scripts/dtc/libfdt/libfdt_internal.h b/scripts/dtc/libfdt/libfdt_internal.h
+index 7681e19229..5436e2ceea 100644
+--- a/scripts/dtc/libfdt/libfdt_internal.h
++++ b/scripts/dtc/libfdt/libfdt_internal.h
+@@ -1,65 +1,24 @@
++/* SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause) */
+ #ifndef LIBFDT_INTERNAL_H
+ #define LIBFDT_INTERNAL_H
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2006 David Gibson, IBM Corporation.
+- *
+- * libfdt is dual licensed: you can use it either under the terms of
+- * the GPL, or the BSD license, at your option.
+- *
+- *  a) This library is free software; you can redistribute it and/or
+- *     modify it under the terms of the GNU General Public License as
+- *     published by the Free Software Foundation; either version 2 of the
+- *     License, or (at your option) any later version.
+- *
+- *     This library is distributed in the hope that it will be useful,
+- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *     GNU General Public License for more details.
+- *
+- *     You should have received a copy of the GNU General Public
+- *     License along with this library; if not, write to the Free
+- *     Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+- *     MA 02110-1301 USA
+- *
+- * Alternatively,
+- *
+- *  b) Redistribution and use in source and binary forms, with or
+- *     without modification, are permitted provided that the following
+- *     conditions are met:
+- *
+- *     1. Redistributions of source code must retain the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer.
+- *     2. Redistributions in binary form must reproduce the above
+- *        copyright notice, this list of conditions and the following
+- *        disclaimer in the documentation and/or other materials
+- *        provided with the distribution.
+- *
+- *     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+- *     CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+- *     INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+- *     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+- *     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+- *     CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+- *     SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *     NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+- *     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+- *     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+- *     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+- *     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+- *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ #include <fdt.h>
+ 
+ #define FDT_ALIGN(x, a)		(((x) + (a) - 1) & ~((a) - 1))
+ #define FDT_TAGALIGN(x)		(FDT_ALIGN((x), FDT_TAGSIZE))
+ 
+-#define FDT_CHECK_HEADER(fdt) \
+-	{ \
+-		int err_; \
+-		if ((err_ = fdt_check_header(fdt)) != 0) \
+-			return err_; \
++int fdt_ro_probe_(const void *fdt);
++#define FDT_RO_PROBE(fdt)					\
++	{							\
++		int totalsize_;					\
++		if (fdt_chk_basic()) {				\
++			totalsize_ = fdt_ro_probe_(fdt);	\
++			if (totalsize_ < 0)			\
++				return totalsize_;		\
++		}						\
+ 	}
+ 
+ int fdt_check_node_offset_(const void *fdt, int offset);
+@@ -92,4 +51,87 @@ static inline struct fdt_reserve_entry *fdt_mem_rsv_w_(void *fdt, int n)
+ 
+ #define FDT_SW_MAGIC		(~FDT_MAGIC)
+ 
++/**********************************************************************/
++/* Checking controls                                                  */
++/**********************************************************************/
++
++#ifndef FDT_ASSUME_MASK
++#define FDT_ASSUME_MASK 0
++#endif
++
++/*
++ * Defines assumptions which can be enabled. Each of these can be enabled
++ * individually. For maximum saftey, don't enable any assumptions!
++ *
++ * For minimal code size and no safety, use FDT_ASSUME_PERFECT at your own risk.
++ * You should have another method of validating the device tree, such as a
++ * signature or hash check before using libfdt.
++ *
++ * For situations where security is not a concern it may be safe to enable
++ * FDT_ASSUME_FRIENDLY.
++ */
++enum {
++	/*
++	 * This does essentially no checks. Only the latest device-tree
++	 * version is correctly handled. Incosistencies or errors in the device
++	 * tree may cause undefined behaviour or crashes.
++	 *
++	 * If an error occurs when modifying the tree it may leave the tree in
++	 * an intermediate (but valid) state. As an example, adding a property
++	 * where there is insufficient space may result in the property name
++	 * being added to the string table even though the property itself is
++	 * not added to the struct section.
++	 *
++	 * Only use this if you have a fully validated device tree with
++	 * the latest supported version and wish to minimise code size.
++	 */
++	FDT_ASSUME_PERFECT	= 0xff,
++
++	/*
++	 * This assumes that the device tree is sane. i.e. header metadata
++	 * and basic hierarchy are correct.
++	 *
++	 * These checks will be sufficient if you have a valid device tree with
++	 * no internal inconsistencies. With this assumption, libfdt will
++	 * generally not return -FDT_ERR_INTERNAL, -FDT_ERR_BADLAYOUT, etc.
++	 */
++	FDT_ASSUME_SANE		= 1 << 0,
++
++	/*
++	 * This disables checks for device-tree version and removes all code
++	 * which handles older versions.
++	 *
++	 * Only enable this if you know you have a device tree with the latest
++	 * version.
++	 */
++	FDT_ASSUME_LATEST	= 1 << 1,
++
++	/*
++	 * This disables any extensive checking of parameters and the device
++	 * tree, making various assumptions about correctness. Normal device
++	 * trees produced by libfdt and the compiler should be handled safely.
++	 * Malicious device trees and complete garbage may cause libfdt to
++	 * behave badly or crash.
++	 */
++	FDT_ASSUME_FRIENDLY	= 1 << 2,
++};
++
++/** fdt_chk_basic() - see if basic checking of params and DT data is enabled */
++static inline bool fdt_chk_basic(void)
++{
++	return !(FDT_ASSUME_MASK & FDT_ASSUME_SANE);
++}
++
++/** fdt_chk_version() - see if we need to handle old versions of the DT */
++static inline bool fdt_chk_version(void)
++{
++	return !(FDT_ASSUME_MASK & FDT_ASSUME_LATEST);
++}
++
++/** fdt_chk_extra() - see if extra checking is enabled */
++static inline bool fdt_chk_extra(void)
++{
++	return !(FDT_ASSUME_MASK & FDT_ASSUME_FRIENDLY);
++}
++
+ #endif /* LIBFDT_INTERNAL_H */
+diff --git a/tools/libfdt/fdt_rw.c b/tools/libfdt/fdt_rw.c
+index 68fc7c8c88..7189f01429 100644
+--- a/tools/libfdt/fdt_rw.c
++++ b/tools/libfdt/fdt_rw.c
+@@ -11,6 +11,7 @@ int fdt_remove_unused_strings(const void *old, void *new)
+ 	const char *str;
+ 	int ret;
+ 	int tag = FDT_PROP;
++	int allocated;
+ 
+ 	/* Make a copy and remove the strings */
+ 	memcpy(new, old, size);
+@@ -25,7 +26,7 @@ int fdt_remove_unused_strings(const void *old, void *new)
+ 		new_prop = (struct fdt_property *)(unsigned long)
+ 			fdt_get_property_by_offset(new, offset, NULL);
+ 		str = fdt_string(old, fdt32_to_cpu(old_prop->nameoff));
+-		ret = fdt_find_add_string_(new, str);
++		ret = fdt_find_add_string_(new, str, &allocated);
+ 		if (ret < 0)
+ 			return ret;
+ 		new_prop->nameoff = cpu_to_fdt32(ret);

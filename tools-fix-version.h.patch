@@ -1,0 +1,35 @@
+From 097ce774b6739aa6a52e4d79e2920e3ef5af41d3 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Thu, 31 Oct 2019 09:19:23 +0000
+Subject: [PATCH] tools: fix version.h
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ Makefile | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 58a5721b3d..7b40069d9f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1848,14 +1848,14 @@ checkarmreloc: u-boot
+ 		false; \
+ 	fi
+ 
+-tools/version.h: include/version.h
++version.h: include/version.h
+ 	$(call if_changed,copy)
+ 
+-envtools: scripts_basic $(version_h) $(timestamp_h) tools/version.h
++envtools: scripts_basic $(version_h) $(timestamp_h) version.h
+ 	$(Q)$(MAKE) $(build)=tools/env
+ 
+ tools-only: export TOOLS_ONLY=y
+-tools-only: scripts_basic $(version_h) $(timestamp_h) tools/version.h
++tools-only: scripts_basic $(version_h) $(timestamp_h) version.h
+ 	$(Q)$(MAKE) $(build)=tools
+ 
+ tools-all: export HOST_TOOLS_ALL=y
+-- 
+2.23.0
+
