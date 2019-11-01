@@ -1,0 +1,3889 @@
+From patchwork Thu Oct 31 13:42:50 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187480
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="grsm6gX9"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473mqP47GZz9sP6
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:48:01 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id E3207C21EBA; Thu, 31 Oct 2019 13:45:30 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id CD41BC21F37;
+ Thu, 31 Oct 2019 13:43:50 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id B0CB2C21F34; Thu, 31 Oct 2019 13:43:33 +0000 (UTC)
+Received: from mail-io1-f45.google.com (mail-io1-f45.google.com
+ [209.85.166.45])
+ by lists.denx.de (Postfix) with ESMTPS id 4B651C21F18
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:29 +0000 (UTC)
+Received: by mail-io1-f45.google.com with SMTP id k1so6747909iom.9
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=HO9WCWnsVtS7TwesIvh89LF+rqjaIJkM3j8hAcLUUUE=;
+ b=grsm6gX9JPi0Q6Z3b4NaYB+F5yQvDnWh9NZEPentJiJ3TgqxDVcYkoZn19WA4CXR6i
+ Oad4SPM99qvzmgcjNq/ZHK0gJso0AcjUkgiPMDtD0xucVRw3OU2PKO5WIFjALZX86Fdp
+ r5PQ27mayww4RgvQ4L7DeVExEKSoIjQh8ydmM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=HO9WCWnsVtS7TwesIvh89LF+rqjaIJkM3j8hAcLUUUE=;
+ b=cU1SC1lBZYQINpFJMqC2W0iYZKbT00vk+M1zFnVrNQsMjZXrdFC7cJZWtypzjk54nJ
+ ezoCkp5uF5TOcsuW5jy5O8m66i+Hpw8zoshdbJkQ9Ph1bLVQLtm/5cW7Cfe1D3V5Ougo
+ Mnb5tqN6H/E98zmJ7IiFrtasYcXs9JeFfQXLiZK538htWcy2r6E7yPlM8R3cYHa47TXn
+ eeZcBRm4fwSC1HSuwgM2zyJ6TnbkD45+/6rtBPCQ8ZrJLNxKewYSmiEXx21jSkFQ4PIC
+ X53PzSoxgXY3DzvUKpKlakgrn/f4zman5OTFS1/v0gk8/672oDz/Ed9XoTgJ/fe/IsFk
+ SQvg==
+X-Gm-Message-State: APjAAAUtRKXp4QZEYY+iv+dd4tcQL1w96FzabjHCBse8GkKQ88mkhZWx
+ x4w9T3r9oTdhMocFf/5LH4EgQb83cDQTsw==
+X-Google-Smtp-Source: APXvYqyX0olSDU84zMXMeG8mFDqbdxBo3B3D4gIGHLU2oHdIRQYiVeZIuVgv3fb0z3FH8jnlXyLqLA==
+X-Received: by 2002:a02:1ac5:: with SMTP id 188mr418411jai.77.1572529407942; 
+ Thu, 31 Oct 2019 06:43:27 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.27
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:27 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:42:50 -0600
+Message-Id: <20191031134310.3072-2-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>
+Subject: [U-Boot] [PATCH v2 01/17] patman: Adjust 'command' to return
+ strings instead of bytes
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+At present all the 'command' methods return bytes. Most of the time we
+actually want strings, so change this. We still need to keep the internal
+representation as bytes since otherwise unicode strings might break over
+a read() boundary (e.g. 4KB), causing errors. But we can convert the end
+result to strings.
+
+Add a 'binary' parameter to cover the few cases where bytes are needed.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2: None
+
+ tools/binman/cbfs_util_test.py |  2 +-
+ tools/binman/ftest.py          |  2 +-
+ tools/patman/command.py        | 31 +++++++++++++++++++++++--------
+ tools/patman/tools.py          | 29 +++++++++++++++++++++--------
+ 4 files changed, 46 insertions(+), 18 deletions(-)
+
+diff --git a/tools/binman/cbfs_util_test.py b/tools/binman/cbfs_util_test.py
+index 772c794ece..ddc2e09e35 100755
+--- a/tools/binman/cbfs_util_test.py
++++ b/tools/binman/cbfs_util_test.py
+@@ -56,7 +56,7 @@ class TestCbfs(unittest.TestCase):
+         cls.have_lz4 = True
+         try:
+             tools.Run('lz4', '--no-frame-crc', '-c',
+-                      tools.GetInputFilename('u-boot.bin'))
++                      tools.GetInputFilename('u-boot.bin'), binary=True)
+         except:
+             cls.have_lz4 = False
+ 
+diff --git a/tools/binman/ftest.py b/tools/binman/ftest.py
+index 7000de9d42..88daaf20a8 100644
+--- a/tools/binman/ftest.py
++++ b/tools/binman/ftest.py
+@@ -170,7 +170,7 @@ class TestFunctional(unittest.TestCase):
+         cls.have_lz4 = True
+         try:
+             tools.Run('lz4', '--no-frame-crc', '-c',
+-                      os.path.join(cls._indir, 'u-boot.bin'))
++                      os.path.join(cls._indir, 'u-boot.bin'), binary=True)
+         except:
+             cls.have_lz4 = False
+ 
+diff --git a/tools/patman/command.py b/tools/patman/command.py
+index 16299f3f5b..5fbd2c4a3e 100644
+--- a/tools/patman/command.py
++++ b/tools/patman/command.py
+@@ -4,6 +4,7 @@
+ 
+ import os
+ import cros_subprocess
++import tools
+ 
+ """Shell command ease-ups for Python."""
+ 
+@@ -31,6 +32,13 @@ class CommandResult:
+         self.return_code = return_code
+         self.exception = exception
+ 
++    def ToOutput(self, binary):
++        if not binary:
++            self.stdout = tools.ToString(self.stdout)
++            self.stderr = tools.ToString(self.stderr)
++            self.combined = tools.ToString(self.combined)
++        return self
++
+ 
+ # This permits interception of RunPipe for test purposes. If it is set to
+ # a function, then that function is called with the pipe list being
+@@ -41,7 +49,7 @@ test_result = None
+ 
+ def RunPipe(pipe_list, infile=None, outfile=None,
+             capture=False, capture_stderr=False, oneline=False,
+-            raise_on_error=True, cwd=None, **kwargs):
++            raise_on_error=True, cwd=None, binary=False, **kwargs):
+     """
+     Perform a command pipeline, with optional input/output filenames.
+ 
+@@ -67,7 +75,7 @@ def RunPipe(pipe_list, infile=None, outfile=None,
+         else:
+             return test_result
+         # No result: fall through to normal processing
+-    result = CommandResult()
++    result = CommandResult(b'', b'', b'')
+     last_pipe = None
+     pipeline = list(pipe_list)
+     user_pipestr =  '|'.join([' '.join(pipe) for pipe in pipe_list])
+@@ -93,29 +101,36 @@ def RunPipe(pipe_list, infile=None, outfile=None,
+             if raise_on_error:
+                 raise Exception("Error running '%s': %s" % (user_pipestr, str))
+             result.return_code = 255
+-            return result
++            return result.ToOutput(binary)
+ 
+     if capture:
+         result.stdout, result.stderr, result.combined = (
+                 last_pipe.CommunicateFilter(None))
+         if result.stdout and oneline:
+-            result.output = result.stdout.rstrip('\r\n')
++            result.output = result.stdout.rstrip(b'\r\n')
+         result.return_code = last_pipe.wait()
+     else:
+         result.return_code = os.waitpid(last_pipe.pid, 0)[1]
+     if raise_on_error and result.return_code:
+         raise Exception("Error running '%s'" % user_pipestr)
+-    return result
++    return result.ToOutput(binary)
+ 
+ def Output(*cmd, **kwargs):
+     kwargs['raise_on_error'] = kwargs.get('raise_on_error', True)
+     return RunPipe([cmd], capture=True, **kwargs).stdout
+ 
+ def OutputOneLine(*cmd, **kwargs):
++    """Run a command and output it as a single-line string
++
++    The command us expected to produce a single line of output
++
++    Returns:
++        String containing output of command
++    """
+     raise_on_error = kwargs.pop('raise_on_error', True)
+-    return (RunPipe([cmd], capture=True, oneline=True,
+-            raise_on_error=raise_on_error,
+-            **kwargs).stdout.strip())
++    result = RunPipe([cmd], capture=True, oneline=True,
++                     raise_on_error=raise_on_error, **kwargs).stdout.strip()
++    return result
+ 
+ def Run(*cmd, **kwargs):
+     return RunPipe([cmd], **kwargs).stdout
+diff --git a/tools/patman/tools.py b/tools/patman/tools.py
+index 4a7fcdad21..3feddb292f 100644
+--- a/tools/patman/tools.py
++++ b/tools/patman/tools.py
+@@ -186,7 +186,7 @@ def PathHasFile(path_spec, fname):
+             return True
+     return False
+ 
+-def Run(name, *args):
++def Run(name, *args, **kwargs):
+     """Run a tool with some arguments
+ 
+     This runs a 'tool', which is a program used by binman to process files and
+@@ -201,13 +201,14 @@ def Run(name, *args):
+         CommandResult object
+     """
+     try:
++        binary = kwargs.get('binary')
+         env = None
+         if tool_search_paths:
+             env = dict(os.environ)
+             env['PATH'] = ':'.join(tool_search_paths) + ':' + env['PATH']
+         all_args = (name,) + args
+         result = command.RunPipe([all_args], capture=True, capture_stderr=True,
+-                                 env=env, raise_on_error=False)
++                                 env=env, raise_on_error=False, binary=binary)
+         if result.return_code:
+             raise Exception("Error %d running '%s': %s" %
+                (result.return_code,' '.join(all_args),
+@@ -375,7 +376,7 @@ def ToBytes(string):
+     """Convert a str type into a bytes type
+ 
+     Args:
+-        string: string to convert value
++        string: string to convert
+ 
+     Returns:
+         Python 3: A bytes type
+@@ -385,6 +386,18 @@ def ToBytes(string):
+         return string.encode('utf-8')
+     return string
+ 
++def ToString(bval):
++    """Convert a bytes type into a str type
++
++    Args:
++        bval: bytes value to convert
++
++    Returns:
++        Python 3: A bytes type
++        Python 2: A string type
++    """
++    return bval.decode('utf-8')
++
+ def Compress(indata, algo, with_header=True):
+     """Compress some data using a given algorithm
+ 
+@@ -406,14 +419,14 @@ def Compress(indata, algo, with_header=True):
+     fname = GetOutputFilename('%s.comp.tmp' % algo)
+     WriteFile(fname, indata)
+     if algo == 'lz4':
+-        data = Run('lz4', '--no-frame-crc', '-c', fname)
++        data = Run('lz4', '--no-frame-crc', '-c', fname, binary=True)
+     # cbfstool uses a very old version of lzma
+     elif algo == 'lzma':
+         outfname = GetOutputFilename('%s.comp.otmp' % algo)
+         Run('lzma_alone', 'e', fname, outfname, '-lc1', '-lp0', '-pb0', '-d8')
+         data = ReadFile(outfname)
+     elif algo == 'gzip':
+-        data = Run('gzip', '-c', fname)
++        data = Run('gzip', '-c', fname, binary=True)
+     else:
+         raise ValueError("Unknown algorithm '%s'" % algo)
+     if with_header:
+@@ -446,13 +459,13 @@ def Decompress(indata, algo, with_header=True):
+     with open(fname, 'wb') as fd:
+         fd.write(indata)
+     if algo == 'lz4':
+-        data = Run('lz4', '-dc', fname)
++        data = Run('lz4', '-dc', fname, binary=True)
+     elif algo == 'lzma':
+         outfname = GetOutputFilename('%s.decomp.otmp' % algo)
+         Run('lzma_alone', 'd', fname, outfname)
+-        data = ReadFile(outfname)
++        data = ReadFile(outfname, binary=True)
+     elif algo == 'gzip':
+-        data = Run('gzip', '-cd', fname)
++        data = Run('gzip', '-cd', fname, binary=True)
+     else:
+         raise ValueError("Unknown algorithm '%s'" % algo)
+     return data
+
+From patchwork Thu Oct 31 13:42:51 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187478
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="kDzFSdUf"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473mpv3D2pz9sPJ
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:47:34 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id BD74EC21F31; Thu, 31 Oct 2019 13:45:02 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id B0BE9C21EF1;
+ Thu, 31 Oct 2019 13:43:43 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 36547C21F31; Thu, 31 Oct 2019 13:43:34 +0000 (UTC)
+Received: from mail-io1-f51.google.com (mail-io1-f51.google.com
+ [209.85.166.51])
+ by lists.denx.de (Postfix) with ESMTPS id EF823C21F06
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:29 +0000 (UTC)
+Received: by mail-io1-f51.google.com with SMTP id k1so6747948iom.9
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=NX+5AFEEOlXvxmvuq4U9p86mBmLuMRnEiq1efBVQa3Y=;
+ b=kDzFSdUfj97x5airjH83QhStMaT79/ra4x3OfOGvp3R8cTejL9gPUxs1O5zLPl/BCf
+ YsSMA6NOTE/eHP/gBVcnlViIfpDV4VHODsbA7CJHVi91ppNvYcytJQvyvlJgtL5bJjUN
+ XH68/Jqx+JeYPnz5F6a3m2yc3L3CPaR3PnJmQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=NX+5AFEEOlXvxmvuq4U9p86mBmLuMRnEiq1efBVQa3Y=;
+ b=PyJILuk093UYks06R3kQd2RRDPtTG4bW4ikwvoqSBLue0Jvv03algCUixCR1ZZ3UYB
+ qmR0lrQ6ZMS3hAS0phjqiA8wyAIC02ViygVS8jH/M0TALxxURUftcHmLDVozJjCC8fmR
+ vwdi46zVMeebNBAEp5uQZ7JvtdJUiU4IJ5CBbc6tGIZ4dwlJk8XyeHnskzIGYVJ96Fak
+ q0GKb6jonCfHflKJb8RYO1P59SSOdsGGbpVbFf6o2vIoFTnvPU65+Dkoi9HdD7K94sX0
+ 8kG3si0U62NTdCCNGrmY84HnGjO/A8PA6u6Qus+YkqtUvuZXqfUzok31uphCkTY4qeDh
+ Q0uw==
+X-Gm-Message-State: APjAAAVaOqvD4OB0zjrHBrrwyzhs1M8ZqDvezP+MmrDgqjzjXq3Ev6fz
+ fD0syjYj+Q6FEz9SVV4zN6rFr56CPmiaPQ==
+X-Google-Smtp-Source: APXvYqw4dwm7sb82rCT2DIdMygNzntUD4EoQu86vPvtVcC1U5JPl+p1fwc5ZG23/HCibeSsYH/vNVw==
+X-Received: by 2002:a6b:8b02:: with SMTP id n2mr5137044iod.66.1572529408715; 
+ Thu, 31 Oct 2019 06:43:28 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.28
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:28 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:42:51 -0600
+Message-Id: <20191031074251.v2.2.Ia4a8d3ee2eeb78348b09a654f3ed7b61028932fc@changeid>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>
+Subject: [U-Boot] [PATCH v2 02/17] patman: Use unicode for file I/O
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+At present patman test fail in some environments which don't use utf-8
+as the default file encoding. Add this explicitly.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2:
+- Add new patch to explicitly use unicode for file I/O in patman
+
+ tools/patman/func_test.py   | 8 ++++----
+ tools/patman/patchstream.py | 4 ++--
+ tools/patman/series.py      | 2 +-
+ tools/patman/settings.py    | 4 ++--
+ tools/patman/test.py        | 4 ++--
+ 5 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/tools/patman/func_test.py b/tools/patman/func_test.py
+index 50a2741439..eadb49a335 100644
+--- a/tools/patman/func_test.py
++++ b/tools/patman/func_test.py
+@@ -51,7 +51,7 @@ class TestFunctional(unittest.TestCase):
+ 
+     @classmethod
+     def GetText(self, fname):
+-        return open(self.GetPath(fname)).read()
++        return open(self.GetPath(fname), encoding='utf-8').read()
+ 
+     @classmethod
+     def GetPatchName(self, subject):
+@@ -160,7 +160,7 @@ class TestFunctional(unittest.TestCase):
+                     dry_run, not ignore_bad_tags, cc_file,
+                     in_reply_to=in_reply_to, thread=None)
+             series.ShowActions(args, cmd, process_tags)
+-        cc_lines = open(cc_file).read().splitlines()
++        cc_lines = open(cc_file, encoding='utf-8').read().splitlines()
+         os.remove(cc_file)
+ 
+         lines = out[0].splitlines()
+@@ -229,14 +229,14 @@ Simon Glass (2):
+ 2.7.4
+ 
+ '''
+-        lines = open(cover_fname).read().splitlines()
++        lines = open(cover_fname, encoding='utf-8').read().splitlines()
+         self.assertEqual(
+                 'Subject: [RFC PATCH v3 0/2] test: A test patch series',
+                 lines[3])
+         self.assertEqual(expected.splitlines(), lines[7:])
+ 
+         for i, fname in enumerate(args):
+-            lines = open(fname).read().splitlines()
++            lines = open(fname, encoding='utf-8').read().splitlines()
+             subject = [line for line in lines if line.startswith('Subject')]
+             self.assertEqual('Subject: [RFC %d/%d]' % (i + 1, count),
+                              subject[0][:18])
+diff --git a/tools/patman/patchstream.py b/tools/patman/patchstream.py
+index ef06606297..df3eb7483b 100644
+--- a/tools/patman/patchstream.py
++++ b/tools/patman/patchstream.py
+@@ -511,8 +511,8 @@ def FixPatch(backup_dir, fname, series, commit):
+         A list of errors, or [] if all ok.
+     """
+     handle, tmpname = tempfile.mkstemp()
+-    outfd = os.fdopen(handle, 'w')
+-    infd = open(fname, 'r')
++    outfd = os.fdopen(handle, 'w', encoding='utf-8')
++    infd = open(fname, 'r', encoding='utf-8')
+     ps = PatchStream(series)
+     ps.commit = commit
+     ps.ProcessStream(infd, outfd)
+diff --git a/tools/patman/series.py b/tools/patman/series.py
+index 67103f03e6..95ec1d3131 100644
+--- a/tools/patman/series.py
++++ b/tools/patman/series.py
+@@ -223,7 +223,7 @@ class Series(dict):
+         col = terminal.Color()
+         # Look for commit tags (of the form 'xxx:' at the start of the subject)
+         fname = '/tmp/patman.%d' % os.getpid()
+-        fd = open(fname, 'w')
++        fd = open(fname, 'w', encoding='utf-8')
+         all_ccs = []
+         for commit in self.commits:
+             cc = []
+diff --git a/tools/patman/settings.py b/tools/patman/settings.py
+index c98911d522..5dc83a8500 100644
+--- a/tools/patman/settings.py
++++ b/tools/patman/settings.py
+@@ -165,7 +165,7 @@ def ReadGitAliases(fname):
+         fname: Filename to read
+     """
+     try:
+-        fd = open(fname, 'r')
++        fd = open(fname, 'r', encoding='utf-8')
+     except IOError:
+         print("Warning: Cannot find alias file '%s'" % fname)
+         return
+@@ -259,7 +259,7 @@ def _ReadAliasFile(fname):
+     """
+     if os.path.exists(fname):
+         bad_line = None
+-        with open(fname) as fd:
++        with open(fname, encoding='utf-8') as fd:
+             linenum = 0
+             for line in fd:
+                 linenum += 1
+diff --git a/tools/patman/test.py b/tools/patman/test.py
+index cc61c20606..889e186606 100644
+--- a/tools/patman/test.py
++++ b/tools/patman/test.py
+@@ -72,12 +72,12 @@ Signed-off-by: Simon Glass <sjg@chromium.org>
+ '''
+         out = ''
+         inhandle, inname = tempfile.mkstemp()
+-        infd = os.fdopen(inhandle, 'w')
++        infd = os.fdopen(inhandle, 'w', encoding='utf-8')
+         infd.write(data)
+         infd.close()
+ 
+         exphandle, expname = tempfile.mkstemp()
+-        expfd = os.fdopen(exphandle, 'w')
++        expfd = os.fdopen(exphandle, 'w', encoding='utf-8')
+         expfd.write(expected)
+         expfd.close()
+ 
+
+From patchwork Thu Oct 31 13:42:52 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187483
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="WHjO83uZ"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473mrr4bGrz9sP6
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:49:16 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 52D61C21F63; Thu, 31 Oct 2019 13:45:46 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 5F57BC21F60;
+ Thu, 31 Oct 2019 13:43:54 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id BE2E9C21F1A; Thu, 31 Oct 2019 13:43:34 +0000 (UTC)
+Received: from mail-io1-f65.google.com (mail-io1-f65.google.com
+ [209.85.166.65])
+ by lists.denx.de (Postfix) with ESMTPS id AF1EDC21F3F
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:30 +0000 (UTC)
+Received: by mail-io1-f65.google.com with SMTP id u8so6766884iom.5
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=60QGf0Mnd1eUR1WS/7y8BK1jsba8FzUfWYFyeNQa8lg=;
+ b=WHjO83uZ4N4TC80KkIqBLIZgxJF6eiz24DP+W/1hEjrvr9uZqdEzOmlXLrVJH/YgU6
+ S0y+X7pWjcavsDxPYAQ4MsAuP9b5ImJpFy4C5MydFOoaR1U/eLf9Yw+B9+2Hp+ffXyQc
+ jdGuRyKn/l//Ohal9l8/Edmdg1xSiVw/kbVtY=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=60QGf0Mnd1eUR1WS/7y8BK1jsba8FzUfWYFyeNQa8lg=;
+ b=gT8KsU10yF4A2sptxw0BK2VL/YaFj6GZ5TQ6YRvv/6ebkUZnLDMQItzjkh5S4bA3Mq
+ fCmfKNF//quKCknbgo90EOzMLYCd7VnPwm+thgw8uFKenlfy9JPaqPZa3tAfKFgWkLga
+ Nt0KiT55GVYbBh8TQl/0bXEwRX6Z5l7jckT8o19VJu5VBL2VNxTje4uki5wbul9mZDfZ
+ KKycVYQc1uu07wp2Q2qBxYvconlrSEGEfA9Jyiv/Aq7jcbzuRigvaaYkDmdWMCRfTOqD
+ DU6BgeClrTM2U+7rZ0Wc/dGwlpCfkTizVrxXDJLn/1gm/NemrBtxu3cJaM8YUJXUxw5e
+ ZXEw==
+X-Gm-Message-State: APjAAAUYJjz+474aMrMt4vPKkjIBMb36WC1mYiywctiTzO22X19VM8ih
+ WAaNOv9vc22zHlBo1hgzrxa7Hc7qogtrYg==
+X-Google-Smtp-Source: APXvYqxpRUjaXQyjXST+eDVF8tjp5TjBfE5B9PVWRbUjft+jyuFFthvp6Tky5jPe6LY4lgTANzv0Eg==
+X-Received: by 2002:a05:6638:2b1:: with SMTP id
+ d17mr413149jaq.60.1572529409499; 
+ Thu, 31 Oct 2019 06:43:29 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.28
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:29 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:42:52 -0600
+Message-Id: <20191031134310.3072-3-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>
+Subject: [U-Boot] [PATCH v2 03/17] patman: Move to use Python 3
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Update this tool to use Python 3 to meet the 2020 deadline.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2: None
+
+ tools/patman/patman.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/patman/patman.py b/tools/patman/patman.py
+index 9605a36eff..fe82f24c67 100755
+--- a/tools/patman/patman.py
++++ b/tools/patman/patman.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ # SPDX-License-Identifier: GPL-2.0+
+ #
+ # Copyright (c) 2011 The Chromium OS Authors.
+
+From patchwork Thu Oct 31 13:42:53 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187473
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="IvTdezHE"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473mlY1vzjz9sP4
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:44:41 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id DEB44C21F29; Thu, 31 Oct 2019 13:43:59 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 706BAC21ED6;
+ Thu, 31 Oct 2019 13:43:42 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 70AA5C21F42; Thu, 31 Oct 2019 13:43:36 +0000 (UTC)
+Received: from mail-il1-f196.google.com (mail-il1-f196.google.com
+ [209.85.166.196])
+ by lists.denx.de (Postfix) with ESMTPS id 698A3C21D8E
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:32 +0000 (UTC)
+Received: by mail-il1-f196.google.com with SMTP id y5so5420003ilb.5
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=70A52DYsbmSMYVc0HQQbaudb6C8I7FJR14I09UmGOlM=;
+ b=IvTdezHE9kF1ZX+cEUd0VPfQfbC0in1ZYbnBzkO4clwkTX9Dj5kpt71xjgN1IS9X84
+ 40Ql3ev5zscuQX1SNZRtHuguMwb5W5ury0GxMYRFLR4JXbKGnm1cLtxLuSWU3GUZRaEn
+ D3hMV65fkGs4sVWBZLKHxmGsACWb/esH4fiFE=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=70A52DYsbmSMYVc0HQQbaudb6C8I7FJR14I09UmGOlM=;
+ b=IxFkLuOdM9dVy84nM82TZPP0eku6lP8riuNqFKmDfwkeaXTT/9nVUmRyi+31eVuW3o
+ OdbHC2gqzHnQcz8hC+ToG+GrKOCEcJbPTZ7ItpjAaa/Fxkuq4U8Vu5KIzREDuje8TwWy
+ HBPVRLdNjB6qFn+Kzcnqsvsu4n1nk36Mj6oQA64W+3/EcjCJ2VUDESWhEWAEFks1u1f3
+ DFzOTo5Nqef3eQxdhHIq54Iv6Vm3L/IGC+BwfssI4tDXbnbXSieyQZ2Ze8oVzJ6ZkS+A
+ x57HIdTH9ESlXRzdjpy9JCJvOD2t8npz073vgN4vUym3tDbzIjLd2dn+Dp5bDio89AsO
+ I88A==
+X-Gm-Message-State: APjAAAV8AaQ/NxcSe6+FUa1OMebk7xOt0AL25uK3sfn/opbuEyJ35CwD
+ 4ei/Ypa3voGfA/flA4D+ZZpFpRXL18CDDQ==
+X-Google-Smtp-Source: APXvYqwFOmBsBp5QTzv9CxzjMLH7UDSQysJVdpsTdcjqZx0R5/cfua4fn5v5AuuwmHVrhOhYgnyF3Q==
+X-Received: by 2002:a92:af15:: with SMTP id n21mr6818418ili.0.1572529410409; 
+ Thu, 31 Oct 2019 06:43:30 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.29
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:30 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:42:53 -0600
+Message-Id: <20191031134310.3072-4-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>
+Subject: [U-Boot] [PATCH v2 04/17] buildman: Convert to Python 3
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Convert buildman to Python 3 and make it use that, to meet the 2020
+deadline.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2:
+- Use integer division for multiprocessing.cpu_count()
+- Use integer division in SetupBuild() and GetActionSummary()
+- Use HTTPMessage.getheader() instead of HTTPMessage.get()
+- Use integer division in toolchain.Download()
+- Use explicit utf-8 encoding in Boards.ReadBoards()
+
+ tools/buildman/board.py         |  9 +--
+ tools/buildman/bsettings.py     | 20 +++----
+ tools/buildman/builder.py       | 47 ++++++++--------
+ tools/buildman/builderthread.py | 24 ++++----
+ tools/buildman/buildman.py      | 10 ++--
+ tools/buildman/control.py       | 44 +++++++--------
+ tools/buildman/func_test.py     | 16 +++---
+ tools/buildman/test.py          | 22 ++++----
+ tools/buildman/toolchain.py     | 99 +++++++++++++++++----------------
+ 9 files changed, 146 insertions(+), 145 deletions(-)
+
+diff --git a/tools/buildman/board.py b/tools/buildman/board.py
+index 2a1d021574..447aaabea8 100644
+--- a/tools/buildman/board.py
++++ b/tools/buildman/board.py
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0+
+ # Copyright (c) 2012 The Chromium OS Authors.
+ 
++from collections import OrderedDict
+ import re
+ 
+ class Expr:
+@@ -120,7 +121,7 @@ class Boards:
+         Args:
+             fname: Filename of boards.cfg file
+         """
+-        with open(fname, 'r') as fd:
++        with open(fname, 'r', encoding='utf-8') as fd:
+             for line in fd:
+                 if line[0] == '#':
+                     continue
+@@ -155,7 +156,7 @@ class Boards:
+                 key is board.target
+                 value is board
+         """
+-        board_dict = {}
++        board_dict = OrderedDict()
+         for board in self._boards:
+             board_dict[board.target] = board
+         return board_dict
+@@ -166,7 +167,7 @@ class Boards:
+         Returns:
+             List of Board objects that are marked selected
+         """
+-        board_dict = {}
++        board_dict = OrderedDict()
+         for board in self._boards:
+             if board.build_it:
+                 board_dict[board.target] = board
+@@ -259,7 +260,7 @@ class Boards:
+                     due to each argument, arranged by argument.
+                 List of errors found
+         """
+-        result = {}
++        result = OrderedDict()
+         warnings = []
+         terms = self._BuildTerms(args)
+ 
+diff --git a/tools/buildman/bsettings.py b/tools/buildman/bsettings.py
+index 03d7439aa5..0b7208da37 100644
+--- a/tools/buildman/bsettings.py
++++ b/tools/buildman/bsettings.py
+@@ -1,9 +1,9 @@
+ # SPDX-License-Identifier: GPL-2.0+
+ # Copyright (c) 2012 The Chromium OS Authors.
+ 
+-import ConfigParser
++import configparser
+ import os
+-import StringIO
++import io
+ 
+ 
+ def Setup(fname=''):
+@@ -15,20 +15,20 @@ def Setup(fname=''):
+     global settings
+     global config_fname
+ 
+-    settings = ConfigParser.SafeConfigParser()
++    settings = configparser.SafeConfigParser()
+     if fname is not None:
+         config_fname = fname
+         if config_fname == '':
+             config_fname = '%s/.buildman' % os.getenv('HOME')
+         if not os.path.exists(config_fname):
+-            print 'No config file found ~/.buildman\nCreating one...\n'
++            print('No config file found ~/.buildman\nCreating one...\n')
+             CreateBuildmanConfigFile(config_fname)
+-            print 'To install tool chains, please use the --fetch-arch option'
++            print('To install tool chains, please use the --fetch-arch option')
+         if config_fname:
+             settings.read(config_fname)
+ 
+ def AddFile(data):
+-    settings.readfp(StringIO.StringIO(data))
++    settings.readfp(io.StringIO(data))
+ 
+ def GetItems(section):
+     """Get the items from a section of the config.
+@@ -41,7 +41,7 @@ def GetItems(section):
+     """
+     try:
+         return settings.items(section)
+-    except ConfigParser.NoSectionError as e:
++    except configparser.NoSectionError as e:
+         return []
+     except:
+         raise
+@@ -68,10 +68,10 @@ def CreateBuildmanConfigFile(config_fname):
+     try:
+         f = open(config_fname, 'w')
+     except IOError:
+-        print "Couldn't create buildman config file '%s'\n" % config_fname
++        print("Couldn't create buildman config file '%s'\n" % config_fname)
+         raise
+ 
+-    print >>f, '''[toolchain]
++    print('''[toolchain]
+ # name = path
+ # e.g. x86 = /opt/gcc-4.6.3-nolibc/x86_64-linux
+ 
+@@ -93,5 +93,5 @@ openrisc = or1k
+ # snapper-boards=ENABLE_AT91_TEST=1
+ # snapper9260=${snapper-boards} BUILD_TAG=442
+ # snapper9g45=${snapper-boards} BUILD_TAG=443
+-'''
++''', file=f)
+     f.close();
+diff --git a/tools/buildman/builder.py b/tools/buildman/builder.py
+index fbb236676c..cfbe4c26b1 100644
+--- a/tools/buildman/builder.py
++++ b/tools/buildman/builder.py
+@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
+ import glob
+ import os
+ import re
+-import Queue
++import queue
+ import shutil
+ import signal
+ import string
+@@ -92,11 +92,10 @@ u-boot/             source directory
+ """
+ 
+ # Possible build outcomes
+-OUTCOME_OK, OUTCOME_WARNING, OUTCOME_ERROR, OUTCOME_UNKNOWN = range(4)
++OUTCOME_OK, OUTCOME_WARNING, OUTCOME_ERROR, OUTCOME_UNKNOWN = list(range(4))
+ 
+ # Translate a commit subject into a valid filename (and handle unicode)
+-trans_valid_chars = string.maketrans('/: ', '---')
+-trans_valid_chars = trans_valid_chars.decode('latin-1')
++trans_valid_chars = str.maketrans('/: ', '---')
+ 
+ BASE_CONFIG_FILENAMES = [
+     'u-boot.cfg', 'u-boot-spl.cfg', 'u-boot-tpl.cfg'
+@@ -122,8 +121,8 @@ class Config:
+     def __hash__(self):
+         val = 0
+         for fname in self.config:
+-            for key, value in self.config[fname].iteritems():
+-                print key, value
++            for key, value in self.config[fname].items():
++                print(key, value)
+                 val = val ^ hash(key) & hash(value)
+         return val
+ 
+@@ -293,8 +292,8 @@ class Builder:
+         self._re_dtb_warning = re.compile('(.*): Warning .*')
+         self._re_note = re.compile('(.*):(\d*):(\d*): note: this is the location of the previous.*')
+ 
+-        self.queue = Queue.Queue()
+-        self.out_queue = Queue.Queue()
++        self.queue = queue.Queue()
++        self.out_queue = queue.Queue()
+         for i in range(self.num_threads):
+             t = builderthread.BuilderThread(self, i, incremental,
+                     per_board_out_dir)
+@@ -781,7 +780,7 @@ class Builder:
+         config = {}
+         environment = {}
+ 
+-        for board in boards_selected.itervalues():
++        for board in boards_selected.values():
+             outcome = self.GetBuildOutcome(commit_upto, board.target,
+                                            read_func_sizes, read_config,
+                                            read_environment)
+@@ -814,13 +813,13 @@ class Builder:
+             tconfig = Config(self.config_filenames, board.target)
+             for fname in self.config_filenames:
+                 if outcome.config:
+-                    for key, value in outcome.config[fname].iteritems():
++                    for key, value in outcome.config[fname].items():
+                         tconfig.Add(fname, key, value)
+             config[board.target] = tconfig
+ 
+             tenvironment = Environment(board.target)
+             if outcome.environment:
+-                for key, value in outcome.environment.iteritems():
++                for key, value in outcome.environment.items():
+                     tenvironment.Add(key, value)
+             environment[board.target] = tenvironment
+ 
+@@ -1040,12 +1039,12 @@ class Builder:
+ 
+         # We now have a list of image size changes sorted by arch
+         # Print out a summary of these
+-        for arch, target_list in arch_list.iteritems():
++        for arch, target_list in arch_list.items():
+             # Get total difference for each type
+             totals = {}
+             for result in target_list:
+                 total = 0
+-                for name, diff in result.iteritems():
++                for name, diff in result.items():
+                     if name.startswith('_'):
+                         continue
+                     total += diff
+@@ -1250,7 +1249,7 @@ class Builder:
+             if self._show_unknown:
+                 self.AddOutcome(board_selected, arch_list, unknown_boards, '?',
+                         self.col.MAGENTA)
+-            for arch, target_list in arch_list.iteritems():
++            for arch, target_list in arch_list.items():
+                 Print('%10s: %s' % (arch, target_list))
+                 self._error_lines += 1
+             if better_err:
+@@ -1283,13 +1282,13 @@ class Builder:
+                 environment_minus = {}
+                 environment_change = {}
+                 base = tbase.environment
+-                for key, value in tenvironment.environment.iteritems():
++                for key, value in tenvironment.environment.items():
+                     if key not in base:
+                         environment_plus[key] = value
+-                for key, value in base.iteritems():
++                for key, value in base.items():
+                     if key not in tenvironment.environment:
+                         environment_minus[key] = value
+-                for key, value in base.iteritems():
++                for key, value in base.items():
+                     new_value = tenvironment.environment.get(key)
+                     if new_value and value != new_value:
+                         desc = '%s -> %s' % (value, new_value)
+@@ -1342,15 +1341,15 @@ class Builder:
+                     config_minus = {}
+                     config_change = {}
+                     base = tbase.config[name]
+-                    for key, value in tconfig.config[name].iteritems():
++                    for key, value in tconfig.config[name].items():
+                         if key not in base:
+                             config_plus[key] = value
+                             all_config_plus[key] = value
+-                    for key, value in base.iteritems():
++                    for key, value in base.items():
+                         if key not in tconfig.config[name]:
+                             config_minus[key] = value
+                             all_config_minus[key] = value
+-                    for key, value in base.iteritems():
++                    for key, value in base.items():
+                         new_value = tconfig.config.get(key)
+                         if new_value and value != new_value:
+                             desc = '%s -> %s' % (value, new_value)
+@@ -1368,7 +1367,7 @@ class Builder:
+                 summary[target] = '\n'.join(lines)
+ 
+             lines_by_target = {}
+-            for target, lines in summary.iteritems():
++            for target, lines in summary.items():
+                 if lines in lines_by_target:
+                     lines_by_target[lines].append(target)
+                 else:
+@@ -1392,7 +1391,7 @@ class Builder:
+                     Print('%s:' % arch)
+                     _OutputConfigInfo(lines)
+ 
+-            for lines, targets in lines_by_target.iteritems():
++            for lines, targets in lines_by_target.items():
+                 if not lines:
+                     continue
+                 Print('%s :' % ' '.join(sorted(targets)))
+@@ -1463,7 +1462,7 @@ class Builder:
+             commits: Selected commits to build
+         """
+         # First work out how many commits we will build
+-        count = (self.commit_count + self._step - 1) / self._step
++        count = (self.commit_count + self._step - 1) // self._step
+         self.count = len(board_selected) * count
+         self.upto = self.warned = self.fail = 0
+         self._timestamps = collections.deque()
+@@ -1566,7 +1565,7 @@ class Builder:
+         self.ProcessResult(None)
+ 
+         # Create jobs to build all commits for each board
+-        for brd in board_selected.itervalues():
++        for brd in board_selected.values():
+             job = builderthread.BuilderJob()
+             job.board = brd
+             job.commits = commits
+diff --git a/tools/buildman/builderthread.py b/tools/buildman/builderthread.py
+index 8a9d47cd5e..570c1f6595 100644
+--- a/tools/buildman/builderthread.py
++++ b/tools/buildman/builderthread.py
+@@ -28,7 +28,7 @@ def Mkdir(dirname, parents = False):
+     except OSError as err:
+         if err.errno == errno.EEXIST:
+             if os.path.realpath('.') == os.path.realpath(dirname):
+-                print "Cannot create the current working directory '%s'!" % dirname
++                print("Cannot create the current working directory '%s'!" % dirname)
+                 sys.exit(1)
+             pass
+         else:
+@@ -291,15 +291,13 @@ class BuilderThread(threading.Thread):
+         outfile = os.path.join(build_dir, 'log')
+         with open(outfile, 'w') as fd:
+             if result.stdout:
+-                # We don't want unicode characters in log files
+-                fd.write(result.stdout.decode('UTF-8').encode('ASCII', 'replace'))
++                fd.write(result.stdout)
+ 
+         errfile = self.builder.GetErrFile(result.commit_upto,
+                 result.brd.target)
+         if result.stderr:
+             with open(errfile, 'w') as fd:
+-                # We don't want unicode characters in log files
+-                fd.write(result.stderr.decode('UTF-8').encode('ASCII', 'replace'))
++                fd.write(result.stderr)
+         elif os.path.exists(errfile):
+             os.remove(errfile)
+ 
+@@ -314,17 +312,17 @@ class BuilderThread(threading.Thread):
+                 else:
+                     fd.write('%s' % result.return_code)
+             with open(os.path.join(build_dir, 'toolchain'), 'w') as fd:
+-                print >>fd, 'gcc', result.toolchain.gcc
+-                print >>fd, 'path', result.toolchain.path
+-                print >>fd, 'cross', result.toolchain.cross
+-                print >>fd, 'arch', result.toolchain.arch
++                print('gcc', result.toolchain.gcc, file=fd)
++                print('path', result.toolchain.path, file=fd)
++                print('cross', result.toolchain.cross, file=fd)
++                print('arch', result.toolchain.arch, file=fd)
+                 fd.write('%s' % result.return_code)
+ 
+             # Write out the image and function size information and an objdump
+             env = result.toolchain.MakeEnvironment(self.builder.full_path)
+             with open(os.path.join(build_dir, 'env'), 'w') as fd:
+                 for var in sorted(env.keys()):
+-                    print >>fd, '%s="%s"' % (var, env[var])
++                    print('%s="%s"' % (var, env[var]), file=fd)
+             lines = []
+             for fname in ['u-boot', 'spl/u-boot-spl']:
+                 cmd = ['%snm' % self.toolchain.cross, '--size-sort', fname]
+@@ -335,7 +333,7 @@ class BuilderThread(threading.Thread):
+                     nm = self.builder.GetFuncSizesFile(result.commit_upto,
+                                     result.brd.target, fname)
+                     with open(nm, 'w') as fd:
+-                        print >>fd, nm_result.stdout,
++                        print(nm_result.stdout, end=' ', file=fd)
+ 
+                 cmd = ['%sobjdump' % self.toolchain.cross, '-h', fname]
+                 dump_result = command.RunPipe([cmd], capture=True,
+@@ -346,7 +344,7 @@ class BuilderThread(threading.Thread):
+                     objdump = self.builder.GetObjdumpFile(result.commit_upto,
+                                     result.brd.target, fname)
+                     with open(objdump, 'w') as fd:
+-                        print >>fd, dump_result.stdout,
++                        print(dump_result.stdout, end=' ', file=fd)
+                     for line in dump_result.stdout.splitlines():
+                         fields = line.split()
+                         if len(fields) > 5 and fields[1] == '.rodata':
+@@ -378,7 +376,7 @@ class BuilderThread(threading.Thread):
+                 sizes = self.builder.GetSizesFile(result.commit_upto,
+                                 result.brd.target)
+                 with open(sizes, 'w') as fd:
+-                    print >>fd, '\n'.join(lines)
++                    print('\n'.join(lines), file=fd)
+ 
+         # Write out the configuration files, with a special case for SPL
+         for dirname in ['', 'spl', 'tpl']:
+diff --git a/tools/buildman/buildman.py b/tools/buildman/buildman.py
+index f17aa15e7c..30a8690f93 100755
+--- a/tools/buildman/buildman.py
++++ b/tools/buildman/buildman.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python2
++#!/usr/bin/env python3
+ # SPDX-License-Identifier: GPL-2.0+
+ #
+ # Copyright (c) 2012 The Chromium OS Authors.
+@@ -6,6 +6,8 @@
+ 
+ """See README for more information"""
+ 
++from __future__ import print_function
++
+ import multiprocessing
+ import os
+ import re
+@@ -46,11 +48,11 @@ def RunTests(skip_net_tests):
+         suite = unittest.TestLoader().loadTestsFromTestCase(module)
+         suite.run(result)
+ 
+-    print result
++    print(result)
+     for test, err in result.errors:
+-        print err
++        print(err)
+     for test, err in result.failures:
+-        print err
++        print(err)
+ 
+ 
+ options, args = cmdline.ParseArgs()
+diff --git a/tools/buildman/control.py b/tools/buildman/control.py
+index 9787b86747..216012d001 100644
+--- a/tools/buildman/control.py
++++ b/tools/buildman/control.py
+@@ -30,7 +30,7 @@ def GetActionSummary(is_summary, commits, selected, options):
+     """
+     if commits:
+         count = len(commits)
+-        count = (count + options.step - 1) / options.step
++        count = (count + options.step - 1) // options.step
+         commit_str = '%d commit%s' % (count, GetPlural(count))
+     else:
+         commit_str = 'current source'
+@@ -59,31 +59,31 @@ def ShowActions(series, why_selected, boards_selected, builder, options,
+         board_warnings: List of warnings obtained from board selected
+     """
+     col = terminal.Color()
+-    print 'Dry run, so not doing much. But I would do this:'
+-    print
++    print('Dry run, so not doing much. But I would do this:')
++    print()
+     if series:
+         commits = series.commits
+     else:
+         commits = None
+-    print GetActionSummary(False, commits, boards_selected,
+-            options)
+-    print 'Build directory: %s' % builder.base_dir
++    print(GetActionSummary(False, commits, boards_selected,
++            options))
++    print('Build directory: %s' % builder.base_dir)
+     if commits:
+         for upto in range(0, len(series.commits), options.step):
+             commit = series.commits[upto]
+-            print '   ', col.Color(col.YELLOW, commit.hash[:8], bright=False),
+-            print commit.subject
+-    print
++            print('   ', col.Color(col.YELLOW, commit.hash[:8], bright=False), end=' ')
++            print(commit.subject)
++    print()
+     for arg in why_selected:
+         if arg != 'all':
+-            print arg, ': %d boards' % len(why_selected[arg])
++            print(arg, ': %d boards' % len(why_selected[arg]))
+             if options.verbose:
+-                print '   %s' % ' '.join(why_selected[arg])
+-    print ('Total boards to build for each commit: %d\n' %
+-            len(why_selected['all']))
++                print('   %s' % ' '.join(why_selected[arg]))
++    print(('Total boards to build for each commit: %d\n' %
++            len(why_selected['all'])))
+     if board_warnings:
+         for warning in board_warnings:
+-            print col.Color(col.YELLOW, warning)
++            print(col.Color(col.YELLOW, warning))
+ 
+ def CheckOutputDir(output_dir):
+     """Make sure that the output directory is not within the current directory
+@@ -146,17 +146,17 @@ def DoBuildman(options, args, toolchains=None, make_func=None, boards=None,
+     if options.fetch_arch:
+         if options.fetch_arch == 'list':
+             sorted_list = toolchains.ListArchs()
+-            print col.Color(col.BLUE, 'Available architectures: %s\n' %
+-                            ' '.join(sorted_list))
++            print(col.Color(col.BLUE, 'Available architectures: %s\n' %
++                            ' '.join(sorted_list)))
+             return 0
+         else:
+             fetch_arch = options.fetch_arch
+             if fetch_arch == 'all':
+                 fetch_arch = ','.join(toolchains.ListArchs())
+-                print col.Color(col.CYAN, '\nDownloading toolchains: %s' %
+-                                fetch_arch)
++                print(col.Color(col.CYAN, '\nDownloading toolchains: %s' %
++                                fetch_arch))
+             for arch in fetch_arch.split(','):
+-                print
++                print()
+                 ret = toolchains.FetchAndInstall(arch)
+                 if ret:
+                     return ret
+@@ -167,7 +167,7 @@ def DoBuildman(options, args, toolchains=None, make_func=None, boards=None,
+         toolchains.Scan(options.list_tool_chains and options.verbose)
+     if options.list_tool_chains:
+         toolchains.List()
+-        print
++        print()
+         return 0
+ 
+     # Work out how many commits to build. We want to build everything on the
+@@ -191,7 +191,7 @@ def DoBuildman(options, args, toolchains=None, make_func=None, boards=None,
+                 sys.exit(col.Color(col.RED, "Range '%s' has no commits" %
+                                    options.branch))
+             if msg:
+-                print col.Color(col.YELLOW, msg)
++                print(col.Color(col.YELLOW, msg))
+             count += 1   # Build upstream commit also
+ 
+     if not count:
+@@ -268,7 +268,7 @@ def DoBuildman(options, args, toolchains=None, make_func=None, boards=None,
+         options.threads = min(multiprocessing.cpu_count(), len(selected))
+     if not options.jobs:
+         options.jobs = max(1, (multiprocessing.cpu_count() +
+-                len(selected) - 1) / len(selected))
++                len(selected) - 1) // len(selected))
+ 
+     if not options.step:
+         options.step = len(series.commits) - 1
+diff --git a/tools/buildman/func_test.py b/tools/buildman/func_test.py
+index f90b8ea7f5..4c3d497294 100644
+--- a/tools/buildman/func_test.py
++++ b/tools/buildman/func_test.py
+@@ -270,7 +270,7 @@ class TestFunctional(unittest.TestCase):
+                                             stdout=''.join(commit_log[:count]))
+ 
+         # Not handled, so abort
+-        print 'git log', args
++        print('git log', args)
+         sys.exit(1)
+ 
+     def _HandleCommandGitConfig(self, args):
+@@ -286,7 +286,7 @@ class TestFunctional(unittest.TestCase):
+                                          stdout='refs/heads/master\n')
+ 
+         # Not handled, so abort
+-        print 'git config', args
++        print('git config', args)
+         sys.exit(1)
+ 
+     def _HandleCommandGit(self, in_args):
+@@ -320,7 +320,7 @@ class TestFunctional(unittest.TestCase):
+             return command.CommandResult(return_code=0)
+ 
+         # Not handled, so abort
+-        print 'git', git_args, sub_cmd, args
++        print('git', git_args, sub_cmd, args)
+         sys.exit(1)
+ 
+     def _HandleCommandNm(self, args):
+@@ -351,7 +351,7 @@ class TestFunctional(unittest.TestCase):
+             if pipe_list[1] == ['wc', '-l']:
+                 wc = True
+             else:
+-                print 'invalid pipe', kwargs
++                print('invalid pipe', kwargs)
+                 sys.exit(1)
+         cmd = pipe_list[0][0]
+         args = pipe_list[0][1:]
+@@ -371,7 +371,7 @@ class TestFunctional(unittest.TestCase):
+ 
+         if not result:
+             # Not handled, so abort
+-            print 'unknown command', kwargs
++            print('unknown command', kwargs)
+             sys.exit(1)
+ 
+         if wc:
+@@ -404,14 +404,14 @@ class TestFunctional(unittest.TestCase):
+             return command.CommandResult(return_code=0)
+ 
+         # Not handled, so abort
+-        print 'make', stage
++        print('make', stage)
+         sys.exit(1)
+ 
+     # Example function to print output lines
+     def print_lines(self, lines):
+-        print len(lines)
++        print(len(lines))
+         for line in lines:
+-            print line
++            print(line)
+         #self.print_lines(terminal.GetPrintTestLines())
+ 
+     def testNoBoards(self):
+diff --git a/tools/buildman/test.py b/tools/buildman/test.py
+index ed99b9375c..b4e28d6867 100644
+--- a/tools/buildman/test.py
++++ b/tools/buildman/test.py
+@@ -212,11 +212,11 @@ class TestBuild(unittest.TestCase):
+         self.assertEqual(lines[1].text, '02: %s' % commits[1][1])
+ 
+         col = terminal.Color()
+-        self.assertSummary(lines[2].text, 'sandbox', 'w+', ['board4'],
++        self.assertSummary(lines[2].text, 'arm', 'w+', ['board1'],
+                            outcome=OUTCOME_WARN)
+-        self.assertSummary(lines[3].text, 'arm', 'w+', ['board1'],
++        self.assertSummary(lines[3].text, 'powerpc', 'w+', ['board2', 'board3'],
+                            outcome=OUTCOME_WARN)
+-        self.assertSummary(lines[4].text, 'powerpc', 'w+', ['board2', 'board3'],
++        self.assertSummary(lines[4].text, 'sandbox', 'w+', ['board4'],
+                            outcome=OUTCOME_WARN)
+ 
+         # Second commit: The warnings should be listed
+@@ -226,10 +226,10 @@ class TestBuild(unittest.TestCase):
+ 
+         # Third commit: Still fails
+         self.assertEqual(lines[6].text, '03: %s' % commits[2][1])
+-        self.assertSummary(lines[7].text, 'sandbox', '+', ['board4'])
+-        self.assertSummary(lines[8].text, 'arm', '', ['board1'],
++        self.assertSummary(lines[7].text, 'arm', '', ['board1'],
+                            outcome=OUTCOME_OK)
+-        self.assertSummary(lines[9].text, 'powerpc', '+', ['board2', 'board3'])
++        self.assertSummary(lines[8].text, 'powerpc', '+', ['board2', 'board3'])
++        self.assertSummary(lines[9].text, 'sandbox', '+', ['board4'])
+ 
+         # Expect a compiler error
+         self.assertEqual(lines[10].text, '+%s' %
+@@ -237,8 +237,6 @@ class TestBuild(unittest.TestCase):
+ 
+         # Fourth commit: Compile errors are fixed, just have warning for board3
+         self.assertEqual(lines[11].text, '04: %s' % commits[3][1])
+-        self.assertSummary(lines[12].text, 'sandbox', 'w+', ['board4'],
+-                           outcome=OUTCOME_WARN)
+         expect = '%10s: ' % 'powerpc'
+         expect += ' ' + col.Color(col.GREEN, '')
+         expect += '  '
+@@ -246,7 +244,9 @@ class TestBuild(unittest.TestCase):
+         expect += ' ' + col.Color(col.YELLOW, 'w+')
+         expect += '  '
+         expect += col.Color(col.YELLOW, ' %s' % 'board3')
+-        self.assertEqual(lines[13].text, expect)
++        self.assertEqual(lines[12].text, expect)
++        self.assertSummary(lines[13].text, 'sandbox', 'w+', ['board4'],
++                           outcome=OUTCOME_WARN)
+ 
+         # Compile error fixed
+         self.assertEqual(lines[14].text, '-%s' %
+@@ -259,9 +259,9 @@ class TestBuild(unittest.TestCase):
+ 
+         # Fifth commit
+         self.assertEqual(lines[16].text, '05: %s' % commits[4][1])
+-        self.assertSummary(lines[17].text, 'sandbox', '+', ['board4'])
+-        self.assertSummary(lines[18].text, 'powerpc', '', ['board3'],
++        self.assertSummary(lines[17].text, 'powerpc', '', ['board3'],
+                            outcome=OUTCOME_OK)
++        self.assertSummary(lines[18].text, 'sandbox', '+', ['board4'])
+ 
+         # The second line of errors[3] is a duplicate, so buildman will drop it
+         expect = errors[3].rstrip().split('\n')
+diff --git a/tools/buildman/toolchain.py b/tools/buildman/toolchain.py
+index a65737fdf8..cc26e2ede5 100644
+--- a/tools/buildman/toolchain.py
++++ b/tools/buildman/toolchain.py
+@@ -4,18 +4,19 @@
+ 
+ import re
+ import glob
+-from HTMLParser import HTMLParser
++from html.parser import HTMLParser
+ import os
+ import sys
+ import tempfile
+-import urllib2
++import urllib.request, urllib.error, urllib.parse
+ 
+ import bsettings
+ import command
+ import terminal
++import tools
+ 
+ (PRIORITY_FULL_PREFIX, PRIORITY_PREFIX_GCC, PRIORITY_PREFIX_GCC_PATH,
+-    PRIORITY_CALC) = range(4)
++    PRIORITY_CALC) = list(range(4))
+ 
+ # Simple class to collect links from a page
+ class MyHTMLParser(HTMLParser):
+@@ -100,15 +101,15 @@ class Toolchain:
+                                      raise_on_error=False)
+             self.ok = result.return_code == 0
+             if verbose:
+-                print 'Tool chain test: ',
++                print('Tool chain test: ', end=' ')
+                 if self.ok:
+-                    print "OK, arch='%s', priority %d" % (self.arch,
+-                                                          self.priority)
++                    print("OK, arch='%s', priority %d" % (self.arch,
++                                                          self.priority))
+                 else:
+-                    print 'BAD'
+-                    print 'Command: ', cmd
+-                    print result.stdout
+-                    print result.stderr
++                    print('BAD')
++                    print('Command: ', cmd)
++                    print(result.stdout)
++                    print(result.stderr)
+         else:
+             self.ok = True
+ 
+@@ -138,7 +139,7 @@ class Toolchain:
+         value = ''
+         for name, value in bsettings.GetItems('toolchain-wrapper'):
+             if not value:
+-                print "Warning: Wrapper not found"
++                print("Warning: Wrapper not found")
+         if value:
+             value = value + ' '
+ 
+@@ -227,11 +228,11 @@ class Toolchains:
+         """
+         toolchains = bsettings.GetItems('toolchain')
+         if show_warning and not toolchains:
+-            print ("Warning: No tool chains. Please run 'buildman "
++            print(("Warning: No tool chains. Please run 'buildman "
+                    "--fetch-arch all' to download all available toolchains, or "
+                    "add a [toolchain] section to your buildman config file "
+                    "%s. See README for details" %
+-                   bsettings.config_fname)
++                   bsettings.config_fname))
+ 
+         paths = []
+         for name, value in toolchains:
+@@ -272,10 +273,10 @@ class Toolchains:
+         if add_it:
+             self.toolchains[toolchain.arch] = toolchain
+         elif verbose:
+-            print ("Toolchain '%s' at priority %d will be ignored because "
++            print(("Toolchain '%s' at priority %d will be ignored because "
+                    "another toolchain for arch '%s' has priority %d" %
+                    (toolchain.gcc, toolchain.priority, toolchain.arch,
+-                    self.toolchains[toolchain.arch].priority))
++                    self.toolchains[toolchain.arch].priority)))
+ 
+     def ScanPath(self, path, verbose):
+         """Scan a path for a valid toolchain
+@@ -289,9 +290,9 @@ class Toolchains:
+         fnames = []
+         for subdir in ['.', 'bin', 'usr/bin']:
+             dirname = os.path.join(path, subdir)
+-            if verbose: print "      - looking in '%s'" % dirname
++            if verbose: print("      - looking in '%s'" % dirname)
+             for fname in glob.glob(dirname + '/*gcc'):
+-                if verbose: print "         - found '%s'" % fname
++                if verbose: print("         - found '%s'" % fname)
+                 fnames.append(fname)
+         return fnames
+ 
+@@ -321,9 +322,9 @@ class Toolchains:
+         Args:
+             verbose: True to print out progress information
+         """
+-        if verbose: print 'Scanning for tool chains'
++        if verbose: print('Scanning for tool chains')
+         for name, value in self.prefixes:
+-            if verbose: print "   - scanning prefix '%s'" % value
++            if verbose: print("   - scanning prefix '%s'" % value)
+             if os.path.exists(value):
+                 self.Add(value, True, verbose, PRIORITY_FULL_PREFIX, name)
+                 continue
+@@ -335,10 +336,10 @@ class Toolchains:
+             for f in fname_list:
+                 self.Add(f, True, verbose, PRIORITY_PREFIX_GCC_PATH, name)
+             if not fname_list:
+-                raise ValueError, ("No tool chain found for prefix '%s'" %
++                raise ValueError("No tool chain found for prefix '%s'" %
+                                    value)
+         for path in self.paths:
+-            if verbose: print "   - scanning path '%s'" % path
++            if verbose: print("   - scanning path '%s'" % path)
+             fnames = self.ScanPath(path, verbose)
+             for fname in fnames:
+                 self.Add(fname, True, verbose)
+@@ -346,13 +347,13 @@ class Toolchains:
+     def List(self):
+         """List out the selected toolchains for each architecture"""
+         col = terminal.Color()
+-        print col.Color(col.BLUE, 'List of available toolchains (%d):' %
+-                        len(self.toolchains))
++        print(col.Color(col.BLUE, 'List of available toolchains (%d):' %
++                        len(self.toolchains)))
+         if len(self.toolchains):
+-            for key, value in sorted(self.toolchains.iteritems()):
+-                print '%-10s: %s' % (key, value.gcc)
++            for key, value in sorted(self.toolchains.items()):
++                print('%-10s: %s' % (key, value.gcc))
+         else:
+-            print 'None'
++            print('None')
+ 
+     def Select(self, arch):
+         """Returns the toolchain for a given architecture
+@@ -370,7 +371,7 @@ class Toolchains:
+                         return self.toolchains[alias]
+ 
+         if not arch in self.toolchains:
+-            raise ValueError, ("No tool chain found for arch '%s'" % arch)
++            raise ValueError("No tool chain found for arch '%s'" % arch)
+         return self.toolchains[arch]
+ 
+     def ResolveReferences(self, var_dict, args):
+@@ -464,9 +465,9 @@ class Toolchains:
+         links = []
+         for version in versions:
+             url = '%s/%s/%s/' % (base, arch, version)
+-            print 'Checking: %s' % url
+-            response = urllib2.urlopen(url)
+-            html = response.read()
++            print('Checking: %s' % url)
++            response = urllib.request.urlopen(url)
++            html = tools.ToString(response.read())
+             parser = MyHTMLParser(fetch_arch)
+             parser.feed(html)
+             if fetch_arch == 'list':
+@@ -488,14 +489,14 @@ class Toolchains:
+                 Full path to the downloaded archive file in that directory,
+                     or None if there was an error while downloading
+         """
+-        print 'Downloading: %s' % url
++        print('Downloading: %s' % url)
+         leaf = url.split('/')[-1]
+         tmpdir = tempfile.mkdtemp('.buildman')
+-        response = urllib2.urlopen(url)
++        response = urllib.request.urlopen(url)
+         fname = os.path.join(tmpdir, leaf)
+         fd = open(fname, 'wb')
+         meta = response.info()
+-        size = int(meta.getheaders('Content-Length')[0])
++        size = int(meta.get('Content-Length'))
+         done = 0
+         block_size = 1 << 16
+         status = ''
+@@ -504,19 +505,19 @@ class Toolchains:
+         while True:
+             buffer = response.read(block_size)
+             if not buffer:
+-                print chr(8) * (len(status) + 1), '\r',
++                print(chr(8) * (len(status) + 1), '\r', end=' ')
+                 break
+ 
+             done += len(buffer)
+             fd.write(buffer)
+-            status = r'%10d MiB  [%3d%%]' % (done / 1024 / 1024,
+-                                             done * 100 / size)
++            status = r'%10d MiB  [%3d%%]' % (done // 1024 // 1024,
++                                             done * 100 // size)
+             status = status + chr(8) * (len(status) + 1)
+-            print status,
++            print(status, end=' ')
+             sys.stdout.flush()
+         fd.close()
+         if done != size:
+-            print 'Error, failed to download'
++            print('Error, failed to download')
+             os.remove(fname)
+             fname = None
+         return tmpdir, fname
+@@ -565,11 +566,11 @@ class Toolchains:
+         """
+         # Fist get the URL for this architecture
+         col = terminal.Color()
+-        print col.Color(col.BLUE, "Downloading toolchain for arch '%s'" % arch)
++        print(col.Color(col.BLUE, "Downloading toolchain for arch '%s'" % arch))
+         url = self.LocateArchUrl(arch)
+         if not url:
+-            print ("Cannot find toolchain for arch '%s' - use 'list' to list" %
+-                   arch)
++            print(("Cannot find toolchain for arch '%s' - use 'list' to list" %
++                   arch))
+             return 2
+         home = os.environ['HOME']
+         dest = os.path.join(home, '.buildman-toolchains')
+@@ -580,28 +581,28 @@ class Toolchains:
+         tmpdir, tarfile = self.Download(url)
+         if not tarfile:
+             return 1
+-        print col.Color(col.GREEN, 'Unpacking to: %s' % dest),
++        print(col.Color(col.GREEN, 'Unpacking to: %s' % dest), end=' ')
+         sys.stdout.flush()
+         path = self.Unpack(tarfile, dest)
+         os.remove(tarfile)
+         os.rmdir(tmpdir)
+-        print
++        print()
+ 
+         # Check that the toolchain works
+-        print col.Color(col.GREEN, 'Testing')
++        print(col.Color(col.GREEN, 'Testing'))
+         dirpath = os.path.join(dest, path)
+         compiler_fname_list = self.ScanPath(dirpath, True)
+         if not compiler_fname_list:
+-            print 'Could not locate C compiler - fetch failed.'
++            print('Could not locate C compiler - fetch failed.')
+             return 1
+         if len(compiler_fname_list) != 1:
+-            print col.Color(col.RED, 'Warning, ambiguous toolchains: %s' %
+-                            ', '.join(compiler_fname_list))
++            print(col.Color(col.RED, 'Warning, ambiguous toolchains: %s' %
++                            ', '.join(compiler_fname_list)))
+         toolchain = Toolchain(compiler_fname_list[0], True, True)
+ 
+         # Make sure that it will be found by buildman
+         if not self.TestSettingsHasPath(dirpath):
+-            print ("Adding 'download' to config file '%s'" %
+-                   bsettings.config_fname)
++            print(("Adding 'download' to config file '%s'" %
++                   bsettings.config_fname))
+             bsettings.SetItem('toolchain', 'download', '%s/*/*' % dest)
+         return 0
+
+From patchwork Thu Oct 31 13:42:54 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187484
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="aWMX3kcl"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473mrw3YxGz9sP4
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:49:20 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id EAE90C21F48; Thu, 31 Oct 2019 13:46:14 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 6E46AC21F7A;
+ Thu, 31 Oct 2019 13:43:59 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 46CFDC21F59; Thu, 31 Oct 2019 13:43:35 +0000 (UTC)
+Received: from mail-il1-f170.google.com (mail-il1-f170.google.com
+ [209.85.166.170])
+ by lists.denx.de (Postfix) with ESMTPS id 61249C21EFF
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:32 +0000 (UTC)
+Received: by mail-il1-f170.google.com with SMTP id j2so3285633ilc.10
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=WvfoIM7vcHEVBxx3jeVAoi2DTqbA8itTdzLtIbhqphQ=;
+ b=aWMX3kcl/KaYZJyVbmYy3fQ+oGag1hoLeHkJYXvvXfYN134wxy8G/sMG8V1Fza74S6
+ acP9SNCSocIvutqe2tV5j1Bmnqyad58P1stX39yEiK855iJfaBNt8B/Nqz+xwTY+qHfX
+ UChai6dceWoaDuSNikO4NHh9L0GLTonoyrFSk=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=WvfoIM7vcHEVBxx3jeVAoi2DTqbA8itTdzLtIbhqphQ=;
+ b=IkUa7hy6omELra+senCIU04BJ8E22NnOf8RpnaAM4C3ZQanrCZbV7sXhuSadUqh3ow
+ 8bWv2DRyxoHblNNy3baulgL7fUjCsyC4Uu14nEMUQJk5S0dq0OnDRGfTr5kGh0R5iKb6
+ sEx20SA4yvvHSmqb2QVrzcIovtmUFvNpDyPzYB3Kgc4nuyi6sTef6CpYEZvKGTOaT5nU
+ EG5pDVVK/j+OHabPREap9XqXDuo1PNa+TvggimUcnkC9du7yXXs3oKxb/CKuxQ4WOwF+
+ YCr3a2ZnriWh+9kDc1nSnBEoWVTTEa7QGhu0s0aY0aZys4SKAocy9fcyawxmvFNI3/H0
+ CC5g==
+X-Gm-Message-State: APjAAAUKec0vMmJia13ml5X/j+Muuzo5UutAQ6pRTHR1WDxS6S7hP8g1
+ R5NmH+XUbhso5M0CPAAStzIYKT8UyX4/tg==
+X-Google-Smtp-Source: APXvYqy2WzynqGkxcIwxWjZ4S+AFr3Plxm1WXc1wYu510JIxlS0LuCf7GSnwXYTuSdVWETWvfOdlpQ==
+X-Received: by 2002:a92:c8:: with SMTP id 191mr6429977ila.287.1572529411052; 
+ Thu, 31 Oct 2019 06:43:31 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.30
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:30 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:42:54 -0600
+Message-Id: <20191031134310.3072-5-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>
+Subject: [U-Boot] [PATCH v2 05/17] test_fdt: Move to use Python 3
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Update this test to use Python 3 to meet the 2020 deadline.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2: None
+
+ tools/dtoc/test_fdt.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/dtoc/test_fdt.py b/tools/dtoc/test_fdt.py
+index 028c8cbaa8..3316757e61 100755
+--- a/tools/dtoc/test_fdt.py
++++ b/tools/dtoc/test_fdt.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/env python3
+ # SPDX-License-Identifier: GPL-2.0+
+ # Copyright (c) 2018 Google, Inc
+ # Written by Simon Glass <sjg@chromium.org>
+
+From patchwork Thu Oct 31 13:42:55 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187482
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="OmyyrzOw"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473mrr02nNz9sP4
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:49:15 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id B7AD1C21E52; Thu, 31 Oct 2019 13:46:23 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id E7428C21F87;
+ Thu, 31 Oct 2019 13:43:59 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id AEECEC21F67; Thu, 31 Oct 2019 13:43:35 +0000 (UTC)
+Received: from mail-il1-f193.google.com (mail-il1-f193.google.com
+ [209.85.166.193])
+ by lists.denx.de (Postfix) with ESMTPS id 1DBC8C21ECE
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:33 +0000 (UTC)
+Received: by mail-il1-f193.google.com with SMTP id p8so5431915ilp.2
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=Dwe1IyWKUHIikKMIUO0YkknpJamu85+BI10qnkHTSCE=;
+ b=OmyyrzOwQ5yHUDLwXnTc/LYKbLBJzGimnzrHrElaSg9ivw+Pf7BKeWMFbNTOkiHBBb
+ UeYw2tVg462f/c9w6kcQJe+wWmjpf3+ytMHqM3xT60KBrpSgu3FSiW88m+zI65gQViRG
+ dAQfpUhOnayZSIS3p5LKskWznrOvPF0N2BstE=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=Dwe1IyWKUHIikKMIUO0YkknpJamu85+BI10qnkHTSCE=;
+ b=MapWpd1XJfYC9jcelfSt0QoayaCGwt1efwqWxHRRKHjHrJuKmhXL/DMhk7NqTE+FAo
+ bfd17A5VMQyYpRZIe4vvXA//5miW55yu3BDb4t86iC/+7H4XtEQ4FYgt5DWYYsK+aEmF
+ vmVaMbqvoIeeY2cHOLxXTprjawckSr2tyYv975xN4HxZz20jH0vd3tZxGvbLwfjRWEMc
+ Z+82ajNHTZ5XRLYbYjxeP9vRZZXsQG6UzAXMBp3RBKCwNDbOlgczaCIxjaqPSgRa2npS
+ J3HMRUNnl7dTojPNMU1SYZyBA6nngnkE+LngJctxRrGx+reUGIr5pHoab7jBPwgn4gry
+ 5IUQ==
+X-Gm-Message-State: APjAAAXiU03iAEBAMK/upT0k3/T5g3bwdPuvsx9rXGCwixzm7X/thlk4
+ irXyfGzug04Oq6pRdF61Ry9H485P7zQUDg==
+X-Google-Smtp-Source: APXvYqxUEaVVqiptJO3Q4wqBhoNUlxU7dYbH8DZLIGo8kBAp7KWAPHNWJjiIrh1flUw8rMK9dQMsSw==
+X-Received: by 2002:a92:6910:: with SMTP id e16mr6278039ilc.186.1572529411865; 
+ Thu, 31 Oct 2019 06:43:31 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.31
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:31 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:42:55 -0600
+Message-Id: <20191031134310.3072-6-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>
+Subject: [U-Boot] [PATCH v2 06/17] test_dtoc: Move to use Python 3
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Update this test to use Python 3 to meet the 2020 deadline.
+
+Also make it executable while we are here.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2: None
+
+ tools/dtoc/dtoc.py      | 2 +-
+ tools/dtoc/test_dtoc.py | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+ mode change 100644 => 100755 tools/dtoc/test_dtoc.py
+
+diff --git a/tools/dtoc/dtoc.py b/tools/dtoc/dtoc.py
+index 514e0dd4a3..b3596a5918 100755
+--- a/tools/dtoc/dtoc.py
++++ b/tools/dtoc/dtoc.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python2
++#!/usr/bin/env python3
+ # SPDX-License-Identifier: GPL-2.0+
+ #
+ # Copyright (C) 2016 Google, Inc
+diff --git a/tools/dtoc/test_dtoc.py b/tools/dtoc/test_dtoc.py
+old mode 100644
+new mode 100755
+index b915b27856..d733b70655
+--- a/tools/dtoc/test_dtoc.py
++++ b/tools/dtoc/test_dtoc.py
+@@ -1,3 +1,4 @@
++#!/usr/bin/env python3
+ # SPDX-License-Identifier: GPL-2.0+
+ # Copyright (c) 2012 The Chromium OS Authors.
+ #
+
+From patchwork Thu Oct 31 13:42:56 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187475
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="GtrSKYBX"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473mn562Spz9sP6
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:46:01 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 6F6E6C21F31; Thu, 31 Oct 2019 13:44:47 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 27988C21F41;
+ Thu, 31 Oct 2019 13:43:43 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id BA2F7C21EDE; Thu, 31 Oct 2019 13:43:36 +0000 (UTC)
+Received: from mail-il1-f172.google.com (mail-il1-f172.google.com
+ [209.85.166.172])
+ by lists.denx.de (Postfix) with ESMTPS id 0E4DEC21EBE
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:34 +0000 (UTC)
+Received: by mail-il1-f172.google.com with SMTP id i12so5410351ils.6
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=aju0cJW8DjgveHYiUY/izJmrPptMz7OF+fCBSSxsbbo=;
+ b=GtrSKYBX/R7tRCqmlrVw7jvu3fWbiT+EkDYaLCfVmvavgI4Tg58kG6lVn0NY75ds0E
+ Xz6d1rsbIhjZBj/yiANeG564a/qo2JJ+677FVQvbOxH9pGE58GgrXL77LHo/Xu4J4vMG
+ NG+OLfj7OXz3yJsZ6IR7vGuC3IRFQ/E+w5moo=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=aju0cJW8DjgveHYiUY/izJmrPptMz7OF+fCBSSxsbbo=;
+ b=nm3drLMihVenuk7/RgeqTxWLDbhb+9giBLwmXwyj6of9dtHvvEi/pU/T4LjqVmleCF
+ uFz3sghWv3Ws5Df6KX2f8dNzbaG3UeTze72+eDRmo4NRKyUO4tXX8+1jqlrwY3+VID9y
+ QeJZ9t/zMOUZm2PRLvaZNKdHAsP2gUHggb3xotI3ommx790w+8CO97QosmCTkZXygPGr
+ eAX8Xkh2eOb6FTcydTLIlvjP38+A3Yy2rGQLclH56xJsOGgLKrhab733NVJU3B2n0gG3
+ rWixAopTNj0OYDEK0JF8GWrdps5GNnI9F5D4jLaAfhqseUhMK+2LfBj+/zhi+wwvf5Lo
+ gKAA==
+X-Gm-Message-State: APjAAAXpDdO6wvC2PlazDvdAQjQVWSuBuUie19od4C/jEb26qWxn9Lir
+ DZh9G2FnIbjIhbniUB2nLiaJAUt37860FA==
+X-Google-Smtp-Source: APXvYqzOHaFrjjDVaFpXrNi28wrkmrXiv4f36NcTBd6d55k1B+EvUFSn28gMFdivecjekA0IteG6Ug==
+X-Received: by 2002:a92:865c:: with SMTP id g89mr6504266ild.291.1572529412766; 
+ Thu, 31 Oct 2019 06:43:32 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.32
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:32 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:42:56 -0600
+Message-Id: <20191031134310.3072-7-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>
+Subject: [U-Boot] [PATCH v2 07/17] microcode_tool: Convert to Python 3
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Convert this tool to Python 3 and make it use that, to meet the 2020
+deadline.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2: None
+
+ tools/microcode-tool.py | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/tools/microcode-tool.py b/tools/microcode-tool.py
+index 249a33b8ca..24c02c4fca 100755
+--- a/tools/microcode-tool.py
++++ b/tools/microcode-tool.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python2
++#!/usr/bin/env python3
+ # SPDX-License-Identifier: GPL-2.0+
+ #
+ # Copyright (c) 2014 Google, Inc
+@@ -126,15 +126,15 @@ def List(date, microcodes, model):
+         microcodes:     Dict of Microcode objects indexed by name
+         model:          Model string to search for, or None
+     """
+-    print 'Date: %s' % date
++    print('Date: %s' % date)
+     if model:
+         mcode_list, tried = FindMicrocode(microcodes, model.lower())
+-        print 'Matching models %s:' % (', '.join(tried))
++        print('Matching models %s:' % (', '.join(tried)))
+     else:
+-        print 'All models:'
+-        mcode_list = [microcodes[m] for m in microcodes.keys()]
++        print('All models:')
++        mcode_list = [microcodes[m] for m in list(microcodes.keys())]
+     for mcode in mcode_list:
+-        print '%-20s: model %s' % (mcode.name, mcode.model)
++        print('%-20s: model %s' % (mcode.name, mcode.model))
+ 
+ def FindMicrocode(microcodes, model):
+     """Find all the microcode chunks which match the given model.
+@@ -164,7 +164,7 @@ def FindMicrocode(microcodes, model):
+     for i in range(3):
+         abbrev = model[:-i] if i else model
+         tried.append(abbrev)
+-        for mcode in microcodes.values():
++        for mcode in list(microcodes.values()):
+             if mcode.model.startswith(abbrev):
+                 found.append(mcode)
+         if found:
+@@ -229,17 +229,17 @@ data = <%s
+     args += [mcode.words[i] for i in range(7)]
+     args.append(words)
+     if outfile == '-':
+-        print out % tuple(args)
++        print(out % tuple(args))
+     else:
+         if not outfile:
+             if not os.path.exists(MICROCODE_DIR):
+-                print >> sys.stderr, "Creating directory '%s'" % MICROCODE_DIR
++                print("Creating directory '%s'" % MICROCODE_DIR, file=sys.stderr)
+                 os.makedirs(MICROCODE_DIR)
+             outfile = os.path.join(MICROCODE_DIR, mcode.name + '.dtsi')
+-        print >> sys.stderr, "Writing microcode for '%s' to '%s'" % (
+-                ', '.join([mcode.name for mcode in mcodes]), outfile)
++        print("Writing microcode for '%s' to '%s'" % (
++                ', '.join([mcode.name for mcode in mcodes]), outfile), file=sys.stderr)
+         with open(outfile, 'w') as fd:
+-            print >> fd, out % tuple(args)
++            print(out % tuple(args), file=fd)
+ 
+ def MicrocodeTool():
+     """Run the microcode tool"""
+@@ -289,14 +289,14 @@ def MicrocodeTool():
+     if cmd == 'list':
+         List(date, microcodes, options.model)
+     elif cmd == 'license':
+-        print '\n'.join(license_text)
++        print('\n'.join(license_text))
+     elif cmd == 'create':
+         if not options.model:
+             parser.error('You must specify a model to create')
+         model = options.model.lower()
+         if options.model == 'all':
+             options.multiple = True
+-            mcode_list = microcodes.values()
++            mcode_list = list(microcodes.values())
+             tried = []
+         else:
+             mcode_list, tried = FindMicrocode(microcodes, model)
+
+From patchwork Thu Oct 31 13:42:57 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187479
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="EEiLZ2vw"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473mqC3lvCz9sPJ
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:47:51 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 22651C21F3F; Thu, 31 Oct 2019 13:45:56 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id E0648C21F68;
+ Thu, 31 Oct 2019 13:43:54 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id E601AC21EF7; Thu, 31 Oct 2019 13:43:36 +0000 (UTC)
+Received: from mail-il1-f196.google.com (mail-il1-f196.google.com
+ [209.85.166.196])
+ by lists.denx.de (Postfix) with ESMTPS id E0DD5C21EF1
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:34 +0000 (UTC)
+Received: by mail-il1-f196.google.com with SMTP id a13so5445083ilp.1
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=EKu7Wp5gZIhmBOcC9rz6M0b3y10kWMOl+3ETmUQO49w=;
+ b=EEiLZ2vwa7gRcFoCnCwqGIWKLebTr1Nhm+cfjT5SlxVQglIhY56Mptl1vZeOwQyUp0
+ dBQZ1aTQoR60wXEvpv99SIOFwRDQdhsOmK1Ig/cLXfSWtqZ/mJlk/uVwgp8p07afhP7y
+ 19vv123d7plakTPky/4tE7MmSx/JfPlLRRpNU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=EKu7Wp5gZIhmBOcC9rz6M0b3y10kWMOl+3ETmUQO49w=;
+ b=oekGIcWO5GleQAGP+aaH4MLQRlblB5OhMJlWFrv/U1lza5pd+vKGU+33AvAMdZI576
+ ynf/siRwsc6d8GbiTHu+OT6gvhWahgPd44y5ReLAKHqJqjvuk/C8jLochZuVCy8j3tVU
+ iUgG7uCA7Abcyygogpp2l8Yf4gH6K4IslTmGeBDIM40X6RbwB9+2G16r8189LfeB5r6m
+ TLEJKkV6mNAMQs+QP9HidGZxP4gV1Tjbuj59tdEC8zXcSbaRNk8JOXZFPYbiywdhdJkg
+ Q//HSZh9frOehM65u8jLPymMw6dzH0TVIFEoXBmcURlkKKNi1Eyu6JdoDhOligyoQhSY
+ a2nQ==
+X-Gm-Message-State: APjAAAWaKxU+/DnsWwJPDXLotCkJvVvZMsMVMyInxEIuglLhhJPhRd9X
+ w25r1irgguPXrkbLfxPsIhpHaXgT4T6Tow==
+X-Google-Smtp-Source: APXvYqw9dv6RysmcA6TM0mIv1y88JLbz/09SM/EC0M14ikYDInr/x/iZ+fRu9jZJScFWoSrmFgmPLQ==
+X-Received: by 2002:a92:48d8:: with SMTP id j85mr6174684ilg.272.1572529413544; 
+ Thu, 31 Oct 2019 06:43:33 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.32
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:33 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:42:57 -0600
+Message-Id: <20191031134310.3072-8-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>, Chris Packham <judge.packham@gmail.com>
+Subject: [U-Boot] [PATCH v2 08/17] move_config: Convert to Python 3
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Convert this tool to Python 3 and make it use that, to meet the 2020
+deadline.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2: None
+
+ tools/moveconfig.py | 82 ++++++++++++++++++++++-----------------------
+ 1 file changed, 41 insertions(+), 41 deletions(-)
+
+diff --git a/tools/moveconfig.py b/tools/moveconfig.py
+index b99417e9d6..e2ff4cfc88 100755
+--- a/tools/moveconfig.py
++++ b/tools/moveconfig.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python2
++#!/usr/bin/env python3
+ # SPDX-License-Identifier: GPL-2.0+
+ #
+ # Author: Masahiro Yamada <yamada.masahiro@socionext.com>
+@@ -304,7 +304,7 @@ import glob
+ import multiprocessing
+ import optparse
+ import os
+-import Queue
++import queue
+ import re
+ import shutil
+ import subprocess
+@@ -450,8 +450,8 @@ def get_matched_defconfigs(defconfigs_file):
+             line = line.split(' ')[0]  # handle 'git log' input
+         matched = get_matched_defconfig(line)
+         if not matched:
+-            print >> sys.stderr, "warning: %s:%d: no defconfig matched '%s'" % \
+-                                                 (defconfigs_file, i + 1, line)
++            print("warning: %s:%d: no defconfig matched '%s'" % \
++                                                 (defconfigs_file, i + 1, line), file=sys.stderr)
+ 
+         defconfigs += matched
+ 
+@@ -494,11 +494,11 @@ def show_diff(a, b, file_path, color_enabled):
+ 
+     for line in diff:
+         if line[0] == '-' and line[1] != '-':
+-            print color_text(color_enabled, COLOR_RED, line),
++            print(color_text(color_enabled, COLOR_RED, line), end=' ')
+         elif line[0] == '+' and line[1] != '+':
+-            print color_text(color_enabled, COLOR_GREEN, line),
++            print(color_text(color_enabled, COLOR_GREEN, line), end=' ')
+         else:
+-            print line,
++            print(line, end=' ')
+ 
+ def extend_matched_lines(lines, matched, pre_patterns, post_patterns, extend_pre,
+                          extend_post):
+@@ -554,9 +554,9 @@ def extend_matched_lines(lines, matched, pre_patterns, post_patterns, extend_pre
+ def confirm(options, prompt):
+     if not options.yes:
+         while True:
+-            choice = raw_input('{} [y/n]: '.format(prompt))
++            choice = input('{} [y/n]: '.format(prompt))
+             choice = choice.lower()
+-            print choice
++            print(choice)
+             if choice == 'y' or choice == 'n':
+                 break
+ 
+@@ -809,10 +809,10 @@ def try_expand(line):
+         val= val.strip('\"')
+         if re.search("[*+-/]|<<|SZ_+|\(([^\)]+)\)", val):
+             newval = hex(eval(val, SIZES))
+-            print "\tExpanded expression %s to %s" % (val, newval)
++            print("\tExpanded expression %s to %s" % (val, newval))
+             return cfg+'='+newval
+     except:
+-        print "\tFailed to expand expression in %s" % line
++        print("\tFailed to expand expression in %s" % line)
+ 
+     return line
+ 
+@@ -838,7 +838,7 @@ class Progress:
+ 
+     def show(self):
+         """Display the progress."""
+-        print ' %d defconfigs out of %d\r' % (self.current, self.total),
++        print(' %d defconfigs out of %d\r' % (self.current, self.total), end=' ')
+         sys.stdout.flush()
+ 
+ 
+@@ -1236,7 +1236,7 @@ class Slot:
+                     "Tool chain for '%s' is missing.  Do nothing.\n" % arch)
+             self.finish(False)
+             return
+-	env = toolchain.MakeEnvironment(False)
++        env = toolchain.MakeEnvironment(False)
+ 
+         cmd = list(self.make_cmd)
+         cmd.append('KCONFIG_IGNORE_DUPLICATES=1')
+@@ -1312,7 +1312,7 @@ class Slot:
+         log += '\n'.join([ '    ' + s for s in self.log.split('\n') ])
+         # Some threads are running in parallel.
+         # Print log atomically to not mix up logs from different threads.
+-        print >> (sys.stdout if success else sys.stderr), log
++        print(log, file=(sys.stdout if success else sys.stderr))
+ 
+         if not success:
+             if self.options.exit_on_error:
+@@ -1411,8 +1411,8 @@ class Slots:
+             msg = "The following boards were not processed due to error:\n"
+             msg += boards
+             msg += "(the list has been saved in %s)\n" % output_file
+-            print >> sys.stderr, color_text(self.options.color, COLOR_LIGHT_RED,
+-                                            msg)
++            print(color_text(self.options.color, COLOR_LIGHT_RED,
++                                            msg), file=sys.stderr)
+ 
+             with open(output_file, 'w') as f:
+                 f.write(boards)
+@@ -1431,8 +1431,8 @@ class Slots:
+             msg += "It is highly recommended to check them manually:\n"
+             msg += boards
+             msg += "(the list has been saved in %s)\n" % output_file
+-            print >> sys.stderr, color_text(self.options.color, COLOR_YELLOW,
+-                                            msg)
++            print(color_text(self.options.color, COLOR_YELLOW,
++                                            msg), file=sys.stderr)
+ 
+             with open(output_file, 'w') as f:
+                 f.write(boards)
+@@ -1448,11 +1448,11 @@ class ReferenceSource:
+           commit: commit to git-clone
+         """
+         self.src_dir = tempfile.mkdtemp()
+-        print "Cloning git repo to a separate work directory..."
++        print("Cloning git repo to a separate work directory...")
+         subprocess.check_output(['git', 'clone', os.getcwd(), '.'],
+                                 cwd=self.src_dir)
+-        print "Checkout '%s' to build the original autoconf.mk." % \
+-            subprocess.check_output(['git', 'rev-parse', '--short', commit]).strip()
++        print("Checkout '%s' to build the original autoconf.mk." % \
++            subprocess.check_output(['git', 'rev-parse', '--short', commit]).strip())
+         subprocess.check_output(['git', 'checkout', commit],
+                                 stderr=subprocess.STDOUT, cwd=self.src_dir)
+ 
+@@ -1480,14 +1480,14 @@ def move_config(toolchains, configs, options, db_queue):
+     """
+     if len(configs) == 0:
+         if options.force_sync:
+-            print 'No CONFIG is specified. You are probably syncing defconfigs.',
++            print('No CONFIG is specified. You are probably syncing defconfigs.', end=' ')
+         elif options.build_db:
+-            print 'Building %s database' % CONFIG_DATABASE
++            print('Building %s database' % CONFIG_DATABASE)
+         else:
+-            print 'Neither CONFIG nor --force-sync is specified. Nothing will happen.',
++            print('Neither CONFIG nor --force-sync is specified. Nothing will happen.', end=' ')
+     else:
+-        print 'Move ' + ', '.join(configs),
+-    print '(jobs: %d)\n' % options.jobs
++        print('Move ' + ', '.join(configs), end=' ')
++    print('(jobs: %d)\n' % options.jobs)
+ 
+     if options.git_ref:
+         reference_src = ReferenceSource(options.git_ref)
+@@ -1517,7 +1517,7 @@ def move_config(toolchains, configs, options, db_queue):
+     while not slots.empty():
+         time.sleep(SLEEP_TIME)
+ 
+-    print ''
++    print('')
+     slots.show_failed_boards()
+     slots.show_suspicious_boards()
+ 
+@@ -1691,15 +1691,15 @@ def do_imply_config(config_list, add_imply, imply_flags, skip_added,
+     for config in config_list:
+         defconfigs = defconfig_db.get(config)
+         if not defconfigs:
+-            print '%s not found in any defconfig' % config
++            print('%s not found in any defconfig' % config)
+             continue
+ 
+         # Get the set of defconfigs without this one (since a config cannot
+         # imply itself)
+         non_defconfigs = all_defconfigs - defconfigs
+         num_defconfigs = len(defconfigs)
+-        print '%s found in %d/%d defconfigs' % (config, num_defconfigs,
+-                                                len(all_configs))
++        print('%s found in %d/%d defconfigs' % (config, num_defconfigs,
++                                                len(all_configs)))
+ 
+         # This will hold the results: key=config, value=defconfigs containing it
+         imply_configs = {}
+@@ -1736,7 +1736,7 @@ def do_imply_config(config_list, add_imply, imply_flags, skip_added,
+             if common_defconfigs:
+                 skip = False
+                 if find_superset:
+-                    for prev in imply_configs.keys():
++                    for prev in list(imply_configs.keys()):
+                         prev_count = len(imply_configs[prev])
+                         count = len(common_defconfigs)
+                         if (prev_count > count and
+@@ -1806,15 +1806,15 @@ def do_imply_config(config_list, add_imply, imply_flags, skip_added,
+                             add_list[fname].append(linenum)
+ 
+             if show and kconfig_info != 'skip':
+-                print '%5d : %-30s%-25s %s' % (num_common, iconfig.ljust(30),
+-                                              kconfig_info, missing_str)
++                print('%5d : %-30s%-25s %s' % (num_common, iconfig.ljust(30),
++                                              kconfig_info, missing_str))
+ 
+         # Having collected a list of things to add, now we add them. We process
+         # each file from the largest line number to the smallest so that
+         # earlier additions do not affect our line numbers. E.g. if we added an
+         # imply at line 20 it would change the position of each line after
+         # that.
+-        for fname, linenums in add_list.iteritems():
++        for fname, linenums in add_list.items():
+             for linenum in sorted(linenums, reverse=True):
+                 add_imply_rule(config[CONFIG_LEN:], fname, linenum)
+ 
+@@ -1891,11 +1891,11 @@ def main():
+             for flag in options.imply_flags.split(','):
+                 bad = flag not in IMPLY_FLAGS
+                 if bad:
+-                    print "Invalid flag '%s'" % flag
++                    print("Invalid flag '%s'" % flag)
+                 if flag == 'help' or bad:
+-                    print "Imply flags: (separate with ',')"
+-                    for name, info in IMPLY_FLAGS.iteritems():
+-                        print ' %-15s: %s' % (name, info[1])
++                    print("Imply flags: (separate with ',')")
++                    for name, info in IMPLY_FLAGS.items():
++                        print(' %-15s: %s' % (name, info[1]))
+                     parser.print_usage()
+                     sys.exit(1)
+                 imply_flags |= IMPLY_FLAGS[flag][0]
+@@ -1905,14 +1905,14 @@ def main():
+         return
+ 
+     config_db = {}
+-    db_queue = Queue.Queue()
++    db_queue = queue.Queue()
+     t = DatabaseThread(config_db, db_queue)
+     t.setDaemon(True)
+     t.start()
+ 
+     if not options.cleanup_headers_only:
+         check_clean_directory()
+-	bsettings.Setup('')
++        bsettings.Setup('')
+         toolchains = toolchain.Toolchains()
+         toolchains.GetSettings()
+         toolchains.Scan(verbose=False)
+@@ -1939,7 +1939,7 @@ def main():
+ 
+     if options.build_db:
+         with open(CONFIG_DATABASE, 'w') as fd:
+-            for defconfig, configs in config_db.iteritems():
++            for defconfig, configs in config_db.items():
+                 fd.write('%s\n' % defconfig)
+                 for config in sorted(configs.keys()):
+                     fd.write('   %s=%s\n' % (config, configs[config]))
+
+From patchwork Thu Oct 31 13:42:58 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187471
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="BILReq2d"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473mkn0PByz9sP6
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:44:00 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id B28EEC21F79; Thu, 31 Oct 2019 13:43:41 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id C2129C21F37;
+ Thu, 31 Oct 2019 13:43:39 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id BF33EC21E49; Thu, 31 Oct 2019 13:43:36 +0000 (UTC)
+Received: from mail-il1-f178.google.com (mail-il1-f178.google.com
+ [209.85.166.178])
+ by lists.denx.de (Postfix) with ESMTPS id 90060C21F2F
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:35 +0000 (UTC)
+Received: by mail-il1-f178.google.com with SMTP id s75so5427309ilc.3
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=I5oZa/FZu0jZ+e/qcSKV4vadEE8dO1yp9C/EYl/SlYg=;
+ b=BILReq2dlSyvaIrMX4dSwIeqvEFSAOnwaaDk10jRU9lUnqeCKjCq6hhljxL2gza/Tx
+ rSy7zogVZg/s5DAmBvDa+sCzZulQTP3qMirXxN4QPwg3eC0845BjdQYmBNncJeinUsVD
+ Uoo9R+T524JrP3gDQ2aBIdCDlf53x6wnq2mjg=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=I5oZa/FZu0jZ+e/qcSKV4vadEE8dO1yp9C/EYl/SlYg=;
+ b=GQTP6rleal1/CsN1092HDoeH/BHAZEq0hTJ8OjB+BGrXs4P0Xq8hsTI9ykMRRDEyzY
+ /4N0uTKx0aEaRAB1839XPwR2Rmdd+dEa3V8+hO2WfwmuYxciiTXQJBUKguju9HOEYDTS
+ H2UJRzKrcb++XQkcA5aac3tpjayVt1iXp1nuhsgARe19umoUgLkbkH1f1gPXbWhF/eIj
+ UN8OPYcbxGMYqYiDYQ/Bf/2hLCKJL/rT+8JFliCbvMgwcsS7drJj+ixaED2uLm6aiC5w
+ RNrmP03odYr20/srX5awYnq2fapZpy+n79/Aj7oDssLbyd6r0MDi2UnyJxDHCZMnut77
+ 3Sbg==
+X-Gm-Message-State: APjAAAXqQQHDGI1Y4yGKdxaC1go9fWJCgwBWy6H3R/36IyDdICvwvuTc
+ ysjxNyY1GHGJExcLC/Uz0ovhNSuyPHFjQw==
+X-Google-Smtp-Source: APXvYqz8z2ljg5H8g4ap84YCD5/oP18nrHFYUoUH2ke6b5QgDPZYQUAJRN1aEg0SDarZB1uiwUXzjQ==
+X-Received: by 2002:a92:458b:: with SMTP id z11mr5050608ilj.216.1572529414361; 
+ Thu, 31 Oct 2019 06:43:34 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.33
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:33 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:42:58 -0600
+Message-Id: <20191031134310.3072-9-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>
+Subject: [U-Boot] [PATCH v2 09/17] rkmux: Convert to Python 3
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Convert this tool to Python 3 and make it use that, to meet the 2020
+deadline.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2: None
+
+ tools/rkmux.py | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/tools/rkmux.py b/tools/rkmux.py
+index 11c192a073..1226ee201c 100755
+--- a/tools/rkmux.py
++++ b/tools/rkmux.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python2
++#!/usr/bin/env python3
+ 
+ # Script to create enums from datasheet register tables
+ #
+@@ -43,8 +43,8 @@ class RegField:
+         self.desc.append(desc)
+ 
+     def Show(self):
+-        print self
+-        print
++        print(self)
++        print()
+         self.__init__()
+ 
+     def __str__(self):
+@@ -65,11 +65,11 @@ class Printer:
+             self.output_footer()
+ 
+     def output_header(self):
+-        print '/* %s */' % self.name
+-        print 'enum {'
++        print('/* %s */' % self.name)
++        print('enum {')
+ 
+     def output_footer(self):
+-        print '};';
++        print('};');
+ 
+     def output_regfield(self, regfield):
+         lines = regfield.desc
+@@ -97,7 +97,7 @@ class Printer:
+             self.first = False
+             self.output_header()
+         else:
+-            print
++            print()
+         out_enum(field, 'shift', bit_low)
+         out_enum(field, 'mask', mask)
+         next_val = -1
+@@ -175,7 +175,7 @@ def out_enum(field, suffix, value, skip_val=False):
+             val_str = '%d' % value
+ 
+         str += '%s= %s' % ('\t' * tabs, val_str)
+-    print '\t%s,' % str
++    print('\t%s,' % str)
+ 
+ # Process a CSV file, e.g. from tabula
+ def process_csv(name, fd):
+
+From patchwork Thu Oct 31 13:42:59 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187489
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="FUq3B6pP"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473msn0YThz9sP4
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:50:04 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id D0527C21F80; Thu, 31 Oct 2019 13:45:16 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 402C8C21F3A;
+ Thu, 31 Oct 2019 13:43:50 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 7D521C21EF1; Thu, 31 Oct 2019 13:43:36 +0000 (UTC)
+Received: from mail-il1-f173.google.com (mail-il1-f173.google.com
+ [209.85.166.173])
+ by lists.denx.de (Postfix) with ESMTPS id 62064C21F02
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:36 +0000 (UTC)
+Received: by mail-il1-f173.google.com with SMTP id y5so5420185ilb.5
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=uWBFno2sM+BhqwLQsDf2vBXdPUXDDbJeE+rpysNIcSo=;
+ b=FUq3B6pPLJj4CnLi/SmaC31FXGkHAo6A4to9kT7+ogNKbozXNn8D0NsRcel5E59aKP
+ 73HAu6jnWoPgxAPrzd2FihvAifMy38d5Q9PZgnUOOZSRGcFnLQymnXR/56vOtySmNV+H
+ AUhGy+1NZHwh0w6FahA3V9UAsqyESEOMENYlg=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=uWBFno2sM+BhqwLQsDf2vBXdPUXDDbJeE+rpysNIcSo=;
+ b=ZXrOikczX2qFuVDsCnn+5U6CH0EPDjSlEwD9oOzaUmC8nZhd+lqAvOWHt06R6oNDYW
+ 6v859EpWzCA4KNKV4BkD2Un17NVbyFPT9B0ueL4t/sfboeGLdIFkrSWie8l35V+YzRi8
+ wnAdmJhquqPjZLVOpM31Kyn0u2U/o3y9JhF4bgP0V+TDMc9JVymj0lWifsbT5zTMjGxK
+ Z/mOcs6nm7TV4hyYSPreerpn9EqMaSmy9m5SGywFdn+0qXxcHdwe3ZCB63Gx+TLiUgyy
+ VV0IxV9CrkvzDYSVCHOs61QBGn7bYVpaXOQRtIZhlx0/r2saxwg7ztwulNot0CAfLES/
+ Jppg==
+X-Gm-Message-State: APjAAAVPFnZZRkbgOljbZBe5txQLfkPngYPNIfCaiRxMa4FlTHUnPQhb
+ NH3BfxPF8F5aB0ty4LTipcXXoqP0bODH8Q==
+X-Google-Smtp-Source: APXvYqzJuaFctVZJ1Kvu+AU28qFUSrcxvhPds2g8IY7CZYju6ZT/5SK9KVBw02wnkmJdBn6arbVGkQ==
+X-Received: by 2002:a92:7ec1:: with SMTP id q62mr2721209ill.286.1572529415148; 
+ Thu, 31 Oct 2019 06:43:35 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.34
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:34 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:42:59 -0600
+Message-Id: <20191031134310.3072-10-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>, Josef Lusticky <josef@lusticky.cz>
+Subject: [U-Boot] [PATCH v2 10/17] pylibfdt: Convert to Python 3
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Build this swig module with Python 3.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2: None
+
+ scripts/dtc/pylibfdt/Makefile         |  2 +-
+ scripts/dtc/pylibfdt/libfdt.i_shipped |  2 +-
+ scripts/dtc/pylibfdt/setup.py         |  2 +-
+ tools/binman/entry.py                 | 16 ++--------------
+ tools/binman/entry_test.py            | 15 ---------------
+ tools/binman/etype/intel_fit.py       |  2 +-
+ 6 files changed, 6 insertions(+), 33 deletions(-)
+
+diff --git a/scripts/dtc/pylibfdt/Makefile b/scripts/dtc/pylibfdt/Makefile
+index 15e66ad44d..42342c75bb 100644
+--- a/scripts/dtc/pylibfdt/Makefile
++++ b/scripts/dtc/pylibfdt/Makefile
+@@ -21,7 +21,7 @@ quiet_cmd_pymod = PYMOD   $@
+ 		CPPFLAGS="$(HOSTCFLAGS) -I$(LIBFDT_srcdir)" OBJDIR=$(obj) \
+ 		SOURCES="$(PYLIBFDT_srcs)" \
+ 		SWIG_OPTS="-I$(LIBFDT_srcdir) -I$(LIBFDT_srcdir)/.." \
+-		$(PYTHON2) $< --quiet build_ext --inplace
++		$(PYTHON3) $< --quiet build_ext --inplace
+ 
+ $(obj)/_libfdt.so: $(src)/setup.py $(PYLIBFDT_srcs) FORCE
+ 	$(call if_changed,pymod)
+diff --git a/scripts/dtc/pylibfdt/libfdt.i_shipped b/scripts/dtc/pylibfdt/libfdt.i_shipped
+index 76e61e98bd..53b70f8f5e 100644
+--- a/scripts/dtc/pylibfdt/libfdt.i_shipped
++++ b/scripts/dtc/pylibfdt/libfdt.i_shipped
+@@ -624,7 +624,7 @@ class Fdt(FdtRo):
+         Raises:
+             FdtException if no parent found or other error occurs
+         """
+-        val = val.encode('utf-8') + '\0'
++        val = val.encode('utf-8') + b'\0'
+         return check_err(fdt_setprop(self._fdt, nodeoffset, prop_name,
+                                      val, len(val)), quiet)
+ 
+diff --git a/scripts/dtc/pylibfdt/setup.py b/scripts/dtc/pylibfdt/setup.py
+index 4f7cf042bf..992cdec30f 100755
+--- a/scripts/dtc/pylibfdt/setup.py
++++ b/scripts/dtc/pylibfdt/setup.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python2
++#!/usr/bin/env python3
+ 
+ """
+ setup.py file for SWIG libfdt
+diff --git a/tools/binman/entry.py b/tools/binman/entry.py
+index 409c0dca93..5bf5be4794 100644
+--- a/tools/binman/entry.py
++++ b/tools/binman/entry.py
+@@ -7,16 +7,7 @@
+ from __future__ import print_function
+ 
+ from collections import namedtuple
+-
+-# importlib was introduced in Python 2.7 but there was a report of it not
+-# working in 2.7.12, so we work around this:
+-# http://lists.denx.de/pipermail/u-boot/2016-October/269729.html
+-try:
+-    import importlib
+-    have_importlib = True
+-except:
+-    have_importlib = False
+-
++import importlib
+ import os
+ import sys
+ 
+@@ -119,10 +110,7 @@ class Entry(object):
+             old_path = sys.path
+             sys.path.insert(0, os.path.join(our_path, 'etype'))
+             try:
+-                if have_importlib:
+-                    module = importlib.import_module(module_name)
+-                else:
+-                    module = __import__(module_name)
++                module = importlib.import_module(module_name)
+             except ImportError as e:
+                 raise ValueError("Unknown entry type '%s' in node '%s' (expected etype/%s.py, error '%s'" %
+                                  (etype, node_path, module_name, e))
+diff --git a/tools/binman/entry_test.py b/tools/binman/entry_test.py
+index 13f5864516..277e10b585 100644
+--- a/tools/binman/entry_test.py
++++ b/tools/binman/entry_test.py
+@@ -39,21 +39,6 @@ class TestEntry(unittest.TestCase):
+         else:
+             import entry
+ 
+-    def test1EntryNoImportLib(self):
+-        """Test that we can import Entry subclassess successfully"""
+-        sys.modules['importlib'] = None
+-        global entry
+-        self._ReloadEntry()
+-        entry.Entry.Create(None, self.GetNode(), 'u-boot')
+-        self.assertFalse(entry.have_importlib)
+-
+-    def test2EntryImportLib(self):
+-        del sys.modules['importlib']
+-        global entry
+-        self._ReloadEntry()
+-        entry.Entry.Create(None, self.GetNode(), 'u-boot-spl')
+-        self.assertTrue(entry.have_importlib)
+-
+     def testEntryContents(self):
+         """Test the Entry bass class"""
+         import entry
+diff --git a/tools/binman/etype/intel_fit.py b/tools/binman/etype/intel_fit.py
+index 23606d27d0..2a34a05f95 100644
+--- a/tools/binman/etype/intel_fit.py
++++ b/tools/binman/etype/intel_fit.py
+@@ -27,6 +27,6 @@ class Entry_intel_fit(Entry_blob):
+         self.align = 16
+ 
+     def ObtainContents(self):
+-        data = struct.pack('<8sIHBB', '_FIT_   ', 1, 0x100, 0x80, 0x7d)
++        data = struct.pack('<8sIHBB', b'_FIT_   ', 1, 0x100, 0x80, 0x7d)
+         self.SetContents(data)
+         return True
+
+From patchwork Thu Oct 31 13:43:00 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187488
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="Npge7mOt"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473msb5mnMz9s7T
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:49:55 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 6DF9DC21F62; Thu, 31 Oct 2019 13:46:43 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id D0591C21F79;
+ Thu, 31 Oct 2019 13:44:07 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 5081FC21F75; Thu, 31 Oct 2019 13:43:37 +0000 (UTC)
+Received: from mail-io1-f44.google.com (mail-io1-f44.google.com
+ [209.85.166.44])
+ by lists.denx.de (Postfix) with ESMTPS id 2C96BC21F3D
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:37 +0000 (UTC)
+Received: by mail-io1-f44.google.com with SMTP id w12so6731533iol.11
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=jmXfmCp6Dr6vfLPasSe4bFyfttx9sLj23N6DE9pEsaI=;
+ b=Npge7mOtueuVrlqBkYsFHn/53CdFNG0jkizuXDWRiJFoGSzKtaV+b7wURzc4V35iD+
+ I5k3//prWC0FojVFDY47RHSFRAKgJhawdi/oSB37+bmkVXmIKkJq1INwt4dRNRq91cCo
+ 4sUvmnIGUdtBNEHUZSK4PeZlfps2DZdmRj7/g=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=jmXfmCp6Dr6vfLPasSe4bFyfttx9sLj23N6DE9pEsaI=;
+ b=oBfBrHTg0gNqYpbnV59XnnRjorgL93ZVVdVjZvsVbILl23F4G2hCCgl58Xj7jyylg4
+ FmVvCtd0KK3/1qdFw4Bted0C8zw4XiI8tGgz8LhnvXSVtos+18cb/+zpeFZC8ljKTlDi
+ 9pW8I1v+7sgHq+IyIbpxbQ8cL5HA09eBzhSRNDKhUfcJUgYOF5SazOa4hF1WNgNoLgza
+ NMVlniKfYKYTRgI9ti9K/JvnLOWojZStOtWRCH0sFn8PxsDXR1+uaUKZfv5W9MPYKjw/
+ VyoSACK+BvuUAiovHxSw7MyKno1pmbSXt8zgU9/c1TMNjueAWTN+wIybNiK43M9oNzno
+ 5eag==
+X-Gm-Message-State: APjAAAWXtY1r0kmU3M6sg4xjWhYwDcsqe3rL0DFaBGIjha6Pwpp4UmZh
+ Dqbz95Hys/yw1fRtHmz06LGaz6Zmh0DFKA==
+X-Google-Smtp-Source: APXvYqzjXzPbQpC5sJuOOB8mfyGc9/a9zp1ctfExGuoh2h/oaFRAFOik0PIa2N43b6ef9WLiShgO/w==
+X-Received: by 2002:a5d:8401:: with SMTP id i1mr5363109ion.113.1572529415900; 
+ Thu, 31 Oct 2019 06:43:35 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.35
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:35 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:43:00 -0600
+Message-Id: <20191031134310.3072-11-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>
+Subject: [U-Boot] [PATCH v2 11/17] pylibfdt: Sync up with upstream
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Sync up the libfdt Python bindings with upstream, commit:
+
+430419c (tests: fix some python warnings)
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2: None
+
+ scripts/dtc/pylibfdt/libfdt.i_shipped | 45 ++++++++++++++++++++-------
+ 1 file changed, 33 insertions(+), 12 deletions(-)
+
+diff --git a/scripts/dtc/pylibfdt/libfdt.i_shipped b/scripts/dtc/pylibfdt/libfdt.i_shipped
+index 53b70f8f5e..e2aa7bb01e 100644
+--- a/scripts/dtc/pylibfdt/libfdt.i_shipped
++++ b/scripts/dtc/pylibfdt/libfdt.i_shipped
+@@ -92,7 +92,7 @@ def check_err(val, quiet=()):
+     Raises
+         FdtException if val < 0
+     """
+-    if val < 0:
++    if isinstance(val, int) and val < 0:
+         if -val not in quiet:
+             raise FdtException(val)
+     return val
+@@ -417,7 +417,7 @@ class FdtRo(object):
+                                quiet)
+         if isinstance(pdata, (int)):
+             return pdata
+-        return Property(prop_name, bytearray(pdata[0]))
++        return Property(prop_name, bytes(pdata[0]))
+ 
+     def get_phandle(self, nodeoffset):
+         """Get the phandle of a node
+@@ -431,6 +431,18 @@ class FdtRo(object):
+         """
+         return fdt_get_phandle(self._fdt, nodeoffset)
+ 
++    def get_alias(self, name):
++        """Get the full path referenced by a given alias
++
++        Args:
++            name: name of the alias to lookup
++
++        Returns:
++            Full path to the node for the alias named 'name', if it exists
++            None, if the given alias or the /aliases node does not exist
++        """
++        return fdt_get_alias(self._fdt, name)
++
+     def parent_offset(self, nodeoffset, quiet=()):
+         """Get the offset of a node's parent
+ 
+@@ -727,8 +739,10 @@ class FdtSw(FdtRo):
+ 
+     # First create the device tree with a node and property:
+     sw = FdtSw()
+-    with sw.add_node('node'):
+-        sw.property_u32('reg', 2)
++    sw.finish_reservemap()
++    with sw.add_node(''):
++        with sw.add_node('node'):
++            sw.property_u32('reg', 2)
+     fdt = sw.as_fdt()
+ 
+     # Now we can use it as a real device tree
+@@ -1029,17 +1043,24 @@ typedef uint32_t fdt32_t;
+ 	if (!$1)
+ 		$result = Py_None;
+ 	else
+-		$result = Py_BuildValue("s#", $1, *arg4);
++        %#if PY_VERSION_HEX >= 0x03000000
++            $result = Py_BuildValue("y#", $1, *arg4);
++        %#else
++            $result = Py_BuildValue("s#", $1, *arg4);
++        %#endif
+ }
+ 
+ /* typemap used for fdt_setprop() */
+ %typemap(in) (const void *val) {
+-    $1 = PyString_AsString($input);   /* char *str */
+-}
+-
+-/* typemap used for fdt_add_reservemap_entry() */
+-%typemap(in) uint64_t {
+-   $1 = PyLong_AsUnsignedLong($input);
++    %#if PY_VERSION_HEX >= 0x03000000
++        if (!PyBytes_Check($input)) {
++            SWIG_exception_fail(SWIG_TypeError, "bytes expected in method '" "$symname"
++                "', argument " "$argnum"" of type '" "$type""'");
++        }
++        $1 = PyBytes_AsString($input);
++    %#else
++        $1 = PyString_AsString($input);   /* char *str */
++    %#endif
+ }
+ 
+ /* typemaps used for fdt_next_node() */
+@@ -1061,7 +1082,7 @@ typedef uint32_t fdt32_t;
+ }
+ 
+ %typemap(argout) uint64_t * {
+-        PyObject *val = PyLong_FromUnsignedLong(*arg$argnum);
++        PyObject *val = PyLong_FromUnsignedLongLong(*arg$argnum);
+         if (!result) {
+            if (PyTuple_GET_SIZE(resultobj) == 0)
+               resultobj = val;
+
+From patchwork Thu Oct 31 13:43:01 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187497
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="kPOWERqP"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473mvH58Ncz9sP4
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:51:20 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 914D5C21EDE; Thu, 31 Oct 2019 13:46:32 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 54357C21F89;
+ Thu, 31 Oct 2019 13:44:00 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 2E924C21F06; Thu, 31 Oct 2019 13:43:38 +0000 (UTC)
+Received: from mail-il1-f193.google.com (mail-il1-f193.google.com
+ [209.85.166.193])
+ by lists.denx.de (Postfix) with ESMTPS id BDA1BC21D8E
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:37 +0000 (UTC)
+Received: by mail-il1-f193.google.com with SMTP id p8so5432139ilp.2
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=+JfKGUW3CrP4Purzw85inCZJb795MNPAiWacjYMq0h4=;
+ b=kPOWERqPDrwTDumFWph2DsevTa8lgHgPOGSKhe6n8WUFIeYsHT1F7tCCJ4sATvhyry
+ U+RQVX774pfCZG9bf1Mfyr+EbUM3W0ncd3Yl2XkeoqfB6jx+cR0FmdRdM8a1tLBQFp9g
+ ol0JD/12OOa0Y8PME0IY/D5bL7/d82HXLr+4o=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=+JfKGUW3CrP4Purzw85inCZJb795MNPAiWacjYMq0h4=;
+ b=oSAM8kgexk80+A2AIPzx5lZkdJ/gP6qh49GlGxUocXuI5oBqdJleKnGDp28gkyc8If
+ rsIl9J8rXjeqAZS1hKCE1DWoRaHsixeddN9evBLNMtHJbq3kpUWPUSLwinpkNs+YlT+n
+ xoUg8Cad0HF84hyqc3oVLBYARXax+8fWVUlltYe3Wf2p6qjp3umwlmSKjCoRq9thl7nV
+ JqTQTogD/IouVwCNH51j24kF/5ILNuTezxvZvMrfHAesPWOiU/T4WxibQWy/7H4CokD6
+ 4DPt4myhEAm58LAzZiOQV4V1JQVjqcD5fn+cKcqRC7J/juJ4b4Sm3BQa1v3quJaBitvG
+ uJJg==
+X-Gm-Message-State: APjAAAXq6yA6M5xg2uvNh8dRlwbCow2rdZ1IwHQQSNyms8iGRl6PpHNr
+ 8uD4FT9i1rvcHMf10kBBKv+ARQrz5fGxGw==
+X-Google-Smtp-Source: APXvYqwkcyN83ELArvHJHyl1Owjwo84ElWIaq7uvqmQWJ8H/7lDlA6hQq5MV2tGYZufzKKIsqgkOXg==
+X-Received: by 2002:a92:8408:: with SMTP id l8mr6514619ild.107.1572529416582; 
+ Thu, 31 Oct 2019 06:43:36 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.36
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:36 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:43:01 -0600
+Message-Id: <20191031134310.3072-12-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>
+Subject: [U-Boot] [PATCH v2 12/17] pylibfdt: Correct the type for
+ fdt_property_stub()
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+This function should use a void * type, not char *. This causes an error:
+
+TypeError: in method 'fdt_property_stub', argument 3 of type 'char const *'
+
+Fix it.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2: None
+
+ scripts/dtc/pylibfdt/libfdt.i_shipped | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/dtc/pylibfdt/libfdt.i_shipped b/scripts/dtc/pylibfdt/libfdt.i_shipped
+index e2aa7bb01e..fae0b27d7d 100644
+--- a/scripts/dtc/pylibfdt/libfdt.i_shipped
++++ b/scripts/dtc/pylibfdt/libfdt.i_shipped
+@@ -18,7 +18,7 @@
+  * a struct called fdt_property. That struct causes swig to create a class in
+  * libfdt.py called fdt_property(), which confuses things.
+  */
+-static int fdt_property_stub(void *fdt, const char *name, const char *val,
++static int fdt_property_stub(void *fdt, const char *name, const void *val,
+                              int len)
+ {
+     return fdt_property(fdt, name, val, len);
+@@ -1113,6 +1113,6 @@ int fdt_property_cell(void *fdt, const char *name, uint32_t val);
+  * This function has a stub since the name fdt_property is used for both a
+   * function and a struct, which confuses SWIG.
+  */
+-int fdt_property_stub(void *fdt, const char *name, const char *val, int len);
++int fdt_property_stub(void *fdt, const char *name, const void *val, int len);
+ 
+ %include <../libfdt/libfdt.h>
+
+From patchwork Thu Oct 31 13:43:02 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187485
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="LiOt29UM"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473ms04S8qz9sP4
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:49:24 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 55817C21F8C; Thu, 31 Oct 2019 13:47:06 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 1ADB8C21F99;
+ Thu, 31 Oct 2019 13:44:29 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 3CBB9C21ECE; Thu, 31 Oct 2019 13:43:38 +0000 (UTC)
+Received: from mail-il1-f193.google.com (mail-il1-f193.google.com
+ [209.85.166.193])
+ by lists.denx.de (Postfix) with ESMTPS id 8F1E8C21F42
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:38 +0000 (UTC)
+Received: by mail-il1-f193.google.com with SMTP id y5so5420285ilb.5
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=jfUennwQCc8uaqTK3W2zYOoZrmuj8onz2+JCgb3vT/U=;
+ b=LiOt29UMasiHpGj5/isuBPQCgSpmrayyK8XRLoCPFGx43Bm4YO0oGzgpeDtyArV0kL
+ tcXL5IB8TiJIFgTRcBj1GTuSuGxOwZ1nPXtFgkLZS1AwltTCoSwy4i3q60PEYzHyaw50
+ laDmEp/zsIAsIcnZadLf47xR8Y/iHRCd++jYw=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=jfUennwQCc8uaqTK3W2zYOoZrmuj8onz2+JCgb3vT/U=;
+ b=SWwX9SFgbteQr2p71zg2qJ7zPWldSSFzvBMq2rmNiJsRkbM2KsyCtnopoTTH2ATUyi
+ S+5mKQCDt2pz55FbAXn9Se8PJggXeyRGEAoh9wagw7CZ6HciMHiwGBA7iNjlA9OmO3ju
+ cxWlEr1uRwBOEiF/ieyrvBnHGLz5FWh7onpMrSDzhCdvCS1vQpkiUedytdHkKsy8YzzQ
+ oMRjCjJAXwNjtDDIHlW5YO/m3pwsI6MPCOmT5rx/Fa0lnWdLdXabrL8jjBGbHHPHUc6L
+ SPJ0302WID8pb5v+VLMHmnGq+t776Vsspsgfw5vUlVMRY81tG2jfq0wyC4JS2QDDcZnL
+ wsAw==
+X-Gm-Message-State: APjAAAUkgHTcmIZjNO8bRzNkjKo/HJe1aU5LvBk2iExqkEnAMZ+Ogyem
+ 4qAhCVDO3UqXSLaAKGVkKJtB2MBxf/hluA==
+X-Google-Smtp-Source: APXvYqzyO67LqrBpNTD6wcVZkaBwzIh/xv1Vx+EnMpIiigAFSglG1/IuBfIs7yvhQkXQ3aZWwdEYJg==
+X-Received: by 2002:a92:3b04:: with SMTP id i4mr6181779ila.211.1572529417321; 
+ Thu, 31 Oct 2019 06:43:37 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.36
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:37 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:43:02 -0600
+Message-Id: <20191031134310.3072-13-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>
+Subject: [U-Boot] [PATCH v2 13/17] binman: Remember the pre-reset entry size
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+When preparing to possible expand or contract an entry we reset the size
+to the original value from the binman device-tree definition, which is
+often None.
+
+This causes binman to forget the original size of the entry. Remember this
+so that it can be used when needed.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2: None
+
+ tools/binman/entry.py | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/tools/binman/entry.py b/tools/binman/entry.py
+index 5bf5be4794..b6f1b2c93f 100644
+--- a/tools/binman/entry.py
++++ b/tools/binman/entry.py
+@@ -47,6 +47,8 @@ class Entry(object):
+         offset: Offset of entry within the section, None if not known yet (in
+             which case it will be calculated by Pack())
+         size: Entry size in bytes, None if not known
++        pre_reset_size: size as it was before ResetForPack(). This allows us to
++            keep track of the size we started with and detect size changes
+         uncomp_size: Size of uncompressed data in bytes, if the entry is
+             compressed, else None
+         contents_size: Size of contents in bytes, 0 by default
+@@ -71,6 +73,7 @@ class Entry(object):
+         self.name = node and (name_prefix + node.name) or 'none'
+         self.offset = None
+         self.size = None
++        self.pre_reset_size = None
+         self.uncomp_size = None
+         self.data = None
+         self.contents_size = 0
+@@ -314,6 +317,7 @@ class Entry(object):
+         self.Detail('ResetForPack: offset %s->%s, size %s->%s' %
+                     (ToHex(self.offset), ToHex(self.orig_offset),
+                      ToHex(self.size), ToHex(self.orig_size)))
++        self.pre_reset_size = self.size
+         self.offset = self.orig_offset
+         self.size = self.orig_size
+ 
+@@ -757,7 +761,10 @@ features to produce new behaviours.
+             True if the data did not result in a resize of this entry, False if
+                  the entry must be resized
+         """
+-        self.contents_size = self.size
++        if self.size is not None:
++            self.contents_size = self.size
++        else:
++            self.contents_size = self.pre_reset_size
+         ok = self.ProcessContentsUpdate(data)
+         self.Detail('WriteData: size=%x, ok=%s' % (len(data), ok))
+         section_ok = self.section.WriteChildData(self)
+
+From patchwork Thu Oct 31 13:43:03 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187496
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="oDSbDPSn"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473mv91pMrz9sPJ
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:51:16 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 444EFC21F37; Thu, 31 Oct 2019 13:46:54 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 69FC7C21F5E;
+ Thu, 31 Oct 2019 13:44:12 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id A52B7C21EF7; Thu, 31 Oct 2019 13:43:39 +0000 (UTC)
+Received: from mail-io1-f42.google.com (mail-io1-f42.google.com
+ [209.85.166.42])
+ by lists.denx.de (Postfix) with ESMTPS id 576E8C21EBE
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:39 +0000 (UTC)
+Received: by mail-io1-f42.google.com with SMTP id h9so6792999ioh.2
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=x77Ru9fQTn6VGWyQjr8v79Ggi9bzyqdBXMwRu+ZoysI=;
+ b=oDSbDPSnkQ9Cvab8cmU2qeYctvGOz0Z0cmqqvD8pXgGpshfdvYh5aHvv1JnhtzXEak
+ e16BdL3qOb546ozH65X2cw3BLFW7+Gqe/kknq2oc6O6YCy55hfLRnLmGXJrDmOba9Mad
+ CpgfZr5w79kSx2YRaO/dGmK/Ejts9WQsBtopk=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=x77Ru9fQTn6VGWyQjr8v79Ggi9bzyqdBXMwRu+ZoysI=;
+ b=jqSi7ycDqlKBAyGGAvujhs4K8tuKkUwzj7043u1iIu2gShYKO2F18xdcEHdPuQTx0P
+ keFgoOhur1ITbeg7Y0EL2jgUB4XtZJZi4CMyXntWu3MQD78R0QAnamT8gQ1QZi6m76J3
+ NXRMHILLYfosARBjdrEjbjOnB+trKqMZd6R3S6N+d+e0Qx+s8lr4kXVJlwMw/RLor/wX
+ cQmBsuveFe+vVmBveIQFCF5a75cw/qZkjBGrKPZaEE6V1EOuumfgDYcgBphiDTyCQDcB
+ DLFgFEMpxJsQUt5h05+JFguqsDvzgxvH2OtJUp2sLBs/aw4l2y9nWOfO0SDxOkCjO5C+
+ Kspw==
+X-Gm-Message-State: APjAAAXzSj0YE9agjZ1M74xBWF1YYDe2oAgJkKyBZVwaQ/FymPJ8wY3P
+ VgKmPyaueu5xbG3kdREJcmngpKr40vhwEA==
+X-Google-Smtp-Source: APXvYqzIC6mdLZc15D4ZQ+8IDMpGLdjwRKumgXnMVs/dp8Hv8QI9RXVnPe+a7DyLmTLG2cSAzTvuUg==
+X-Received: by 2002:a05:6602:248e:: with SMTP id
+ g14mr5504776ioe.6.1572529418105; 
+ Thu, 31 Oct 2019 06:43:38 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.37
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:37 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:43:03 -0600
+Message-Id: <20191031134310.3072-14-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>
+Subject: [U-Boot] [PATCH v2 14/17] binman: Convert a few tests to Python 3
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Some tests have crept in with Python 2 strings and constructs. Convert
+then.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2: None
+
+ tools/binman/ftest.py | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/tools/binman/ftest.py b/tools/binman/ftest.py
+index 88daaf20a8..5ca1c073f2 100644
+--- a/tools/binman/ftest.py
++++ b/tools/binman/ftest.py
+@@ -2109,7 +2109,7 @@ class TestFunctional(unittest.TestCase):
+         data = self.data = self._DoReadFileRealDtb('115_fdtmap.dts')
+         fdtmap_data = data[len(U_BOOT_DATA):]
+         magic = fdtmap_data[:8]
+-        self.assertEqual('_FDTMAP_', magic)
++        self.assertEqual(b'_FDTMAP_', magic)
+         self.assertEqual(tools.GetBytes(0, 8), fdtmap_data[8:16])
+ 
+         fdt_data = fdtmap_data[16:]
+@@ -2152,7 +2152,7 @@ class TestFunctional(unittest.TestCase):
+         dtb = fdt.Fdt.FromData(fdt_data)
+         fdt_size = dtb.GetFdtObj().totalsize()
+         hdr_data = data[-8:]
+-        self.assertEqual('BinM', hdr_data[:4])
++        self.assertEqual(b'BinM', hdr_data[:4])
+         offset = struct.unpack('<I', hdr_data[4:])[0] & 0xffffffff
+         self.assertEqual(fdtmap_pos - 0x400, offset - (1 << 32))
+ 
+@@ -2161,7 +2161,7 @@ class TestFunctional(unittest.TestCase):
+         data = self.data = self._DoReadFileRealDtb('117_fdtmap_hdr_start.dts')
+         fdtmap_pos = 0x100 + len(U_BOOT_DATA)
+         hdr_data = data[:8]
+-        self.assertEqual('BinM', hdr_data[:4])
++        self.assertEqual(b'BinM', hdr_data[:4])
+         offset = struct.unpack('<I', hdr_data[4:])[0]
+         self.assertEqual(fdtmap_pos, offset)
+ 
+@@ -2170,7 +2170,7 @@ class TestFunctional(unittest.TestCase):
+         data = self.data = self._DoReadFileRealDtb('118_fdtmap_hdr_pos.dts')
+         fdtmap_pos = 0x100 + len(U_BOOT_DATA)
+         hdr_data = data[0x80:0x88]
+-        self.assertEqual('BinM', hdr_data[:4])
++        self.assertEqual(b'BinM', hdr_data[:4])
+         offset = struct.unpack('<I', hdr_data[4:])[0]
+         self.assertEqual(fdtmap_pos, offset)
+ 
+@@ -2431,9 +2431,9 @@ class TestFunctional(unittest.TestCase):
+ '  section               100   %x  section          100' % section_size,
+ '    cbfs                100   400  cbfs               0',
+ '      u-boot            138     4  u-boot            38',
+-'      u-boot-dtb        180   10f  u-boot-dtb        80          3c9',
++'      u-boot-dtb        180   105  u-boot-dtb        80          3c9',
+ '    u-boot-dtb          500   %x  u-boot-dtb       400          3c9' % fdt_size,
+-'  fdtmap                %x   3b4  fdtmap           %x' %
++'  fdtmap                %x   3bd  fdtmap           %x' %
+         (fdtmap_offset, fdtmap_offset),
+ '  image-header          bf8     8  image-header     bf8',
+             ]
+@@ -2518,7 +2518,7 @@ class TestFunctional(unittest.TestCase):
+         data = self._RunExtractCmd('section')
+         cbfs_data = data[:0x400]
+         cbfs = cbfs_util.CbfsReader(cbfs_data)
+-        self.assertEqual(['u-boot', 'u-boot-dtb', ''], cbfs.files.keys())
++        self.assertEqual(['u-boot', 'u-boot-dtb', ''], list(cbfs.files.keys()))
+         dtb_data = data[0x400:]
+         dtb = self._decompress(dtb_data)
+         self.assertEqual(EXTRACT_DTB_SIZE, len(dtb))
+
+From patchwork Thu Oct 31 13:43:04 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187499
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="cPQI3a8M"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473mwR5JSnz9sP4
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:52:23 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 4CB2CC21F74; Thu, 31 Oct 2019 13:47:39 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id D71BFC21FA2;
+ Thu, 31 Oct 2019 13:44:32 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 54960C21F8E; Thu, 31 Oct 2019 13:43:42 +0000 (UTC)
+Received: from mail-il1-f196.google.com (mail-il1-f196.google.com
+ [209.85.166.196])
+ by lists.denx.de (Postfix) with ESMTPS id 1820EC21F17
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:40 +0000 (UTC)
+Received: by mail-il1-f196.google.com with SMTP id m16so5371247iln.13
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=tclIj/DWKps1MFGmdl9VexPZbE2BInwVXct3SjXNM0Y=;
+ b=cPQI3a8Mjg/h9o5mEtwbU/QJvF5CjWIxgNTAD5NctclSaBc+73Y7cPMtSdFsb8rINR
+ xe88Mjfmh+zi3jydSjrfC0rd1+QdfVUHsVUXapBDjfYkBD1QTAfPBXncnJVow998oVs1
+ bk7c+vqjG75xsH1BgB0cPn7FoMQxGUSMAx3fw=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=tclIj/DWKps1MFGmdl9VexPZbE2BInwVXct3SjXNM0Y=;
+ b=bLnYJ2Z8v86EU2mVFmGGFtkkzuPhuakXlKw667m8nRfpOkGxkGZJF4lytpSwI+T/Wr
+ Px5araAeiawG6efTJt9QQ3gBp1bt3LFRbFJZXkbn8HFE9F27RrhUFYoc0L6W8KZlt5TZ
+ KwurYpJTbyPpFJQQz6d7/jtnuPf8XjA4mbpEKl35XtaHgAbkvAxIoc2wMNoEuLpWk2qN
+ SEBzl+VxMXbMCQktNhpp5l4xRSlRu6mMXXr7w00nd1oVpFvDeAOWqxv2s/7NZhAZ02E4
+ U27PYRDsvGJnruZJkGGj0FOlRf0xgg8IRvpMOYxJhxNq1Ds1sNsGsY/q68POV29u29oN
+ gvqg==
+X-Gm-Message-State: APjAAAWyQZ8Xd+HdQ10rwLxPv3iiEUFCApqbAquXaczh+ZqWYPk+Nf8F
+ +mRyWmqwNBW0Rie/5nKZGZjx7p4zeocfRQ==
+X-Google-Smtp-Source: APXvYqzTsfi9H5sY0JWtmOJI4gMQ0QEHFks5mxKz+pKOxu9Xz2aOt6g60BQLvt95Nu7POHvwDnpp9A==
+X-Received: by 2002:a92:d0a:: with SMTP id 10mr5892894iln.218.1572529418841; 
+ Thu, 31 Oct 2019 06:43:38 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.38
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:38 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:43:04 -0600
+Message-Id: <20191031134310.3072-15-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>
+Subject: [U-Boot] [PATCH v2 15/17] dtoc: Convert fdt.py to Python 3
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Drop the now-unused Python 2 code to keep code coverage at 100%.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2: None
+
+ tools/dtoc/fdt.py | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
+
+diff --git a/tools/dtoc/fdt.py b/tools/dtoc/fdt.py
+index 6770be79fb..1b7b730359 100644
+--- a/tools/dtoc/fdt.py
++++ b/tools/dtoc/fdt.py
+@@ -56,9 +56,6 @@ def BytesToValue(data):
+                 is_string = False
+                 break
+             for ch in string:
+-                # Handle Python 2 treating bytes as str
+-                if type(ch) == str:
+-                    ch = ord(ch)
+                 if ch < 32 or ch > 127:
+                     is_string = False
+                     break
+@@ -66,15 +63,9 @@ def BytesToValue(data):
+         is_string = False
+     if is_string:
+         if count == 1: 
+-            if sys.version_info[0] >= 3:  # pragma: no cover
+-                return TYPE_STRING, strings[0].decode()
+-            else:
+-                return TYPE_STRING, strings[0]
++            return TYPE_STRING, strings[0].decode()
+         else:
+-            if sys.version_info[0] >= 3:  # pragma: no cover
+-                return TYPE_STRING, [s.decode() for s in strings[:-1]]
+-            else:
+-                return TYPE_STRING, strings[:-1]
++            return TYPE_STRING, [s.decode() for s in strings[:-1]]
+     if size % 4:
+         if size == 1:
+             return TYPE_BYTE, tools.ToChar(data[0])
+@@ -415,8 +406,8 @@ class Node:
+             prop_name: Name of property to set
+             val: String value to set (will be \0-terminated in DT)
+         """
+-        if sys.version_info[0] >= 3:  # pragma: no cover
+-            val = bytes(val, 'utf-8')
++        if type(val) == str:
++            val = val.encode('utf-8')
+         self._CheckProp(prop_name).props[prop_name].SetData(val + b'\0')
+ 
+     def AddString(self, prop_name, val):
+
+From patchwork Thu Oct 31 13:43:05 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187486
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="Vl+eU9+R"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473msB1vDRz9s7T
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:49:34 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id D9085C21F41; Thu, 31 Oct 2019 13:47:16 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id D79ECC21F8C;
+ Thu, 31 Oct 2019 13:44:31 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id 9737BC21EFF; Thu, 31 Oct 2019 13:43:43 +0000 (UTC)
+Received: from mail-il1-f193.google.com (mail-il1-f193.google.com
+ [209.85.166.193])
+ by lists.denx.de (Postfix) with ESMTPS id C35FEC21F3E
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:40 +0000 (UTC)
+Received: by mail-il1-f193.google.com with SMTP id h5so5381841ilh.11
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=XhL5jo7XY50GIGLx0yuUmENhREMyFTDHbtzwgzauS7s=;
+ b=Vl+eU9+RrQDLPUPBN7Ra6x/oZAZgKx00RJ/HrLzfmZhMcqRe3iADt+50fEpB/iUb4B
+ 2ZbdTyKVbxaJJB2ptM+ZGJxR5q59NgRDk4gZqgdBLYPwux4oWBRQMMQh4mNf8wi2q/4Z
+ 1fd57XApVZbJxPKrQz7xPa0zUpV2CSvDMH3rU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=XhL5jo7XY50GIGLx0yuUmENhREMyFTDHbtzwgzauS7s=;
+ b=G1x5A1FiY90s0WfEodPhoPy6v6gY2E6I2eeWfdeNH4tzmfPN66HTEM6QLUfNSiYQHv
+ ge5A7JPtCi10w57B0hdyzV5lgZ89qIkMQJ/pN+GlJBn9WikeSbiIEGm93G2CDqTlWS6b
+ AtAQaTAcNWGe+Q3O9X5SzjTbCpixyd5eBsPLQpQcCSX9cbOMWo/WBV+d4Qw5EFdyjUj6
+ q3Wgi3ekz6B3Dnu2TbKguGOA/2KT7uA9MTznB97g4428dNC+zP1yRWNoRCmRVIfiQ/bU
+ wsWe4Xbo1nysyXlcioGynl/Ttu8pjjTDXg+gKND6Bll0FFs713ozpQ+SN2gXotda6b9I
+ 2hJg==
+X-Gm-Message-State: APjAAAUqEO6v/rKqoit4E+s4uSNwxOGJsKl8QhfXHVqNXKBJbMnjr1iE
+ rXfSFWcfxN6G7PQvLzslWMUSp7SdO4fEOw==
+X-Google-Smtp-Source: APXvYqx+piVfFjBmnTrUi51OP/MKR6Ofep+tk1ecdGLk04jmGbA2dWRBOj2/YK/4nORRdW9nsLJeZg==
+X-Received: by 2002:a92:1d08:: with SMTP id d8mr6413167ild.262.1572529419566; 
+ Thu, 31 Oct 2019 06:43:39 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.39
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:39 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:43:05 -0600
+Message-Id: <20191031134310.3072-16-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>
+Subject: [U-Boot] [PATCH v2 16/17] binman: Move to use Python 3
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+Update this tool to use Python 3 to meet the 2020 deadline.
+
+Unfortunately this introduces a test failure due to a problem in pylibfdt
+on Python 3. I will investigate.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2:
+- Add a few more patches to correct remaining problems
+
+ tools/binman/binman.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/binman/binman.py b/tools/binman/binman.py
+index 8bd5868df2..9e6fd72117 100755
+--- a/tools/binman/binman.py
++++ b/tools/binman/binman.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python2
++#!/usr/bin/env python3
+ # SPDX-License-Identifier: GPL-2.0+
+ 
+ # Copyright (c) 2016 Google, Inc
+
+From patchwork Thu Oct 31 13:43:06 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Simon Glass <sjg@chromium.org>
+X-Patchwork-Id: 1187495
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=fail (p=none dis=none)
+ header.from=chromium.org
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org
+ header.b="Ne3tfh+Y"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 473mtf29Qmz9s7T
+ for <incoming@patchwork.ozlabs.org>;
+ Fri,  1 Nov 2019 00:50:50 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id E2F17C21F9B; Thu, 31 Oct 2019 13:47:26 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=RCVD_IN_MSPIKE_H2,
+ T_DKIM_INVALID autolearn=unavailable autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 6CB9EC21F94;
+ Thu, 31 Oct 2019 13:44:32 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id A7CF2C21F94; Thu, 31 Oct 2019 13:43:44 +0000 (UTC)
+Received: from mail-il1-f196.google.com (mail-il1-f196.google.com
+ [209.85.166.196])
+ by lists.denx.de (Postfix) with ESMTPS id 8B029C21EBA
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 13:43:41 +0000 (UTC)
+Received: by mail-il1-f196.google.com with SMTP id s75so5427649ilc.3
+ for <u-boot@lists.denx.de>; Thu, 31 Oct 2019 06:43:41 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org;
+ s=google; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=uX4PUDuovq282/78XSRRp8zUogWOUea3bnwor3HZlGA=;
+ b=Ne3tfh+Y32bfLF6XCuBIgKjZZ2xtT1sFdZIZQ8EQ27XrZY/trB3ZgRQKiaX9i/ZNWL
+ WWJMMIJOIxEx22kCm2i7AZ+IfGravW3ESlvNDpQZptZW7zDIbW9tjvTUyXSNRalOIlgk
+ 12eoed9MJcjd9ifNPBiiMXlejSXoLg6undgS8=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=uX4PUDuovq282/78XSRRp8zUogWOUea3bnwor3HZlGA=;
+ b=ohoRuti2blsTniSqoBahzuzaV0YN2En2clpC+LOHMhK2p7KRlK13Gkqa/Sn8mjlPX3
+ 93zM+nElup5fdhZ88msROkXIe7SQ3NIJDpoSkrs6HKImmrBxFOuc6QzLi2xep38cjdq+
+ lbfJaHHh1AYueiKMiUTtIZLvOD6twxZI1bAB0qgbnwSBbkchCV9NyD7UMKIb944OtFyn
+ nCR/MVaMBL3Fip/1ka9IxMwhrMRIV5yylfRv2OakoJq4Os/HkJUOWZvcvhXpEKbb52qg
+ e1HajHuu99i7LfJc/L3ten/TLPIWrYT+qa7vGluH7TD0kyRPNOknikP2JEfLGOQRvklq
+ ZLsQ==
+X-Gm-Message-State: APjAAAX+fAvNpNArSxAyq1uLDOaaqoBZHHheJYxehzP2l0j88rYMw8Mt
+ LNYe5MfojuPP8zF2wZJFrpRIKTRzv4eiyw==
+X-Google-Smtp-Source: APXvYqwTuI6XFMfx7aWzpWe117fK5jICaO4edKoOdHyJrwSOXasaPwJC5X+PIrvBdpveLBj0Ke1p/Q==
+X-Received: by 2002:a92:8703:: with SMTP id m3mr6485024ild.131.1572529420362; 
+ Thu, 31 Oct 2019 06:43:40 -0700 (PDT)
+Received: from kiwi.bld.corp.google.com ([2620:15c:183:0:8223:87c:a681:66aa])
+ by smtp.gmail.com with ESMTPSA id
+ s70sm539612ili.13.2019.10.31.06.43.39
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 31 Oct 2019 06:43:40 -0700 (PDT)
+From: Simon Glass <sjg@chromium.org>
+To: U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Thu, 31 Oct 2019 07:43:06 -0600
+Message-Id: <20191031134310.3072-17-sjg@chromium.org>
+X-Mailer: git-send-email 2.24.0.rc0.303.g954a862665-goog
+In-Reply-To: <20191031134310.3072-1-sjg@chromium.org>
+References: <20191031134310.3072-1-sjg@chromium.org>
+MIME-Version: 1.0
+Cc: Tom Rini <trini@konsulko.com>, Stephen Warren <swarren@nvidia.com>
+Subject: [U-Boot] [PATCH v2 17/17] RRC: gitlab: Use Python 3 in virtualenv
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+This is a test to see if it removes the error here:
+
+https://gitlab.denx.de/u-boot/custodians/u-boot-dm/-/jobs/24304
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+---
+
+Changes in v2: None
+
+ .gitlab-ci.yml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
+index 9b295ac710..acbd1207c0 100644
+--- a/.gitlab-ci.yml
++++ b/.gitlab-ci.yml
+@@ -73,7 +73,7 @@ build all 64bit ARM platforms:
+   tags: [ 'all' ]
+   stage: world build
+   script:
+-    - virtualenv /tmp/venv
++    - virtualenv -p /usr/bin/python3 /tmp/venv
+     - . /tmp/venv/bin/activate
+     - pip install pyelftools
+     - ret=0;
+@@ -158,7 +158,7 @@ Run binman, buildman, dtoc and patman testsuites:
+     - git config --global user.name "GitLab CI Runner";
+       git config --global user.email trini@konsulko.com;
+       export USER=gitlab;
+-      virtualenv /tmp/venv;
++      virtualenv -p /usr/bin/python3 /tmp/venv;
+       . /tmp/venv/bin/activate;
+       pip install pyelftools;
+       export UBOOT_TRAVIS_BUILD_DIR=/tmp/.bm-work/sandbox_spl;
