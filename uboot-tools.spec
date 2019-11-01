@@ -335,7 +335,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Thu Nov  1 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.1.0.riscv64
+* Fri Nov  1 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.1.0.riscv64
 - Add support for RISC-V (riscv64)
 - Define kernel_gz_size and kernel_gz_addr_r for QEMU virt and SiFive FU540 boards
   to support Image.gz with booti
