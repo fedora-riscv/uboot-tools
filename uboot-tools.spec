@@ -1,8 +1,8 @@
-%global candidate rc1
+%global candidate rc2
 
 Name:      uboot-tools
 Version:   2020.01
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -26,11 +26,10 @@ Patch5:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:    dragonboard-fixes.patch
 Patch7:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch8:    arm-tegra-defaine-fdtfile-for-all-devices.patch
-Patch9:    rockchip-rk3399-rock960-Update-config-for-TPL.patch
-Patch10:   rockchip-dts-rk3328-rock64-Add-same-as-spl-order.patch
-Patch11:   rockchip-rk3328-Fix-memory-instability-on-ROCK64.patch
-Patch12:   fdt-Switch-to-the-latest-libfdt-sort-of.patch
-Patch13:   scripts-Convert-to-Python-3.patch
+Patch10:   0001-rockchip-rk3399-rock960-Update-config-for-TPL.patch
+Patch11:   0002-rockchip-dts-rk3399-move-the-u-boot-dm-pre-reloc-to-.patch
+Patch12:   0003-rockchip-dts-rk3399-evb-move-u-boot-spl-boot-order-t.patch
+Patch13:   0004-rockchip-dts-rk3399-firefly-move-u-boot-spl-boot-ord.patch
 Patch14:   tools-fix-version.h.patch
 
 BuildRequires:  bc
@@ -268,6 +267,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Nov 12 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.3
+- 2020.01 RC2
+
 * Tue Nov  5 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.2
 - Include new ATF 2.2
 
