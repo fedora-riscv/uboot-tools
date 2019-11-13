@@ -1,7 +1,7 @@
-From d49e0341dcc96b9a33d59579fa9defaaa4b04d1c Mon Sep 17 00:00:00 2001
+From 28d382273445e8961fb8726aa5e78b3a47c60b7e Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Wed, 9 Oct 2019 12:15:10 +0100
-Subject: [PATCH] rockchip: rk3399: rock960: Update config for TPL
+Date: Tue, 12 Nov 2019 09:15:21 +0000
+Subject: [PATCH 1/4] rockchip: rk3399: rock960: Update config for TPL
 
 The SPL is now running at SDRAM, and 0x10000 is used by BL31,
 and the ARM SPL do not support relocate now, we need reserved
@@ -14,21 +14,19 @@ data to IRAM(The EMMC DMA can not transfer data to IRAM directly).
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- configs/rock960-rk3399_defconfig | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ configs/rock960-rk3399_defconfig | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/configs/rock960-rk3399_defconfig b/configs/rock960-rk3399_defconfig
-index cb3c68db6b..f211a65587 100644
+index 0d6c55ce74..6dcea04b67 100644
 --- a/configs/rock960-rk3399_defconfig
 +++ b/configs/rock960-rk3399_defconfig
-@@ -2,19 +2,21 @@ CONFIG_ARM=y
+@@ -2,18 +2,19 @@ CONFIG_ARM=y
  CONFIG_ARCH_ROCKCHIP=y
  CONFIG_SYS_TEXT_BASE=0x00200000
  CONFIG_ROCKCHIP_RK3399=y
 -CONFIG_ROCKCHIP_SPL_RESERVE_IRAM=0x4000
-+CONFIG_ROCKCHIP_SPL_RESERVE_IRAM=0x50000
  CONFIG_TARGET_ROCK960_RK3399=y
- CONFIG_SPL_STACK_R_ADDR=0x80000
  CONFIG_DEBUG_UART_BASE=0xFF1A0000
  CONFIG_DEBUG_UART_CLOCK=24000000
  CONFIG_DEBUG_UART=y
@@ -46,7 +44,7 @@ index cb3c68db6b..f211a65587 100644
  CONFIG_SYS_PROMPT="rock960 => "
  CONFIG_CMD_BOOTZ=y
  CONFIG_CMD_GPT=y
-@@ -56,4 +58,6 @@ CONFIG_USB_ETHER_ASIX88179=y
+@@ -55,4 +56,6 @@ CONFIG_USB_ETHER_ASIX88179=y
  CONFIG_USB_ETHER_MCS7830=y
  CONFIG_USB_ETHER_RTL8152=y
  CONFIG_USB_ETHER_SMSC95XX=y
@@ -54,5 +52,5 @@ index cb3c68db6b..f211a65587 100644
 +CONFIG_SPL_TINY_MEMSET=y
  CONFIG_ERRNO_STR=y
 -- 
-2.21.0
+2.23.0
 

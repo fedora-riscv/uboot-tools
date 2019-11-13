@@ -1,0 +1,43 @@
+From e27784b9b8c96f46befa6d27a458e0e35d30ad81 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Sat, 9 Nov 2019 20:14:54 +0000
+Subject: [PATCH 4/4] rockchip: dts: rk3399-firefly: move u-boot,spl-boot-order
+ to to the u-boot.dtsi
+
+The u-boot specific device tree directives should be in u-boot.dtsi
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ arch/arm/dts/rk3399-firefly-u-boot.dtsi | 6 ++++++
+ arch/arm/dts/rk3399-firefly.dts         | 1 -
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/rk3399-firefly-u-boot.dtsi b/arch/arm/dts/rk3399-firefly-u-boot.dtsi
+index 67b63a8352..38e0897db9 100644
+--- a/arch/arm/dts/rk3399-firefly-u-boot.dtsi
++++ b/arch/arm/dts/rk3399-firefly-u-boot.dtsi
+@@ -5,3 +5,9 @@
+ 
+ #include "rk3399-u-boot.dtsi"
+ #include "rk3399-sdram-ddr3-1600.dtsi"
++
++/ {
++	chosen {
++		u-boot,spl-boot-order = "same-as-spl", &sdhci, &sdmmc;
++	};
++};
+diff --git a/arch/arm/dts/rk3399-firefly.dts b/arch/arm/dts/rk3399-firefly.dts
+index a4cb64f8bd..89c67fd24c 100644
+--- a/arch/arm/dts/rk3399-firefly.dts
++++ b/arch/arm/dts/rk3399-firefly.dts
+@@ -14,7 +14,6 @@
+ 
+ 	chosen {
+ 		stdout-path = &uart2;
+-		u-boot,spl-boot-order = "same-as-spl", &sdhci, &sdmmc;
+ 	};
+ 
+ 	backlight: backlight {
+-- 
+2.23.0
+

@@ -1,8 +1,8 @@
-%global candidate rc1
+%global candidate rc2
 
 Name:      uboot-tools
 Version:   2020.01
-Release:   0.1%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}.0.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -27,11 +27,10 @@ Patch5:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:    dragonboard-fixes.patch
 Patch7:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch8:    arm-tegra-defaine-fdtfile-for-all-devices.patch
-Patch9:    rockchip-rk3399-rock960-Update-config-for-TPL.patch
-Patch10:   rockchip-dts-rk3328-rock64-Add-same-as-spl-order.patch
-Patch11:   rockchip-rk3328-Fix-memory-instability-on-ROCK64.patch
-Patch12:   fdt-Switch-to-the-latest-libfdt-sort-of.patch
-Patch13:   scripts-Convert-to-Python-3.patch
+Patch10:   0001-rockchip-rk3399-rock960-Update-config-for-TPL.patch
+Patch11:   0002-rockchip-dts-rk3399-move-the-u-boot-dm-pre-reloc-to-.patch
+Patch12:   0003-rockchip-dts-rk3399-evb-move-u-boot-spl-boot-order-t.patch
+Patch13:   0004-rockchip-dts-rk3399-firefly-move-u-boot-spl-boot-ord.patch
 Patch14:   tools-fix-version.h.patch
 
 # PXE depends on fdt_addr (mandatory)
@@ -335,11 +334,19 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+<<<<<<< HEAD
 * Fri Nov  1 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.1.0.riscv64
 - Add support for RISC-V (riscv64)
 - Define kernel_gz_size and kernel_gz_addr_r for QEMU virt and SiFive FU540 boards
   to support Image.gz with booti
 - Add 'addappend' label to PXE/EXTLINUX configuration
+=======
+* Tue Nov 12 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.3
+- 2020.01 RC2
+
+* Tue Nov  5 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.2
+- Include new ATF 2.2
+>>>>>>> up/master
 
 * Wed Oct 30 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.1
 - 2020.01 RC1
