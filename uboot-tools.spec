@@ -49,10 +49,6 @@ Patch20:   riscv64-set-fdt_addr.patch
 # https://patchwork.kernel.org/patch/11165207/
 Patch21:   riscv-bootargs-preboot.patch
 
-# https://patchwork.ozlabs.org/patch/1173557/
-# https://lists.denx.de/pipermail/u-boot/2019-October/385906.html
-Patch22:   riscv-align-boot-image-header.patch
-
 # Not upstream
 # Adds support for Image.gz to booti (RFC/RFT)
 # See: https://patchwork.ozlabs.org/patch/1174807/
@@ -68,8 +64,8 @@ Patch24:   riscv-increase-stack-size-to-16KiB.patch
 Patch25: uboot-addappend.patch
 
 # Not upstream
-# Define kernel_gz_addr_r and kernel_gz_size for booti Image.gz support
-Patch26: uboot-riscv-def-kernel_gz_addr_r-kernel_gz_size.patch
+# Define kernel_gz_addr_r and filesize for booti Image.gz support
+Patch26: uboot-riscv-def-kernel_gz_addr_r-filesize.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -334,19 +330,17 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-<<<<<<< HEAD
-* Fri Nov  1 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.1.0.riscv64
+* Wed Nov 13 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.3.0.riscv64
 - Add support for RISC-V (riscv64)
-- Define kernel_gz_size and kernel_gz_addr_r for QEMU virt and SiFive FU540 boards
+- Define filesize and kernel_gz_addr_r for QEMU virt and SiFive FU540 boards
   to support Image.gz with booti
 - Add 'addappend' label to PXE/EXTLINUX configuration
-=======
+
 * Tue Nov 12 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.3
 - 2020.01 RC2
 
 * Tue Nov  5 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.2
 - Include new ATF 2.2
->>>>>>> up/master
 
 * Wed Oct 30 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.1
 - 2020.01 RC1
