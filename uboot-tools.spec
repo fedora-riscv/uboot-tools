@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2020.01
-Release:   0.3%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -64,8 +64,8 @@ Patch24:   riscv-increase-stack-size-to-16KiB.patch
 Patch25: uboot-addappend.patch
 
 # Not upstream
-# Define kernel_gz_addr_r and filesize for booti Image.gz support
-Patch26: uboot-riscv-def-kernel_gz_addr_r-filesize.patch
+# Define kernel_comp_addr_r and filesize for booti Image.gz support
+Patch26: uboot-riscv-def-kernel_comp_addr_r-filesize.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -330,6 +330,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sat Nov 16 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.3.1.riscv64
+- Rename kernel_gz_addr_r to kernel_comp_addr_r
+
 * Wed Nov 13 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.3.0.riscv64
 - Add support for RISC-V (riscv64)
 - Define filesize and kernel_gz_addr_r for QEMU virt and SiFive FU540 boards

@@ -6,7 +6,7 @@ index bc831a84..442f0f9d 100644
  	"scriptaddr=0x88100000\0" \
  	"pxefile_addr_r=0x88200000\0" \
  	"ramdisk_addr_r=0x88300000\0" \
-+	"kernel_gz_addr_r=0x90000000\0" \
++	"kernel_comp_addr_r=0x90000000\0" \
 +	"filesize=0x4000000\0" \
  	BOOTENV
  #endif
@@ -19,7 +19,7 @@ index 59cf0281..5114dde1 100644
  	"scriptaddr=0x88100000\0" \
  	"pxefile_addr_r=0x88200000\0" \
  	"ramdisk_addr_r=0x88300000\0" \
-+	"kernel_gz_addr_r=0x90000000\0" \
++	"kernel_comp_addr_r=0x90000000\0" \
 +	"filesize=0x4000000\0" \
  	BOOTENV
  
