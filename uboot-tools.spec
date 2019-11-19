@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2020.01
-Release:   0.3%{?candidate:.%{candidate}}.1.riscv64%{?dist}
+Release:   0.4%{?candidate:.%{candidate}}.0.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -27,11 +27,7 @@ Patch5:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:    dragonboard-fixes.patch
 Patch7:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch8:    arm-tegra-defaine-fdtfile-for-all-devices.patch
-Patch10:   0001-rockchip-rk3399-rock960-Update-config-for-TPL.patch
-Patch11:   0002-rockchip-dts-rk3399-move-the-u-boot-dm-pre-reloc-to-.patch
-Patch12:   0003-rockchip-dts-rk3399-evb-move-u-boot-spl-boot-order-t.patch
-Patch13:   0004-rockchip-dts-rk3399-firefly-move-u-boot-spl-boot-ord.patch
-Patch14:   tools-fix-version.h.patch
+Patch9:    tools-fix-version.h.patch
 
 # PXE depends on fdt_addr (mandatory)
 # fdt_addr is an address to DTB in HW (e.g. ROM)
@@ -330,22 +326,22 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Sat Nov 16 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.3.1.riscv64
-- Rename kernel_gz_addr_r to kernel_comp_addr_r
-
-* Wed Nov 13 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.3.0.riscv64
+* Tue Nov 19 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.4-rc3.0.riscv64
 - Add support for RISC-V (riscv64)
-- Define filesize and kernel_gz_addr_r for QEMU virt and SiFive FU540 boards
+- Define filesize and kernel_comp_addr_r for QEMU virt and SiFive FU540 boards
   to support Image.gz with booti
 - Add 'addappend' label to PXE/EXTLINUX configuration
 
-* Tue Nov 12 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.3
+* Tue Nov 19 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.4-rc3
+- 2020.01 RC3
+
+* Tue Nov 12 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.3-rc2
 - 2020.01 RC2
 
-* Tue Nov  5 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.2
+* Tue Nov  5 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.2-rc1
 - Include new ATF 2.2
 
-* Wed Oct 30 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.1
+* Wed Oct 30 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.1-rc1
 - 2020.01 RC1
 - Initial migration to python3
 
