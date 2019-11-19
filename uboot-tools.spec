@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:      uboot-tools
 Version:   2020.01
-Release:   0.3%{?candidate:.%{candidate}}%{?dist}
+Release:   0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -26,11 +26,7 @@ Patch5:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:    dragonboard-fixes.patch
 Patch7:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch8:    arm-tegra-defaine-fdtfile-for-all-devices.patch
-Patch10:   0001-rockchip-rk3399-rock960-Update-config-for-TPL.patch
-Patch11:   0002-rockchip-dts-rk3399-move-the-u-boot-dm-pre-reloc-to-.patch
-Patch12:   0003-rockchip-dts-rk3399-evb-move-u-boot-spl-boot-order-t.patch
-Patch13:   0004-rockchip-dts-rk3399-firefly-move-u-boot-spl-boot-ord.patch
-Patch14:   tools-fix-version.h.patch
+Patch9:    tools-fix-version.h.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -267,13 +263,16 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Tue Nov 12 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.3
+* Tue Nov 19 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.4-rc3
+- 2020.01 RC3
+
+* Tue Nov 12 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.3-rc2
 - 2020.01 RC2
 
-* Tue Nov  5 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.2
+* Tue Nov  5 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.2-rc1
 - Include new ATF 2.2
 
-* Wed Oct 30 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.1
+* Wed Oct 30 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.1-rc1
 - 2020.01 RC1
 - Initial migration to python3
 
