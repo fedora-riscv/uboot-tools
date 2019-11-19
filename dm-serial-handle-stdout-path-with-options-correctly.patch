@@ -1,0 +1,174 @@
+From patchwork Mon Nov 18 16:12:46 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Bin Meng <bmeng.cn@gmail.com>
+X-Patchwork-Id: 1196837
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=none (no SPF record) smtp.mailfrom=lists.denx.de
+ (client-ip=81.169.180.215; helo=lists.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com
+ header.b="OjF0bL3R"; dkim-atps=neutral
+Received: from lists.denx.de (dione.denx.de [81.169.180.215])
+ by ozlabs.org (Postfix) with ESMTP id 47GvBQ1thQz9sPj
+ for <incoming@patchwork.ozlabs.org>;
+ Tue, 19 Nov 2019 03:13:02 +1100 (AEDT)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id CF63AC21DAF; Mon, 18 Nov 2019 16:12:57 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on lists.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.0 required=5.0 tests=FREEMAIL_FROM,
+ RCVD_IN_MSPIKE_H3, RCVD_IN_MSPIKE_WL,
+ T_DKIM_INVALID autolearn=unavailable
+ autolearn_force=no version=3.4.0
+Received: from lists.denx.de (localhost [IPv6:::1])
+ by lists.denx.de (Postfix) with ESMTP id 4238DC21D65;
+ Mon, 18 Nov 2019 16:12:55 +0000 (UTC)
+Received: by lists.denx.de (Postfix, from userid 105)
+ id DFF15C21D65; Mon, 18 Nov 2019 16:12:53 +0000 (UTC)
+Received: from mail-pf1-f195.google.com (mail-pf1-f195.google.com
+ [209.85.210.195])
+ by lists.denx.de (Postfix) with ESMTPS id 41033C21D4A
+ for <u-boot@lists.denx.de>; Mon, 18 Nov 2019 16:12:53 +0000 (UTC)
+Received: by mail-pf1-f195.google.com with SMTP id b19so10615163pfd.3
+ for <u-boot@lists.denx.de>; Mon, 18 Nov 2019 08:12:53 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025; 
+ h=from:to:cc:subject:date:message-id;
+ bh=wLl6NpGINaKIYKy2LP5M7R7tHtWE6jnwp3GjsfXla7o=;
+ b=OjF0bL3RmJtgd2oKWNzXl0UucN0ckNM2XHPzeb7ZN+W/7S387MnTW0GDaymHu0v6+L
+ nqn1KNCqwM+SIVHnhTyG2B1Eenu5vuop3r4wLRcG63FAbz+biwokj3mgETFsx6xhxiX2
+ UHTPZFDBC7lFVAyldxo0Q7OiRYIr1L3sfHRgYQiPbFLIypY1pJfrBe6MqvOToRMrEbRK
+ 6WTneEYxvP73Eh6xdIccN5BoYdGK0BCzwvboiszTzGKd+S5yNoeGM/34UAMXdoTaDN1V
+ LTva10288B9NDvqSm3IrLffxQWGmFGDsqJVnBi+o3EZDKS0hIN42tbioYe4gh3CXAQjz
+ Vjkg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=wLl6NpGINaKIYKy2LP5M7R7tHtWE6jnwp3GjsfXla7o=;
+ b=hxn2/041i3sxZE3rFMcGF65fSXFTW57PM1TQmp0XaRaG/FiYEkwSJq2MdNEtcXu56L
+ d/Ghg5fVPFSWi5d1zT3CwSUZwlzQjf7d+ja3M9I/yx0ynFFbUlmOm8dva0if3EtPfdyO
+ QuhYh+nOi3MvN25/zfBy8eRNg+THeKD97IfBiZWHJXM8Vru/T1hPcYx7csLPvQEdgZra
+ EzcGa0qWQjEmP7QeQMt6SNpjxbI5Nz7oTwE2TJWG3yw+nMZweYoPR8m+VEkB/9Vl6mGj
+ FB3a3sCfqZkPX/+CCJJejlWP7x0aiREovNwHjnVc89RsrGLSVi6/JElKriQ97sFqnj10
+ jiIw==
+X-Gm-Message-State: APjAAAVHRzo2rnfXHEjpeUCK/mF9q6vy5ssWXQ2jSl74PmYZ9KollzUn
+ ItB8fUHEYlGDqd5avq6J58Q=
+X-Google-Smtp-Source: APXvYqxW/z20Ow9ejZUX2iP8/GfuQqxED5cKQDicTxDRUHgAV1NUPqhEna3HhuvPuMFSJXz77pwkgA==
+X-Received: by 2002:aa7:870c:: with SMTP id b12mr99642pfo.30.1574093570928; 
+ Mon, 18 Nov 2019 08:12:50 -0800 (PST)
+Received: from localhost.localdomain (unknown-224-80.windriver.com.
+ [147.11.224.80]) by smtp.gmail.com with ESMTPSA id
+ e198sm22152112pfh.83.2019.11.18.08.12.50
+ (version=TLS1 cipher=AES128-SHA bits=128/128);
+ Mon, 18 Nov 2019 08:12:50 -0800 (PST)
+From: Bin Meng <bmeng.cn@gmail.com>
+To: Simon Glass <sjg@chromium.org>, U-Boot Mailing List <u-boot@lists.denx.de>
+Date: Mon, 18 Nov 2019 08:12:46 -0800
+Message-Id: <1574093566-1771-1-git-send-email-bmeng.cn@gmail.com>
+X-Mailer: git-send-email 1.7.1
+Subject: [U-Boot] [PATCH] dm: serial: Handle "stdout-path" with ":options"
+ correctly
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.18
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <http://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+MIME-Version: 1.0
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+
+With commit f0921f5098d8 ("fdt: Sync up to the latest libfdt"),
+SiFive Unleashed board does not boot any more. This was due to
+the U-Boot local changes commit 77d7fff8cec2 ("fdt: Fix handling
+of paths with options in them") to libfdt/fdt_ro.c was dropped
+during the libfdt upgrade.
+
+>From the history [1] it was mentioned that the U-Boot changes
+commit 77d7fff8cec2 ("fdt: Fix handling of paths with options in
+them") was rejected by libfdt upstream, hence we need find another
+way to fix the things.
+
+This commit uses another method, by updating serial_check_stdout()
+directly to handle the situation of "stdout-path" with ":options".
+A simpler way is to change the logic in fdtdec_get_chosen_node()
+to do similar thing, but I feel that not every property in chosen
+node may have the option in them, hence it would make more sense
+to do the special handling in serial_check_stdout() directly.
+
+[1]: http://patchwork.ozlabs.org/patch/462756/
+
+Signed-off-by: Bin Meng <bmeng.cn@gmail.com>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+
+ drivers/serial/serial-uclass.c | 36 ++++++++++++++++++++----------------
+ 1 file changed, 20 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/serial/serial-uclass.c b/drivers/serial/serial-uclass.c
+index dcdaede..391f4a1 100644
+--- a/drivers/serial/serial-uclass.c
++++ b/drivers/serial/serial-uclass.c
+@@ -30,28 +30,32 @@ static const unsigned long baudrate_table[] = CONFIG_SYS_BAUDRATE_TABLE;
+ static int serial_check_stdout(const void *blob, struct udevice **devp)
+ {
+ 	int node;
++	const char *str, *p, *name;
++	int namelen;
+ 
+ 	/* Check for a chosen console */
+-	node = fdtdec_get_chosen_node(blob, "stdout-path");
+-	if (node < 0) {
+-		const char *str, *p, *name;
+-
+-		/*
+-		 * Deal with things like
+-		 *	stdout-path = "serial0:115200n8";
+-		 *
+-		 * We need to look up the alias and then follow it to the
+-		 * correct node.
+-		 */
+-		str = fdtdec_get_chosen_prop(blob, "stdout-path");
+-		if (str) {
+-			p = strchr(str, ':');
+-			name = fdt_get_alias_namelen(blob, str,
+-					p ? p - str : strlen(str));
++	str = fdtdec_get_chosen_prop(blob, "stdout-path");
++	if (str) {
++		p = strchr(str, ':');
++		namelen = p ? p - str : strlen(str);
++		node = fdt_path_offset_namelen(blob, str, namelen);
++
++		if (node < 0) {
++			/*
++			 * Deal with things like
++			 *	stdout-path = "serial0:115200n8";
++			 *
++			 * We need to look up the alias and then follow it to
++			 * the correct node.
++			 */
++			name = fdt_get_alias_namelen(blob, str, namelen);
+ 			if (name)
+ 				node = fdt_path_offset(blob, name);
+ 		}
++	} else {
++		node = -1;
+ 	}
++
+ 	if (node < 0)
+ 		node = fdt_path_offset(blob, "console");
+ 	if (!uclass_get_device_by_of_offset(UCLASS_SERIAL, node, devp))

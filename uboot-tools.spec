@@ -63,6 +63,10 @@ Patch25: uboot-addappend.patch
 # Define kernel_comp_addr_r and filesize for booti Image.gz support
 Patch26: uboot-riscv-def-kernel_comp_addr_r-filesize.patch
 
+# Not upstream (but posted)
+# See: https://patchwork.ozlabs.org/patch/1196837/
+Patch27: dm-serial-handle-stdout-path-with-options-correctly.patch
+
 BuildRequires:  bc
 BuildRequires:  dtc
 BuildRequires:  make
