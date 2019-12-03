@@ -1,0 +1,199 @@
+From patchwork Tue Dec  3 15:33:26 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Michal Simek <michal.simek@xilinx.com>
+X-Patchwork-Id: 1203761
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de (client-ip=85.214.62.61;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=xilinx.com
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=monstr-eu.20150623.gappssmtp.com
+ header.i=@monstr-eu.20150623.gappssmtp.com
+ header.b="xsfGCcKd"; dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 47S60l4q2Xz9sP6
+ for <incoming@patchwork.ozlabs.org>;
+ Wed,  4 Dec 2019 02:51:35 +1100 (AEDT)
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 918E181706; Tue,  3 Dec 2019 16:51:32 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on mail.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.9 required=5.0 tests=DKIM_INVALID,DKIM_SIGNED,
+ MAILING_LIST_MULTI,RCVD_IN_MSPIKE_H2,SPF_HELO_NONE,SPF_PASS,
+ URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.2
+Received: from phobos.denx.de (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id CFCEB81715;
+ Tue,  3 Dec 2019 16:34:34 +0100 (CET)
+Authentication-Results: mail.denx.de;
+ dmarc=none (p=none dis=none) header.from=xilinx.com
+Authentication-Results: mail.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: mail.denx.de;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=monstr-eu.20150623.gappssmtp.com
+ header.i=@monstr-eu.20150623.gappssmtp.com
+ header.b="xsfGCcKd"; dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 71E9081740; Tue,  3 Dec 2019 16:34:33 +0100 (CET)
+Received: from mail-wr1-f68.google.com (mail-wr1-f68.google.com
+ [209.85.221.68])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 3B4538173D
+ for <u-boot@lists.denx.de>; Tue,  3 Dec 2019 16:33:29 +0100 (CET)
+Authentication-Results: mail.denx.de;
+ dmarc=none (p=none dis=none) header.from=xilinx.com
+Authentication-Results: mail.denx.de; spf=none smtp.mailfrom=monstr@monstr.eu
+Received: by mail-wr1-f68.google.com with SMTP id y11so4206551wrt.6
+ for <u-boot@lists.denx.de>; Tue, 03 Dec 2019 07:33:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=monstr-eu.20150623.gappssmtp.com; s=20150623;
+ h=sender:from:to:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=FY3wavUSlq3LqJpduWDlDfRQ23fa0sS7k2hYmp1W4v4=;
+ b=xsfGCcKdlKNSq7/5D1KjuXn2SIyh08im6EI3N/tLYCXIe2AMeGGcrFJgXbwKrFcmW5
+ cJ3I6vxbLI6lLb9+Y1Qn3I86If7jjs3FMfcwupdbEevBO178wLgaSTVGTkJZx6nLP38s
+ vyzBYOZ7rDRdARwPKqUaEjNBnjXj6cLSF6vSlcOYsClRq5AOQjtmMjCg5Spnh3vL6C6S
+ Uw7A4ec8egIepK0I8wWcVKDCrz7BzKzPkMkA8TwrM9MyudwHdyLkSOv/K1drj9r7Bxle
+ ++0OBo+6nbg4VSJrS3J1BOqSVTru8AQmqlEklfil0A8vfrKUF9BAV0z6yrU6oDOvxmb7
+ oBGQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:from:to:subject:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=FY3wavUSlq3LqJpduWDlDfRQ23fa0sS7k2hYmp1W4v4=;
+ b=HFOn3PHDfuhrO27I3b9eZtbbFdyMus2JuR88KxfnfeovLmu3VzD2GO2k1v0bbfJrFJ
+ 3FUyyRMSjuTa8/xEaL/XB7Abmtw35VxtO9rcxq4Xbb5d8zi8tQVrpX63zzQZE1+hGfp1
+ Zc0EL6lV2d1U2XkHCiPrSDySeUrfGohM7pNRrdLk0x5+dlsHuaX5r2PGWfnzkIsT9xhj
+ +hPttUIHpgVXxS6xId42gcSLku1BHdCebYIs8ro3A4Ewu2xCdqyjLBctfWKtCcyvt3AY
+ 1a/nuS9rgJ3nlFwxKtv340qv/UCp/3W0U3JbYG6Cnc6DvKq72eOPuqnPnyjDa1VQAlZA
+ q6gA==
+X-Gm-Message-State: APjAAAV9fDxe7+YuhbTRQ7FQZxhVH1IaMTTvFGz12nutmEBO1FHu5PVR
+ RmfQmTY6L3fXPK4lQ+WtrOep+s2H8w4Weg==
+X-Google-Smtp-Source: APXvYqxj+/69azSDe/nIwdR/hsgHatKZBL8p8CGOPp1Hku4BlIp/V3L90lAwr5VQJtUY+c5KmukFLQ==
+X-Received: by 2002:adf:dc86:: with SMTP id r6mr6287782wrj.68.1575387208549; 
+ Tue, 03 Dec 2019 07:33:28 -0800 (PST)
+Received: from localhost (nat-35.starnet.cz. [178.255.168.35])
+ by smtp.gmail.com with ESMTPSA id
+ h17sm4245700wrs.18.2019.12.03.07.33.27
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Tue, 03 Dec 2019 07:33:27 -0800 (PST)
+From: Michal Simek <michal.simek@xilinx.com>
+To: u-boot@lists.denx.de,
+	git@xilinx.com,
+	pbrobinson@gmail.com
+Subject: [PATCH v2] arm64: zynqmp: Do not assing MIO34 that early on zcu100
+Date: Tue,  3 Dec 2019 16:33:26 +0100
+Message-Id: <175608f69633f3876bebdde1c2f7b9cf54b61716.1575387200.git.michal.simek@xilinx.com>
+X-Mailer: git-send-email 2.24.0
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.26
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.101.4 at mail.denx.de
+X-Virus-Status: Clean
+
+MIO34 is connected to POWER_KILL signal. When MIO configuration is done in
+psu_init() and this pin is assigned to PMU but PMU configuration is not
+loaded yet. PMU gpio output is high that means board is powered off
+immediately.
+The patch is fixing this sequence that MIO34 stays assing to ps gpio IP.
+PMU config is loaded in SPL and then pin assigned to PMU through
+psu_post_config_data().
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+
+Changes in v2:
+- add missing declaration in header
+
+ arch/arm/mach-zynqmp/include/mach/psu_init_gpl.h      | 1 +
+ arch/arm/mach-zynqmp/psu_spl_init.c                   | 9 +++++++++
+ arch/arm/mach-zynqmp/spl.c                            | 1 +
+ board/xilinx/zynqmp/zynqmp-zcu100-revC/psu_init_gpl.c | 7 ++++++-
+ 4 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-zynqmp/include/mach/psu_init_gpl.h b/arch/arm/mach-zynqmp/include/mach/psu_init_gpl.h
+index 15e54c049387..e37acda2f89e 100644
+--- a/arch/arm/mach-zynqmp/include/mach/psu_init_gpl.h
++++ b/arch/arm/mach-zynqmp/include/mach/psu_init_gpl.h
+@@ -21,5 +21,6 @@ void prog_reg(unsigned long addr, unsigned long mask,
+ 	      unsigned long shift, unsigned long value);
+ 
+ int psu_init(void);
++unsigned long psu_post_config_data(void);
+ 
+ #endif /* _PSU_INIT_GPL_H_ */
+diff --git a/arch/arm/mach-zynqmp/psu_spl_init.c b/arch/arm/mach-zynqmp/psu_spl_init.c
+index b357de32358c..b6abdfd608ee 100644
+--- a/arch/arm/mach-zynqmp/psu_spl_init.c
++++ b/arch/arm/mach-zynqmp/psu_spl_init.c
+@@ -77,3 +77,12 @@ __weak int psu_init(void)
+ 	 */
+ 	return -1;
+ }
++
++__weak unsigned long psu_post_config_data(void)
++{
++	/*
++	 * This function is overridden by the one in
++	 * board/xilinx/zynqmp/(platform)/psu_init_gpl.c, if it exists.
++	 */
++	return 0;
++}
+diff --git a/arch/arm/mach-zynqmp/spl.c b/arch/arm/mach-zynqmp/spl.c
+index 6ba42bb42f62..6551b33f42d0 100644
+--- a/arch/arm/mach-zynqmp/spl.c
++++ b/arch/arm/mach-zynqmp/spl.c
+@@ -60,6 +60,7 @@ void spl_board_init(void)
+ 	preloader_console_init();
+ 	ps_mode_reset(MODE_RESET);
+ 	board_init();
++	psu_post_config_data();
+ }
+ #endif
+ 
+diff --git a/board/xilinx/zynqmp/zynqmp-zcu100-revC/psu_init_gpl.c b/board/xilinx/zynqmp/zynqmp-zcu100-revC/psu_init_gpl.c
+index e1fdabaeb9d1..585b3afc218a 100644
+--- a/board/xilinx/zynqmp/zynqmp-zcu100-revC/psu_init_gpl.c
++++ b/board/xilinx/zynqmp/zynqmp-zcu100-revC/psu_init_gpl.c
+@@ -409,7 +409,6 @@ static unsigned long psu_mio_init_data(void)
+ 	psu_mask_write(0xFF18007C, 0x000000FEU, 0x00000000U);
+ 	psu_mask_write(0xFF180080, 0x000000FEU, 0x00000008U);
+ 	psu_mask_write(0xFF180084, 0x000000FEU, 0x00000008U);
+-	psu_mask_write(0xFF180088, 0x000000FEU, 0x00000008U);
+ 	psu_mask_write(0xFF18008C, 0x000000FEU, 0x00000000U);
+ 	psu_mask_write(0xFF180090, 0x000000FEU, 0x00000000U);
+ 	psu_mask_write(0xFF180094, 0x000000FEU, 0x00000000U);
+@@ -990,3 +989,9 @@ int psu_init(void)
+ 		return 1;
+ 	return 0;
+ }
++
++unsigned long psu_post_config_data(void)
++{
++	psu_mask_write(0xFF180088, 0x000000FEU, 0x00000008U);
++	return 0;
++}

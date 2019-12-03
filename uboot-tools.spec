@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2020.01
-Release:   0.5%{?candidate:.%{candidate}}%{?dist}
+Release:   0.6%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -27,6 +27,9 @@ Patch6:    dragonboard-fixes.patch
 Patch7:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch8:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 Patch9:    tools-fix-version.h.patch
+Patch10:   zynqmp-Add-support-for-u-boot.itb-generation-with-ATF.patch
+Patch11:   zynqmp-Do-not-assing-MIO34-that-early-on-zcu100.patch
+Patch12:   bcm283x-dts-Rename-U-Boot-file.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -118,12 +121,12 @@ do
     echo "Board: $board using sun50i_h6"
     cp /usr/share/arm-trusted-firmware/sun50i_h6/* builds/$(echo $board)/
   fi
-  rk3328=(rock64-rk3328)
+  rk3328=(evb-rk3328 rock64-rk3328)
   if [[ " ${rk3328[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3328"
     cp /usr/share/arm-trusted-firmware/rk3328/* builds/$(echo $board)/
   fi
-  rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 nanopc-t4-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 orangepi-rk3399 orangepi-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4-rk3399 rockpro64-rk3399)
+  rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 nanopc-t4-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 orangepi-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4-rk3399 rockpro64-rk3399 roc-pc-rk3399)
   if [[ " ${rk3399[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3399"
     cp /usr/share/arm-trusted-firmware/rk3399/* builds/$(echo $board)/
@@ -132,10 +135,10 @@ do
   make $(echo $board)_defconfig O=builds/$(echo $board)/
   make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
   if [[ " ${rk3328[*]} " == *" $board "* ]]; then
-    make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} u-boot.itb V=1 O=builds/$(echo $board)/
+    builds/$(echo $board)/tools/mkimage -n rk3328 -T rksd  -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_sd.img
+    builds/$(echo $board)/tools/mkimage -n rk3328 -T rkspi -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_spi.img
   fi
   if [[ " ${rk3399[*]} " == *" $board "* ]]; then
-    echo "Board: $board using rk3399"
     builds/$(echo $board)/tools/mkimage -n rk3399 -T rksd  -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_sd.img
     builds/$(echo $board)/tools/mkimage -n rk3399 -T rkspi -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_spi.img
   fi
@@ -156,7 +159,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
 for board in $(cat %{_arch}-boards)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
- for file in spl/arndale-spl.bin u-boot.bin u-boot.dtb u-boot.img u-boot.imx u-boot-sunxi-with-spl.bin spl_sd.img spl_spi.img idbloader.img spl/boot.bin
+ for file in u-boot.bin u-boot.dtb u-boot.img u-boot-dtb.img u-boot.itb u-boot-sunxi-with-spl.bin spl_sd.img spl_spi.img idbloader.img spl/boot.bin spl/arndale-spl.bin spl/sunxi-spl.bin
  do
   if [ -f builds/$(echo $board)/$(echo $file) ]; then
     install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
@@ -250,6 +253,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Dec  3 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.6-rc4
+- Fixes for AllWinner, Raspberry Pi, Rockchip, Xilinx ZynqMP
+
 * Tue Dec  3 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.5-rc4
 - 2020.01 RC4
 
