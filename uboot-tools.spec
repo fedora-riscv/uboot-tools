@@ -64,7 +64,7 @@ Patch25: uboot-addappend.patch
 
 # Not upstream
 # Define kernel_comp_addr_r and filesize for booti Image.gz support
-Patch26: uboot-riscv-def-kernel_comp_addr_r-filesize.patch
+Patch26: uboot-riscv-def-kernel_comp_addr_r.patch
 
 # Not upstream (but posted)
 # See: https://patchwork.ozlabs.org/patch/1196837/
