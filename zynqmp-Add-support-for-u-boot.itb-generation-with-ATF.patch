@@ -1,0 +1,278 @@
+From patchwork Tue Dec  3 13:34:58 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Michal Simek <michal.simek@xilinx.com>
+X-Patchwork-Id: 1203703
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de (client-ip=85.214.62.61;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=xilinx.com
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=monstr-eu.20150623.gappssmtp.com
+ header.i=@monstr-eu.20150623.gappssmtp.com
+ header.b="jRbgIEeD"; dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 47S3BR4jKtz9sR7
+ for <incoming@patchwork.ozlabs.org>;
+ Wed,  4 Dec 2019 00:44:47 +1100 (AEDT)
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id CC7BF81624; Tue,  3 Dec 2019 14:44:44 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on mail.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.9 required=5.0 tests=DKIM_INVALID,DKIM_SIGNED,
+ MAILING_LIST_MULTI,RCVD_IN_MSPIKE_H2,SPF_HELO_NONE,SPF_PASS,
+ URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.2
+Received: from phobos.denx.de (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id B50BD80901;
+ Tue,  3 Dec 2019 14:44:12 +0100 (CET)
+Authentication-Results: mail.denx.de;
+ dmarc=none (p=none dis=none) header.from=xilinx.com
+Authentication-Results: mail.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: mail.denx.de;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=monstr-eu.20150623.gappssmtp.com
+ header.i=@monstr-eu.20150623.gappssmtp.com
+ header.b="jRbgIEeD"; dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id C809980901; Tue,  3 Dec 2019 14:44:09 +0100 (CET)
+Received: from mail-wr1-f68.google.com (mail-wr1-f68.google.com
+ [209.85.221.68])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 32C4081828
+ for <u-boot@lists.denx.de>; Tue,  3 Dec 2019 14:35:05 +0100 (CET)
+Authentication-Results: mail.denx.de;
+ dmarc=none (p=none dis=none) header.from=xilinx.com
+Authentication-Results: mail.denx.de; spf=none smtp.mailfrom=monstr@monstr.eu
+Received: by mail-wr1-f68.google.com with SMTP id c14so3678946wrn.7
+ for <u-boot@lists.denx.de>; Tue, 03 Dec 2019 05:35:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=monstr-eu.20150623.gappssmtp.com; s=20150623;
+ h=sender:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Cm6gQWLkk/+5jek3dvRRAOkfCxAi+n+YRN+ZTQR2FHo=;
+ b=jRbgIEeDUORknOe9qVPm4LptQigs2tytbss1dEwuK+OXROAETXd9oUKQ4lUG+1iOvX
+ Tid7F+uJZ3urEn2pwCtU89SWYZAYA5XdKZgrQfk6Fs8jgoojVbHdWLCdLFDi8N6WE0TB
+ TefM3xfA7QwJeV9QQEJS+IqDNItUcrFBKzw09ABBVRqXsUHB2luZuaw1w72PXdcCP65o
+ TWHYXVjIo5BGAn4XTNDuK9LyLaSVCld5zRHZvAYfDDGReHAtXGfkpcIohgmicVPjoDZd
+ qpUbc+6jK7aFnXNzxxJ1eqpjvnmX+7md9aS+e96pdPJ+Q3yRKgeSXcLbiIYBhBPEuu7S
+ nuDg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=Cm6gQWLkk/+5jek3dvRRAOkfCxAi+n+YRN+ZTQR2FHo=;
+ b=XXEYwNGUqeSbWgn8YgWbka943yZCnj3ZkdNK846QU3Ft8AplFDniryxOkYlyLB91kY
+ +Mn5z0e4xWL1MEaZT+2EQh53CApzWORoYeYryGsaql+hDD5zlQdm/0UkJSoLZ99slhrS
+ FNcNW40dU4iLXvCx7f8+/YDcF+7sYS4X1zxVxef0Sh1qPyB6ykXzbHgspO+uyBxRCZOJ
+ 2Xa08s7ry6p0N8mwBsUwRxaCc23wAa4L8HhdenIAw9wY7nnkhO7pW+byLeQ+NCJ4UfSH
+ 7pkxVk21TXyy0TC/J4TdNKHS8Gc6/8i2ajCsvCoMZ1mqt/5ZVqLUWZMfhj6Jurh42gPq
+ dtgQ==
+X-Gm-Message-State: APjAAAU6J4Y0f3lLB9Z6GsZEAlImhG85wi6UhlX3hg1mTxyh6DyjAcvR
+ pI0Js+5A+34PRuDW/kk+TVvWWBu1Z04p1w==
+X-Google-Smtp-Source: APXvYqxP0G+EP2youCblhWcjCu3FQ03Ed7G6Tlo0+mBMiEFAJvA1rgNQFC5gVk3s6GNdnRX3YIX1kw==
+X-Received: by 2002:adf:fe12:: with SMTP id n18mr5128119wrr.158.1575380104990; 
+ Tue, 03 Dec 2019 05:35:04 -0800 (PST)
+Received: from localhost (nat-35.starnet.cz. [178.255.168.35])
+ by smtp.gmail.com with ESMTPSA id
+ 72sm3710284wrl.73.2019.12.03.05.35.03
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Tue, 03 Dec 2019 05:35:04 -0800 (PST)
+From: Michal Simek <michal.simek@xilinx.com>
+To: u-boot@lists.denx.de,
+	git@xilinx.com,
+	pbrobinson@gmail.com
+Subject: [PATCH] arm64: zynqmp: Add support for u-boot.itb generation with ATF.
+Date: Tue,  3 Dec 2019 14:34:58 +0100
+Message-Id: <5568e78d8e06c2ce6a86c88ee42509a0c80fc4ef.1575380094.git.michal.simek@xilinx.com>
+X-Mailer: git-send-email 2.24.0
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.26
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Cc: Marek Vasut <marex@denx.de>, Stefan Roese <sr@denx.de>,
+ Chris Packham <judge.packham@gmail.com>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.101.4 at mail.denx.de
+X-Virus-Status: Clean
+
+Follow i.MX, Sunxi, RISC-V and Rockchip to generate u-boot.itb which
+includes U-Boot proper, ATF and DTBs in FIT format. ZynqMP supports FIT for
+quite a long time but with using out of tree solution. The patch is filling
+this gap.
+
+Tested on zcu102, zcu104 and zcu100/Ultra96.
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+
+ Kconfig                                 |  3 +-
+ arch/arm/mach-zynqmp/mkimage_fit_atf.sh | 99 +++++++++++++++++++++++++
+ include/configs/xilinx_zynqmp.h         |  6 +-
+ 3 files changed, 106 insertions(+), 2 deletions(-)
+ create mode 100755 arch/arm/mach-zynqmp/mkimage_fit_atf.sh
+
+diff --git a/Kconfig b/Kconfig
+index e22417ec4471..7efafffec0a4 100644
+--- a/Kconfig
++++ b/Kconfig
+@@ -253,7 +253,7 @@ config BUILD_TARGET
+ 	default "u-boot-spl.kwb" if ARCH_MVEBU && SPL
+ 	default "u-boot-elf.srec" if RCAR_GEN3
+ 	default "u-boot.itb" if SPL_LOAD_FIT && (ARCH_ROCKCHIP || \
+-				ARCH_SUNXI || RISCV)
++				ARCH_SUNXI || RISCV || ARCH_ZYNQMP)
+ 	default "u-boot.kwb" if KIRKWOOD
+ 	default "u-boot-with-spl.bin" if ARCH_AT91 && SPL_NAND_SUPPORT
+ 	default "u-boot-with-spl.imx" if ARCH_MX6 && SPL
+@@ -481,6 +481,7 @@ config SPL_FIT_GENERATOR
+ 	depends on SPL_FIT
+ 	default "board/sunxi/mksunxi_fit_atf.sh" if SPL_LOAD_FIT && ARCH_SUNXI
+ 	default "arch/arm/mach-rockchip/make_fit_atf.py" if SPL_LOAD_FIT && ARCH_ROCKCHIP
++	default "arch/arm/mach-zynqmp/mkimage_fit_atf.sh" if SPL_LOAD_FIT && ARCH_ZYNQMP
+ 	default "arch/riscv/lib/mkimage_fit_opensbi.sh" if SPL_LOAD_FIT && RISCV
+ 	help
+ 	  Specifies a (platform specific) script file to generate the FIT
+diff --git a/arch/arm/mach-zynqmp/mkimage_fit_atf.sh b/arch/arm/mach-zynqmp/mkimage_fit_atf.sh
+new file mode 100755
+index 000000000000..1a4f396d1c3a
+--- /dev/null
++++ b/arch/arm/mach-zynqmp/mkimage_fit_atf.sh
+@@ -0,0 +1,99 @@
++#!/bin/sh
++# SPDX-License-Identifier: GPL-2.0+
++#
++# script to generate FIT image source for Xilinx ZynqMP boards with
++# ARM Trusted Firmware and multiple device trees (given on the command line)
++#
++# usage: $0 <dt_name> [<dt_name> [<dt_name] ...]
++
++BL33="u-boot-nodtb.bin"
++[ -z "$BL31" ] && BL31="bl31.bin"
++[ -z "$ATF_LOAD_ADDR" ] && ATF_LOAD_ADDR="0xfffe0000"
++[ -z "$BL33_LOAD_ADDR" ] && BL33_LOAD_ADDR="0x8000000"
++
++if [ ! -f $BL31 ]; then
++	echo "ERROR: BL31 file $BL31 NOT found" >&2
++else
++	echo "$BL31 size: " >&2
++	ls -lct $BL31 | awk '{print $5}' >&2
++fi
++
++
++
++cat << __HEADER_EOF
++/dts-v1/;
++
++/ {
++	description = "Configuration to load ATF before U-Boot";
++
++	images {
++		uboot {
++			description = "U-Boot (64-bit)";
++			data = /incbin/("$BL33");
++			type = "firmware";
++			os = "u-boot";
++			arch = "arm64";
++			compression = "none";
++			load = <$BL33_LOAD_ADDR>;
++			hash {
++				algo = "md5";
++			};
++		};
++		atf {
++			description = "ARM Trusted Firmware";
++			data = /incbin/("$BL31");
++			type = "firmware";
++			os = "arm-trusted-firmware";
++			arch = "arm64";
++			compression = "none";
++			load = <$ATF_LOAD_ADDR>;
++			entry = <$ATF_LOAD_ADDR>;
++			hash {
++				algo = "md5";
++			};
++		};
++__HEADER_EOF
++
++cnt=1
++for dtname in $*
++do
++	cat << __FDT_IMAGE_EOF
++		fdt_$cnt {
++			description = "$(basename $dtname .dtb)";
++			data = /incbin/("$dtname");
++			type = "flat_dt";
++			arch = "arm64";
++			compression = "none";
++			hash {
++				algo = "md5";
++			};
++		};
++__FDT_IMAGE_EOF
++cnt=$((cnt+1))
++done
++
++cat << __CONF_HEADER_EOF
++	};
++	configurations {
++		default = "config_1";
++
++__CONF_HEADER_EOF
++
++cnt=1
++for dtname in $*
++do
++cat << __CONF_SECTION1_EOF
++		config_$cnt {
++			description = "$(basename $dtname .dtb)";
++			firmware = "uboot";
++			loadables = "atf";
++			fdt = "fdt_$cnt";
++		};
++__CONF_SECTION1_EOF
++cnt=$((cnt+1))
++done
++
++cat << __ITS_EOF
++	};
++};
++__ITS_EOF
+diff --git a/include/configs/xilinx_zynqmp.h b/include/configs/xilinx_zynqmp.h
+index ee1ceebf1291..e7eb8dbfcb45 100644
+--- a/include/configs/xilinx_zynqmp.h
++++ b/include/configs/xilinx_zynqmp.h
+@@ -243,7 +243,11 @@
+ # define CONFIG_SYS_MMCSD_RAW_MODE_ARGS_SECTOR	0 /* unused */
+ # define CONFIG_SYS_MMCSD_RAW_MODE_ARGS_SECTORS	0 /* unused */
+ # define CONFIG_SYS_MMCSD_RAW_MODE_KERNEL_SECTOR	0 /* unused */
+-# define CONFIG_SPL_FS_LOAD_PAYLOAD_NAME	"u-boot.img"
++# if defined(CONFIG_SPL_LOAD_FIT)
++#  define CONFIG_SPL_FS_LOAD_PAYLOAD_NAME	"u-boot.itb"
++# else
++#  define CONFIG_SPL_FS_LOAD_PAYLOAD_NAME	"u-boot.img"
++# endif
+ #endif
+ 
+ #if defined(CONFIG_SPL_BUILD) && defined(CONFIG_SPL_DFU)
