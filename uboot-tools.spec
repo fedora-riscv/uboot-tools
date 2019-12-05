@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2020.01
-Release:   0.6%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Release:   0.6%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -69,6 +69,9 @@ Patch26: uboot-riscv-def-kernel_comp_addr_r.patch
 # Not upstream (but posted)
 # See: https://patchwork.ozlabs.org/patch/1196837/
 Patch27: dm-serial-handle-stdout-path-with-options-correctly.patch
+
+# Match CPU number with what in Linux config
+Patch28: riscv-nr-cpus-32.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -320,6 +323,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Dec  5 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.6-rc4.1.riscv64
+- Match CONFIG_NR_CPUS to Linux configuration (32)
+
 * Thu Dec  5 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.6-rc4.0.riscv64
 - Add support for RISC-V (riscv64)
 - Define filesize and kernel_comp_addr_r for QEMU virt and SiFive FU540 boards
