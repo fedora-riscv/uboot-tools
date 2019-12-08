@@ -1,35 +1,24 @@
-From 097ce774b6739aa6a52e4d79e2920e3ef5af41d3 Mon Sep 17 00:00:00 2001
+From 961918a6fcbab383c92135f5cad5ea758bdaef79 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Thu, 31 Oct 2019 09:19:23 +0000
-Subject: [PATCH] tools: fix version.h
+Date: Wed, 4 Dec 2019 23:27:10 +0000
+Subject: [PATCH] tools fix
 
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- Makefile | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ Makefile | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/Makefile b/Makefile
-index 58a5721b3d..7b40069d9f 100644
+index 556cebdfc4..4bcf4d677f 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1848,14 +1848,14 @@ checkarmreloc: u-boot
- 		false; \
+@@ -1894,6 +1894,7 @@ checkarmreloc: u-boot
  	fi
  
--tools/version.h: include/version.h
-+version.h: include/version.h
+ tools/version.h: include/version.h
++	$(Q)mkdir -p $(dir $@)
  	$(call if_changed,copy)
  
--envtools: scripts_basic $(version_h) $(timestamp_h) tools/version.h
-+envtools: scripts_basic $(version_h) $(timestamp_h) version.h
- 	$(Q)$(MAKE) $(build)=tools/env
- 
- tools-only: export TOOLS_ONLY=y
--tools-only: scripts_basic $(version_h) $(timestamp_h) tools/version.h
-+tools-only: scripts_basic $(version_h) $(timestamp_h) version.h
- 	$(Q)$(MAKE) $(build)=tools
- 
- tools-all: export HOST_TOOLS_ALL=y
+ envtools: scripts_basic $(version_h) $(timestamp_h) tools/version.h
 -- 
 2.23.0
 

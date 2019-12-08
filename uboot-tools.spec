@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2020.01
-Release:   0.6%{?candidate:.%{candidate}}%{?dist}
+Release:   0.7%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -233,7 +233,7 @@ cp -p board/warp/README builds/docs/README.warp
 cp -p board/warp7/README builds/docs/README.warp7
 
 %files
-%doc README doc/imx doc/README.kwbimage doc/README.distro doc/README.gpt
+%doc README doc/README.kwbimage doc/README.distro doc/README.gpt
 %doc doc/README.odroid doc/README.rockchip doc/uefi doc/uImage.FIT doc/arch/arm64.rst
 %doc doc/README.chromium builds/docs/*
 %{_bindir}/*
@@ -253,6 +253,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Dec  5 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.7-rc4
+- Enable the Khadas Edge and VIM series of devices
+- Minor other fixes
+
 * Tue Dec  3 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.6-rc4
 - Fixes for AllWinner, Raspberry Pi, Rockchip, Xilinx ZynqMP
 
