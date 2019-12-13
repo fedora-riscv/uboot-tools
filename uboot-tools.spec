@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2020.01
-Release:   0.7%{?candidate:.%{candidate}}%{?dist}
+Release:   0.8%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -30,6 +30,7 @@ Patch9:    tools-fix-version.h.patch
 Patch10:   zynqmp-Add-support-for-u-boot.itb-generation-with-ATF.patch
 Patch11:   zynqmp-Do-not-assing-MIO34-that-early-on-zcu100.patch
 Patch12:   bcm283x-dts-Rename-U-Boot-file.patch
+Patch13:   raspberry-pi-4-fixes.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -253,6 +254,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Dec 12 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.8-rc4
+- Fixes for Raspberry Pi
+
 * Thu Dec  5 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.7-rc4
 - Enable the Khadas Edge and VIM series of devices
 - Minor other fixes
