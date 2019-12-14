@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2020.01
-Release:   0.6%{?candidate:.%{candidate}}.2.riscv64%{?dist}
+Release:   0.6%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -39,19 +39,19 @@ Patch12:   bcm283x-dts-Rename-U-Boot-file.patch
 # Both (FSBL and OpenSBI) incl. the latest DTB directly from the kernel build.
 # Thus we have to set fdt_addr to the save value as fdt_addr_r which matches
 # the location where OpenSBI will place embedded DTB.
-#Patch20:   riscv64-set-fdt_addr.patch
+Patch20:   riscv64-set-fdt_addr.patch
 
 # Set bootargs (console and earlycon)
 # Fix fdt by use cp.l on QEMU (fixed in 5.4, corruption of DTB happens in
 # kernel)
 # https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?h=v5.4-rc2&id=922b0375fc93fb1a20c5617e37c389c26bbccb70
 # https://patchwork.kernel.org/patch/11165207/
-#Patch21:   riscv-bootargs-preboot.patch
+Patch21:   riscv-bootargs-preboot.patch
 
 # Not upstream
 # Adds support for Image.gz to booti (RFC/RFT)
 # See: https://patchwork.ozlabs.org/patch/1174807/
-#Patch23:   image-add-image.gz-parsing-support-in-booti.patch
+Patch23:   image-add-image.gz-parsing-support-in-booti.patch
 
 # Not upstream
 # See: https://lore.kernel.org/linux-riscv/mvm5zkrhe8q.fsf@suse.de/T/#t
@@ -60,18 +60,18 @@ Patch24:   riscv-increase-stack-size-to-16KiB.patch
 
 # Not upstream
 # Add 'addappend' label to  PXE/EXTLINUX configuration
-#Patch25: uboot-addappend.patch
+Patch25: uboot-addappend.patch
 
 # Not upstream
 # Define kernel_comp_addr_r and filesize for booti Image.gz support
-#Patch26: uboot-riscv-def-kernel_comp_addr_r.patch
+Patch26: uboot-riscv-def-kernel_comp_addr_r.patch
 
 # Not upstream (but posted)
 # See: https://patchwork.ozlabs.org/patch/1196837/
 Patch27: dm-serial-handle-stdout-path-with-options-correctly.patch
 
 # Match CPU number with what in Linux config
-#Patch28: riscv-nr-cpus-32.patch
+Patch28: riscv-nr-cpus-32.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
