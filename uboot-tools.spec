@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2020.01
-Release:   0.6%{?candidate:.%{candidate}}.1.riscv64%{?dist}
+Release:   0.8%{?candidate:.%{candidate}}.0.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -31,6 +31,7 @@ Patch9:    tools-fix-version.h.patch
 Patch10:   zynqmp-Add-support-for-u-boot.itb-generation-with-ATF.patch
 Patch11:   zynqmp-Do-not-assing-MIO34-that-early-on-zcu100.patch
 Patch12:   bcm283x-dts-Rename-U-Boot-file.patch
+Patch13:   raspberry-pi-4-fixes.patch
 
 # PXE depends on fdt_addr (mandatory)
 # fdt_addr is an address to DTB in HW (e.g. ROM)
@@ -298,7 +299,7 @@ cp -p board/warp/README builds/docs/README.warp
 cp -p board/warp7/README builds/docs/README.warp7
 
 %files
-%doc README doc/imx doc/README.kwbimage doc/README.distro doc/README.gpt
+%doc README doc/README.kwbimage doc/README.distro doc/README.gpt
 %doc doc/README.odroid doc/README.rockchip doc/uefi doc/uImage.FIT doc/arch/arm64.rst
 %doc doc/README.chromium builds/docs/*
 %{_bindir}/*
@@ -323,14 +324,19 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Thu Dec  5 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.6-rc4.1.riscv64
-- Match CONFIG_NR_CPUS to Linux configuration (32)
-
-* Thu Dec  5 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.6-rc4.0.riscv64
+* Sat Dec 14 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.8-rc4.0.riscv64
 - Add support for RISC-V (riscv64)
 - Define filesize and kernel_comp_addr_r for QEMU virt and SiFive FU540 boards
   to support Image.gz with booti
 - Add 'addappend' label to PXE/EXTLINUX configuration
+- Match CONFIG_NR_CPUS to Linux configuration (32)
+
+* Thu Dec 12 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.8-rc4
+- Fixes for Raspberry Pi
+
+* Thu Dec  5 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.7-rc4
+- Enable the Khadas Edge and VIM series of devices
+- Minor other fixes
 
 * Tue Dec  3 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.6-rc4
 - Fixes for AllWinner, Raspberry Pi, Rockchip, Xilinx ZynqMP
