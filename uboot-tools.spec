@@ -1,8 +1,8 @@
-%global candidate rc4
+%global candidate rc5
 
 Name:      uboot-tools
 Version:   2020.01
-Release:   0.8%{?candidate:.%{candidate}}%{?dist}
+Release:   0.9%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -26,11 +26,9 @@ Patch5:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:    dragonboard-fixes.patch
 Patch7:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch8:    arm-tegra-defaine-fdtfile-for-all-devices.patch
-Patch9:    tools-fix-version.h.patch
-Patch10:   zynqmp-Add-support-for-u-boot.itb-generation-with-ATF.patch
-Patch11:   zynqmp-Do-not-assing-MIO34-that-early-on-zcu100.patch
-Patch12:   bcm283x-dts-Rename-U-Boot-file.patch
-Patch13:   raspberry-pi-4-fixes.patch
+Patch9:    zynqmp-Add-support-for-u-boot.itb-generation-with-ATF.patch
+Patch10:   zynqmp-Do-not-assing-MIO34-that-early-on-zcu100.patch
+Patch11:   bcm283x-dts-Rename-U-Boot-file.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -254,6 +252,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Dec 17 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.9-rc5
+- 2020.01 RC5
+
 * Thu Dec 12 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.8-rc4
 - Fixes for Raspberry Pi
 
