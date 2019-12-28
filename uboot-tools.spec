@@ -1,8 +1,8 @@
-%global candidate rc4
+%global candidate rc5
 
 Name:      uboot-tools
 Version:   2020.01
-Release:   0.8%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Release:   0.9%{?candidate:.%{candidate}}.0.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -27,11 +27,9 @@ Patch5:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:    dragonboard-fixes.patch
 Patch7:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch8:    arm-tegra-defaine-fdtfile-for-all-devices.patch
-Patch9:    tools-fix-version.h.patch
-Patch10:   zynqmp-Add-support-for-u-boot.itb-generation-with-ATF.patch
-Patch11:   zynqmp-Do-not-assing-MIO34-that-early-on-zcu100.patch
-Patch12:   bcm283x-dts-Rename-U-Boot-file.patch
-Patch13:   raspberry-pi-4-fixes.patch
+Patch9:    zynqmp-Add-support-for-u-boot.itb-generation-with-ATF.patch
+Patch10:   zynqmp-Do-not-assing-MIO34-that-early-on-zcu100.patch
+Patch11:   bcm283x-dts-Rename-U-Boot-file.patch
 
 # PXE depends on fdt_addr (mandatory)
 # fdt_addr is an address to DTB in HW (e.g. ROM)
@@ -324,12 +322,15 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Sat Dec 14 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.8-rc4.0.riscv64
+* Sat Dec 28 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.9-rc5.0.riscv64
 - Add support for RISC-V (riscv64)
 - Define filesize and kernel_comp_addr_r for QEMU virt and SiFive FU540 boards
   to support Image.gz with booti
 - Add 'addappend' label to PXE/EXTLINUX configuration
 - Match CONFIG_NR_CPUS to Linux configuration (32)
+
+* Tue Dec 17 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.9-rc5
+- 2020.01 RC5
 
 * Thu Dec 12 2019 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-0.8-rc4
 - Fixes for Raspberry Pi
