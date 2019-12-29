@@ -41,27 +41,21 @@ Patch11:   bcm283x-dts-Rename-U-Boot-file.patch
 Patch20:   riscv64-set-fdt_addr.patch
 
 # Set bootargs (console and earlycon)
-# Fix fdt by use cp.l on QEMU (fixed in 5.4, corruption of DTB happens in
-# kernel)
-# https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?h=v5.4-rc2&id=922b0375fc93fb1a20c5617e37c389c26bbccb70
-# https://patchwork.kernel.org/patch/11165207/
-Patch21:   riscv-bootargs-preboot.patch
+# Set CPUs to 32 (same as Linux)
+Patch21:   riscv-set-bootargs-nrcpus.patch
 
 # Not upstream
 # Adds support for Image.gz to booti (RFC/RFT)
 # See: https://patchwork.ozlabs.org/patch/1174807/
-Patch23:   image-add-image.gz-parsing-support-in-booti.patch
+Patch22:   image-add-image.gz-parsing-support-in-booti.patch
 
 # Not upstream
 # Add 'addappend' label to  PXE/EXTLINUX configuration
-Patch25: uboot-addappend.patch
+Patch23: uboot-addappend.patch
 
 # Not upstream
 # Define kernel_comp_addr_r and filesize for booti Image.gz support
-Patch26: uboot-riscv-def-kernel_comp_addr_r.patch
-
-# Match CPU number with what in Linux config
-Patch28: riscv-nr-cpus-32.patch
+Patch24: uboot-riscv-def-kernel_comp_addr_r.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
