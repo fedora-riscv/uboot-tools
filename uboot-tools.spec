@@ -53,21 +53,12 @@ Patch21:   riscv-bootargs-preboot.patch
 Patch23:   image-add-image.gz-parsing-support-in-booti.patch
 
 # Not upstream
-# See: https://lore.kernel.org/linux-riscv/mvm5zkrhe8q.fsf@suse.de/T/#t
-# Increase stack from 8KiB to 16KiB to avoid issues bringing up harts online
-Patch24:   riscv-increase-stack-size-to-16KiB.patch
-
-# Not upstream
 # Add 'addappend' label to  PXE/EXTLINUX configuration
 Patch25: uboot-addappend.patch
 
 # Not upstream
 # Define kernel_comp_addr_r and filesize for booti Image.gz support
 Patch26: uboot-riscv-def-kernel_comp_addr_r.patch
-
-# Not upstream (but posted)
-# See: https://patchwork.ozlabs.org/patch/1196837/
-Patch27: dm-serial-handle-stdout-path-with-options-correctly.patch
 
 # Match CPU number with what in Linux config
 Patch28: riscv-nr-cpus-32.patch
