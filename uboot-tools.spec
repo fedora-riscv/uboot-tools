@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2020.01
-Release:   0.9%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Release:   0.9%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -42,7 +42,7 @@ Patch20:   riscv64-set-fdt_addr.patch
 
 # Set bootargs (console and earlycon)
 # Set CPUs to 32 (same as Linux)
-Patch21:   riscv-set-bootargs-nrcpus.patch
+Patch21:   riscv-set-bootargs-nrcpus-preboot.patch
 
 # Not upstream
 # Adds support for Image.gz to booti (RFC/RFT)
@@ -307,7 +307,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Sat Dec 28 2019 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.9-rc5.0.riscv64
+* Thu Jan 02 2020 David Abdurachmanov <david.abdurachmanov@sifive.com> 2020.01-0.9-rc5.1.riscv64
 - Add support for RISC-V (riscv64)
 - Define filesize and kernel_comp_addr_r for QEMU virt and SiFive FU540 boards
   to support Image.gz with booti
