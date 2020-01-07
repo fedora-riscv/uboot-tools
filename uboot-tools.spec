@@ -130,10 +130,10 @@ do
   # End ATF
   make $(echo $board)_defconfig O=builds/$(echo $board)/
   make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
-  if [[ " ${rk3328[*]} " == *" $board "* ]]; then
+  #if [[ " ${rk3328[*]} " == *" $board "* ]]; then
     #builds/$(echo $board)/tools/mkimage -n rk3328 -T rksd  -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_sd.img
     #builds/$(echo $board)/tools/mkimage -n rk3328 -T rkspi -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_spi.img
-  fi
+  #fi
   if [[ " ${rk3399[*]} " == *" $board "* ]]; then
     builds/$(echo $board)/tools/mkimage -n rk3399 -T rksd  -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_sd.img
     builds/$(echo $board)/tools/mkimage -n rk3399 -T rkspi -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_spi.img
