@@ -28,7 +28,6 @@ Patch7:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch8:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 Patch9:    zynqmp-Add-support-for-u-boot.itb-generation-with-ATF.patch
 Patch10:   zynqmp-Do-not-assing-MIO34-that-early-on-zcu100.patch
-Patch11:   bcm283x-dts-Rename-U-Boot-file.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -93,8 +92,6 @@ u-boot bootloader binaries for armv7 boards
 %autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
 
 cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 .
-
-sed -i 's/python/python3/' arch/arm/mach-rockchip/make_fit_atf.py
 
 %build
 mkdir builds
