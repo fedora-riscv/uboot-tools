@@ -28,6 +28,7 @@ Patch7:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch8:    arm-tegra-defaine-fdtfile-for-all-devices.patch
 Patch9:    zynqmp-Add-support-for-u-boot.itb-generation-with-ATF.patch
 Patch10:   zynqmp-Do-not-assing-MIO34-that-early-on-zcu100.patch
+Patch11:   wandboard-Fix-the-DM_PMIC-conversion.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc

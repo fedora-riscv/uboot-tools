@@ -1,0 +1,298 @@
+From patchwork Tue Dec 10 09:32:59 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Fabio Estevam <festevam@gmail.com>
+X-Patchwork-Id: 1206991
+X-Patchwork-Delegate: sbabic@denx.de
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com
+ header.b="cvQwwEgd"; dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits)
+ server-digest SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 47XFH65yXWz9sR0
+ for <incoming@patchwork.ozlabs.org>;
+ Tue, 10 Dec 2019 20:33:22 +1100 (AEDT)
+Received: from phobos.denx.de (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id D7B2E815E1;
+ Tue, 10 Dec 2019 10:33:15 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com
+ header.b="cvQwwEgd"; dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 4752C8074A; Tue, 10 Dec 2019 10:33:14 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.1 required=5.0 tests=DKIM_SIGNED,DKIM_VALID,
+ DKIM_VALID_AU,FREEMAIL_FROM,SPF_HELO_NONE autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mail-vs1-xe44.google.com (mail-vs1-xe44.google.com
+ [IPv6:2607:f8b0:4864:20::e44])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 937E28074A
+ for <u-boot@lists.denx.de>; Tue, 10 Dec 2019 10:33:11 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=festevam@gmail.com
+Received: by mail-vs1-xe44.google.com with SMTP id x4so12516773vsx.10
+ for <u-boot@lists.denx.de>; Tue, 10 Dec 2019 01:33:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025; 
+ h=from:to:cc:subject:date:message-id;
+ bh=mpTV9oyDpdcbibHXq3CRpa1/KhlaRlmW+uWx2mbu2C0=;
+ b=cvQwwEgdb0cUfPdifzUOq/iEL9XwLazg63lgVN27j8pQhuqD4CnxE7P4E1kAmm4GrL
+ ioli46uO/Zn7MutAHpZh141SUmltl5XyJkK/xfwHSYwTpWLiwGzieEfLxpOTOCmJDolI
+ W5wZbT1C04618Y3UCGlEZ9L7ETfaYqT7cOEjUBpSsArGNViCrIToVeVW+z8oTAsT51XE
+ CrVdNSDOXV3jRQzBEC1l+eZD5hAXFVPHY6sErfv+y8b94/la+HA5yaRmlVg30fosnxxq
+ BcbV0kO/8Kl1VgIOnxr4pVy+NsG8sFJ5zjQgsaGGFVwL9xx1Z8my0q0JlKFOs63K8GD+
+ 1Yuw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=mpTV9oyDpdcbibHXq3CRpa1/KhlaRlmW+uWx2mbu2C0=;
+ b=M1zPCQgH6lX7Ng689GJcnZQWOuEhk0MKOHRBbE702r7lq579f9ACwlpW4sAmLS/gqs
+ BTRpErFG2yHcK95YAJOjx+QeT5weQJShAp1r7sLKIqBoxxi9oYzMYt+vO4oYENcsOdoL
+ fxbXhR9mT2GVpedrncf3P4Js8xMU/Og14n63mRSCzjI0z9kmFpjlIbhFEAoXIeYYrUTO
+ JF/fjPHdOAyuFSG2r0JSuyh2ewrHBhqmpdc09iJalFiYzd2fMWiK4z4FDopwmSzW2+LQ
+ qFXPcppjuUWNSFf/WVdxN4a1pXzmCvlyo+wUVCinBll219AvEmP5UQwfGVfv4g2qOGJ2
+ +uaw==
+X-Gm-Message-State: APjAAAWEqUYJ4RzYMv6viS7n184rIuw6EoDe0lHixKjw8y7hOeos8Jwk
+ j+sKufWbN2myuE6gHKRWXTM=
+X-Google-Smtp-Source: APXvYqxvZbxUyC1WljEkppgxN57/lcAdqYBto/WMiBhA6sqkc/bvP209jENc0g48Nw4H6RjWmlXc8w==
+X-Received: by 2002:a67:ff85:: with SMTP id v5mr23836021vsq.42.1575970390329; 
+ Tue, 10 Dec 2019 01:33:10 -0800 (PST)
+Received: from fabio-Latitude-E5450.nxp.com ([2804:14c:482:5bb::1])
+ by smtp.gmail.com with ESMTPSA id
+ k192sm1820253vke.40.2019.12.10.01.33.07
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 10 Dec 2019 01:33:09 -0800 (PST)
+From: Fabio Estevam <festevam@gmail.com>
+To: sbabic@denx.de
+Subject: [PATCH v3 1/2] wandboard: Fix the DM_PMIC conversion
+Date: Tue, 10 Dec 2019 06:32:59 -0300
+Message-Id: <20191210093300.31692-1-festevam@gmail.com>
+X-Mailer: git-send-email 2.17.1
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.26
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Cc: u-boot@lists.denx.de, uboot-imx@nxp.com, trini@konsulko.com
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.101.4 at phobos.denx.de
+X-Virus-Status: Clean
+
+Commit ec837c82d709 ("imx6: wandboard: convert to DM_PMIC")
+caused the following pmic_get() error:
+                                   
+CPU:   Freescale i.MX6QP rev1.0 at 792 MHz
+Reset cause: POR
+DRAM:  2 GiB
+PMIC:  pmic_get() ret -19
+...
+
+and since the PMIC presence is used to determine the board D1 revision,
+the following error is seen when booting a board rev D1:
+                                               
+WARNING: Could not determine dtb to use
+
+and the kernel does not boot at all.
+
+Fix the regression by passing "pfuze100@8" as the correct parameter
+to the pmic_get() function in the DM case.
+
+Fixes: ec837c82d709 ("imx6: wandboard: convert to DM_PMIC")
+Signed-off-by: Fabio Estevam <festevam@gmail.com>
+---
+Changes since v2:
+- None
+
+ board/wandboard/wandboard.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/board/wandboard/wandboard.c b/board/wandboard/wandboard.c
+index 6c1e4ef27d..b2f961a7f0 100644
+--- a/board/wandboard/wandboard.c
++++ b/board/wandboard/wandboard.c
+@@ -363,7 +363,7 @@ int power_init_board(void)
+ 
+ 	puts("PMIC:  ");
+ 
+-	ret = pmic_get("pfuze100", &dev);
++	ret = pmic_get("pfuze100@8", &dev);
+ 	if (ret < 0) {
+ 		printf("pmic_get() ret %d\n", ret);
+ 		return 0;
+
+From patchwork Tue Dec 10 09:33:00 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Fabio Estevam <festevam@gmail.com>
+X-Patchwork-Id: 1206992
+X-Patchwork-Delegate: sbabic@denx.de
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com
+ header.b="YrPr8jxV"; dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 47XFHB3qzgz9sR0
+ for <incoming@patchwork.ozlabs.org>;
+ Tue, 10 Dec 2019 20:33:26 +1100 (AEDT)
+Received: from phobos.denx.de (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id BC5CA81644;
+ Tue, 10 Dec 2019 10:33:19 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+ dkim=fail reason="signature verification failed" (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com
+ header.b="YrPr8jxV"; dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id C408A8163A; Tue, 10 Dec 2019 10:33:17 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.1 required=5.0 tests=DKIM_SIGNED,DKIM_VALID,
+ DKIM_VALID_AU,FREEMAIL_FROM,SPF_HELO_NONE autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mail-vs1-xe43.google.com (mail-vs1-xe43.google.com
+ [IPv6:2607:f8b0:4864:20::e43])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id E87DF8074A
+ for <u-boot@lists.denx.de>; Tue, 10 Dec 2019 10:33:14 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=festevam@gmail.com
+Received: by mail-vs1-xe43.google.com with SMTP id p21so12536232vsq.6
+ for <u-boot@lists.denx.de>; Tue, 10 Dec 2019 01:33:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025; 
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=fFiExeVHQEMtju9XljEZntJtMc/qzkpL8xAT5PDzV60=;
+ b=YrPr8jxVxXbzcZcfasnoGn8a6WeAPvhbfZ0+ZEqRpLUxnVpM4LQsPdTrMiyHGUO6TJ
+ 7jdurrMAwK0N4MygABLhGjjU4DExjGT3XpwTf1cqWdK7FLmO7sjWeOIrV+gAvUqqPZgJ
+ 7AAoPDQx3eV3owS87svBd7wDi1M8nJGyuNDh/HSyBFHiwSyV142Tdq17Fjp9qFX1LhMc
+ TjGHMtLNLH2XhClWrKZz+10pQRN0kzdI2Xxai73zFprKsp3MfDww35YX8J9LY9F5/s43
+ mKHgO4EECxOhts/c6xnDIqjl6O9JIajFH9G9azxjZq6/yjbgowe4LEQrlas9y0JKA3s/
+ GK/g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=fFiExeVHQEMtju9XljEZntJtMc/qzkpL8xAT5PDzV60=;
+ b=s0vxHMIufABFR1mGa7wa9NVYGHlj3GR65sLCrAX28gyg6ztQ4dlECQ0CTO3HHnoVoo
+ v6fosk95hoaXI75Bj08HKgCns6k+nvnrIfV/e22t8vPFtQz0CuJy7B9ti1CHMc1OXK79
+ pMvHWoFRXele0KgexW0JS5XomOBmcd7eE25j9awGzpeRS5LFOvoGhSXb1ktBPga3EYBp
+ qJ5lSA/TWesX7MH3DhzHP5g4GXvtsMTSPPJ8DFI+rvnMBIcDpbeLsGkZAmxFIZCiI33e
+ ieKIJyCdPEgBA+hz7RK3Hi7sQWdKgZILDsVuT9mUQlHgQWsohpnuCvZYdCOAFIHAI/RK
+ lbjg==
+X-Gm-Message-State: APjAAAV3AN3eAp5IKWxxBay0ZTJknz5Mc1WZ+95+Xsnj5JpxngNPrUWg
+ El3hLQb+aMhCtHfAe1nVWSc=
+X-Google-Smtp-Source: APXvYqzYkDB7SE8lunA3rRIRTpj90F7DGCbF2B95IgKftA+fSdoxrEfuAazokN+CbP57SXacBYGCSA==
+X-Received: by 2002:a67:f84e:: with SMTP id
+ b14mr23964564vsp.126.1575970393704; 
+ Tue, 10 Dec 2019 01:33:13 -0800 (PST)
+Received: from fabio-Latitude-E5450.nxp.com ([2804:14c:482:5bb::1])
+ by smtp.gmail.com with ESMTPSA id
+ k192sm1820253vke.40.2019.12.10.01.33.10
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 10 Dec 2019 01:33:13 -0800 (PST)
+From: Fabio Estevam <festevam@gmail.com>
+To: sbabic@denx.de
+Subject: [PATCH v3 2/2] wandboard: Remove repeated PMIC string
+Date: Tue, 10 Dec 2019 06:33:00 -0300
+Message-Id: <20191210093300.31692-2-festevam@gmail.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20191210093300.31692-1-festevam@gmail.com>
+References: <20191210093300.31692-1-festevam@gmail.com>
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.26
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Cc: u-boot@lists.denx.de, uboot-imx@nxp.com, trini@konsulko.com
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.101.4 at phobos.denx.de
+X-Virus-Status: Clean
+
+After the conversion to DM_PMIC the following output is seen:
+
+PMIC:  PMIC:  PFUZE100 ID=0x10
+
+Remove the unnecessary PMIC string from the board file to
+avoid the repetead string.
+
+Signed-off-by: Fabio Estevam <festevam@gmail.com>
+---
+Changes since v2:
+- None
+
+ board/wandboard/wandboard.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/board/wandboard/wandboard.c b/board/wandboard/wandboard.c
+index 7209cc8211..e386ad2cc1 100644
+--- a/board/wandboard/wandboard.c
++++ b/board/wandboard/wandboard.c
+@@ -361,8 +361,6 @@ int power_init_board(void)
+ 	struct udevice *dev;
+ 	int reg, ret;
+ 
+-	puts("PMIC:  ");
+-
+ 	ret = pmic_get("pfuze100@8", &dev);
+ 	if (ret < 0) {
+ 		printf("pmic_get() ret %d\n", ret);
