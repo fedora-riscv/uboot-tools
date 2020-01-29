@@ -1,8 +1,8 @@
-#global candidate rc5
+%global candidate rc1
 
 Name:      uboot-tools
-Version:   2020.01
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Version:   2020.04
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -26,9 +26,7 @@ Patch5:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:    dragonboard-fixes.patch
 Patch7:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch8:    arm-tegra-defaine-fdtfile-for-all-devices.patch
-Patch9:    zynqmp-Add-support-for-u-boot.itb-generation-with-ATF.patch
-Patch10:   zynqmp-Do-not-assing-MIO34-that-early-on-zcu100.patch
-Patch11:   wandboard-Fix-the-DM_PMIC-conversion.patch
+Patch12:   Ethernet-support-for-Raspberry-Pi-4.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -250,6 +248,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Jan 29 2020 Peter Robinson <pbrobinson@fedoraproject.org> 2020.04-0.1-rc1
+- 2020.04 RC1
+
 * Tue Jan  7 2020 Peter Robinson <pbrobinson@fedoraproject.org> 2020.01-1
 - 2020.01
 
