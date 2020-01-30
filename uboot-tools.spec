@@ -21,6 +21,7 @@ Patch1:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch2:    uefi-use-Fedora-specific-path-name.patch
 
 # Board fixes and enablement
+Patch3:    0001-Remove-redundant-YYLOC-global-declaration.patch
 Patch4:    usb-kbd-fixes.patch
 Patch5:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:    dragonboard-fixes.patch
