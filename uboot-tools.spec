@@ -1,8 +1,8 @@
-%global candidate rc1
+%global candidate rc2
 
 Name:      uboot-tools
 Version:   2020.04
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -21,13 +21,11 @@ Patch1:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch2:    uefi-use-Fedora-specific-path-name.patch
 
 # Board fixes and enablement
-Patch3:    0001-Remove-redundant-YYLOC-global-declaration.patch
 Patch4:    usb-kbd-fixes.patch
 Patch5:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:    dragonboard-fixes.patch
 Patch7:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch8:    arm-tegra-defaine-fdtfile-for-all-devices.patch
-Patch12:   Ethernet-support-for-Raspberry-Pi-4.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -249,6 +247,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Feb 13 2020 Peter Robinson <pbrobinson@fedoraproject.org> 2020.04-0.3-rc2
+- 2020.04 RC2
+
 * Sun Feb  2 2020 Peter Robinson <pbrobinson@fedoraproject.org> 2020.04-0.2-rc1
 - Update genet NIC driver
 
