@@ -1,0 +1,109 @@
+From patchwork Wed Mar 25 20:27:51 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Jan Kiszka <jan.kiszka@siemens.com>
+X-Patchwork-Id: 1261644
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de (client-ip=85.214.62.61;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=siemens.com
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits)
+ server-digest SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 48nfnl4Nyzz9sPk
+ for <incoming@patchwork.ozlabs.org>;
+ Thu, 26 Mar 2020 07:28:11 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id F0DD781264;
+ Wed, 25 Mar 2020 21:28:01 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=siemens.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 63F418176E; Wed, 25 Mar 2020 21:27:59 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00, RCVD_IN_MSPIKE_H3, 
+ RCVD_IN_MSPIKE_WL,SPF_HELO_NONE,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from thoth.sbs.de (thoth.sbs.de [192.35.17.2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 8068780111
+ for <u-boot@lists.denx.de>; Wed, 25 Mar 2020 21:27:54 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=siemens.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=jan.kiszka@siemens.com
+Received: from mail2.sbs.de (mail2.sbs.de [192.129.41.66])
+ by thoth.sbs.de (8.15.2/8.15.2) with ESMTPS id 02PKRqHN010973
+ (version=TLSv1.2 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 25 Mar 2020 21:27:52 +0100
+Received: from [167.87.79.232] ([167.87.79.232])
+ by mail2.sbs.de (8.15.2/8.15.2) with ESMTP id 02PKRqX9010863;
+ Wed, 25 Mar 2020 21:27:52 +0100
+From: Jan Kiszka <jan.kiszka@siemens.com>
+Subject: [PATCH] fs: ext4: Fix alignment of cache buffers
+To: U-Boot Mailing List <u-boot@lists.denx.de>, Tom Rini <trini@konsulko.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Message-ID: <c2b25bd8-8f9a-c95d-a309-d18ac755f611@siemens.com>
+Date: Wed, 25 Mar 2020 21:27:51 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
+MIME-Version: 1.0
+Content-Language: en-US
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Jan Kiszka <jan.kiszka@siemens.com>
+
+We need to align the cache buffer to ARCH_DMA_MINALIGN in order to avoid
+access errors like
+
+CACHE: Misaligned operation at range [be0231e0, be0235e0]
+
+seen on the MCIMX7SABRE.
+
+Fixes: d5aee659f217 ("fs: ext4: cache extent data")
+Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
+Reviewed-by: Tom Rini <trini@konsulko.com>
+Reviewed-by: Stephen Warren <swarren@nvidia.com>
+---
+ fs/ext4/ext4fs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/ext4/ext4fs.c b/fs/ext4/ext4fs.c
+index 1c616a26a2..966b427a97 100644
+--- a/fs/ext4/ext4fs.c
++++ b/fs/ext4/ext4fs.c
+@@ -288,7 +288,7 @@ int ext_cache_read(struct ext_block_cache *cache, lbaint_t block, int size)
+ 	if (cache->buf && cache->block == block && cache->size == size)
+ 		return 1;
+ 	ext_cache_fini(cache);
+-	cache->buf = malloc(size);
++	cache->buf = memalign(ARCH_DMA_MINALIGN, size);
+ 	if (!cache->buf)
+ 		return 0;
+ 	if (!ext4fs_devread(block, 0, size, cache->buf)) {
