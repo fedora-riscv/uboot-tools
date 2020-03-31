@@ -1,0 +1,310 @@
+From patchwork Thu Mar 26 22:59:13 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Tom Warren <tomcwarren3959@gmail.com>
+X-Patchwork-Id: 1262416
+X-Patchwork-Delegate: joe.hershberger@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 48pL643S8Tz9sSH
+ for <incoming@patchwork.ozlabs.org>;
+ Fri, 27 Mar 2020 09:59:40 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 95C3581850;
+ Thu, 26 Mar 2020 23:59:33 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 7014481843; Thu, 26 Mar 2020 23:59:16 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=BAYES_00,
+ DKIM_ADSP_CUSTOM_MED, 
+ FORGED_GMAIL_RCVD,FREEMAIL_FROM,NML_ADSP_CUSTOM_MED,SPF_HELO_NONE,
+ URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.2
+Received: from hqnvemgate24.nvidia.com (hqnvemgate24.nvidia.com
+ [216.228.121.143])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 2CBED81836
+ for <u-boot@lists.denx.de>; Thu, 26 Mar 2020 23:59:13 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=fail smtp.mailfrom=tomcwarren3959@gmail.com
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
+ hqnvemgate24.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5e7d33620000>; Thu, 26 Mar 2020 15:57:38 -0700
+Received: from hqmail.nvidia.com ([172.20.161.6])
+ by hqpgpgate101.nvidia.com (PGP Universal service);
+ Thu, 26 Mar 2020 15:59:10 -0700
+X-PGP-Universal: processed;
+ by hqpgpgate101.nvidia.com on Thu, 26 Mar 2020 15:59:10 -0700
+Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL109.nvidia.com
+ (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3;
+ Thu, 26 Mar 2020 22:59:09 +0000
+Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3
+ via Frontend Transport; Thu, 26 Mar 2020 22:59:10 +0000
+Received: from tom-lt2.nvidia.com (Not Verified[10.2.63.13]) by
+ hqnvemgw03.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
+ id <B5e7d33bd0002>; Thu, 26 Mar 2020 15:59:09 -0700
+From: <tomcwarren3959@gmail.com>
+To: <u-boot@lists.denx.de>
+CC: <swarren@nvidia.com>, <treding@nvidia.com>, <jonathanh@nvidia.com>,
+ <twarren@nvidia.com>, <joe.hershberger@ni.com>
+Subject: [PATCH 1/2] net: rt8169: WAR for DHCP not getting IP after kernel
+ boot/reboot
+Date: Thu, 26 Mar 2020 15:59:13 -0700
+Message-ID: <1585263554-10258-2-git-send-email-tomcwarren3959@gmail.com>
+X-Mailer: git-send-email 1.8.2.1.610.g562af5b
+In-Reply-To: <1585263554-10258-1-git-send-email-tomcwarren3959@gmail.com>
+References: <1585263554-10258-1-git-send-email-tomcwarren3959@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Tom Warren <twarren@nvidia.com>
+
+This is a WAR for DHCP failure after rebooting from the L4T kernel. The
+r8169.c kernel driver is setting bit 19 of the rt816x HW register 0xF0,
+which goes by FuncEvent and MISC in various driver source/datasheets.
+That bit is called RxDv_Gated_En in the r8169.c kernel driver. Clear it
+here at the end of probe to ensure that U-Boot can get an IP assigned
+via DHCP.
+
+Signed-off-by: Tom Warren <twarren@nvidia.com>
+---
+ drivers/net/rtl8169.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/drivers/net/rtl8169.c b/drivers/net/rtl8169.c
+index 5ccdfdd..ff89e28 100644
+--- a/drivers/net/rtl8169.c
++++ b/drivers/net/rtl8169.c
+@@ -237,6 +237,9 @@ enum RTL8169_register_content {
+ 
+ 	/*_TBICSRBit*/
+ 	TBILinkOK = 0x02000000,
++
++	/* FuncEvent/Misc */
++	RxDv_Gated_En = 0x80000,
+ };
+ 
+ static struct {
+@@ -1207,6 +1210,19 @@ static int rtl8169_eth_probe(struct udevice *dev)
+ 		return ret;
+ 	}
+ 
++	/*
++	 * WAR for DHCP failure after rebooting from kernel.
++	 * Clear RxDv_Gated_En bit which was set by kernel driver.
++	 * Without this, U-Boot can't get an IP via DHCP.
++	 * Register (FuncEvent, aka MISC) and RXDV_GATED_EN bit are from
++	 * the r8169.c kernel driver.
++	 */
++
++	u32 val = RTL_R32(FuncEvent);
++	debug("%s: FuncEvent/Misc (0xF0) = 0x%08X\n", __func__, val);
++	val &= ~RxDv_Gated_En;
++	RTL_W32(FuncEvent, val);
++
+ 	return 0;
+ }
+ 
+
+From patchwork Thu Mar 26 22:59:14 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Tom Warren <tomcwarren3959@gmail.com>
+X-Patchwork-Id: 1262417
+X-Patchwork-Delegate: twarren@nvidia.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de (client-ip=85.214.62.61;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 48pL6B04lDz9sSH
+ for <incoming@patchwork.ozlabs.org>;
+ Fri, 27 Mar 2020 09:59:45 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id D74BA81883;
+ Thu, 26 Mar 2020 23:59:35 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id CFAF58185D; Thu, 26 Mar 2020 23:59:18 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=BAYES_00,
+ DKIM_ADSP_CUSTOM_MED, 
+ FORGED_GMAIL_RCVD,FREEMAIL_FROM,NML_ADSP_CUSTOM_MED,SPF_HELO_NONE,
+ URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.2
+Received: from hqnvemgate24.nvidia.com (hqnvemgate24.nvidia.com
+ [216.228.121.143])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 3F7798183F
+ for <u-boot@lists.denx.de>; Thu, 26 Mar 2020 23:59:13 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=fail smtp.mailfrom=tomcwarren3959@gmail.com
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
+ hqnvemgate24.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5e7d33620001>; Thu, 26 Mar 2020 15:57:38 -0700
+Received: from hqmail.nvidia.com ([172.20.161.6])
+ by hqpgpgate101.nvidia.com (PGP Universal service);
+ Thu, 26 Mar 2020 15:59:10 -0700
+X-PGP-Universal: processed;
+ by hqpgpgate101.nvidia.com on Thu, 26 Mar 2020 15:59:10 -0700
+Received: from HQMAIL109.nvidia.com (172.20.187.15) by HQMAIL111.nvidia.com
+ (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3;
+ Thu, 26 Mar 2020 22:59:10 +0000
+Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL109.nvidia.com
+ (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3
+ via Frontend Transport; Thu, 26 Mar 2020 22:59:10 +0000
+Received: from tom-lt2.nvidia.com (Not Verified[10.2.63.13]) by
+ hqnvemgw03.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
+ id <B5e7d33be0000>; Thu, 26 Mar 2020 15:59:10 -0700
+From: <tomcwarren3959@gmail.com>
+To: <u-boot@lists.denx.de>
+CC: <swarren@nvidia.com>, <treding@nvidia.com>, <jonathanh@nvidia.com>,
+ <twarren@nvidia.com>, <joe.hershberger@ni.com>
+Subject: [PATCH 2/2] tegra: Enable CONFIG_BOOTP_PREFER_SERVERIP for all
+ Jetson boards
+Date: Thu, 26 Mar 2020 15:59:14 -0700
+Message-ID: <1585263554-10258-3-git-send-email-tomcwarren3959@gmail.com>
+X-Mailer: git-send-email 1.8.2.1.610.g562af5b
+In-Reply-To: <1585263554-10258-1-git-send-email-tomcwarren3959@gmail.com>
+References: <1585263554-10258-1-git-send-email-tomcwarren3959@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Tom Warren <twarren@nvidia.com>
+
+This allows the user to set $serverip in the environment before
+executing a DHCP request. If they do, U-Boot will use that IP rather
+than using the IP in the DHCP response.
+
+Signed-off-by: Tom Warren <twarren@nvidia.com>
+Acked-by: Stephen Warren <swarren@nvidia.com>
+---
+ configs/e2220-1170_defconfig     | 1 +
+ configs/p2371-0000_defconfig     | 1 +
+ configs/p2371-2180_defconfig     | 1 +
+ configs/p2571_defconfig          | 1 +
+ configs/p2771-0000-000_defconfig | 1 +
+ configs/p2771-0000-500_defconfig | 1 +
+ 6 files changed, 6 insertions(+)
+
+diff --git a/configs/e2220-1170_defconfig b/configs/e2220-1170_defconfig
+index 1639040..951ed1d 100644
+--- a/configs/e2220-1170_defconfig
++++ b/configs/e2220-1170_defconfig
+@@ -43,3 +43,4 @@ CONFIG_CI_UDC=y
+ CONFIG_USB_GADGET_DOWNLOAD=y
+ CONFIG_USB_HOST_ETHER=y
+ CONFIG_USB_ETHER_ASIX=y
++CONFIG_BOOTP_PREFER_SERVERIP=y
+diff --git a/configs/p2371-0000_defconfig b/configs/p2371-0000_defconfig
+index 2070199..7081719 100644
+--- a/configs/p2371-0000_defconfig
++++ b/configs/p2371-0000_defconfig
+@@ -44,3 +44,4 @@ CONFIG_CI_UDC=y
+ CONFIG_USB_GADGET_DOWNLOAD=y
+ CONFIG_USB_HOST_ETHER=y
+ CONFIG_USB_ETHER_ASIX=y
++CONFIG_BOOTP_PREFER_SERVERIP=y
+diff --git a/configs/p2371-2180_defconfig b/configs/p2371-2180_defconfig
+index 8c808ae..c70217c 100644
+--- a/configs/p2371-2180_defconfig
++++ b/configs/p2371-2180_defconfig
+@@ -52,3 +52,4 @@ CONFIG_CI_UDC=y
+ CONFIG_USB_GADGET_DOWNLOAD=y
+ CONFIG_USB_HOST_ETHER=y
+ CONFIG_USB_ETHER_ASIX=y
++CONFIG_BOOTP_PREFER_SERVERIP=y
+diff --git a/configs/p2571_defconfig b/configs/p2571_defconfig
+index 721c5c5..43c24b8 100644
+--- a/configs/p2571_defconfig
++++ b/configs/p2571_defconfig
+@@ -44,3 +44,4 @@ CONFIG_CI_UDC=y
+ CONFIG_USB_GADGET_DOWNLOAD=y
+ CONFIG_USB_HOST_ETHER=y
+ CONFIG_USB_ETHER_ASIX=y
++CONFIG_BOOTP_PREFER_SERVERIP=y
+diff --git a/configs/p2771-0000-000_defconfig b/configs/p2771-0000-000_defconfig
+index e347a77..8bf8419 100644
+--- a/configs/p2771-0000-000_defconfig
++++ b/configs/p2771-0000-000_defconfig
+@@ -37,3 +37,4 @@ CONFIG_SYS_NS16550=y
+ CONFIG_USB=y
+ CONFIG_DM_USB=y
+ CONFIG_POSITION_INDEPENDENT=y
++CONFIG_BOOTP_PREFER_SERVERIP=y
+diff --git a/configs/p2771-0000-500_defconfig b/configs/p2771-0000-500_defconfig
+index 0803b26..1f40333 100644
+--- a/configs/p2771-0000-500_defconfig
++++ b/configs/p2771-0000-500_defconfig
+@@ -37,3 +37,4 @@ CONFIG_SYS_NS16550=y
+ CONFIG_USB=y
+ CONFIG_DM_USB=y
+ CONFIG_POSITION_INDEPENDENT=y
++CONFIG_BOOTP_PREFER_SERVERIP=y

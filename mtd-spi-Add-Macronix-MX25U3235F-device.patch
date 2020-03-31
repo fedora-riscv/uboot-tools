@@ -1,0 +1,116 @@
+From patchwork Thu Mar 26 21:59:01 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Tom Warren <tomcwarren3959@gmail.com>
+X-Patchwork-Id: 1262368
+X-Patchwork-Delegate: jagannadh.teki@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits)
+ server-digest SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 48pJmv0yfHz9sPR
+ for <incoming@patchwork.ozlabs.org>;
+ Fri, 27 Mar 2020 08:59:42 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id A34AC80199;
+ Thu, 26 Mar 2020 22:59:34 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 07B4181813; Thu, 26 Mar 2020 22:59:33 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=BAYES_00,
+ DKIM_ADSP_CUSTOM_MED, 
+ FORGED_GMAIL_RCVD,FREEMAIL_FROM,NML_ADSP_CUSTOM_MED,SPF_HELO_NONE,
+ SPOOFED_FREEMAIL,URIBL_BLOCKED autolearn=no autolearn_force=no
+ version=3.4.2
+Received: from hqnvemgate24.nvidia.com (hqnvemgate24.nvidia.com
+ [216.228.121.143])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 62DF58004A
+ for <u-boot@lists.denx.de>; Thu, 26 Mar 2020 22:59:08 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=fail smtp.mailfrom=tomcwarren3959@gmail.com
+Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
+ hqnvemgate24.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5e7d25480000>; Thu, 26 Mar 2020 14:57:28 -0700
+Received: from hqmail.nvidia.com ([172.20.161.6])
+ by hqpgpgate102.nvidia.com (PGP Universal service);
+ Thu, 26 Mar 2020 14:59:00 -0700
+X-PGP-Universal: processed;
+ by hqpgpgate102.nvidia.com on Thu, 26 Mar 2020 14:59:00 -0700
+Received: from HQMAIL109.nvidia.com (172.20.187.15) by HQMAIL111.nvidia.com
+ (172.20.187.18) with Microsoft SMTP Server (TLS) id 15.0.1473.3;
+ Thu, 26 Mar 2020 21:59:00 +0000
+Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL109.nvidia.com
+ (172.20.187.15) with Microsoft SMTP Server (TLS) id 15.0.1473.3
+ via Frontend Transport; Thu, 26 Mar 2020 21:59:00 +0000
+Received: from tom-lt2.nvidia.com (Not Verified[10.2.63.13]) by
+ hqnvemgw03.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
+ id <B5e7d25a40000>; Thu, 26 Mar 2020 14:59:00 -0700
+From: <tomcwarren3959@gmail.com>
+To: <u-boot@lists.denx.de>
+CC: <swarren@nvidia.com>, <treding@nvidia.com>, <jonathanh@nvidia.com>,
+ <twarren@nvidia.com>, <jagan@amarulasolutions.com>
+Subject: [PATCH] mtd: spi: Add Macronix MX25U3235F device
+Date: Thu, 26 Mar 2020 14:59:01 -0700
+Message-ID: <1585259941-28879-1-git-send-email-tomcwarren3959@gmail.com>
+X-Mailer: git-send-email 1.8.2.1.610.g562af5b
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Tom Warren <twarren@nvidia.com>
+
+Add Macronix MX25U3235F flash device description.
+This is a 4MiB part.
+
+Signed-off-by: Tom Warren <twarren@nvidia.com>
+---
+ drivers/mtd/spi/spi-nor-ids.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/mtd/spi/spi-nor-ids.c b/drivers/mtd/spi/spi-nor-ids.c
+index 973b6f8..abdf560 100644
+--- a/drivers/mtd/spi/spi-nor-ids.c
++++ b/drivers/mtd/spi/spi-nor-ids.c
+@@ -147,6 +147,7 @@ const struct flash_info spi_nor_ids[] = {
+ 	{ INFO("mx25l6405d",  0xc22017, 0, 64 * 1024, 128, SECT_4K) },
+ 	{ INFO("mx25u2033e",  0xc22532, 0, 64 * 1024,   4, SECT_4K) },
+ 	{ INFO("mx25u1635e",  0xc22535, 0, 64 * 1024,  32, SECT_4K) },
++	{ INFO("mx25u3235f",  0xc22536, 0, 4 * 1024,  1024, SECT_4K) },
+ 	{ INFO("mx25u6435f",  0xc22537, 0, 64 * 1024, 128, SECT_4K) },
+ 	{ INFO("mx25l12805d", 0xc22018, 0, 64 * 1024, 256, 0) },
+ 	{ INFO("mx25l12855e", 0xc22618, 0, 64 * 1024, 256, 0) },

@@ -1,7 +1,12 @@
-From 1e93c98419e6a1ea62ef697ed915617024eb6da0 Mon Sep 17 00:00:00 2001
+From ce2493a9dec8af2dd57839e337b002d256d2a842 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Thu, 18 Apr 2019 14:03:33 +0100
-Subject: [PATCH] arm: tegra: defaine fdtfile for all devices
+Date: Tue, 31 Mar 2020 10:38:41 +0100
+Subject: [PATCH] arm: tegra: define fdtfile option for distro boot
+
+For booting via UEFI we need to define the fdtfile option so
+bootefi has the option to load a fdtfile from disk. For arm64
+the kernel dtb is located in a vendor directory so we define
+that as nvidia for that architecture.
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
@@ -15,10 +20,10 @@ Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
  7 files changed, 12 insertions(+)
 
 diff --git a/include/configs/tegra-common.h b/include/configs/tegra-common.h
-index 84f671d00c..c3e16d8cfc 100644
+index f2cdd9c019..997b50394b 100644
 --- a/include/configs/tegra-common.h
 +++ b/include/configs/tegra-common.h
-@@ -56,6 +56,12 @@
+@@ -55,6 +55,12 @@
  #define CONFIG_SYS_MEMTEST_START	(NV_PA_SDRC_CS0 + 0x600000)
  #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + 0x100000)
  
@@ -32,7 +37,7 @@ index 84f671d00c..c3e16d8cfc 100644
   * Physical Memory Map
   */
 diff --git a/include/configs/tegra114-common.h b/include/configs/tegra114-common.h
-index 1aa4412645..0c44a7673b 100644
+index d3a7045697..9d751b6740 100644
 --- a/include/configs/tegra114-common.h
 +++ b/include/configs/tegra114-common.h
 @@ -50,6 +50,7 @@
@@ -44,7 +49,7 @@ index 1aa4412645..0c44a7673b 100644
  	"ramdisk_addr_r=0x83100000\0"
  
 diff --git a/include/configs/tegra124-common.h b/include/configs/tegra124-common.h
-index 3530684164..29da06c8f7 100644
+index 522993b958..0eb8f92809 100644
 --- a/include/configs/tegra124-common.h
 +++ b/include/configs/tegra124-common.h
 @@ -52,6 +52,7 @@
@@ -68,7 +73,7 @@ index b4936cc731..5c3ad35c76 100644
  	"ramdisk_addr_r=0x82100000\0"
  
 diff --git a/include/configs/tegra20-common.h b/include/configs/tegra20-common.h
-index e58477e289..73c94d993b 100644
+index 1e31d82574..fdd8996955 100644
 --- a/include/configs/tegra20-common.h
 +++ b/include/configs/tegra20-common.h
 @@ -51,6 +51,7 @@
@@ -80,7 +85,7 @@ index e58477e289..73c94d993b 100644
  	"ramdisk_addr_r=0x03100000\0"
  
 diff --git a/include/configs/tegra210-common.h b/include/configs/tegra210-common.h
-index 1c533118ad..69e446ed58 100644
+index 1b8e94b60c..2226effe16 100644
 --- a/include/configs/tegra210-common.h
 +++ b/include/configs/tegra210-common.h
 @@ -46,6 +46,7 @@
@@ -88,11 +93,11 @@ index 1c533118ad..69e446ed58 100644
  	"pxefile_addr_r=0x90100000\0" \
  	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
 +	"fdtfile=" FDTFILE "\0" \
- 	"fdt_addr_r=0x82000000\0" \
- 	"ramdisk_addr_r=0x82100000\0"
+ 	"fdt_addr_r=0x83000000\0" \
+ 	"ramdisk_addr_r=0x83200000\0"
  
 diff --git a/include/configs/tegra30-common.h b/include/configs/tegra30-common.h
-index 2d8948d9d9..27696009cd 100644
+index 54bc6756ab..6c5dc24b26 100644
 --- a/include/configs/tegra30-common.h
 +++ b/include/configs/tegra30-common.h
 @@ -47,6 +47,7 @@
@@ -104,59 +109,5 @@ index 2d8948d9d9..27696009cd 100644
  	"ramdisk_addr_r=0x83100000\0"
  
 -- 
-2.21.0
-From 267dc15aa8f247362b04387d6a1ab01d94d41aef Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Thu, 18 Apr 2019 15:44:59 +0100
-Subject: [PATCH] add BOOTENV_EFI_SET_FDTFILE_FALLBACK for tegra186 because tx2
- variants
-
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
----
- include/config_distro_bootcmd.h   | 2 ++
- include/configs/tegra186-common.h | 7 ++++++-
- 2 files changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index 4993303f4d..cd317bb457 100644
---- a/include/config_distro_bootcmd.h
-+++ b/include/config_distro_bootcmd.h
-@@ -118,8 +118,10 @@
- 	  "setenv efi_fdtfile ${soc}-${board}${boardver}.dtb; "           \
- 	"fi; "
- #else
-+#ifndef BOOTENV_EFI_SET_FDTFILE_FALLBACK
- #define BOOTENV_EFI_SET_FDTFILE_FALLBACK
- #endif
-+#endif
- 
- 
- #define BOOTENV_SHARED_EFI                                                \
-diff --git a/include/configs/tegra186-common.h b/include/configs/tegra186-common.h
-index 5c3ad35c76..d5f21e0907 100644
---- a/include/configs/tegra186-common.h
-+++ b/include/configs/tegra186-common.h
-@@ -20,6 +20,12 @@
- /* Generic Interrupt Controller */
- #define CONFIG_GICV2
- 
-+#undef FDTFILE
-+#define BOOTENV_EFI_SET_FDTFILE_FALLBACK                                  \
-+        "if test -z \"${fdtfile}\" -a -n \"${soc}\"; then "               \
-+          "setenv efi_fdtfile ${vendor}/${soc}-${board}${boardver}.dtb; "           \
-+        "fi; "
-+
- /*
-  * Memory layout for where various images get loaded by boot scripts:
-  *
-@@ -49,7 +55,6 @@
- 	"scriptaddr=0x90000000\0" \
- 	"pxefile_addr_r=0x90100000\0" \
- 	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
--	"fdtfile=" FDTFILE "\0" \
- 	"fdt_addr_r=0x82000000\0" \
- 	"ramdisk_addr_r=0x82100000\0"
- 
--- 
-2.21.0
+2.26.0
 

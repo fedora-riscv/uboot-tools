@@ -1,0 +1,461 @@
+From patchwork Thu Mar 26 22:30:21 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Tom Warren <tomcwarren3959@gmail.com>
+X-Patchwork-Id: 1262385
+X-Patchwork-Delegate: twarren@nvidia.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de (client-ip=85.214.62.61;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 48pKSx23cFz9sR4
+ for <incoming@patchwork.ozlabs.org>;
+ Fri, 27 Mar 2020 09:30:56 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 88E9581860;
+ Thu, 26 Mar 2020 23:30:53 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id B964381813; Thu, 26 Mar 2020 23:30:40 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=BAYES_00,
+ DKIM_ADSP_CUSTOM_MED, 
+ FORGED_GMAIL_RCVD,FREEMAIL_FROM,NML_ADSP_CUSTOM_MED,SPF_HELO_NONE,
+ URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.2
+Received: from hqnvemgate25.nvidia.com (hqnvemgate25.nvidia.com
+ [216.228.121.64])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 4390A80199
+ for <u-boot@lists.denx.de>; Thu, 26 Mar 2020 23:30:36 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=fail smtp.mailfrom=tomcwarren3959@gmail.com
+Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by
+ hqnvemgate25.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5e7d2cdc0001>; Thu, 26 Mar 2020 15:29:48 -0700
+Received: from hqmail.nvidia.com ([172.20.161.6])
+ by hqpgpgate102.nvidia.com (PGP Universal service);
+ Thu, 26 Mar 2020 15:30:34 -0700
+X-PGP-Universal: processed;
+ by hqpgpgate102.nvidia.com on Thu, 26 Mar 2020 15:30:34 -0700
+Received: from HQMAIL105.nvidia.com (172.20.187.12) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3;
+ Thu, 26 Mar 2020 22:30:34 +0000
+Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL105.nvidia.com
+ (172.20.187.12) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
+ Frontend Transport; Thu, 26 Mar 2020 22:30:34 +0000
+Received: from tom-lt2.nvidia.com (Not Verified[10.2.63.13]) by
+ rnnvemgw01.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
+ id <B5e7d2d090026>; Thu, 26 Mar 2020 15:30:33 -0700
+From: <tomcwarren3959@gmail.com>
+To: <u-boot@lists.denx.de>
+CC: <swarren@nvidia.com>, <treding@nvidia.com>, <jonathanh@nvidia.com>,
+ <twarren@nvidia.com>, <jh80.chung@samsung.com>
+Subject: [PATCH 1/2] mmc: t210: Add autocal and tap/trim updates for SDMMC1/3
+Date: Thu, 26 Mar 2020 15:30:21 -0700
+Message-ID: <1585261822-3420-2-git-send-email-tomcwarren3959@gmail.com>
+X-Mailer: git-send-email 1.8.2.1.610.g562af5b
+In-Reply-To: <1585261822-3420-1-git-send-email-tomcwarren3959@gmail.com>
+References: <1585261822-3420-1-git-send-email-tomcwarren3959@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Tom Warren <twarren@nvidia.com>
+
+As per the T210 TRM, when running at 3.3v, the SDMMC1 tap/trim and
+autocal values need to be set to condition the signals correctly before
+talking to the SD-card. This is the same as what's being done in CBoot,
+but it gets reset when the SDMMC1 HW is soft-reset during SD driver
+init, so needs to be repeated here. Also set autocal and tap/trim for
+SDMMC3, although no T210 boards use it for SD-card at this time.
+
+Signed-off-by: Tom Warren <twarren@nvidia.com>
+---
+Changes for v2:
+ - Added clocks.h include for TEGRA30 to fix T30 32-bit builds
+
+ arch/arm/include/asm/arch-tegra/tegra_mmc.h | 20 +++++--
+ drivers/mmc/tegra_mmc.c                     | 84 ++++++++++++++++++++++++++---
+ 2 files changed, 92 insertions(+), 12 deletions(-)
+
+diff --git a/arch/arm/include/asm/arch-tegra/tegra_mmc.h b/arch/arm/include/asm/arch-tegra/tegra_mmc.h
+index a2b6f63..a8bfa46 100644
+--- a/arch/arm/include/asm/arch-tegra/tegra_mmc.h
++++ b/arch/arm/include/asm/arch-tegra/tegra_mmc.h
+@@ -2,7 +2,7 @@
+ /*
+  * (C) Copyright 2009 SAMSUNG Electronics
+  * Minkyu Kang <mk7.kang@samsung.com>
+- * Portions Copyright (C) 2011-2012 NVIDIA Corporation
++ * Portions Copyright (C) 2011-2012,2019 NVIDIA Corporation
+  */
+ 
+ #ifndef __TEGRA_MMC_H_
+@@ -52,7 +52,7 @@ struct tegra_mmc {
+ 	unsigned char	admaerr;	/* offset 54h */
+ 	unsigned char	res4[3];	/* RESERVED, offset 55h-57h */
+ 	unsigned long	admaaddr;	/* offset 58h-5Fh */
+-	unsigned char	res5[0xa0];	/* RESERVED, offset 60h-FBh */
++	unsigned char	res5[0x9c];	/* RESERVED, offset 60h-FBh */
+ 	unsigned short	slotintstatus;	/* offset FCh */
+ 	unsigned short	hcver;		/* HOST Version */
+ 	unsigned int	venclkctl;	/* _VENDOR_CLOCK_CNTRL_0,    100h */
+@@ -127,11 +127,23 @@ struct tegra_mmc {
+ 
+ #define TEGRA_MMC_NORINTSIGEN_XFER_COMPLETE			(1 << 1)
+ 
+-/* SDMMC1/3 settings from section 24.6 of T30 TRM */
++/* SDMMC1/3 settings from SDMMCx Initialization Sequence of TRM */
+ #define MEMCOMP_PADCTRL_VREF	7
+-#define AUTO_CAL_ENABLED	(1 << 29)
++#define AUTO_CAL_ENABLE		(1 << 29)
++#if defined(CONFIG_TEGRA210)
++#define AUTO_CAL_ACTIVE		(1 << 31)
++#define AUTO_CAL_START		(1 << 31)
++#define AUTO_CAL_PD_OFFSET	(0x7D << 8)
++#define AUTO_CAL_PU_OFFSET	(0 << 0)
++#define IO_TRIM_BYPASS_MASK	(1 << 2)
++#define TRIM_VAL_SHIFT		24
++#define TRIM_VAL_MASK		(0x1F << TRIM_VAL_SHIFT)
++#define TAP_VAL_SHIFT		16
++#define TAP_VAL_MASK		(0xFF << TAP_VAL_SHIFT)
++#else
+ #define AUTO_CAL_PD_OFFSET	(0x70 << 8)
+ #define AUTO_CAL_PU_OFFSET	(0x62 << 0)
++#endif
+ 
+ #endif	/* __ASSEMBLY__ */
+ #endif	/* __TEGRA_MMC_H_ */
+diff --git a/drivers/mmc/tegra_mmc.c b/drivers/mmc/tegra_mmc.c
+index f022e93..73ac58c 100644
+--- a/drivers/mmc/tegra_mmc.c
++++ b/drivers/mmc/tegra_mmc.c
+@@ -3,7 +3,7 @@
+  * (C) Copyright 2009 SAMSUNG Electronics
+  * Minkyu Kang <mk7.kang@samsung.com>
+  * Jaehoon Chung <jh80.chung@samsung.com>
+- * Portions Copyright 2011-2016 NVIDIA Corporation
++ * Portions Copyright 2011-2019 NVIDIA Corporation
+  */
+ 
+ #include <bouncebuf.h>
+@@ -15,6 +15,9 @@
+ #include <asm/io.h>
+ #include <asm/arch-tegra/tegra_mmc.h>
+ #include <linux/err.h>
++#if defined(CONFIG_TEGRA30) || defined(CONFIG_TEGRA210)
++#include <asm/arch/clock.h>
++#endif
+ 
+ struct tegra_mmc_plat {
+ 	struct mmc_config cfg;
+@@ -30,6 +33,7 @@ struct tegra_mmc_priv {
+ 	struct gpio_desc wp_gpio;	/* Write Protect GPIO */
+ 	unsigned int version;	/* SDHCI spec. version */
+ 	unsigned int clock;	/* Current clock (MHz) */
++	int mmc_id;		/* peripheral id */
+ };
+ 
+ static void tegra_mmc_set_power(struct tegra_mmc_priv *priv,
+@@ -446,16 +450,19 @@ static int tegra_mmc_set_ios(struct udevice *dev)
+ 
+ static void tegra_mmc_pad_init(struct tegra_mmc_priv *priv)
+ {
+-#if defined(CONFIG_TEGRA30)
++#if defined(CONFIG_TEGRA30) || defined(CONFIG_TEGRA210)
+ 	u32 val;
++	u16 clk_con;
++	int timeout;
++	int id = priv->mmc_id;
+ 
+-	debug("%s: sdmmc address = %08x\n", __func__, (unsigned int)priv->reg);
++	debug("%s: sdmmc address = %p, id = %d\n", __func__,
++		priv->reg, id);
+ 
+ 	/* Set the pad drive strength for SDMMC1 or 3 only */
+-	if (priv->reg != (void *)0x78000000 &&
+-	    priv->reg != (void *)0x78000400) {
++	if (id != PERIPH_ID_SDMMC1 && id != PERIPH_ID_SDMMC3) {
+ 		debug("%s: settings are only valid for SDMMC1/SDMMC3!\n",
+-		      __func__);
++			__func__);
+ 		return;
+ 	}
+ 
+@@ -464,11 +471,65 @@ static void tegra_mmc_pad_init(struct tegra_mmc_priv *priv)
+ 	val |= MEMCOMP_PADCTRL_VREF;
+ 	writel(val, &priv->reg->sdmemcmppadctl);
+ 
++	/* Disable SD Clock Enable before running auto-cal as per TRM */
++	clk_con = readw(&priv->reg->clkcon);
++	debug("%s: CLOCK_CONTROL = 0x%04X\n", __func__, clk_con);
++	clk_con &= ~TEGRA_MMC_CLKCON_SD_CLOCK_ENABLE;
++	writew(clk_con, &priv->reg->clkcon);
++
+ 	val = readl(&priv->reg->autocalcfg);
+ 	val &= 0xFFFF0000;
+-	val |= AUTO_CAL_PU_OFFSET | AUTO_CAL_PD_OFFSET | AUTO_CAL_ENABLED;
++	val |= AUTO_CAL_PU_OFFSET | AUTO_CAL_PD_OFFSET;
+ 	writel(val, &priv->reg->autocalcfg);
+-#endif
++	val |= AUTO_CAL_START | AUTO_CAL_ENABLE;
++	writel(val, &priv->reg->autocalcfg);
++	debug("%s: AUTO_CAL_CFG = 0x%08X\n", __func__, val);
++	udelay(1);
++	timeout = 100;				/* 10 mSec max (100*100uS) */
++	do {
++		val = readl(&priv->reg->autocalsts);
++		udelay(100);
++	} while ((val & AUTO_CAL_ACTIVE) && --timeout);
++	val = readl(&priv->reg->autocalsts);
++	debug("%s: Final AUTO_CAL_STATUS = 0x%08X, timeout = %d\n",
++	      __func__, val, timeout);
++
++	/* Re-enable SD Clock Enable when auto-cal is done */
++	clk_con |= TEGRA_MMC_CLKCON_SD_CLOCK_ENABLE;
++	writew(clk_con, &priv->reg->clkcon);
++	clk_con = readw(&priv->reg->clkcon);
++	debug("%s: final CLOCK_CONTROL = 0x%04X\n", __func__, clk_con);
++
++	if (timeout == 0) {
++		printf("%s: Warning: Autocal timed out!\n", __func__);
++		/* TBD: Set CFG2TMC_SDMMC1_PAD_CAL_DRV* regs here */
++	}
++
++#if defined(CONFIG_TEGRA210)
++	u32 tap_value, trim_value;
++
++	/* Set tap/trim values for SDMMC1/3 @ <48MHz here */
++	val = readl(&priv->reg->venspictl);	/* aka VENDOR_SYS_SW_CNTL */
++	val &= IO_TRIM_BYPASS_MASK;
++	if (id == PERIPH_ID_SDMMC1) {
++		tap_value = 4;			/* default */
++		if (val)
++			tap_value = 3;
++		trim_value = 2;
++	} else {				/* SDMMC3 */
++		tap_value = 3;
++		trim_value = 3;
++	}
++
++	val = readl(&priv->reg->venclkctl);
++	val &= ~TRIM_VAL_MASK;
++	val |= (trim_value << TRIM_VAL_SHIFT);
++	val &= ~TAP_VAL_MASK;
++	val |= (tap_value << TAP_VAL_SHIFT);
++	writel(val, &priv->reg->venclkctl);
++	debug("%s: VENDOR_CLOCK_CNTRL = 0x%08X\n", __func__, val);
++#endif	/* T210 */
++#endif	/* T30/T210 */
+ }
+ 
+ static void tegra_mmc_reset(struct tegra_mmc_priv *priv, struct mmc *mmc)
+@@ -514,6 +575,13 @@ static int tegra_mmc_init(struct udevice *dev)
+ 	unsigned int mask;
+ 	debug(" tegra_mmc_init called\n");
+ 
++#if defined(CONFIG_TEGRA210)
++	priv->mmc_id = clock_decode_periph_id(dev);
++	if (priv->mmc_id == PERIPH_ID_NONE) {
++		printf("%s: Missing/invalid peripheral ID\n", __func__);
++		return -EINVAL;
++	}
++#endif
+ 	tegra_mmc_reset(priv, mmc);
+ 
+ #if defined(CONFIG_TEGRA124_MMC_DISABLE_EXT_LOOPBACK)
+
+From patchwork Thu Mar 26 22:30:22 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Tom Warren <tomcwarren3959@gmail.com>
+X-Patchwork-Id: 1262386
+X-Patchwork-Delegate: twarren@nvidia.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 48pKT92By7z9sSQ
+ for <incoming@patchwork.ozlabs.org>;
+ Fri, 27 Mar 2020 09:31:09 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 224C981843;
+ Thu, 26 Mar 2020 23:31:00 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id C721F81843; Thu, 26 Mar 2020 23:30:42 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=0.0 required=5.0 tests=BAYES_00,
+ DKIM_ADSP_CUSTOM_MED, 
+ FORGED_GMAIL_RCVD,FREEMAIL_FROM,NML_ADSP_CUSTOM_MED,SPF_HELO_NONE,
+ URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.2
+Received: from hqnvemgate26.nvidia.com (hqnvemgate26.nvidia.com
+ [216.228.121.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id D8179813B5
+ for <u-boot@lists.denx.de>; Thu, 26 Mar 2020 23:30:36 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=fail smtp.mailfrom=tomcwarren3959@gmail.com
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by
+ hqnvemgate26.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+ id <B5e7d2cfd0002>; Thu, 26 Mar 2020 15:30:21 -0700
+Received: from hqmail.nvidia.com ([172.20.161.6])
+ by hqpgpgate101.nvidia.com (PGP Universal service);
+ Thu, 26 Mar 2020 15:30:35 -0700
+X-PGP-Universal: processed;
+ by hqpgpgate101.nvidia.com on Thu, 26 Mar 2020 15:30:35 -0700
+Received: from HQMAIL107.nvidia.com (172.20.187.13) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3;
+ Thu, 26 Mar 2020 22:30:35 +0000
+Received: from rnnvemgw01.nvidia.com (10.128.109.123) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via
+ Frontend Transport; Thu, 26 Mar 2020 22:30:35 +0000
+Received: from tom-lt2.nvidia.com (Not Verified[10.2.63.13]) by
+ rnnvemgw01.nvidia.com with Trustwave SEG (v7, 5, 8, 10121)
+ id <B5e7d2d0a0006>; Thu, 26 Mar 2020 15:30:34 -0700
+From: <tomcwarren3959@gmail.com>
+To: <u-boot@lists.denx.de>
+CC: <swarren@nvidia.com>, <treding@nvidia.com>, <jonathanh@nvidia.com>,
+ <twarren@nvidia.com>, <jh80.chung@samsung.com>
+Subject: [PATCH 2/2] mmc: t210: Fix 'bad' SD-card clock when doing 400KHz
+ card detect
+Date: Thu, 26 Mar 2020 15:30:22 -0700
+Message-ID: <1585261822-3420-3-git-send-email-tomcwarren3959@gmail.com>
+X-Mailer: git-send-email 1.8.2.1.610.g562af5b
+In-Reply-To: <1585261822-3420-1-git-send-email-tomcwarren3959@gmail.com>
+References: <1585261822-3420-1-git-send-email-tomcwarren3959@gmail.com>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Tom Warren <twarren@nvidia.com>
+
+According to the HW team, for some reason the normal clock select code
+picks what appears to be a perfectly valid 375KHz SD card clock, based
+on the CAR clock source and SDMMC1 controller register settings (CAR =
+408MHz PLLP0 divided by 68 for 6MHz, then a SD Clock Control register
+divisor of 16 = 375KHz). But the resulting SD card clock, as measured by
+the HW team, is 700KHz, which is out-of-spec. So the WAR is to use the
+values given in the TRM PLLP table to generate a 400KHz SD-clock (CAR
+clock of 24.7MHz, SD Clock Control divisor of 62) only for SDMMC1 on
+T210 when the requested clock is <= 400KHz. Note that as far as I can
+tell, the other requests for clocks in the Tegra MMC driver result in
+valid SD clocks.
+
+Signed-off-by: Tom Warren <twarren@nvidia.com>
+---
+Changes for v2:
+ - None
+
+ arch/arm/include/asm/arch-tegra/tegra_mmc.h |  2 +-
+ drivers/mmc/tegra_mmc.c                     | 18 ++++++++++++++++++
+ 2 files changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/include/asm/arch-tegra/tegra_mmc.h b/arch/arm/include/asm/arch-tegra/tegra_mmc.h
+index a8bfa46..70dcf4a 100644
+--- a/arch/arm/include/asm/arch-tegra/tegra_mmc.h
++++ b/arch/arm/include/asm/arch-tegra/tegra_mmc.h
+@@ -130,9 +130,9 @@ struct tegra_mmc {
+ /* SDMMC1/3 settings from SDMMCx Initialization Sequence of TRM */
+ #define MEMCOMP_PADCTRL_VREF	7
+ #define AUTO_CAL_ENABLE		(1 << 29)
+-#if defined(CONFIG_TEGRA210)
+ #define AUTO_CAL_ACTIVE		(1 << 31)
+ #define AUTO_CAL_START		(1 << 31)
++#if defined(CONFIG_TEGRA210)
+ #define AUTO_CAL_PD_OFFSET	(0x7D << 8)
+ #define AUTO_CAL_PU_OFFSET	(0 << 0)
+ #define IO_TRIM_BYPASS_MASK	(1 << 2)
+diff --git a/drivers/mmc/tegra_mmc.c b/drivers/mmc/tegra_mmc.c
+index 73ac58c..03110ba 100644
+--- a/drivers/mmc/tegra_mmc.c
++++ b/drivers/mmc/tegra_mmc.c
+@@ -376,6 +376,24 @@ static void tegra_mmc_change_clock(struct tegra_mmc_priv *priv, uint clock)
+ 
+ 	rate = clk_set_rate(&priv->clk, clock);
+ 	div = (rate + clock - 1) / clock;
++
++#if defined(CONFIG_TEGRA210)
++	if (priv->mmc_id == PERIPH_ID_SDMMC1 && clock <= 400000) {
++		/* clock_adjust_periph_pll_div() chooses a 'bad' clock
++		 * on SDMMC1 T210, so skip it here and force a clock
++		 * that's been spec'd in the table in the TRM for
++		 * card-detect (400KHz).
++		 */
++		uint effective_rate = clock_adjust_periph_pll_div(priv->mmc_id,
++				CLOCK_ID_PERIPH, 24727273, NULL);
++		div = 62;
++
++		debug("%s: WAR: Using SDMMC1 clock of %u, div %d to achieve %dHz card clock ...\n",
++			__func__, effective_rate, div, clock);
++	} else
++		clock_adjust_periph_pll_div(priv->mmc_id, CLOCK_ID_PERIPH, clock,
++				    &div);
++#endif
+ 	debug("div = %d\n", div);
+ 
+ 	writew(0, &priv->reg->clkcon);

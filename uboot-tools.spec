@@ -24,8 +24,17 @@ Patch2:    uefi-use-Fedora-specific-path-name.patch
 Patch4:    usb-kbd-fixes.patch
 Patch5:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:    dragonboard-fixes.patch
-Patch7:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
-Patch8:    arm-tegra-defaine-fdtfile-for-all-devices.patch
+
+Patch10:   mtd-spi-Add-Macronix-MX25U3235F-device.patch
+Patch11:   Misc-fixes-for-Tegra.patch
+Patch12:   mmc-t210-fix-autocal-and-400KHz-clock.patch
+Patch13:   qspi-t210-fix-claim_bus-and-clock-tap-delays.patch
+Patch14:   net-tegra-Misc-network-fixes.patch
+Patch15:   t210-miscellaneous-patches.patch
+# http://patchwork.ozlabs.org/patch/1261582/
+Patch16:   ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
+Patch17:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
+Patch18:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -249,6 +258,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %changelog
 * Tue Mar 31 2020 Peter Robinson <pbrobinson@fedoraproject.org> 2020.04-0.6-rc4
 - 2020.04 RC4
+- Updates for NVIDIA Jetson platforms
 
 * Thu Mar 26 2020 Peter Robinson <pbrobinson@fedoraproject.org> 2020.04-0.5-rc3
 - Fix ext4 alignment issue seen on some NXP i.MX devices
