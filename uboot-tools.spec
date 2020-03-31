@@ -1,8 +1,8 @@
-%global candidate rc3
+%global candidate rc4
 
 Name:      uboot-tools
 Version:   2020.04
-Release:   0.5%{?candidate:.%{candidate}}%{?dist}
+Release:   0.6%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -26,7 +26,6 @@ Patch5:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:    dragonboard-fixes.patch
 Patch7:    ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch8:    arm-tegra-defaine-fdtfile-for-all-devices.patch
-Patch9:    fs-ext4-Fix-alignment-of-cache-buffers.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -248,6 +247,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Mar 31 2020 Peter Robinson <pbrobinson@fedoraproject.org> 2020.04-0.6-rc4
+- 2020.04 RC4
+
 * Thu Mar 26 2020 Peter Robinson <pbrobinson@fedoraproject.org> 2020.04-0.5-rc3
 - Fix ext4 alignment issue seen on some NXP i.MX devices
 
