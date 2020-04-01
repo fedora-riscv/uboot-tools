@@ -1,0 +1,863 @@
+From patchwork Tue Mar 31 09:39:57 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Lin Jinhan <troy.lin@rock-chips.com>
+X-Patchwork-Id: 1264692
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 48s6hn3fdhz9sRN
+ for <incoming@patchwork.ozlabs.org>;
+ Tue, 31 Mar 2020 22:35:53 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 5F650819E0;
+ Tue, 31 Mar 2020 13:35:36 +0200 (CEST)
+Authentication-Results: phobos.denx.de; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 954FF819AD; Tue, 31 Mar 2020 11:40:13 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.4 required=5.0 tests=BAYES_00, RCVD_IN_SORBS_WEB, 
+ SPF_HELO_NONE,URIBL_BLOCKED autolearn=no autolearn_force=no
+ version=3.4.2
+Received: from lucky1.263xmail.com (lucky1.263xmail.com [211.157.147.131])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 09E15819A7
+ for <u-boot@lists.denx.de>; Tue, 31 Mar 2020 11:40:07 +0200 (CEST)
+Authentication-Results: phobos.denx.de; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Authentication-Results: phobos.denx.de;
+ spf=fail smtp.mailfrom=troy.lin@rock-chips.com
+Received: from localhost (unknown [192.168.167.235])
+ by lucky1.263xmail.com (Postfix) with ESMTP id D98D394B53;
+ Tue, 31 Mar 2020 17:40:03 +0800 (CST)
+X-MAIL-GRAY: 0
+X-MAIL-DELIVERY: 1
+X-ADDR-CHECKED: 0
+X-ANTISPAM-LEVEL: 2
+X-ABS-CHECKED: 0
+Received: from localhost.localdomain (unknown [58.22.7.114])
+ by smtp.263.net (postfix) whith ESMTP id
+ P29487T139780956792576S1585647603180703_; 
+ Tue, 31 Mar 2020 17:40:04 +0800 (CST)
+X-IP-DOMAINF: 1
+X-UNIQUE-TAG: <29a98dd6429030be44046c52ecfec245>
+X-RL-SENDER: troy.lin@rock-chips.com
+X-SENDER: troy.lin@rock-chips.com
+X-LOGIN-NAME: troy.lin@rock-chips.com
+X-FST-TO: u-boot@lists.denx.de
+X-SENDER-IP: 58.22.7.114
+X-ATTACHMENT-NUM: 0
+X-DNS-TYPE: 0
+X-System-Flag: 0
+From: Lin Jinhan <troy.lin@rock-chips.com>
+To: u-boot@lists.denx.de,
+	sughosh.ganu@linaro.org,
+	xypron.glpk@gmx.de
+Cc: kever.yang@rock-chips.com, zhangzj@rock-chips.com,
+ Lin Jinhan <troy.lin@rock-chips.com>
+Subject: [PATCH 1/5] arm: dts: rockchip: rk3399: add and enable rng node
+Date: Tue, 31 Mar 2020 17:39:57 +0800
+Message-Id: <20200331094001.13441-1-troy.lin@rock-chips.com>
+X-Mailer: git-send-email 2.17.1
+X-Mailman-Approved-At: Tue, 31 Mar 2020 13:35:19 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+Add rng node in rk3399-u-boot.dtsi and enable it in
+rk3399-evb-u-boot.dtsi.
+
+Signed-off-by: Lin Jinhan <troy.lin@rock-chips.com>
+---
+ arch/arm/dts/rk3399-evb-u-boot.dtsi | 5 +++++
+ arch/arm/dts/rk3399-u-boot.dtsi     | 6 ++++++
+ 2 files changed, 11 insertions(+)
+
+diff --git a/arch/arm/dts/rk3399-evb-u-boot.dtsi b/arch/arm/dts/rk3399-evb-u-boot.dtsi
+index ccb33d34d1..5b50c5ba30 100644
+--- a/arch/arm/dts/rk3399-evb-u-boot.dtsi
++++ b/arch/arm/dts/rk3399-evb-u-boot.dtsi
+@@ -11,3 +11,8 @@
+ 		u-boot,spl-boot-order = &sdhci, &sdmmc;
+ 	};
+ };
++
++&rng {
++	status = "okay";
++};
++
+diff --git a/arch/arm/dts/rk3399-u-boot.dtsi b/arch/arm/dts/rk3399-u-boot.dtsi
+index 8b857ccfc7..757b8c10a2 100644
+--- a/arch/arm/dts/rk3399-u-boot.dtsi
++++ b/arch/arm/dts/rk3399-u-boot.dtsi
+@@ -25,6 +25,12 @@
+ 		clock-names = "pclk_ddr_mon";
+ 	};
+ 
++	rng: rng@ff8b8000 {
++		compatible = "rockchip,cryptov1-rng";
++		reg = <0x0 0xff8b8000 0x0 0x1000>;
++		status = "disabled";
++	};
++
+ 	dmc: dmc {
+ 		u-boot,dm-pre-reloc;
+ 		compatible = "rockchip,rk3399-dmc";
+
+From patchwork Tue Mar 31 09:39:58 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Lin Jinhan <troy.lin@rock-chips.com>
+X-Patchwork-Id: 1264694
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 48s6jD6Vlrz9sQt
+ for <incoming@patchwork.ozlabs.org>;
+ Tue, 31 Mar 2020 22:36:16 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 826F0819FE;
+ Tue, 31 Mar 2020 13:35:41 +0200 (CEST)
+Authentication-Results: phobos.denx.de; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 99DE6819A6; Tue, 31 Mar 2020 11:40:17 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.4 required=5.0 tests=BAYES_00, RCVD_IN_SORBS_WEB, 
+ SPF_HELO_NONE,URIBL_BLOCKED autolearn=no autolearn_force=no
+ version=3.4.2
+Received: from lucky1.263xmail.com (lucky1.263xmail.com [211.157.147.131])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 4316F819A8
+ for <u-boot@lists.denx.de>; Tue, 31 Mar 2020 11:40:10 +0200 (CEST)
+Authentication-Results: phobos.denx.de; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Authentication-Results: phobos.denx.de;
+ spf=fail smtp.mailfrom=troy.lin@rock-chips.com
+Received: from localhost (unknown [192.168.167.235])
+ by lucky1.263xmail.com (Postfix) with ESMTP id 65A9594DC1;
+ Tue, 31 Mar 2020 17:40:04 +0800 (CST)
+X-MAIL-GRAY: 0
+X-MAIL-DELIVERY: 1
+X-ADDR-CHECKED: 0
+X-ANTISPAM-LEVEL: 2
+X-ABS-CHECKED: 0
+Received: from localhost.localdomain (unknown [58.22.7.114])
+ by smtp.263.net (postfix) whith ESMTP id
+ P29487T139780956792576S1585647603180703_; 
+ Tue, 31 Mar 2020 17:40:04 +0800 (CST)
+X-IP-DOMAINF: 1
+X-UNIQUE-TAG: <5d721e76916e55da5c0d6122d449dd8b>
+X-RL-SENDER: troy.lin@rock-chips.com
+X-SENDER: troy.lin@rock-chips.com
+X-LOGIN-NAME: troy.lin@rock-chips.com
+X-FST-TO: u-boot@lists.denx.de
+X-SENDER-IP: 58.22.7.114
+X-ATTACHMENT-NUM: 0
+X-DNS-TYPE: 0
+X-System-Flag: 0
+From: Lin Jinhan <troy.lin@rock-chips.com>
+To: u-boot@lists.denx.de,
+	sughosh.ganu@linaro.org,
+	xypron.glpk@gmx.de
+Cc: kever.yang@rock-chips.com, zhangzj@rock-chips.com,
+ Lin Jinhan <troy.lin@rock-chips.com>
+Subject: [PATCH 2/5] arm: dts: rockchip: px30: add and enable rng node
+Date: Tue, 31 Mar 2020 17:39:58 +0800
+Message-Id: <20200331094001.13441-2-troy.lin@rock-chips.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200331094001.13441-1-troy.lin@rock-chips.com>
+References: <20200331094001.13441-1-troy.lin@rock-chips.com>
+X-Mailman-Approved-At: Tue, 31 Mar 2020 13:35:19 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+Add enable rng node in px30-evb-u-boot.dtsi.
+
+Signed-off-by: Lin Jinhan <troy.lin@rock-chips.com>
+---
+ arch/arm/dts/px30-evb-u-boot.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/arm/dts/px30-evb-u-boot.dtsi b/arch/arm/dts/px30-evb-u-boot.dtsi
+index a2a2c07dcc..a73c215c05 100644
+--- a/arch/arm/dts/px30-evb-u-boot.dtsi
++++ b/arch/arm/dts/px30-evb-u-boot.dtsi
+@@ -12,6 +12,13 @@
+ 	chosen {
+ 		u-boot,spl-boot-order = &emmc, &sdmmc;
+ 	};
++
++	rng: rng@ff0b0000 {
++		compatible = "rockchip,cryptov2-rng";
++		reg = <0x0 0xff0b0000 0x0 0x4000>;
++		status = "okay";
++	};
++
+ };
+ 
+ &dmc {
+
+From patchwork Tue Mar 31 09:39:59 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Lin Jinhan <troy.lin@rock-chips.com>
+X-Patchwork-Id: 1264693
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de (client-ip=85.214.62.61;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 48s6j253gKz9sR4
+ for <incoming@patchwork.ozlabs.org>;
+ Tue, 31 Mar 2020 22:36:06 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 380C9819EA;
+ Tue, 31 Mar 2020 13:35:38 +0200 (CEST)
+Authentication-Results: phobos.denx.de; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 88872819A9; Tue, 31 Mar 2020 11:40:15 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.4 required=5.0 tests=BAYES_00, RCVD_IN_SORBS_WEB, 
+ SPF_HELO_NONE,URIBL_BLOCKED autolearn=no autolearn_force=no
+ version=3.4.2
+Received: from lucky1.263xmail.com (lucky1.263xmail.com [211.157.147.130])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 449FA819A6
+ for <u-boot@lists.denx.de>; Tue, 31 Mar 2020 11:40:09 +0200 (CEST)
+Authentication-Results: phobos.denx.de; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Authentication-Results: phobos.denx.de;
+ spf=fail smtp.mailfrom=troy.lin@rock-chips.com
+Received: from localhost (unknown [192.168.167.235])
+ by lucky1.263xmail.com (Postfix) with ESMTP id B1262A3EF8;
+ Tue, 31 Mar 2020 17:40:04 +0800 (CST)
+X-MAIL-GRAY: 0
+X-MAIL-DELIVERY: 1
+X-ADDR-CHECKED: 0
+X-ANTISPAM-LEVEL: 2
+X-ABS-CHECKED: 0
+Received: from localhost.localdomain (unknown [58.22.7.114])
+ by smtp.263.net (postfix) whith ESMTP id
+ P29487T139780956792576S1585647603180703_; 
+ Tue, 31 Mar 2020 17:40:04 +0800 (CST)
+X-IP-DOMAINF: 1
+X-UNIQUE-TAG: <78d4a197cac8da659f7b02fbce5e0ad8>
+X-RL-SENDER: troy.lin@rock-chips.com
+X-SENDER: troy.lin@rock-chips.com
+X-LOGIN-NAME: troy.lin@rock-chips.com
+X-FST-TO: u-boot@lists.denx.de
+X-SENDER-IP: 58.22.7.114
+X-ATTACHMENT-NUM: 0
+X-DNS-TYPE: 0
+X-System-Flag: 0
+From: Lin Jinhan <troy.lin@rock-chips.com>
+To: u-boot@lists.denx.de,
+	sughosh.ganu@linaro.org,
+	xypron.glpk@gmx.de
+Cc: kever.yang@rock-chips.com, zhangzj@rock-chips.com,
+ Lin Jinhan <troy.lin@rock-chips.com>
+Subject: [PATCH 3/5] rockchip: rng: Add a driver for random number
+ generator(rng) device
+Date: Tue, 31 Mar 2020 17:39:59 +0800
+Message-Id: <20200331094001.13441-3-troy.lin@rock-chips.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200331094001.13441-1-troy.lin@rock-chips.com>
+References: <20200331094001.13441-1-troy.lin@rock-chips.com>
+X-Mailman-Approved-At: Tue, 31 Mar 2020 13:35:19 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+Add a driver for the rng device found on rockchip platforms.
+Support rng module of crypto v1 and crypto v2.
+
+Signed-off-by: Lin Jinhan <troy.lin@rock-chips.com>
+---
+ drivers/rng/Kconfig        |   8 ++
+ drivers/rng/Makefile       |   1 +
+ drivers/rng/rockchip_rng.c | 224 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 233 insertions(+)
+ create mode 100644 drivers/rng/rockchip_rng.c
+
+diff --git a/drivers/rng/Kconfig b/drivers/rng/Kconfig
+index edb6152bb9..e4b22d79eb 100644
+--- a/drivers/rng/Kconfig
++++ b/drivers/rng/Kconfig
+@@ -31,4 +31,12 @@ config RNG_STM32MP1
+ 	help
+ 	  Enable STM32MP1 rng driver.
+ 
++config RNG_ROCKCHIP
++	bool "Enable random number generator for rockchip crypto rng"
++	depends on ARCH_ROCKCHIP && DM_RNG
++	default n
++	help
++	  Enable random number generator for rockchip.This driver is
++	  support rng module of crypto v1 and crypto v2.
++
+ endif
+diff --git a/drivers/rng/Makefile b/drivers/rng/Makefile
+index 6a8a66779b..44a0003917 100644
+--- a/drivers/rng/Makefile
++++ b/drivers/rng/Makefile
+@@ -7,3 +7,4 @@ obj-$(CONFIG_DM_RNG) += rng-uclass.o
+ obj-$(CONFIG_RNG_MESON) += meson-rng.o
+ obj-$(CONFIG_RNG_SANDBOX) += sandbox_rng.o
+ obj-$(CONFIG_RNG_STM32MP1) += stm32mp1_rng.o
++obj-$(CONFIG_RNG_ROCKCHIP) += rockchip_rng.o
+diff --git a/drivers/rng/rockchip_rng.c b/drivers/rng/rockchip_rng.c
+new file mode 100644
+index 0000000000..47fb140077
+--- /dev/null
++++ b/drivers/rng/rockchip_rng.c
+@@ -0,0 +1,224 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (c) 2020 Fuzhou Rockchip Electronics Co., Ltd
++ */
++#include <asm/arch-rockchip/hardware.h>
++#include <asm/io.h>
++#include <common.h>
++#include <dm.h>
++#include <linux/iopoll.h>
++#include <linux/string.h>
++#include <rng.h>
++
++#define RK_HW_RNG_MAX 32
++
++#define _SBF(s, v)	((v) << (s))
++
++/* start of CRYPTO V1 register define */
++#define CRYPTO_V1_CTRL				0x0008
++#define CRYPTO_V1_RNG_START			BIT(8)
++#define CRYPTO_V1_RNG_FLUSH			BIT(9)
++
++#define CRYPTO_V1_TRNG_CTRL			0x0200
++#define CRYPTO_V1_OSC_ENABLE			BIT(16)
++#define CRYPTO_V1_TRNG_SAMPLE_PERIOD(x)		(x)
++
++#define CRYPTO_V1_TRNG_DOUT_0			0x0204
++/* end of CRYPTO V1 register define */
++
++/* start of CRYPTO V2 register define */
++#define CRYPTO_V2_RNG_CTL			0x0400
++#define CRYPTO_V2_RNG_64_BIT_LEN		_SBF(4, 0x00)
++#define CRYPTO_V2_RNG_128_BIT_LEN		_SBF(4, 0x01)
++#define CRYPTO_V2_RNG_192_BIT_LEN		_SBF(4, 0x02)
++#define CRYPTO_V2_RNG_256_BIT_LEN		_SBF(4, 0x03)
++#define CRYPTO_V2_RNG_FATESY_SOC_RING		_SBF(2, 0x00)
++#define CRYPTO_V2_RNG_SLOWER_SOC_RING_0		_SBF(2, 0x01)
++#define CRYPTO_V2_RNG_SLOWER_SOC_RING_1		_SBF(2, 0x02)
++#define CRYPTO_V2_RNG_SLOWEST_SOC_RING		_SBF(2, 0x03)
++#define CRYPTO_V2_RNG_ENABLE			BIT(1)
++#define CRYPTO_V2_RNG_START			BIT(0)
++#define CRYPTO_V2_RNG_SAMPLE_CNT		0x0404
++#define CRYPTO_V2_RNG_DOUT_0			0x0410
++/* end of CRYPTO V2 register define */
++
++#define RK_RNG_TIME_OUT	50000  /* max 50ms */
++
++struct rk_rng_soc_data {
++	int (*rk_rng_read)(struct udevice *dev, void *data, size_t len);
++};
++
++struct rk_rng_platdata {
++	fdt_addr_t base;
++	struct rk_rng_soc_data *soc_data;
++};
++
++static int rk_rng_read_regs(fdt_addr_t addr, void *buf, size_t size)
++{
++	u32 count = RK_HW_RNG_MAX / sizeof(u32);
++	u32 reg, tmp_len;
++
++	if (size > RK_HW_RNG_MAX)
++		return -EINVAL;
++
++	while (size && count) {
++		reg = readl(addr);
++		tmp_len = min(size, sizeof(u32));
++		memcpy(buf, &reg, tmp_len);
++		addr += sizeof(u32);
++		buf += tmp_len;
++		size -= tmp_len;
++		count--;
++	}
++
++	return 0;
++}
++
++static int rk_v1_rng_read(struct udevice *dev, void *data, size_t len)
++{
++	struct rk_rng_platdata *pdata = dev_get_priv(dev);
++	u32 reg = 0;
++	int retval;
++
++	if (len > RK_HW_RNG_MAX)
++		return -EINVAL;
++
++	/* enable osc_ring to get entropy, sample period is set as 100 */
++	writel(CRYPTO_V1_OSC_ENABLE | CRYPTO_V1_TRNG_SAMPLE_PERIOD(100),
++	       pdata->base + CRYPTO_V1_TRNG_CTRL);
++
++	rk_clrsetreg(pdata->base + CRYPTO_V1_CTRL, CRYPTO_V1_RNG_START,
++		     CRYPTO_V1_RNG_START);
++
++	retval = readl_poll_timeout(pdata->base + CRYPTO_V1_CTRL, reg,
++				    !(reg & CRYPTO_V1_RNG_START),
++				    RK_RNG_TIME_OUT);
++	if (retval)
++		goto exit;
++
++	rk_rng_read_regs(pdata->base + CRYPTO_V1_TRNG_DOUT_0, data, len);
++
++exit:
++	/* close TRNG */
++	rk_clrreg(pdata->base + CRYPTO_V1_CTRL, CRYPTO_V1_RNG_START);
++
++	return 0;
++}
++
++static int rk_v2_rng_read(struct udevice *dev, void *data, size_t len)
++{
++	struct rk_rng_platdata *pdata = dev_get_priv(dev);
++	u32 reg = 0;
++	int retval;
++
++	if (len > RK_HW_RNG_MAX)
++		return -EINVAL;
++
++	/* enable osc_ring to get entropy, sample period is set as 100 */
++	writel(100, pdata->base + CRYPTO_V2_RNG_SAMPLE_CNT);
++
++	reg |= CRYPTO_V2_RNG_256_BIT_LEN;
++	reg |= CRYPTO_V2_RNG_SLOWER_SOC_RING_0;
++	reg |= CRYPTO_V2_RNG_ENABLE;
++	reg |= CRYPTO_V2_RNG_START;
++
++	rk_clrsetreg(pdata->base + CRYPTO_V2_RNG_CTL, 0xffff, reg);
++
++	retval = readl_poll_timeout(pdata->base + CRYPTO_V2_RNG_CTL, reg,
++				    !(reg & CRYPTO_V2_RNG_START),
++				    RK_RNG_TIME_OUT);
++	if (retval)
++		goto exit;
++
++	rk_rng_read_regs(pdata->base + CRYPTO_V2_RNG_DOUT_0, data, len);
++
++exit:
++	/* close TRNG */
++	rk_clrreg(pdata->base + CRYPTO_V2_RNG_CTL, 0xffff);
++
++	return retval;
++}
++
++static int rockchip_rng_read(struct udevice *dev, void *data, size_t len)
++{
++	unsigned char *buf = data;
++	unsigned int i;
++	int ret = -EIO;
++
++	struct rk_rng_platdata *pdata = dev_get_priv(dev);
++
++	if (!len)
++		return 0;
++
++	if (!pdata->soc_data || !pdata->soc_data->rk_rng_read)
++		return -EINVAL;
++
++	for (i = 0; i < len / RK_HW_RNG_MAX; i++, buf += RK_HW_RNG_MAX) {
++		ret = pdata->soc_data->rk_rng_read(dev, buf, RK_HW_RNG_MAX);
++		if (ret)
++			goto exit;
++	}
++
++	if (len % RK_HW_RNG_MAX)
++		ret = pdata->soc_data->rk_rng_read(dev, buf,
++						   len % RK_HW_RNG_MAX);
++
++exit:
++	return ret;
++}
++
++static int rockchip_rng_ofdata_to_platdata(struct udevice *dev)
++{
++	struct rk_rng_platdata *pdata = dev_get_priv(dev);
++
++	memset(pdata, 0x00, sizeof(*pdata));
++
++	pdata->base = (fdt_addr_t)dev_read_addr_ptr(dev);
++	if (!pdata->base)
++		return -ENOMEM;
++
++	return 0;
++}
++
++static int rockchip_rng_probe(struct udevice *dev)
++{
++	struct rk_rng_platdata *pdata = dev_get_priv(dev);
++
++	pdata->soc_data = (struct rk_rng_soc_data *)dev_get_driver_data(dev);
++
++	return 0;
++}
++
++static const struct rk_rng_soc_data rk_rng_v1_soc_data = {
++	.rk_rng_read = rk_v1_rng_read,
++};
++
++static const struct rk_rng_soc_data rk_rng_v2_soc_data = {
++	.rk_rng_read = rk_v2_rng_read,
++};
++
++static const struct dm_rng_ops rockchip_rng_ops = {
++	.read = rockchip_rng_read,
++};
++
++static const struct udevice_id rockchip_rng_match[] = {
++	{
++		.compatible = "rockchip,cryptov1-rng",
++		.data = (ulong)&rk_rng_v1_soc_data,
++	},
++	{
++		.compatible = "rockchip,cryptov2-rng",
++		.data = (ulong)&rk_rng_v2_soc_data,
++	},
++	{},
++};
++
++U_BOOT_DRIVER(rockchip_rng) = {
++	.name = "rockchip-rng",
++	.id = UCLASS_RNG,
++	.of_match = rockchip_rng_match,
++	.ops = &rockchip_rng_ops,
++	.probe = rockchip_rng_probe,
++	.ofdata_to_platdata = rockchip_rng_ofdata_to_platdata,
++	.priv_auto_alloc_size = sizeof(struct rk_rng_platdata),
++};
+
+From patchwork Tue Mar 31 09:40:00 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Lin Jinhan <troy.lin@rock-chips.com>
+X-Patchwork-Id: 1264696
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de (client-ip=85.214.62.61;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 48s6jd3kYlz9sQt
+ for <incoming@patchwork.ozlabs.org>;
+ Tue, 31 Mar 2020 22:36:37 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id E4DBD81A1A;
+ Tue, 31 Mar 2020 13:35:48 +0200 (CEST)
+Authentication-Results: phobos.denx.de; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 35E9F819AD; Tue, 31 Mar 2020 11:40:17 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.4 required=5.0 tests=BAYES_00, RCVD_IN_SORBS_WEB, 
+ SPF_HELO_NONE,URIBL_BLOCKED autolearn=no autolearn_force=no
+ version=3.4.2
+Received: from lucky1.263xmail.com (lucky1.263xmail.com [211.157.147.132])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 3D2A781901
+ for <u-boot@lists.denx.de>; Tue, 31 Mar 2020 11:40:07 +0200 (CEST)
+Authentication-Results: phobos.denx.de; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Authentication-Results: phobos.denx.de;
+ spf=fail smtp.mailfrom=troy.lin@rock-chips.com
+Received: from localhost (unknown [192.168.167.235])
+ by lucky1.263xmail.com (Postfix) with ESMTP id 2A506BED2E;
+ Tue, 31 Mar 2020 17:40:05 +0800 (CST)
+X-MAIL-GRAY: 0
+X-MAIL-DELIVERY: 1
+X-ADDR-CHECKED: 0
+X-ANTISPAM-LEVEL: 2
+X-ABS-CHECKED: 0
+Received: from localhost.localdomain (unknown [58.22.7.114])
+ by smtp.263.net (postfix) whith ESMTP id
+ P29487T139780956792576S1585647603180703_; 
+ Tue, 31 Mar 2020 17:40:05 +0800 (CST)
+X-IP-DOMAINF: 1
+X-UNIQUE-TAG: <7a2dd5c9974cf72e82c0752b3ad6f8eb>
+X-RL-SENDER: troy.lin@rock-chips.com
+X-SENDER: troy.lin@rock-chips.com
+X-LOGIN-NAME: troy.lin@rock-chips.com
+X-FST-TO: u-boot@lists.denx.de
+X-SENDER-IP: 58.22.7.114
+X-ATTACHMENT-NUM: 0
+X-DNS-TYPE: 0
+X-System-Flag: 0
+From: Lin Jinhan <troy.lin@rock-chips.com>
+To: u-boot@lists.denx.de,
+	sughosh.ganu@linaro.org,
+	xypron.glpk@gmx.de
+Cc: kever.yang@rock-chips.com, zhangzj@rock-chips.com,
+ Lin Jinhan <troy.lin@rock-chips.com>
+Subject: [PATCH 4/5] rockchip: rk3399: Enable CONFIG_RNG_ROCKCHIP
+Date: Tue, 31 Mar 2020 17:40:00 +0800
+Message-Id: <20200331094001.13441-4-troy.lin@rock-chips.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200331094001.13441-1-troy.lin@rock-chips.com>
+References: <20200331094001.13441-1-troy.lin@rock-chips.com>
+X-Mailman-Approved-At: Tue, 31 Mar 2020 13:35:19 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+CONFIG_RNG_ROCKCHIP/CONFIG_DM_RNG is enabled.
+
+Signed-off-by: Lin Jinhan <troy.lin@rock-chips.com>
+---
+ configs/evb-rk3399_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/configs/evb-rk3399_defconfig b/configs/evb-rk3399_defconfig
+index 3f74be3b3c..7f14e18b1b 100644
+--- a/configs/evb-rk3399_defconfig
++++ b/configs/evb-rk3399_defconfig
+@@ -39,6 +39,8 @@ CONFIG_PMIC_RK8XX=y
+ CONFIG_REGULATOR_PWM=y
+ CONFIG_REGULATOR_RK8XX=y
+ CONFIG_PWM_ROCKCHIP=y
++CONFIG_DM_RNG=y
++CONFIG_RNG_ROCKCHIP=y
+ CONFIG_BAUDRATE=1500000
+ CONFIG_DEBUG_UART_SHIFT=2
+ CONFIG_SYSRESET=y
+
+From patchwork Tue Mar 31 09:40:01 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Lin Jinhan <troy.lin@rock-chips.com>
+X-Patchwork-Id: 1264695
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org; spf=pass (sender SPF authorized)
+ smtp.mailfrom=lists.denx.de (client-ip=85.214.62.61;
+ helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 48s6jR3jp0z9sR4
+ for <incoming@patchwork.ozlabs.org>;
+ Tue, 31 Mar 2020 22:36:27 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 632D581A0D;
+ Tue, 31 Mar 2020 13:35:45 +0200 (CEST)
+Authentication-Results: phobos.denx.de; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id C79E8819A8; Tue, 31 Mar 2020 11:40:17 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.4 required=5.0 tests=BAYES_00, RCVD_IN_SORBS_WEB, 
+ SPF_HELO_NONE,URIBL_BLOCKED autolearn=no autolearn_force=no
+ version=3.4.2
+Received: from lucky1.263xmail.com (lucky1.263xmail.com [211.157.147.132])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id CCF75819A2
+ for <u-boot@lists.denx.de>; Tue, 31 Mar 2020 11:40:08 +0200 (CEST)
+Authentication-Results: phobos.denx.de; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Authentication-Results: phobos.denx.de;
+ spf=fail smtp.mailfrom=troy.lin@rock-chips.com
+Received: from localhost (unknown [192.168.167.235])
+ by lucky1.263xmail.com (Postfix) with ESMTP id BCA3DBEE49;
+ Tue, 31 Mar 2020 17:40:05 +0800 (CST)
+X-MAIL-GRAY: 0
+X-MAIL-DELIVERY: 1
+X-ADDR-CHECKED: 0
+X-ANTISPAM-LEVEL: 2
+X-ABS-CHECKED: 0
+Received: from localhost.localdomain (unknown [58.22.7.114])
+ by smtp.263.net (postfix) whith ESMTP id
+ P29487T139780956792576S1585647603180703_; 
+ Tue, 31 Mar 2020 17:40:05 +0800 (CST)
+X-IP-DOMAINF: 1
+X-UNIQUE-TAG: <81a0d8eceb16099cd760d4d11030d27a>
+X-RL-SENDER: troy.lin@rock-chips.com
+X-SENDER: troy.lin@rock-chips.com
+X-LOGIN-NAME: troy.lin@rock-chips.com
+X-FST-TO: u-boot@lists.denx.de
+X-SENDER-IP: 58.22.7.114
+X-ATTACHMENT-NUM: 0
+X-DNS-TYPE: 0
+X-System-Flag: 0
+From: Lin Jinhan <troy.lin@rock-chips.com>
+To: u-boot@lists.denx.de,
+	sughosh.ganu@linaro.org,
+	xypron.glpk@gmx.de
+Cc: kever.yang@rock-chips.com, zhangzj@rock-chips.com,
+ Lin Jinhan <troy.lin@rock-chips.com>
+Subject: [PATCH 5/5] rockchip: px30: Enable CONFIG_RNG_ROCKCHIP
+Date: Tue, 31 Mar 2020 17:40:01 +0800
+Message-Id: <20200331094001.13441-5-troy.lin@rock-chips.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200331094001.13441-1-troy.lin@rock-chips.com>
+References: <20200331094001.13441-1-troy.lin@rock-chips.com>
+X-Mailman-Approved-At: Tue, 31 Mar 2020 13:35:19 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+CONFIG_RNG_ROCKCHIP/CONFIG_DM_RNG is enabled.
+
+Signed-off-by: Lin Jinhan <troy.lin@rock-chips.com>
+---
+ configs/evb-px30_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/configs/evb-px30_defconfig b/configs/evb-px30_defconfig
+index b5ba75cc6e..d2cf13e54a 100644
+--- a/configs/evb-px30_defconfig
++++ b/configs/evb-px30_defconfig
+@@ -85,6 +85,8 @@ CONFIG_SPL_RAM=y
+ CONFIG_TPL_RAM=y
+ CONFIG_ROCKCHIP_SDRAM_COMMON=y
+ CONFIG_DM_RESET=y
++CONFIG_DM_RNG=y
++CONFIG_RNG_ROCKCHIP=y
+ # CONFIG_SPECIFY_CONSOLE_INDEX is not set
+ CONFIG_DEBUG_UART_SHIFT=2
+ CONFIG_DEBUG_UART_SKIP_INIT=y

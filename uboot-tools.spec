@@ -24,7 +24,9 @@ Patch2:    uefi-use-Fedora-specific-path-name.patch
 Patch4:    usb-kbd-fixes.patch
 Patch5:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:    dragonboard-fixes.patch
+Patch7:    efi_loader-enable-RNG-if-DM_RNG-is-enabled.patch
 
+# Tegra improvements
 Patch10:   mtd-spi-Add-Macronix-MX25U3235F-device.patch
 Patch11:   Misc-fixes-for-Tegra.patch
 Patch12:   mmc-t210-fix-autocal-and-400KHz-clock.patch
@@ -35,6 +37,10 @@ Patch15:   t210-miscellaneous-patches.patch
 Patch16:   ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
 Patch17:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
 Patch18:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
+
+# Rockchips improvements
+Patch20:   arm-dts-rockchip-rk3399-add-and-enable-rng-node.patch
+Patch21:   arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -259,6 +265,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 * Tue Mar 31 2020 Peter Robinson <pbrobinson@fedoraproject.org> 2020.04-0.6-rc4
 - 2020.04 RC4
 - Updates for NVIDIA Jetson platforms
+- Support RNG for random seed for KASLR on some Rockchip devices
 
 * Thu Mar 26 2020 Peter Robinson <pbrobinson@fedoraproject.org> 2020.04-0.5-rc3
 - Fix ext4 alignment issue seen on some NXP i.MX devices
