@@ -1,8 +1,8 @@
-%global candidate rc4
+%global candidate rc5
 
 Name:      uboot-tools
 Version:   2020.04
-Release:   0.6%{?candidate:.%{candidate}}%{?dist}
+Release:   0.7%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -27,16 +27,9 @@ Patch6:    dragonboard-fixes.patch
 Patch7:    efi_loader-enable-RNG-if-DM_RNG-is-enabled.patch
 
 # Tegra improvements
-Patch10:   mtd-spi-Add-Macronix-MX25U3235F-device.patch
-Patch11:   Misc-fixes-for-Tegra.patch
-Patch12:   mmc-t210-fix-autocal-and-400KHz-clock.patch
-Patch13:   qspi-t210-fix-claim_bus-and-clock-tap-delays.patch
-Patch14:   net-tegra-Misc-network-fixes.patch
-Patch15:   t210-miscellaneous-patches.patch
-# http://patchwork.ozlabs.org/patch/1261582/
-Patch16:   ARM-tegra-Add-NVIDIA-Jetson-Nano.patch
-Patch17:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
-Patch18:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
+Patch10:   Misc-fixes-for-Tegra.patch
+Patch11:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
+Patch12:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
 
 # Rockchips improvements
 Patch20:   arm-dts-rockchip-rk3399-add-and-enable-rng-node.patch
@@ -262,6 +255,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Apr  7 2020 Peter Robinson <pbrobinson@fedoraproject.org> 2020.04-0.7-rc5
+- 2020.04 RC5
+
 * Tue Mar 31 2020 Peter Robinson <pbrobinson@fedoraproject.org> 2020.04-0.6-rc4
 - 2020.04 RC4
 - Updates for NVIDIA Jetson platforms
