@@ -1,8 +1,8 @@
-%global candidate rc5
+#global candidate rc1
 
 Name:      uboot-tools
 Version:   2020.04
-Release:   0.7%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -30,10 +30,11 @@ Patch7:    efi_loader-enable-RNG-if-DM_RNG-is-enabled.patch
 Patch10:   Misc-fixes-for-Tegra.patch
 Patch11:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
 Patch12:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
-
 # Rockchips improvements
-Patch20:   arm-dts-rockchip-rk3399-add-and-enable-rng-node.patch
-Patch21:   arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
+Patch13:   arm-dts-rockchip-rk3399-add-and-enable-rng-node.patch
+Patch14:   arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
+# AllWinner improvements
+Patch15:   AllWinner-Pine64-bits.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -255,6 +256,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Apr 14 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.04-1
+- 2020.04
+
 * Tue Apr  7 2020 Peter Robinson <pbrobinson@fedoraproject.org> 2020.04-0.7-rc5
 - 2020.04 RC5
 
