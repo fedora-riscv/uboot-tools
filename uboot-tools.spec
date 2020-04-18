@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2020.04
-Release:   1%{?candidate:.%{candidate}}%{?dist}
+Release:   2%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -35,6 +35,8 @@ Patch13:   arm-dts-rockchip-rk3399-add-and-enable-rng-node.patch
 Patch14:   arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
 # AllWinner improvements
 Patch15:   AllWinner-Pine64-bits.patch
+# Wandboard fixes
+Patch16:   wandboard-Fix-version-detection-for-mx6q-mx6dl-revD1.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -256,6 +258,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sat Apr 18 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.04-2
+- Fix Wandboard board detection (rhbz 1825247)
+
 * Tue Apr 14 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.04-1
 - 2020.04
 
