@@ -118,7 +118,7 @@ do
   echo "Building board: $board"
   mkdir builds/$(echo $board)/
   # ATF selection, needs improving, suggestions of ATF SoC to Board matrix welcome
-  sun50i=(a64-olinuxino amarula_a64_relic bananapi_m2_plus_h5 bananapi_m64 libretech_all_h3_cc_h5 nanopi_a64 nanopi_neo2 nanopi_neo_plus2 orangepi_pc2 orangepi_prime orangepi_win orangepi_zero_plus orangepi_zero_plus2 pine64-lts pine64_plus pinebook sopine_baseboard teres_i)
+  sun50i=(a64-olinuxino amarula_a64_relic bananapi_m2_plus_h5 bananapi_m64 libretech_all_h3_cc_h5 nanopi_a64 nanopi_neo2 nanopi_neo_plus2 orangepi_pc2 orangepi_prime orangepi_win orangepi_zero_plus orangepi_zero_plus2 pine64-lts pine64_plus pinebook pinephone pinetab sopine_baseboard teres_i)
   if [[ " ${sun50i[*]} " == *" $board "* ]]; then
     echo "Board: $board using sun50i_a64"
     cp /usr/share/arm-trusted-firmware/sun50i_a64/* builds/$(echo $board)/
@@ -133,7 +133,7 @@ do
     echo "Board: $board using rk3328"
     cp /usr/share/arm-trusted-firmware/rk3328/* builds/$(echo $board)/
   fi
-  rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 nanopc-t4-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 orangepi-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4-rk3399 rockpro64-rk3399 roc-pc-rk3399)
+  rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 khadas-edge-captain-rk3399 khadas-edge-v-rk3399 khadas-edge-rk3399 nanopc-t4-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 orangepi-rk3399 pinebook-pro-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4-rk3399 rockpro64-rk3399 roc-pc-rk3399)
   if [[ " ${rk3399[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3399"
     cp /usr/share/arm-trusted-firmware/rk3399/* builds/$(echo $board)/
@@ -141,14 +141,6 @@ do
   # End ATF
   make $(echo $board)_defconfig O=builds/$(echo $board)/
   make HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" %{?_smp_mflags} V=1 O=builds/$(echo $board)/
-  #if [[ " ${rk3328[*]} " == *" $board "* ]]; then
-    #builds/$(echo $board)/tools/mkimage -n rk3328 -T rksd  -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_sd.img
-    #builds/$(echo $board)/tools/mkimage -n rk3328 -T rkspi -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_spi.img
-  #fi
-  if [[ " ${rk3399[*]} " == *" $board "* ]]; then
-    builds/$(echo $board)/tools/mkimage -n rk3399 -T rksd  -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_sd.img
-    builds/$(echo $board)/tools/mkimage -n rk3399 -T rkspi -d builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/spl_spi.img
-  fi
 done
 
 %endif
@@ -166,7 +158,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
 for board in $(cat %{_arch}-boards)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
- for file in u-boot.bin u-boot.dtb u-boot.img u-boot-dtb.img u-boot.itb u-boot-sunxi-with-spl.bin spl_sd.img spl_spi.img idbloader.img spl/boot.bin spl/arndale-spl.bin spl/sunxi-spl.bin
+ for file in u-boot.bin u-boot.dtb u-boot.img u-boot-dtb.img u-boot.itb u-boot-sunxi-with-spl.bin idbloader.img spl/boot.bin spl/arndale-spl.bin spl/sunxi-spl.bin
  do
   if [ -f builds/$(echo $board)/$(echo $file) ]; then
     install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
@@ -261,6 +253,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 
 %changelog
 * Mon Apr 20 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.04-2
+- Fix ATF for new aarch64 devices
 - Fix Wandboard board detection (rhbz 1825247)
 - Fix mSD card on RockPro64
 - Enable (inital) Pinebook Pro
