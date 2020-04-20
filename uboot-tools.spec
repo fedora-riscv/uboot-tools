@@ -30,13 +30,15 @@ Patch7:    efi_loader-enable-RNG-if-DM_RNG-is-enabled.patch
 Patch10:   Misc-fixes-for-Tegra.patch
 Patch11:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
 Patch12:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
-# Rockchips improvements
-Patch13:   arm-dts-rockchip-rk3399-add-and-enable-rng-node.patch
-Patch14:   arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
-# AllWinner improvements
-Patch15:   AllWinner-Pine64-bits.patch
 # Wandboard fixes
-Patch16:   wandboard-Fix-version-detection-for-mx6q-mx6dl-revD1.patch
+Patch13:   wandboard-Fix-version-detection-for-mx6q-mx6dl-revD1.patch
+# Rockchips improvements
+Patch14:   arm-dts-rockchip-rk3399-add-and-enable-rng-node.patch
+Patch15:   arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
+Patch16:   initial-support-for-the-Pinebook-Pro-laptop-from.patch
+Patch17:   rockpro64-limit-speed-on-mSD-slot.patch
+# AllWinner improvements
+Patch18:   AllWinner-Pine64-bits.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -258,8 +260,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Sat Apr 18 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.04-2
+* Mon Apr 20 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.04-2
 - Fix Wandboard board detection (rhbz 1825247)
+- Fix mSD card on RockPro64
+- Enable (inital) Pinebook Pro
 
 * Tue Apr 14 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.04-1
 - 2020.04
