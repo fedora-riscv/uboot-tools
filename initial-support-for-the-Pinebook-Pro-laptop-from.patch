@@ -1672,3 +1672,91 @@ index 0000000000..423d742a79
 +#endif
 -- 
 2.26.1
+From 8239d91c6a120fb07df1f84c6441545856d968af Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Mon, 20 Apr 2020 22:43:05 +0100
+Subject: [PATCH] pinebook pro: enable rng for KASLR
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ arch/arm/dts/rk3399-pinebook-pro-u-boot.dtsi | 4 ++++
+ configs/pinebook-pro-rk3399_defconfig        | 2 ++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/arch/arm/dts/rk3399-pinebook-pro-u-boot.dtsi b/arch/arm/dts/rk3399-pinebook-pro-u-boot.dtsi
+index 1a2e24d3ef..296321d697 100644
+--- a/arch/arm/dts/rk3399-pinebook-pro-u-boot.dtsi
++++ b/arch/arm/dts/rk3399-pinebook-pro-u-boot.dtsi
+@@ -24,6 +24,10 @@
+ 	u-boot,dm-pre-reloc;
+ };
+ 
++&rng {
++	status = "okay";
++};
++
+ &sdhci {
+ 	max-frequency = <25000000>;
+ 	u-boot,dm-pre-reloc;
+diff --git a/configs/pinebook-pro-rk3399_defconfig b/configs/pinebook-pro-rk3399_defconfig
+index 0e9f0ec250..c15c17a1b0 100644
+--- a/configs/pinebook-pro-rk3399_defconfig
++++ b/configs/pinebook-pro-rk3399_defconfig
+@@ -59,6 +59,8 @@ CONFIG_PMIC_RK8XX=y
+ CONFIG_DM_PMIC_FAN53555=y
+ CONFIG_REGULATOR_PWM=y
+ CONFIG_REGULATOR_RK8XX=y
++CONFIG_DM_RNG=y
++CONFIG_RNG_ROCKCHIP=y
+ CONFIG_PWM_ROCKCHIP=y
+ CONFIG_SYSRESET=y
+ CONFIG_USB=y
+-- 
+2.26.1
+
+From 7db304da3ae9480f49febc5968e4d02c171d7080 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Sun, 19 Apr 2020 13:13:37 +0100
+Subject: [PATCH 08/10] drivers: video: rockchip: fix building eDP and LVDS
+ drivers
+
+The rk_edp.c and rk_lvds.c files reference rk_setreg which is declared in
+hardware.h so include it so the drivers build. Adjust rk_lvds.c so
+includes are in alphabetical order while updating.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ drivers/video/rockchip/rk_edp.c  | 1 +
+ drivers/video/rockchip/rk_lvds.c | 3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/rockchip/rk_edp.c b/drivers/video/rockchip/rk_edp.c
+index 8703df0ec0..cf84b886e7 100644
+--- a/drivers/video/rockchip/rk_edp.c
++++ b/drivers/video/rockchip/rk_edp.c
+@@ -18,6 +18,7 @@
+ #include <asm/arch-rockchip/clock.h>
+ #include <asm/arch-rockchip/edp_rk3288.h>
+ #include <asm/arch-rockchip/grf_rk3288.h>
++#include <asm/arch-rockchip/hardware.h>
+ #include <dt-bindings/clock/rk3288-cru.h>
+ 
+ #define MAX_CR_LOOP 5
+diff --git a/drivers/video/rockchip/rk_lvds.c b/drivers/video/rockchip/rk_lvds.c
+index cf5c0439b1..79e24baf53 100644
+--- a/drivers/video/rockchip/rk_lvds.c
++++ b/drivers/video/rockchip/rk_lvds.c
+@@ -13,8 +13,9 @@
+ #include <asm/gpio.h>
+ #include <asm/io.h>
+ #include <asm/arch-rockchip/clock.h>
+-#include <asm/arch-rockchip/lvds_rk3288.h>
+ #include <asm/arch-rockchip/grf_rk3288.h>
++#include <asm/arch-rockchip/hardware.h>
++#include <asm/arch-rockchip/lvds_rk3288.h>
+ #include <dt-bindings/clock/rk3288-cru.h>
+ #include <dt-bindings/video/rk3288.h>
+ 
+-- 
+2.26.1
+
