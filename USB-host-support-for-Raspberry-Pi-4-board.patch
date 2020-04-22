@@ -1,0 +1,2810 @@
+From patchwork Tue Apr 21 16:50:51 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sylwester Nawrocki <s.nawrocki@samsung.com>
+X-Patchwork-Id: 1274440
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256
+ header.s=mail20170921 header.b=WdQxUAmP;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4969pg3b6Yz9sSK
+ for <incoming@patchwork.ozlabs.org>; Wed, 22 Apr 2020 03:41:15 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 1D29881C54;
+ Tue, 21 Apr 2020 19:40:35 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="WdQxUAmP";
+ dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id E6A1F819C9; Tue, 21 Apr 2020 18:51:20 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+ DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_PASS,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
+ [210.118.77.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 665AF81737
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 18:51:15 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=s.nawrocki@samsung.com
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+ by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165114euoutp02bbb9b5239f2513e0d9189f1226e47b4e~H48_1WmIq2124521245euoutp026
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 16:51:14 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com
+ 20200421165114euoutp02bbb9b5239f2513e0d9189f1226e47b4e~H48_1WmIq2124521245euoutp026
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+ s=mail20170921; t=1587487874;
+ bh=Zh1jdwMgEAvoABbbE+QRkb2erc3Jnb/5dK4/yTSfw9Q=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=WdQxUAmPR/8BTQJNAOZ3VNgu4eLYoptuxvKy/Yqhou6BXOeS3JwKEk34KeKRklEc+
+ FiY/P2KH6XE18mliOjTqaql/Pmjyt4Gq4sNeNovGLMZqns//HAqOhxjkwAyHIEVI5H
+ 7in6T9IHRS81wSQrhXBRn+OOSDuEsg7mF8fimx7M=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+ eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165114eucas1p176bc9417a0233a1932c7afc9fceaf79b~H48_nyHX51420814208eucas1p1r;
+ Tue, 21 Apr 2020 16:51:14 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+ eusmges2new.samsung.com (EUCPMTA) with SMTP id 76.64.60679.2842F9E5; Tue, 21
+ Apr 2020 17:51:14 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165114eucas1p2baa595b46f7503331ab86163f69b7c0e~H48_Wawfs1251112511eucas1p21;
+ Tue, 21 Apr 2020 16:51:14 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+ eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165114eusmtrp2117931fb5a824a7165802d118f9e594c~H48_VyRz83266732667eusmtrp2J;
+ Tue, 21 Apr 2020 16:51:14 +0000 (GMT)
+X-AuditID: cbfec7f4-0e5ff7000001ed07-07-5e9f24824ca7
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+ eusmgms1.samsung.com (EUCPMTA) with SMTP id 19.0E.08375.2842F9E5; Tue, 21
+ Apr 2020 17:51:14 +0100 (BST)
+Received: from AMDC3061.digital.local (unknown [106.120.51.75]) by
+ eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165113eusmtip1034aafe2f169d868259e3244756060a5~H489q-u5q0895708957eusmtip1D;
+ Tue, 21 Apr 2020 16:51:13 +0000 (GMT)
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+To: u-boot@lists.denx.de, mbrugger@suse.com, marex@denx.de, bmeng.cn@gmail.com
+Cc: agraf@suse.de, sjg@chrmium.org, jh80.chung@samsung.com,
+ m.szyprowski@samsung.com, b.zolnierkie@samsung.com, Sylwester Nawrocki
+ <s.nawrocki@samsung.com>
+Subject: [RFC PATCH 1/9] usb: xhci: Add missing cache flush in the
+ scratchpad array initialization
+Date: Tue, 21 Apr 2020 18:50:51 +0200
+Message-Id: <20200421165059.19394-2-s.nawrocki@samsung.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200421165059.19394-1-s.nawrocki@samsung.com>
+X-Brightmail-Tracker: H4sIAAAAAAAAA0VSa0hTYRjm2zln5zhbHKfgi1nCMqJMTTM4qN1IbP4Toh8VaqsdVNymbV7z
+ j5dQ8555w8RZYa2ZaCbiBcXU5S2TQE3TKaZFefkzTacOze2s+vc8z/s8z8v38lGYqJRwoaKV
+ 8axKKZWL+QK89cP2mGeGuyb8bGndSWZwfA8xbysbCaYsP4KZ2skimIZ+A8msZqUjpvbJEsH0
+ rWYTTM7EPmLWuh6RlwWS+eE0QlJTNYhL2qsMpGR0tg1JClt0SNLYMoFL3o2khpK3BIEyVh6d
+ yKq8L94RRM1V6/G4HCrZ1J9FpqFJfi6iKKD9YPuLay4SUCJai8D4owZxZAPBpmkO48g6grFp
+ Iy8X2VkTHeM6m+sVgmHNb/JfpGF7E7e4+LQPFOgLkQU70aEwuV1uTWC0BoHZWG4dONIy0OaX
+ kRaM0yfg5dMVzIKFdACsTG7xuXVuUN/UY9Xt6EAwbFXiliKgi0hI3yi2vSIIXmfIOb8jLA+0
+ kBx2hf12DY/zZyLI75whOVKMYH6gFnGuAJj9tGMtwuhT0NjhzclX4KNpCOf6D8PUmoNFxg5g
+ SWsFxslCyMkScW532NVV2C7kAnlL+ziHJZBeUGc7YxGCrtJFohi5Vf1fVouQDjmzCWpFJKv2
+ VbJJXmqpQp2gjPS6F6toRgd/ZWRvYKMNdZjv9iKaQuJDwqmxmnARIU1Upyh6EVCY2EnYtHAg
+ CWXSlAesKjZClSBn1b3oCIWLnYXnnv8KE9GR0ng2hmXjWNXfKY+yc0lD55dz3ienzrwJDn7s
+ UPJicdX3+efuozvfpvLOUKb7RRm3/et/ZhcOL+xEDdZc0l4I0HfaDxUbPHljHl4hZuOk4usz
+ o71upE3f85A8brgaM+8d1u0nModcr69sdg84tha+eyPyuwc/SJu5sTCtunlttNof9FVFtCyp
+ sLfOdb3Pw1OMq6OkPqcxlVr6Bzy9nkcnAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrMLMWRmVeSWpSXmKPExsVy+t/xu7pNKvPjDE7cEbA4ceUfo8XGGetZ
+ Lab2xFvc+NXGarH2yF12izdtjYwWCyY/YbU4/Kad1aLj6n9Gi7d7O9kduDzun2pg9Zg36wSL
+ x85Zd9k9zt7ZwejRt2UVo8f6LVdZPDafrg5gj9KzKcovLUlVyMgvLrFVija0MNIztLTQMzKx
+ 1DM0No+1MjJV0rezSUnNySxLLdK3S9DLuDfnKEtBB0fFjyNt7A2M19i6GDk5JARMJHZdWcXY
+ xcjFISSwlFFi0rUZQA4HUEJKYn6LEkSNsMSfa11g9UICnxglHj5wBLHZBAwleo/2MYLYIgIh
+ Ei+OXmECmcMMMudPwxtWkDnCAkkSu39yg9SwCKhKLJv9mhnE5hWwlnh97TvUDfISqzccAItz
+ CthI3P0+gwVil7VEw6UlLBMY+RYwMqxiFEktLc5Nzy021CtOzC0uzUvXS87P3cQIDPBtx35u
+ 3sF4aWPwIUYBDkYlHt4b5+fFCbEmlhVX5h5ilOBgVhLh3fAQKMSbklhZlVqUH19UmpNafIjR
+ FOioicxSosn5wOjLK4k3NDU0t7A0NDc2NzazUBLn7RA4GCMkkJ5YkpqdmlqQWgTTx8TBKdXA
+ 6LTra6plWsQmuwWK045dDM48yj+vtfXqqqSkoqBLwilHPikq2hWa3TbO25/wunvjY6ZD87SD
+ 2Sr/ON7d9NNMXpLHyiQiOfEn///MTYYno6+0nPnLOJdpR3t9L/8PU0Gh/YXHVzzNn2YzQ/37
+ HO6/kmeSvty49tbYRC7kbMl5hcQNLmukTv+pU2Ipzkg01GIuKk4EAE74o8yGAgAA
+X-CMS-MailID: 20200421165114eucas1p2baa595b46f7503331ab86163f69b7c0e
+X-Msg-Generator: CA
+X-RootMTR: 20200421165114eucas1p2baa595b46f7503331ab86163f69b7c0e
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20200421165114eucas1p2baa595b46f7503331ab86163f69b7c0e
+References: <20200421165059.19394-1-s.nawrocki@samsung.com>
+ <CGME20200421165114eucas1p2baa595b46f7503331ab86163f69b7c0e@eucas1p2.samsung.com>
+X-Mailman-Approved-At: Tue, 21 Apr 2020 19:40:20 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+In current code there is no cache flush after initializing the scratchpad
+buffer array with the scratchpad buffer pointers. This leads to a failure
+of the "slot enable" command on the rpi4 board (Broadcom STB PCIe
+controller + VL805 USB hub) - the very first TRB transfer on the command
+ring fails and there is a timeout while waiting for the command completion
+event. After adding the missing cache flush everything seems to be working
+as expected.
+
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+---
+ drivers/usb/host/xhci-mem.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/usb/host/xhci-mem.c b/drivers/usb/host/xhci-mem.c
+index 93450ee..729bdc3 100644
+--- a/drivers/usb/host/xhci-mem.c
++++ b/drivers/usb/host/xhci-mem.c
+@@ -393,6 +393,9 @@ static int xhci_scratchpad_alloc(struct xhci_ctrl *ctrl)
+ 		scratchpad->sp_array[i] = cpu_to_le64(ptr);
+ 	}
+ 
++	xhci_flush_cache((uintptr_t)scratchpad->sp_array,
++			 sizeof(u64) * num_sp);
++
+ 	return 0;
+ 
+ fail_sp3:
+
+From patchwork Tue Apr 21 16:50:52 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sylwester Nawrocki <s.nawrocki@samsung.com>
+X-Patchwork-Id: 1274444
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256
+ header.s=mail20170921 header.b=WrpEgeC1;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4969qX0gklz9sSJ
+ for <incoming@patchwork.ozlabs.org>; Wed, 22 Apr 2020 03:42:00 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id EEA2E81C76;
+ Tue, 21 Apr 2020 19:41:00 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="WrpEgeC1";
+ dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 5F23A811EC; Tue, 21 Apr 2020 18:51:24 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+ DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_PASS,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
+ [210.118.77.11])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 15403811EC
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 18:51:19 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=s.nawrocki@samsung.com
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+ by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165118euoutp01eb9cb893b86512593aecaf9a2229fe2d~H49CKBnJp0962409624euoutp01V
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 16:51:18 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com
+ 20200421165118euoutp01eb9cb893b86512593aecaf9a2229fe2d~H49CKBnJp0962409624euoutp01V
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+ s=mail20170921; t=1587487878;
+ bh=KSIQabzU4eCsy6wbbJGuIQNoLGRG3kAK+Gl/QiVIJMs=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=WrpEgeC1CIx4w1CdlpymTRY8cl0+Ia9ijznf1+Z8UCa/CZFgB3/S/hqWZ6K2YjB2Y
+ ge7GsvvD5BjmikoYnxVQvFdOp0lD+N7WkzMk+O7z59VTw5U6AIpnL5VzpiLdO7X8fs
+ 5DI5tI15DScmUhhodpPMAQat42Uyw1S0vOTS/GVo=
+Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165117eucas1p29a916cf9bbe2c32a300f5aaa8dfdb36b~H49BqkmUJ2629726297eucas1p2b;
+ Tue, 21 Apr 2020 16:51:17 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+ eusmges1new.samsung.com (EUCPMTA) with SMTP id C5.5D.61286.5842F9E5; Tue, 21
+ Apr 2020 17:51:17 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165117eucas1p220b0a5f7820c7cf7bae20dc693584ad4~H49A4JpFy2629726297eucas1p2a;
+ Tue, 21 Apr 2020 16:51:17 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
+ eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165117eusmtrp29c22dabecb77d9c7b6eb9b0e54f6d365~H49A3fIX-3266732667eusmtrp2O;
+ Tue, 21 Apr 2020 16:51:17 +0000 (GMT)
+X-AuditID: cbfec7f2-ef1ff7000001ef66-6c-5e9f2485c8e2
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+ eusmgms2.samsung.com (EUCPMTA) with SMTP id 67.3B.07950.5842F9E5; Tue, 21
+ Apr 2020 17:51:17 +0100 (BST)
+Received: from AMDC3061.digital.local (unknown [106.120.51.75]) by
+ eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165116eusmtip188463c8be99c6ed75bb173aa0c7300bd~H49AUM8hT0891608916eusmtip1E;
+ Tue, 21 Apr 2020 16:51:16 +0000 (GMT)
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+To: u-boot@lists.denx.de, mbrugger@suse.com, marex@denx.de, bmeng.cn@gmail.com
+Cc: agraf@suse.de, sjg@chrmium.org, jh80.chung@samsung.com,
+ m.szyprowski@samsung.com, b.zolnierkie@samsung.com, Sylwester Nawrocki
+ <s.nawrocki@samsung.com>
+Subject: [RFC PATCH 2/9] pci: Move some PCIe register offset definitions to
+ a common header
+Date: Tue, 21 Apr 2020 18:50:52 +0200
+Message-Id: <20200421165059.19394-3-s.nawrocki@samsung.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200421165059.19394-1-s.nawrocki@samsung.com>
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprCKsWRmVeSWpSXmKPExsWy7djP87qtKvPjDK5dMbM4ceUfo8XGGetZ
+ Lab2xFvc+NXGarH2yF12izdtjYwWCyY/YbU4/Kad1aLj6n9Gi7d7O9kduDzun2pg9Zg36wSL
+ x85Zd9k9zt7ZwejRt2UVo8f6LVdZPDafrg5gj+KySUnNySxLLdK3S+DKON7ZzlSwX6xi2at2
+ pgbGA0JdjJwcEgImEi/+n2brYuTiEBJYwShxZF4DO4TzhVHi1PNNjBDOZ0aJlYtWs8G0HOnt
+ ZoZILGeU+P7vEitcy+Qtv5hBqtgEDCV6j/YxgtgiAgES135OAxvFLDCfUeLPp2lgCWGBWImT
+ E66zgNgsAqoSP+aAjOXg4BWwlpj1sx5im7zE6g0HwGZyCthI3P0+gwVkjoTAZHaJSRPPM0EU
+ uUg8/n0EyhaWeHV8CzuELSPxf+d8JoiGZkaJnt232SGcCYwS948vYISospa4c+4XG8hmZgFN
+ ifW79EFMCQFHidPb5CFMPokbbwVBipmBzEnbpjNDhHklOtqg4agi8XvVdKgLpCS6n/xngbA9
+ JBbf+8oECZ9+RolHG2YyT2CUn4WwawEj4ypG8dTS4tz01GLDvNRyveLE3OLSvHS95PzcTYzA
+ tHL63/FPOxi/Xko6xCjAwajEw3vj/Lw4IdbEsuLK3EOMEhzMSiK8Gx4ChXhTEiurUovy44tK
+ c1KLDzFKc7AoifMaL3oZKySQnliSmp2aWpBaBJNl4uCUamAM1bM8nhboKbXx7a5/eqenrpBc
+ tPL6zokpcze+/LRigtJtgRWKVoIl1RW8pb6qJ95eN1v41OnOn84lYXtf5K0TsM3e92h1v7Lt
+ yq+rpFqvOn0IZYzqz3+7I3/fnBWKcdt7vH43TD9o9Okyc3dFx+X2AL/FXx8+WfxJ9RvTypyr
+ 7qdPiU3yqLH7o8RSnJFoqMVcVJwIAHPQd5InAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrELMWRmVeSWpSXmKPExsVy+t/xu7qtKvPjDNa+Z7I4ceUfo8XGGetZ
+ Lab2xFvc+NXGarH2yF12izdtjYwWCyY/YbU4/Kad1aLj6n9Gi7d7O9kduDzun2pg9Zg36wSL
+ x85Zd9k9zt7ZwejRt2UVo8f6LVdZPDafrg5gj9KzKcovLUlVyMgvLrFVija0MNIztLTQMzKx
+ 1DM0No+1MjJV0rezSUnNySxLLdK3S9DLON7ZzlSwX6xi2at2pgbGA0JdjJwcEgImEkd6u5lB
+ bCGBpYwSl7fqdDFyAMWlJOa3KEGUCEv8udbF1sXIBVTyiVHi2YqjLCAJNgFDid6jfYwgtohA
+ iMSLo1eYQIqYQeb8aXjDCjJIWCBa4uupMpAaFgFViR9zQHZxcPAKWEvM+lkPMV9eYvWGA2An
+ cArYSNz9PoMF4hxriYZLS1gmMPItYGRYxSiSWlqcm55bbKRXnJhbXJqXrpecn7uJERje2479
+ 3LKDsetd8CFGAQ5GJR7eG+fnxQmxJpYVV+YeYpTgYFYS4d3wECjEm5JYWZValB9fVJqTWnyI
+ 0RToponMUqLJ+cDYyyuJNzQ1NLewNDQ3Njc2s1AS5+0QOBgjJJCeWJKanZpakFoE08fEwSnV
+ wMi3jLGLQadphdgdbz2tW8UOS69dvPMj9d/ET4o918pV/k2+mS3v/vDrq0P8v6P+B189IDYj
+ YqlOR/nJS1e27LKtm/pvqnhR0vU5yjvur384TfHDtiSLPwenSLRn3T+6eW/b0c39z2s58nbZ
+ TuD7dGVfnRlzzBkv65yPq8u6k1yOf8ttZ88qPf5eiaU4I9FQi7moOBEAMpRHSYUCAAA=
+X-CMS-MailID: 20200421165117eucas1p220b0a5f7820c7cf7bae20dc693584ad4
+X-Msg-Generator: CA
+X-RootMTR: 20200421165117eucas1p220b0a5f7820c7cf7bae20dc693584ad4
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20200421165117eucas1p220b0a5f7820c7cf7bae20dc693584ad4
+References: <20200421165059.19394-1-s.nawrocki@samsung.com>
+ <CGME20200421165117eucas1p220b0a5f7820c7cf7bae20dc693584ad4@eucas1p2.samsung.com>
+X-Mailman-Approved-At: Tue, 21 Apr 2020 19:40:20 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+Some PCI Express register offsets are currently defined in multiple
+drivers, move them to a common header to avoid re-definitions and
+as a pre-requisite for adding new PCIe driver.
+
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+---
+ drivers/pci/pci-rcar-gen3.c   |  8 --------
+ drivers/pci/pcie_intel_fpga.c |  3 ---
+ include/pci.h                 | 13 +++++++++++++
+ 3 files changed, 13 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/pci/pci-rcar-gen3.c b/drivers/pci/pci-rcar-gen3.c
+index 30eff67..393f1c9 100644
+--- a/drivers/pci/pci-rcar-gen3.c
++++ b/drivers/pci/pci-rcar-gen3.c
+@@ -117,14 +117,6 @@
+ #define RCAR_PCI_MAX_RESOURCES	4
+ #define MAX_NR_INBOUND_MAPS	6
+ 
+-#define PCI_EXP_FLAGS		2		/* Capabilities register */
+-#define PCI_EXP_FLAGS_TYPE	0x00f0		/* Device/Port type */
+-#define PCI_EXP_TYPE_ROOT_PORT	0x4		/* Root Port */
+-#define PCI_EXP_LNKCAP		12		/* Link Capabilities */
+-#define PCI_EXP_LNKCAP_DLLLARC	0x00100000	/* Data Link Layer Link Active Reporting Capable */
+-#define PCI_EXP_SLTCAP		20		/* Slot Capabilities */
+-#define PCI_EXP_SLTCAP_PSN	0xfff80000	/* Physical Slot Number */
+-
+ enum {
+ 	RCAR_PCI_ACCESS_READ,
+ 	RCAR_PCI_ACCESS_WRITE,
+diff --git a/drivers/pci/pcie_intel_fpga.c b/drivers/pci/pcie_intel_fpga.c
+index 6a9f29c..69363a0 100644
+--- a/drivers/pci/pcie_intel_fpga.c
++++ b/drivers/pci/pcie_intel_fpga.c
+@@ -65,9 +65,6 @@
+ #define IS_ROOT_PORT(pcie, bdf)				\
+ 		((PCI_BUS(bdf) == pcie->first_busno) ? true : false)
+ 
+-#define PCI_EXP_LNKSTA		18	/* Link Status */
+-#define PCI_EXP_LNKSTA_DLLLA	0x2000	/* Data Link Layer Link Active */
+-
+ /**
+  * struct intel_fpga_pcie - Intel FPGA PCIe controller state
+  * @bus: Pointer to the PCI bus
+diff --git a/include/pci.h b/include/pci.h
+index 174ddd4..3d7646d 100644
+--- a/include/pci.h
++++ b/include/pci.h
+@@ -471,11 +471,24 @@
+ #define  PCI_EA_FIELD_MASK	0xfffffffc	/* For Base & Max Offset */
+ 
+ /* PCI Express capabilities */
++#define PCI_EXP_FLAGS		2	/* Capabilities register */
++#define PCI_EXP_FLAGS_TYPE	0x00f0	/* Device/Port type */
++#define  PCI_EXP_TYPE_ROOT_PORT 0x4	/* Root Port */
++
+ #define PCI_EXP_DEVCAP		4	/* Device capabilities */
+ #define  PCI_EXP_DEVCAP_FLR     0x10000000 /* Function Level Reset */
+ #define PCI_EXP_DEVCTL		8	/* Device Control */
+ #define  PCI_EXP_DEVCTL_BCR_FLR 0x8000  /* Bridge Configuration Retry / FLR */
+ 
++#define PCI_EXP_LNKCAP		12	/* Link Capabilities */
++#define  PCI_EXP_LNKCAP_DLLLARC	0x00100000 /* Data Link Layer Link Active Reporting Capable */
++
++#define PCI_EXP_LNKSTA		18	/* Link Status */
++#define  PCI_EXP_LNKSTA_DLLLA	0x2000	/* Data Link Layer Link Active */
++
++#define PCI_EXP_SLTCAP		20	/* Slot Capabilities */
++#define  PCI_EXP_SLTCAP_PSN	0xfff80000 /* Physical Slot Number */
++
+ /* Include the ID list */
+ 
+ #include <pci_ids.h>
+
+From patchwork Tue Apr 21 16:50:53 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sylwester Nawrocki <s.nawrocki@samsung.com>
+X-Patchwork-Id: 1274441
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256
+ header.s=mail20170921 header.b=Yu5kjAkM;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4969px52wlz9sSJ
+ for <incoming@patchwork.ozlabs.org>; Wed, 22 Apr 2020 03:41:29 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 787CB81A66;
+ Tue, 21 Apr 2020 19:40:37 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="Yu5kjAkM";
+ dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 1EFB581A18; Tue, 21 Apr 2020 18:51:24 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+ DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_PASS,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
+ [210.118.77.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 17525804CD
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 18:51:21 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=s.nawrocki@samsung.com
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+ by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165119euoutp025d880bb6159dc765cf0ece2a051a72cb~H49DZFSkb2124521245euoutp029
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 16:51:19 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com
+ 20200421165119euoutp025d880bb6159dc765cf0ece2a051a72cb~H49DZFSkb2124521245euoutp029
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+ s=mail20170921; t=1587487879;
+ bh=WNNhWM4zcFS/lfPm8PP33MTtxfHK2zyA/Si0TW7/3sI=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=Yu5kjAkMFxSRf43BjFXkZe/LA5aG+xRXU0dc898zHqguHt1aA6hFOXt03P/k1fPCR
+ WYQi2bfU7cCVPJC6SDeUnugU+cZjnLjzmmuVpvRd/xti6PVppz5EBV57X47SWeCbF2
+ JALYvbIagHlPik2+AFFD5hJo9IeBlWlun8z7tpNo=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+ eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165119eucas1p1ccc185676ac9d6692b18fb9800fbb677~H49DL6KFx1440514405eucas1p1g;
+ Tue, 21 Apr 2020 16:51:19 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+ eusmges2new.samsung.com (EUCPMTA) with SMTP id B7.64.60679.7842F9E5; Tue, 21
+ Apr 2020 17:51:19 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+ eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165118eucas1p1dc542f61cefcf53cdb1f17cc59baee5f~H49CWvwMj1422014220eucas1p1f;
+ Tue, 21 Apr 2020 16:51:18 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+ eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165118eusmtrp289a599d1b59e605a4f088531bfef168f~H49CWKCGS3266732667eusmtrp2R;
+ Tue, 21 Apr 2020 16:51:18 +0000 (GMT)
+X-AuditID: cbfec7f4-0cbff7000001ed07-0e-5e9f2487e6f8
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+ eusmgms1.samsung.com (EUCPMTA) with SMTP id 5A.0E.08375.6842F9E5; Tue, 21
+ Apr 2020 17:51:18 +0100 (BST)
+Received: from AMDC3061.digital.local (unknown [106.120.51.75]) by
+ eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165118eusmtip18d32d5c3341151e30d4362872584f1bb~H49BwUnLM0895708957eusmtip1F;
+ Tue, 21 Apr 2020 16:51:18 +0000 (GMT)
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+To: u-boot@lists.denx.de, mbrugger@suse.com, marex@denx.de, bmeng.cn@gmail.com
+Cc: agraf@suse.de, sjg@chrmium.org, jh80.chung@samsung.com,
+ m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+Subject: [RFC PATCH 3/9] rpi4: shorten a mapping for the DRAM
+Date: Tue, 21 Apr 2020 18:50:53 +0200
+Message-Id: <20200421165059.19394-4-s.nawrocki@samsung.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200421165059.19394-1-s.nawrocki@samsung.com>
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFuphleLIzCtJLcpLzFFi42LZduzned12lflxBvuPyVucuPKP0WLjjPWs
+ FlN74i1u/GpjtVh75C67xZu2RkaLBZOfsFp0XP3PaPF2bye7A6fH/VMNrB7zZp1g8dg56y67
+ x9k7Oxg9+rasYvRYv+Uqi8fm09UB7FFcNimpOZllqUX6dglcGbsm+hQcYa2YOnUjawPjMZYu
+ Rk4OCQETifN7HwPZXBxCAisYJT6uWsMG4XxhlPiyuoMJwvnMKLHvcA8TTEv/hQ/sILaQwHJG
+ iXVfzOE6vnd3s4Ek2AQMJXqP9jGC2CICARLXfk4Ds5kFCiSmXX8CVMPBISxgK/H5chiIySKg
+ KtF/JxGkglfAWuLnvm9Qq+QlVm84wAxicwrYSNz9PgPsUgmBfnaJOZ8us0MUuUhsWjwPqkFY
+ 4tXxLVBxGYn/O+czQTQ0M0r07L7NDuFMYJS4f3wBI0SVtcSdc7/ADmIW0JRYv0sfIuwo8erC
+ Z1aQsIQAn8SNt4IQ5/NJTNo2nRkizCvR0SYEUa0i8XvVdKgTpCS6n/yHhq6HxPupGxkhwdPP
+ KHGyt4dpAqP8LIRlCxgZVzGKp5YW56anFhvlpZbrFSfmFpfmpesl5+duYgSmkdP/jn/Zwbjr
+ T9IhRgEORiUe3hvn58UJsSaWFVfmHmKU4GBWEuHd8BAoxJuSWFmVWpQfX1Sak1p8iFGag0VJ
+ nNd40ctYIYH0xJLU7NTUgtQimCwTB6dUA+NUxfXJz2dus5RY+bSb7fomAzW90PsbLA4fkFM7
+ oMC1yHDTraNxEdWsDqZ3tl4/sYeRe/dGjsroKydCHT/smr8k1l5mmuv/NWLW0r6pGyRUpBJF
+ E6Y3u3Y9mPk5qXPrbbn2dTv/W6u++MKYsX3durkaIlPmtYgV1madmSLLqdtxKOTq7dPS31cp
+ sRRnJBpqMRcVJwIAzgomnR8DAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrDLMWRmVeSWpSXmKPExsVy+t/xu7ptKvPjDBZtUbY4ceUfo8XGGetZ
+ Lab2xFvc+NXGarH2yF12izdtjYwWCyY/YbXouPqf0eLt3k52B06P+6caWD3mzTrB4rFz1l12
+ j7N3djB69G1ZxeixfstVFo/Np6sD2KP0bIryS0tSFTLyi0tslaINLYz0DC0t9IxMLPUMjc1j
+ rYxMlfTtbFJSczLLUov07RL0MnZN9Ck4wloxdepG1gbGYyxdjJwcEgImEv0XPrB3MXJxCAks
+ ZZT4cm85WxcjB1BCSmJ+ixJEjbDEn2tdbBA1nxgl3rZ/YAVJsAkYSvQe7WMEsUUEQiReHL3C
+ BGIzC5RJrGl9zQgyR1jAVuLz5TAQk0VAVaL/TiJIBa+AtcTPfd+YIMbLS6zecIAZxOYUsJG4
+ +30G2GlCQDUNl5awTGDkW8DIsIpRJLW0ODc9t9hQrzgxt7g0L10vOT93EyMwpLcd+7l5B+Ol
+ jcGHGAU4GJV4eG+cnxcnxJpYVlyZe4hRgoNZSYR3w0OgEG9KYmVValF+fFFpTmrxIUZToJsm
+ MkuJJucD4y2vJN7Q1NDcwtLQ3Njc2MxCSZy3Q+BgjJBAemJJanZqakFqEUwfEwenVANjYcji
+ LZPer+/Y0MPtIfRmV51exSSJ2SV811+ffXz75D7159HLFwjO7tlmvXTO9pCba14u3qO01GSf
+ 24En9YuKjf8+S/72beIE082sV9N0zy9R5LnLcEnsMOeMWLkXLydZH/MrF1y0abt0nr7k0yLD
+ Hs/+JXuF2tb+f/hqZ/DjyYEbVZ8V6OhfO67EUpyRaKjFXFScCAB3Tn4hfwIAAA==
+X-CMS-MailID: 20200421165118eucas1p1dc542f61cefcf53cdb1f17cc59baee5f
+X-Msg-Generator: CA
+X-RootMTR: 20200421165118eucas1p1dc542f61cefcf53cdb1f17cc59baee5f
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20200421165118eucas1p1dc542f61cefcf53cdb1f17cc59baee5f
+References: <20200421165059.19394-1-s.nawrocki@samsung.com>
+ <CGME20200421165118eucas1p1dc542f61cefcf53cdb1f17cc59baee5f@eucas1p1.samsung.com>
+X-Mailman-Approved-At: Tue, 21 Apr 2020 19:40:20 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+
+Remove the overlap between DRAM and device's IO area.
+
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+ arch/arm/mach-bcm283x/init.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-bcm283x/init.c b/arch/arm/mach-bcm283x/init.c
+index 9966d6c..4295356 100644
+--- a/arch/arm/mach-bcm283x/init.c
++++ b/arch/arm/mach-bcm283x/init.c
+@@ -38,7 +38,7 @@ static struct mm_region bcm2711_mem_map[] = {
+ 	{
+ 		.virt = 0x00000000UL,
+ 		.phys = 0x00000000UL,
+-		.size = 0xfe000000UL,
++		.size = 0xfc000000UL,
+ 		.attrs = PTE_BLOCK_MEMTYPE(MT_NORMAL) |
+ 			 PTE_BLOCK_INNER_SHARE
+ 	}, {
+
+From patchwork Tue Apr 21 16:50:54 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sylwester Nawrocki <s.nawrocki@samsung.com>
+X-Patchwork-Id: 1274442
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256
+ header.s=mail20170921 header.b=W9S6JG/g;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4969q812W9z9sSJ
+ for <incoming@patchwork.ozlabs.org>; Wed, 22 Apr 2020 03:41:39 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id D70A281C61;
+ Tue, 21 Apr 2020 19:40:41 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="W9S6JG/g";
+ dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 1CC4281A0D; Tue, 21 Apr 2020 18:51:25 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+ DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_PASS,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
+ [210.118.77.11])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 2DCCB81737
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 18:51:21 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=s.nawrocki@samsung.com
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+ by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165120euoutp0101ec21506fef207024eec068bd2713f3~H49EUIi7N0962409624euoutp01X
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 16:51:20 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com
+ 20200421165120euoutp0101ec21506fef207024eec068bd2713f3~H49EUIi7N0962409624euoutp01X
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+ s=mail20170921; t=1587487880;
+ bh=dqMAZVBRR9AX01Hgc3T6VfoE0znPLsfUFWVSuYq0+c4=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=W9S6JG/gS0hScvMlp/3epnfVC4hXCCQVdSWs/HmbozVZy1tC0RnFAo/3I16oYIbkc
+ +pZI/20PwYLhme7RT6MLSyS+lUE0/4ixnMQwnXv/DUpZWYlvIK0LcCDDGu9M1BJPdc
+ CAdBy0xK4HCDR5Ar4NYeI3D3yBeyZBXXkhJfBheA=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165120eucas1p297b1e3453e703f8e5eda14172d0f83d1~H49EBiVo82629626296eucas1p2m;
+ Tue, 21 Apr 2020 16:51:20 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+ eusmges2new.samsung.com (EUCPMTA) with SMTP id 78.64.60679.8842F9E5; Tue, 21
+ Apr 2020 17:51:20 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+ eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165119eucas1p19a1103b9f6b952bd83086a77df71e837~H49DkOhQc1429214292eucas1p1l;
+ Tue, 21 Apr 2020 16:51:19 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+ eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165119eusmtrp29ad6632f3c6393b1aa457330e8cf88ab~H49DjrPER3266732667eusmtrp2V;
+ Tue, 21 Apr 2020 16:51:19 +0000 (GMT)
+X-AuditID: cbfec7f4-0cbff7000001ed07-12-5e9f2488998e
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+ eusmgms1.samsung.com (EUCPMTA) with SMTP id 3B.0E.08375.7842F9E5; Tue, 21
+ Apr 2020 17:51:19 +0100 (BST)
+Received: from AMDC3061.digital.local (unknown [106.120.51.75]) by
+ eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165119eusmtip1f1b67aa1787772211a1def16f65bc6d6~H49DErhFS0901309013eusmtip1B;
+ Tue, 21 Apr 2020 16:51:19 +0000 (GMT)
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+To: u-boot@lists.denx.de, mbrugger@suse.com, marex@denx.de, bmeng.cn@gmail.com
+Cc: agraf@suse.de, sjg@chrmium.org, jh80.chung@samsung.com,
+ m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+Subject: [RFC PATCH 4/9] rpi4: add a mapping for the PCIe XHCI controller
+ MMIO registers (ARM 64bit)
+Date: Tue, 21 Apr 2020 18:50:54 +0200
+Message-Id: <20200421165059.19394-5-s.nawrocki@samsung.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200421165059.19394-1-s.nawrocki@samsung.com>
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFupjleLIzCtJLcpLzFFi42LZduznOd0OlflxBleWSlqcuPKP0WLjjPWs
+ FlN74i1u/GpjtVh75C67xZu2RkaLBZOfsFp0XP3PaPF2bye7A6fH/VMNrB7zZp1g8dg56y67
+ x9k7Oxg9+rasYvRYv+Uqi8fm09UB7FFcNimpOZllqUX6dglcGUterGUvOMFf8XXacaYGxhs8
+ XYycHBICJhKT2+8zgdhCAisYJX5vreti5AKyvzBKTOy7zwLhfGaUOHVoLjNMx4Ztc5ggEssZ
+ JWb/OsEC19L2+zQ7SBWbgKFE79E+RhBbRCBA4trPaWA2s0CBxLTrT9hAbGGBNIl9l78DTeXg
+ YBFQlVjxvQokzCtgLTF/+zk2iGXyEqs3HABbzClgI3H3+wywXRIC3ewSk4/ugipykfhz5CUj
+ hC0s8er4FnYIW0bi/875TBANzYwSPbtvs0M4Exgl7h9fANVhLXHn3C82kCuYBTQl1u/Shwg7
+ Sqw/dJcJJCwhwCdx460gxP18EpO2TWeGCPNKdLQJQVSrSPxeNZ0JwpaS6H7ynwXC9pCY9mwi
+ MyR8+hklfh3uYJ/AKD8LYdkCRsZVjOKppcW56anFRnmp5XrFibnFpXnpesn5uZsYgank9L/j
+ X3Yw7vqTdIhRgINRiYf3xvl5cUKsiWXFlbmHGCU4mJVEeDc8BArxpiRWVqUW5ccXleakFh9i
+ lOZgURLnNV70MlZIID2xJDU7NbUgtQgmy8TBKdXAOHuVS7S8w6+vK66y3jUUn9Eot2jjWc3T
+ 07clrGqY05D8vcnIWUTH3vg1g5PMzX1+c36v/DlvjcjllKft3RM2Pq5d+XPC/m3LHth0shma
+ z2SJSs1Se6xv6SxU0zgnqmNN+KFzZtOdvtidECi//MLjlMPXX+HtjPmqCWHZkS7vDq+tcu+e
+ oxC6VomlOCPRUIu5qDgRAPNyI+ohAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrHLMWRmVeSWpSXmKPExsVy+t/xu7rtKvPjDC6fsbI4ceUfo8XGGetZ
+ Lab2xFvc+NXGarH2yF12izdtjYwWCyY/YbXouPqf0eLt3k52B06P+6caWD3mzTrB4rFz1l12
+ j7N3djB69G1ZxeixfstVFo/Np6sD2KP0bIryS0tSFTLyi0tslaINLYz0DC0t9IxMLPUMjc1j
+ rYxMlfTtbFJSczLLUov07RL0Mpa8WMtecIK/4uu040wNjDd4uhg5OSQETCQ2bJvD1MXIxSEk
+ sJRR4uvF/yxdjBxACSmJ+S1KEDXCEn+udbFB1HxilJja9IUZJMEmYCjRe7SPEcQWEQiReHH0
+ ChOIzSxQJrGm9TVYXFggRWLyrSlsIDNZBFQlVnyvAgnzClhLzN9+jg1ivrzE6g0HwEZyCthI
+ 3P0+gwXEFgKqabi0hGUCI98CRoZVjCKppcW56bnFhnrFibnFpXnpesn5uZsYgWG97djPzTsY
+ L20MPsQowMGoxMN74/y8OCHWxLLiytxDjBIczEoivBseAoV4UxIrq1KL8uOLSnNSiw8xmgLd
+ NJFZSjQ5HxhzeSXxhqaG5haWhubG5sZmFkrivB0CB2OEBNITS1KzU1MLUotg+pg4OKUaGLX1
+ Tpc+7j1lL7kgh/HtV62FV+8ti952/p9Snln59awyjq46dndey3c+M7oZG3/ERqdbyH/I23a0
+ b2EwV5eJ844j/B9f3fctmXPoxNKu3dMMl+y2rjzHa2Yuc11bPLbK8Uvn5cuav+bfXGP73eOv
+ qbWD1uuNaSbcN6ekvG3fH66u9K8y+S5fshJLcUaioRZzUXEiAOSx0z6BAgAA
+X-CMS-MailID: 20200421165119eucas1p19a1103b9f6b952bd83086a77df71e837
+X-Msg-Generator: CA
+X-RootMTR: 20200421165119eucas1p19a1103b9f6b952bd83086a77df71e837
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20200421165119eucas1p19a1103b9f6b952bd83086a77df71e837
+References: <20200421165059.19394-1-s.nawrocki@samsung.com>
+ <CGME20200421165119eucas1p19a1103b9f6b952bd83086a77df71e837@eucas1p1.samsung.com>
+X-Mailman-Approved-At: Tue, 21 Apr 2020 19:40:20 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+
+Create a non-cacheable mapping for the 0x600000000 physical memory region,
+where MMIO registers for the PCIe XHCI controller are instantiated by the
+PCIe bridge.
+
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+ arch/arm/mach-bcm283x/init.c | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/mach-bcm283x/init.c b/arch/arm/mach-bcm283x/init.c
+index 4295356..6a748da 100644
+--- a/arch/arm/mach-bcm283x/init.c
++++ b/arch/arm/mach-bcm283x/init.c
+@@ -11,10 +11,15 @@
+ #include <dm/device.h>
+ #include <fdt_support.h>
+ 
++#define BCM2711_RPI4_PCIE_XHCI_MMIO_PHYS	0x600000000UL
++#define BCM2711_RPI4_PCIE_XHCI_MMIO_SIZE	0x800000UL
++
+ #ifdef CONFIG_ARM64
+ #include <asm/armv8/mmu.h>
+ 
+-static struct mm_region bcm283x_mem_map[] = {
++#define MAX_MAP_MAX_ENTRIES (4)
++
++static struct mm_region bcm283x_mem_map[MAX_MAP_MAX_ENTRIES] = {
+ 	{
+ 		.virt = 0x00000000UL,
+ 		.phys = 0x00000000UL,
+@@ -34,7 +39,7 @@ static struct mm_region bcm283x_mem_map[] = {
+ 	}
+ };
+ 
+-static struct mm_region bcm2711_mem_map[] = {
++static struct mm_region bcm2711_mem_map[MAX_MAP_MAX_ENTRIES] = {
+ 	{
+ 		.virt = 0x00000000UL,
+ 		.phys = 0x00000000UL,
+@@ -49,6 +54,13 @@ static struct mm_region bcm2711_mem_map[] = {
+ 			 PTE_BLOCK_NON_SHARE |
+ 			 PTE_BLOCK_PXN | PTE_BLOCK_UXN
+ 	}, {
++		.virt = BCM2711_RPI4_PCIE_XHCI_MMIO_PHYS,
++		.phys = BCM2711_RPI4_PCIE_XHCI_MMIO_PHYS,
++		.size = BCM2711_RPI4_PCIE_XHCI_MMIO_SIZE,
++		.attrs = PTE_BLOCK_MEMTYPE(MT_DEVICE_NGNRNE) |
++			 PTE_BLOCK_NON_SHARE |
++			 PTE_BLOCK_PXN | PTE_BLOCK_UXN
++	}, {
+ 		/* List terminator */
+ 		0,
+ 	}
+@@ -71,7 +83,7 @@ static void _rpi_update_mem_map(struct mm_region *pd)
+ {
+ 	int i;
+ 
+-	for (i = 0; i < 2; i++) {
++	for (i = 0; i < MAX_MAP_MAX_ENTRIES; i++) {
+ 		mem_map[i].virt = pd[i].virt;
+ 		mem_map[i].phys = pd[i].phys;
+ 		mem_map[i].size = pd[i].size;
+
+From patchwork Tue Apr 21 16:50:55 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sylwester Nawrocki <s.nawrocki@samsung.com>
+X-Patchwork-Id: 1274445
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256
+ header.s=mail20170921 header.b=lLBogEzN;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4969qr1fWZz9sSJ
+ for <incoming@patchwork.ozlabs.org>; Wed, 22 Apr 2020 03:42:16 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id F35DC81A07;
+ Tue, 21 Apr 2020 19:41:09 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="lLBogEzN";
+ dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 5701E804CD; Tue, 21 Apr 2020 18:51:28 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+ DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_PASS,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
+ [210.118.77.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 94B9A804CD
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 18:51:24 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=s.nawrocki@samsung.com
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+ by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165124euoutp028b281b51c07dd33d34f567bc48e48780~H49HhCWEk2231522315euoutp02b
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 16:51:24 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com
+ 20200421165124euoutp028b281b51c07dd33d34f567bc48e48780~H49HhCWEk2231522315euoutp02b
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+ s=mail20170921; t=1587487884;
+ bh=SeubgiN7Xoo7MhXFId4svRjAX/097OBMOrYqb8zcjX4=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=lLBogEzNsIrCr1ijgduFlRI6hX9VIcrxf+NCOLPoGXULqWWO+ZF7D+NiXpRYXQzDV
+ 1gUgGi/AoiozShvfdcBygAExo9xz/H8KQmq4GL9kAjWVtDpRuUOKR2vYZIIWsh1aPo
+ yf/W4nuSnJNWkJEuXpNMRtBcyzNZ9/G76bBPTYkg=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+ eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165123eucas1p1960c9d7984fb217f5fd4c505a29633eb~H49HSMJfH1746117461eucas1p1m;
+ Tue, 21 Apr 2020 16:51:23 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+ eusmges2new.samsung.com (EUCPMTA) with SMTP id 99.64.60679.B842F9E5; Tue, 21
+ Apr 2020 17:51:23 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+ eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165123eucas1p171701bd64ed84a9c740331ce87c7ff6c~H49G08mx61445214452eucas1p1f;
+ Tue, 21 Apr 2020 16:51:23 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+ eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165123eusmtrp26c5fceeaa8775f129b92588ca20429ad~H49G0VD0c3266732667eusmtrp2Y;
+ Tue, 21 Apr 2020 16:51:23 +0000 (GMT)
+X-AuditID: cbfec7f4-0e5ff7000001ed07-19-5e9f248b9eea
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+ eusmgms1.samsung.com (EUCPMTA) with SMTP id EB.0E.08375.B842F9E5; Tue, 21
+ Apr 2020 17:51:23 +0100 (BST)
+Received: from AMDC3061.digital.local (unknown [106.120.51.75]) by
+ eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165122eusmtip112e78411cfff99904aa9ac5a6477a857~H49GPKBTO0891608916eusmtip1I;
+ Tue, 21 Apr 2020 16:51:22 +0000 (GMT)
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+To: u-boot@lists.denx.de, mbrugger@suse.com, marex@denx.de, bmeng.cn@gmail.com
+Cc: agraf@suse.de, sjg@chrmium.org, jh80.chung@samsung.com,
+ m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+Subject: [RFC PATCH 5/9] rpi4: add a mapping for the PCIe XHCI controller
+ MMIO registers (ARM 32bit)
+Date: Tue, 21 Apr 2020 18:50:55 +0200
+Message-Id: <20200421165059.19394-6-s.nawrocki@samsung.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200421165059.19394-1-s.nawrocki@samsung.com>
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFuplleLIzCtJLcpLzFFi42LZduzned1ulflxBi8vWlmcuPKP0WLjjPWs
+ FlN74i1u/GpjtVh75C67xZu2RkaLBZOfsFp0XP3PaPF2bye7A6fH/VMNrB7zZp1g8dg56y67
+ x9k7Oxg9+rasYvRYv+Uqi8fm09UB7FFcNimpOZllqUX6dglcGefnzWMp2CJZsf/SSqYGxnbR
+ LkZODgkBE4lTm2cxg9hCAisYJa6sUOpi5AKyvzBK7Pv6iQnC+cwoceHlCSCHA6zj0ndfiPhy
+ RolDOw6xwXUseN7FBjKKTcBQovdoHyOILSIQIHHt5zQwm1mgQGLa9SdsIIOEBdIk1q2PBgmz
+ CKhK/H/RD1bCK2At0TFxJxPEdfISqzccALuOU8BG4u73GSwguyQE2tklOv78Y4MocpHYMes8
+ M4QtLPHq+BZ2CFtG4v/O+UwQDc2MEj27b7NDOBMYJe4fX8AIUWUtcefcL7CLmAU0Jdbv0ocI
+ O0r8m9nGAvExn8SNt4IQ9/NJTNo2nRkizCvR0SYEUa0i8XvVdKibpSS6n/xngbA9JG6dPA4N
+ n35GiePvzjFNYJSfhbBsASPjKkbx1NLi3PTUYqO81HK94sTc4tK8dL3k/NxNjMBEcvrf8S87
+ GHf9STrEKMDBqMTDe+P8vDgh1sSy4srcQ4wSHMxKIrwbHgKFeFMSK6tSi/Lji0pzUosPMUpz
+ sCiJ8xovehkrJJCeWJKanZpakFoEk2Xi4JRqYMycbb2Z6X6zsffx891uL9M/pBpM6e2R1eC9
+ abXvg86THVnXDczb86Y+OMHaoPR/br7E63VbvxR+W2dz0rk55FRyaoRhh0zfOdW+qE8RhULe
+ uua2f/9Er3VKF+SdfO+WeUdN1OvHCeb8hSZMUmWns/kD5+YUcs2ruebh9cbjSfyOudeaOG+u
+ UGIpzkg01GIuKk4EAPSLu8IgAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrHLMWRmVeSWpSXmKPExsVy+t/xu7rdKvPjDPZOELc4ceUfo8XGGetZ
+ Lab2xFvc+NXGarH2yF12izdtjYwWCyY/YbXouPqf0eLt3k52B06P+6caWD3mzTrB4rFz1l12
+ j7N3djB69G1ZxeixfstVFo/Np6sD2KP0bIryS0tSFTLyi0tslaINLYz0DC0t9IxMLPUMjc1j
+ rYxMlfTtbFJSczLLUov07RL0Ms7Pm8dSsEWyYv+llUwNjO2iXYwcHBICJhKXvvt2MXJxCAks
+ ZZSYeGIiG0RcSmJ+i1IXIyeQKSzx51oXG0TNJ6CaT0tYQRJsAoYSvUf7GEFsEYEQiRdHrzCB
+ 2MwCZRJrWl+DxYUFUiSuXF3EAmKzCKhK/H/RDxbnFbCW6Ji4kwligbzE6g0HmEFsTgEbibvf
+ Z4DVCwHVNFxawjKBkW8BI8MqRpHU0uLc9NxiQ73ixNzi0rx0veT83E2MwLDeduzn5h2MlzYG
+ H2IU4GBU4uG9cX5enBBrYllxZe4hRgkOZiUR3g0PgUK8KYmVValF+fFFpTmpxYcYTYGOmsgs
+ JZqcD4y5vJJ4Q1NDcwtLQ3Njc2MzCyVx3g6BgzFCAumJJanZqakFqUUwfUwcnFINjBb7jphd
+ cHW99k349Za3DneDPqszyswoTlnxNfKtkWFuc5Csol6xgNDNrf81Vl0WSrujb8a/c0dDBov1
+ VuvDybd359g1/47sUkpb+OjKVF6W8u93CmvurMn8qPdFbQ5v7o0PSkKqc6qO/5uycZf73oz0
+ /OnXBAqkdeRl7nGl6t3qNFCMTqgxV2Ipzkg01GIuKk4EAH1/U2eBAgAA
+X-CMS-MailID: 20200421165123eucas1p171701bd64ed84a9c740331ce87c7ff6c
+X-Msg-Generator: CA
+X-RootMTR: 20200421165123eucas1p171701bd64ed84a9c740331ce87c7ff6c
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20200421165123eucas1p171701bd64ed84a9c740331ce87c7ff6c
+References: <20200421165059.19394-1-s.nawrocki@samsung.com>
+ <CGME20200421165123eucas1p171701bd64ed84a9c740331ce87c7ff6c@eucas1p1.samsung.com>
+X-Mailman-Approved-At: Tue, 21 Apr 2020 19:40:20 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+
+Create a non-cacheable mapping for the 0x600000000 physical memory region,
+where MMIO registers for the PCIe XHCI controller are instantiated by the
+PCIe bridge. Due to 32bit limit in the CPU virtual address space in ARM
+32bit mode, this region is mapped at 0xff800000 CPU virtual address.
+
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+ arch/arm/mach-bcm283x/Kconfig             |  1 +
+ arch/arm/mach-bcm283x/include/mach/base.h |  7 +++++
+ arch/arm/mach-bcm283x/init.c              | 52 +++++++++++++++++++++++++++++++
+ 3 files changed, 60 insertions(+)
+
+diff --git a/arch/arm/mach-bcm283x/Kconfig b/arch/arm/mach-bcm283x/Kconfig
+index 00419bf..bcb7f1d 100644
+--- a/arch/arm/mach-bcm283x/Kconfig
++++ b/arch/arm/mach-bcm283x/Kconfig
+@@ -36,6 +36,7 @@ config BCM2711_32B
+ 	select BCM2711
+ 	select ARMV7_LPAE
+ 	select CPU_V7A
++	select PHYS_64BIT
+ 
+ config BCM2711_64B
+ 	bool "Broadcom BCM2711 SoC 64-bit support"
+diff --git a/arch/arm/mach-bcm283x/include/mach/base.h b/arch/arm/mach-bcm283x/include/mach/base.h
+index c4ae398..1d10dc9 100644
+--- a/arch/arm/mach-bcm283x/include/mach/base.h
++++ b/arch/arm/mach-bcm283x/include/mach/base.h
+@@ -6,6 +6,13 @@
+ #ifndef _BCM283x_BASE_H_
+ #define _BCM283x_BASE_H_
+ 
++#include <linux/types.h>
++
+ extern unsigned long rpi_bcm283x_base;
+ 
++#ifdef CONFIG_ARMV7_LPAE
++extern void *rpi4_phys_to_virt(phys_addr_t paddr);
++#define phys_to_virt(x) rpi4_phys_to_virt(x)
++#endif
++
+ #endif
+diff --git a/arch/arm/mach-bcm283x/init.c b/arch/arm/mach-bcm283x/init.c
+index 6a748da..5d0d160 100644
+--- a/arch/arm/mach-bcm283x/init.c
++++ b/arch/arm/mach-bcm283x/init.c
+@@ -145,6 +145,58 @@ int mach_cpu_init(void)
+ }
+ 
+ #ifdef CONFIG_ARMV7_LPAE
++
++#define BCM2711_RPI4_PCIE_XHCI_MMIO_VIRT	0xff800000UL
++
++void *rpi4_phys_to_virt(phys_addr_t paddr)
++{
++	if (paddr >= BCM2711_RPI4_PCIE_XHCI_MMIO_PHYS)
++		paddr = paddr - BCM2711_RPI4_PCIE_XHCI_MMIO_PHYS +
++			BCM2711_RPI4_PCIE_XHCI_MMIO_VIRT;
++	return (void *)(unsigned long)paddr;
++}
++
++static void set_section_phys(unsigned int section, phys_addr_t phys,
++			     enum dcache_option option)
++{
++	u64 *page_table = (u64 *)gd->arch.tlb_addr;
++	/* Need to set the access flag to not fault */
++	u64 value = TTB_SECT_AP | TTB_SECT_AF;
++
++	/* Add the page offset */
++	value |= (phys);
++
++	/* Add caching bits */
++	value |= option;
++
++	/* Set PTE */
++	page_table[section] = value;
++}
++
++static void rpi4_create_pcie_xhci_mapping(void)
++{
++	unsigned sect = BCM2711_RPI4_PCIE_XHCI_MMIO_VIRT >> MMU_SECTION_SHIFT;
++	phys_addr_t phys_addr = BCM2711_RPI4_PCIE_XHCI_MMIO_PHYS;
++	unsigned int size = BCM2711_RPI4_PCIE_XHCI_MMIO_SIZE;
++
++	while (size) {
++		set_section_phys(sect, phys_addr, DCACHE_OFF);
++		sect++;
++		phys_addr += MMU_SECTION_SIZE;
++		size -= MMU_SECTION_SIZE;
++	}
++}
++
++void arm_init_domains(void)
++{
++	/*
++	 * Hijack this function to prepare a mappings for the PCIe MMIO
++	 * region for the XHCI controller on RPi4 board.
++	 * This code is called before enabling the MMU in ARM 32bit mode.
++	 */
++	rpi4_create_pcie_xhci_mapping();
++}
++
+ void enable_caches(void)
+ {
+ 	dcache_enable();
+
+From patchwork Tue Apr 21 16:50:56 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sylwester Nawrocki <s.nawrocki@samsung.com>
+X-Patchwork-Id: 1274443
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256
+ header.s=mail20170921 header.b=TdaEIEQw;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4969qL0CtWz9sSK
+ for <incoming@patchwork.ozlabs.org>; Wed, 22 Apr 2020 03:41:49 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 0B3E7811EC;
+ Tue, 21 Apr 2020 19:40:47 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="TdaEIEQw";
+ dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id BB38A81BC1; Tue, 21 Apr 2020 18:51:28 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+ DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_PASS,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
+ [210.118.77.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 38EFA81737
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 18:51:25 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=s.nawrocki@samsung.com
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+ by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165124euoutp021fb4b724898c009874780933c7d14680~H49IAvOSY2231422314euoutp02e
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 16:51:24 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com
+ 20200421165124euoutp021fb4b724898c009874780933c7d14680~H49IAvOSY2231422314euoutp02e
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+ s=mail20170921; t=1587487884;
+ bh=K5kn614EGEGq9XoRGx08RBxVoAnisE7ZdTKndMJbDRM=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=TdaEIEQw+FnhAJ4fnk4tmLrXmueW2he//FahOikgAeJ6M+OUzadWhD3z2FaQlXB+o
+ eLYh80t9Zmtxjnb8VqEE1Keye1xwPlQilyQlxddEuU4CRUtb1bSTay6Q1TUzHOSaIj
+ HvCnkkprHeRHnhrs7cj1RJfUYImrhaBUSxNNZCGE=
+Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165124eucas1p2c8640007863ed087707c8d010be6be09~H49HqVo__0783407834eucas1p2_;
+ Tue, 21 Apr 2020 16:51:24 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+ eusmges1new.samsung.com (EUCPMTA) with SMTP id 57.5D.61286.C842F9E5; Tue, 21
+ Apr 2020 17:51:24 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+ eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165124eucas1p161d4049c0e136fc74ae2b00c2a1b3883~H49HV1Vh41763717637eucas1p1o;
+ Tue, 21 Apr 2020 16:51:24 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
+ eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165124eusmtrp2db8fc0e5d79f82c5cc88dc94100c80ec~H49HVJgfe3266732667eusmtrp2Z;
+ Tue, 21 Apr 2020 16:51:24 +0000 (GMT)
+X-AuditID: cbfec7f2-f0bff7000001ef66-79-5e9f248c9bc0
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+ eusmgms2.samsung.com (EUCPMTA) with SMTP id 19.3B.07950.B842F9E5; Tue, 21
+ Apr 2020 17:51:23 +0100 (BST)
+Received: from AMDC3061.digital.local (unknown [106.120.51.75]) by
+ eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165123eusmtip15bd7207cfa303d93b849089978670beb~H49GwZGUR0901309013eusmtip1C;
+ Tue, 21 Apr 2020 16:51:23 +0000 (GMT)
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+To: u-boot@lists.denx.de, mbrugger@suse.com, marex@denx.de, bmeng.cn@gmail.com
+Cc: agraf@suse.de, sjg@chrmium.org, jh80.chung@samsung.com,
+ m.szyprowski@samsung.com, b.zolnierkie@samsung.com, Sylwester Nawrocki
+ <s.nawrocki@samsung.com>
+Subject: [RFC PATCH 6/9] usb: xhci: Allow accessing 64-bit registers with
+ DWORD accesses only
+Date: Tue, 21 Apr 2020 18:50:56 +0200
+Message-Id: <20200421165059.19394-7-s.nawrocki@samsung.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200421165059.19394-1-s.nawrocki@samsung.com>
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprCKsWRmVeSWpSXmKPExsWy7djPc7o9KvPjDFY9ErA4ceUfo8XGGetZ
+ Lab2xFvc+NXGarH2yF12izdtjYwWCyY/YbU4/Kad1aLj6n9Gi7d7O9kduDzun2pg9Zg36wSL
+ x85Zd9k9zt7ZwejRt2UVo8f6LVdZPDafrg5gj+KySUnNySxLLdK3S+DKWHP3JXNBg1DFl0W7
+ mBsY7/J1MXJySAiYSLy/coIVxBYSWMEo8e2sYxcjF5D9hVFi4beHjBDOZ0aJZQ0/GGE6Jn1d
+ wASRWM4osW7OOWa4lgfr5oFVsQkYSvQe7QOzRQQCJK79nAY2illgPqPEn0/TwBLCAvES958s
+ ZgOxWQRUJSZ2rGECsXkFrCWuLp/GDrFOXmL1hgPMIDangI3E3e8zWCDik9klFt2XhrBdJC5c
+ usoGYQtLvDq+BapXRuL/zvlgp0oINDNK9Oy+zQ7hTGCUuH98AdRD1hJ3zv0C6uYAOk9TYv0u
+ fYiwo0Tf1HesIGEJAT6JG28FQcLMQOakbdOZIcK8Eh1tQhDVKhK/V01ngrClJLqf/Ic600Pi
+ w8fFLJAA6meU6Nr7nnECo/wshGULGBlXMYqnlhbnpqcWG+allusVJ+YWl+al6yXn525iBKaV
+ 0/+Of9rB+PVS0iFGAQ5GJR7eG+fnxQmxJpYVV+YeYpTgYFYS4d3wECjEm5JYWZValB9fVJqT
+ WnyIUZqDRUmc13jRy1ghgfTEktTs1NSC1CKYLBMHp1QDo0NlrlZnZIZvA8+uwiqVNYzC/zbd
+ 8izctWfuNx4XYxXelzfU2SRYA08E32U8UlLxXiGjV3fxrc/35C7e3pyxj0dLTePrncrpBptb
+ FX6rXZLVnDGhff2fSQf+6HP95tKR3+wkzi0kXB99vkvDK6eoVW5d0uRYRxXTCfGnozzfc+wL
+ 6X+tWFehxFKckWioxVxUnAgAMSV15icDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrKLMWRmVeSWpSXmKPExsVy+t/xu7rdKvPjDPr7bCxOXPnHaLFxxnpW
+ i6k98RY3frWxWqw9cpfd4k1bI6PFgslPWC0Ov2lntei4+p/R4u3eTnYHLo/7pxpYPebNOsHi
+ sXPWXXaPs3d2MHr0bVnF6LF+y1UWj82nqwPYo/RsivJLS1IVMvKLS2yVog0tjPQMLS30jEws
+ 9QyNzWOtjEyV9O1sUlJzMstSi/TtEvQy1tx9yVzQIFTxZdEu5gbGu3xdjJwcEgImEpO+LmDq
+ YuTiEBJYyihx8udKxi5GDqCElMT8FiWIGmGJP9e62CBqPjFKfOxoZgJJsAkYSvQe7WMEsUUE
+ QiReHL0CNogZZNCfhjesIAlhgViJGXMWsYPYLAKqEhM71oA18wpYS1xdPo0dYoO8xOoNB5hB
+ bE4BG4m732ewgNhCQDUNl5awTGDkW8DIsIpRJLW0ODc9t9hIrzgxt7g0L10vOT93EyMwyLcd
+ +7llB2PXu+BDjAIcjEo8vDfOz4sTYk0sK67MPcQowcGsJMK74SFQiDclsbIqtSg/vqg0J7X4
+ EKMp0FETmaVEk/OBEZhXEm9oamhuYWlobmxubGahJM7bIXAwRkggPbEkNTs1tSC1CKaPiYNT
+ qoExbeNShg0BsVpXNX2+ynqZ6E7NXSE7VcnncfFtX/399bscXzZ29OomzhFKnuj8rz715Ruj
+ Dfa+8s+n7hDYcHyawgFVruDoGTumeS/WeHOltsT4QDWHrfWL65mbVjLm/99wxqyee9+3r8fY
+ 3h36XGPv8K1gQVD7jm/XPqUe2OMxsVg3m+mz4/cjSizFGYmGWsxFxYkAsqsjeYgCAAA=
+X-CMS-MailID: 20200421165124eucas1p161d4049c0e136fc74ae2b00c2a1b3883
+X-Msg-Generator: CA
+X-RootMTR: 20200421165124eucas1p161d4049c0e136fc74ae2b00c2a1b3883
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20200421165124eucas1p161d4049c0e136fc74ae2b00c2a1b3883
+References: <20200421165059.19394-1-s.nawrocki@samsung.com>
+ <CGME20200421165124eucas1p161d4049c0e136fc74ae2b00c2a1b3883@eucas1p1.samsung.com>
+X-Mailman-Approved-At: Tue, 21 Apr 2020 19:40:20 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+This patch adds a Kconfig option which allows accessing 64-bit xHCI
+IO registers only with 2 double word accesses rather than using
+a single quad word access. There might be HW configurations where
+single quad word access doesn't work, even though the CPU is 64-bit.
+That seems to be the case on rpi4 board with Broadcom BCM2711 SoC,
+where the VL805 USB xHCI hub is connected to the PCIe controller
+behind the SCB bridge.
+
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+---
+So far I couldn't come up with anything better to make the xHCI host
+controller working on the rpi4 board. For some reason dereferencing
+a 64-bit pointer to access 64-bit registers doesn't work there,
+might be a limitation of the PCIe bridge behind the SCB. In Linux
+always 2 double word accesses are used.
+---
+ drivers/usb/host/Kconfig | 7 +++++++
+ include/usb/xhci.h       | 4 ++--
+ 2 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/host/Kconfig b/drivers/usb/host/Kconfig
+index 0987ff2..3990b8a 100644
+--- a/drivers/usb/host/Kconfig
++++ b/drivers/usb/host/Kconfig
+@@ -15,6 +15,13 @@ config USB_XHCI_HCD
+ 
+ if USB_XHCI_HCD
+ 
++config XHCI_64BIT_DWORD_ACCESS_ONLY
++	bool "Access xHCI 64-bit registers with double word accesses only"
++	help
++	  Choose this option if your hardware does not support quad word accesses
++	  for registers with 64-bit address pointers.
++	  If unsure, say Y.
++
+ config USB_XHCI_DWC3
+ 	bool "DesignWare USB3 DRD Core Support"
+ 	help
+diff --git a/include/usb/xhci.h b/include/usb/xhci.h
+index 6017504..459e76b 100644
+--- a/include/usb/xhci.h
++++ b/include/usb/xhci.h
+@@ -1111,7 +1111,7 @@ static inline void xhci_writel(uint32_t volatile *regs, const unsigned int val)
+  */
+ static inline u64 xhci_readq(__le64 volatile *regs)
+ {
+-#if BITS_PER_LONG == 64
++#if BITS_PER_LONG == 64 && !defined(CONFIG_XHCI_64BIT_DWORD_ACCESS_ONLY)
+ 	return readq(regs);
+ #else
+ 	__u32 *ptr = (__u32 *)regs;
+@@ -1123,7 +1123,7 @@ static inline u64 xhci_readq(__le64 volatile *regs)
+ 
+ static inline void xhci_writeq(__le64 volatile *regs, const u64 val)
+ {
+-#if BITS_PER_LONG == 64
++#if BITS_PER_LONG == 64 && !defined(CONFIG_XHCI_64BIT_DWORD_ACCESS_ONLY)
+ 	writeq(val, regs);
+ #else
+ 	__u32 *ptr = (__u32 *)regs;
+
+From patchwork Tue Apr 21 16:50:57 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sylwester Nawrocki <s.nawrocki@samsung.com>
+X-Patchwork-Id: 1274447
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256
+ header.s=mail20170921 header.b=kJBt9MQT;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4969r762FQz9sSK
+ for <incoming@patchwork.ozlabs.org>; Wed, 22 Apr 2020 03:42:31 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 6363A81C5C;
+ Tue, 21 Apr 2020 19:41:12 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="kJBt9MQT";
+ dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 33EC581A07; Tue, 21 Apr 2020 18:51:30 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+ DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_PASS,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
+ [210.118.77.11])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id D6CEE8184C
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 18:51:25 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=s.nawrocki@samsung.com
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+ by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165125euoutp017478067b4a8bcca514dc40fb627f8acd~H49IcW7dO0962409624euoutp01a
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 16:51:25 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com
+ 20200421165125euoutp017478067b4a8bcca514dc40fb627f8acd~H49IcW7dO0962409624euoutp01a
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+ s=mail20170921; t=1587487885;
+ bh=QSdxf5aZ1i+jg2fjLAbBS232kWZjIZ9zY4PIHR2Ni14=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=kJBt9MQTfmkeKhmiceQe/HUCmI96oRoDNPi5nn3ky/Y/Kh/4hsthKjmpse7p+jiPh
+ l1humgHswaPtb/kwiWawEP4oQeD+g1ttz9BnBrOk/9YpQrhoD46wGVfSuVlD+yprPM
+ j3DXWoNkCb5Jy2Ii1dO+p4MBcfHyCpQNuyBKhxX4=
+Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165124eucas1p22e6a58349823ac3889aa6b696d47eef7~H49IIOxKO2494924949eucas1p2s;
+ Tue, 21 Apr 2020 16:51:24 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+ eusmges1new.samsung.com (EUCPMTA) with SMTP id 08.5D.61286.C842F9E5; Tue, 21
+ Apr 2020 17:51:24 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165124eucas1p2e7cbc2eea896a682961304de7ff53dc2~H49H2hSgu2493024930eucas1p2e;
+ Tue, 21 Apr 2020 16:51:24 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+ eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165124eusmtrp2805e4f2d242b9fde671b88d2af6d3996~H49H19aau3266732667eusmtrp2a;
+ Tue, 21 Apr 2020 16:51:24 +0000 (GMT)
+X-AuditID: cbfec7f2-f0bff7000001ef66-7b-5e9f248ccc1b
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+ eusmgms1.samsung.com (EUCPMTA) with SMTP id 8C.0E.08375.C842F9E5; Tue, 21
+ Apr 2020 17:51:24 +0100 (BST)
+Received: from AMDC3061.digital.local (unknown [106.120.51.75]) by
+ eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165123eusmtip17d0177368f95f9d2fdda3229641c093c~H49HSnwTG0895708957eusmtip1I;
+ Tue, 21 Apr 2020 16:51:23 +0000 (GMT)
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+To: u-boot@lists.denx.de, mbrugger@suse.com, marex@denx.de, bmeng.cn@gmail.com
+Cc: agraf@suse.de, sjg@chrmium.org, jh80.chung@samsung.com,
+ m.szyprowski@samsung.com, b.zolnierkie@samsung.com, Sylwester Nawrocki
+ <s.nawrocki@samsung.com>
+Subject: [RFC PATCH 7/9] pci: Add some PCI Express capability register
+ offset definitions
+Date: Tue, 21 Apr 2020 18:50:57 +0200
+Message-Id: <20200421165059.19394-8-s.nawrocki@samsung.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200421165059.19394-1-s.nawrocki@samsung.com>
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprKKsWRmVeSWpSXmKPExsWy7djPc7o9KvPjDOb3GFqcuPKP0WLjjPWs
+ FlN74i1u/GpjtVh75C67xZu2RkaLBZOfsFocftPOatFx9T+jxdu9newOXB73TzWwesybdYLF
+ Y+esu+weZ+/sYPTo27KK0WP9lqssHptPVwewR3HZpKTmZJalFunbJXBlLOnbw1Zwi7Ni8+9z
+ bA2Mv9m7GDk5JARMJA78WsXaxcjFISSwglHixo1PbBDOF0aJxyvOMUM4nxklNn7czwbT0j75
+ CSNEYjmjxP62HQgtB7eeZQWpYhMwlOg92scIYosIBEhc+zkNrINZYD6jxJ9P08ASwgLREt3L
+ poI1sAioSkw9dxgszitgLXH2+hMWiHXyEqs3HGAGsTkFbCTufp/BAjJIQqCfXeL43lag1RxA
+ jovEu7+uEPXCEq+Ob4H6Tkbi/875TBD1zYwSPbtvs0M4Exgl7h9fwAhRZS1x59wvsEHMApoS
+ 63fpQ4QdJaaufM8MMZ9P4sZbQZAwM5A5adt0qDCvREebEES1isTvVdOZIGwpie4n/6HO95CY
+ fG0pNID7GSWmv97INIFRfhbCsgWMjKsYxVNLi3PTU4sN81LL9YoTc4tL89L1kvNzNzECE8vp
+ f8c/7WD8einpEKMAB6MSD++N8/PihFgTy4orcw8xSnAwK4nwbngIFOJNSaysSi3Kjy8qzUkt
+ PsQozcGiJM5rvOhlrJBAemJJanZqakFqEUyWiYNTqoGx87UC54UXWU93H7X3MdWs/ZIef/B0
+ 3D53q9ijlfeuCDrs1ouV0Xb4NO2RzMookbe3C+r83nb/Vpl4buWKTbnZG1bl3P5wxG5v5FeO
+ oCX3/7xinv/YaN69yH1cNeoyB/P/eq51Tzi/6ekicea0JYofo1L/Km4UqslcO1nz2Z5FqnoP
+ Zj3o108XVWIpzkg01GIuKk4EAKEb1VEoAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrKLMWRmVeSWpSXmKPExsVy+t/xu7o9KvPjDD58lrc4ceUfo8XGGetZ
+ Lab2xFvc+NXGarH2yF12izdtjYwWCyY/YbU4/Kad1aLj6n9Gi7d7O9kduDzun2pg9Zg36wSL
+ x85Zd9k9zt7ZwejRt2UVo8f6LVdZPDafrg5gj9KzKcovLUlVyMgvLrFVija0MNIztLTQMzKx
+ 1DM0No+1MjJV0rezSUnNySxLLdK3S9DLWNK3h63gFmfF5t/n2BoYf7N3MXJySAiYSLRPfsLY
+ xcjFISSwlFHi9/leIIcDKCElMb9FCaJGWOLPtS42iJpPjBK7GxYwgiTYBAwleo/2gdkiAiES
+ L45eYQIpYgYZ9KfhDStIQlggUuL5pSawbSwCqhJTzx0Ga+AVsJY4e/0JC8QGeYnVGw4wg9ic
+ AjYSd7/PAIsLAdU0XFrCMoGRbwEjwypGkdTS4tz03GJDveLE3OLSvHS95PzcTYzAIN927Ofm
+ HYyXNgYfYhTgYFTi4b1xfl6cEGtiWXFl7iFGCQ5mJRHeDQ+BQrwpiZVVqUX58UWlOanFhxhN
+ gY6ayCwlmpwPjMC8knhDU0NzC0tDc2NzYzMLJXHeDoGDMUIC6YklqdmpqQWpRTB9TBycUg2M
+ /pZZnzwOiax7IzV3XvqV1Vo/f7fMV/lY+/0d17pVLAxlCnkPI9+WiZ+ez6JbPNtuRtAP9fxH
+ DnsX8yb+fpP/9sOanwvXbZbiWOiiOVPNzd9Oc0vW1JIX2Rm7/ZTL2XvPhJfM/PF3L0PINbOe
+ PwxuK+0yjEWzp5uVrThasfjjykKLz69ZrqRMV2Ipzkg01GIuKk4EAJrdLQ6IAgAA
+X-CMS-MailID: 20200421165124eucas1p2e7cbc2eea896a682961304de7ff53dc2
+X-Msg-Generator: CA
+X-RootMTR: 20200421165124eucas1p2e7cbc2eea896a682961304de7ff53dc2
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20200421165124eucas1p2e7cbc2eea896a682961304de7ff53dc2
+References: <20200421165059.19394-1-s.nawrocki@samsung.com>
+ <CGME20200421165124eucas1p2e7cbc2eea896a682961304de7ff53dc2@eucas1p2.samsung.com>
+X-Mailman-Approved-At: Tue, 21 Apr 2020 19:40:20 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+Add PCI Express capability definitions required by the Broadcom STB PCIe
+driver.
+
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+---
+ include/pci.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/include/pci.h b/include/pci.h
+index 3d7646d..2b25a17 100644
+--- a/include/pci.h
++++ b/include/pci.h
+@@ -481,10 +481,17 @@
+ #define  PCI_EXP_DEVCTL_BCR_FLR 0x8000  /* Bridge Configuration Retry / FLR */
+ 
+ #define PCI_EXP_LNKCAP		12	/* Link Capabilities */
++#define  PCI_EXP_LNKCAP_SLS	0x0000000f /* Supported Link Speeds */
++#define  PCI_EXP_LNKCAP_MLW	0x000003f0 /* Maximum Link Width */
+ #define  PCI_EXP_LNKCAP_DLLLARC	0x00100000 /* Data Link Layer Link Active Reporting Capable */
+ 
+ #define PCI_EXP_LNKSTA		18	/* Link Status */
++#define  PCI_EXP_LNKSTA_CLS	0x000f	/* Current Link Speed */
++#define  PCI_EXP_LNKSTA_NLW	0x03f0	/* Negotiated Link Width */
++#define  PCI_EXP_LNKSTA_NLW_SHIFT 4	/* start of NLW mask in link status */
++
+ #define  PCI_EXP_LNKSTA_DLLLA	0x2000	/* Data Link Layer Link Active */
++#define PCI_EXP_LNKCTL2		48	/* Link Control 2 */
+ 
+ #define PCI_EXP_SLTCAP		20	/* Slot Capabilities */
+ #define  PCI_EXP_SLTCAP_PSN	0xfff80000 /* Physical Slot Number */
+
+From patchwork Tue Apr 21 16:50:58 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sylwester Nawrocki <s.nawrocki@samsung.com>
+X-Patchwork-Id: 1274450
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256
+ header.s=mail20170921 header.b=V2q01bQ/;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4969rc1xCYz9sSJ
+ for <incoming@patchwork.ozlabs.org>; Wed, 22 Apr 2020 03:42:56 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 6CE2681C7F;
+ Tue, 21 Apr 2020 19:41:23 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="V2q01bQ/";
+ dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 9467681903; Tue, 21 Apr 2020 18:51:34 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+ DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_PASS,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
+ [210.118.77.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 47472811EC
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 18:51:26 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=s.nawrocki@samsung.com
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+ by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165125euoutp027c2f8629ce3ba4a84d60b754a01e5b68~H49JAGcq02124521245euoutp02G
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 16:51:25 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com
+ 20200421165125euoutp027c2f8629ce3ba4a84d60b754a01e5b68~H49JAGcq02124521245euoutp02G
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+ s=mail20170921; t=1587487885;
+ bh=SgT5EbyyriPRlKXZCt8gGCg2BwcMKYEjMNbrTo1rN9Y=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=V2q01bQ/gRkexQmJ08rqktSSG2IIw4Oxph9as+yifS3FoSk2X9PC8am9EU71ZVFVD
+ NtGG2hSZAE1jVhNja+T7NhJsoPyJCBuezCB2h3S5qLFnfOTfNwY6S4MNfpwzycIhDu
+ gw/ekSJd9UfyRgnyQKd2WDWeFXzicX1P3HwlgFyc=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165125eucas1p256a778789f1a945c6d829c4107899732~H49IzeZiQ2498424984eucas1p2s;
+ Tue, 21 Apr 2020 16:51:25 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+ eusmges2new.samsung.com (EUCPMTA) with SMTP id 0B.64.60679.D842F9E5; Tue, 21
+ Apr 2020 17:51:25 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+ eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165125eucas1p1a4cc19f4c58f449375e6d66b19d51e04~H49IdXmcE1760817608eucas1p1l;
+ Tue, 21 Apr 2020 16:51:25 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
+ eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165125eusmtrp27d7ff3dfafaa5b2e7a932be0db501d35~H49IcvAN33266732667eusmtrp2d;
+ Tue, 21 Apr 2020 16:51:25 +0000 (GMT)
+X-AuditID: cbfec7f4-0cbff7000001ed07-20-5e9f248d424a
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+ eusmgms2.samsung.com (EUCPMTA) with SMTP id 0A.3B.07950.D842F9E5; Tue, 21
+ Apr 2020 17:51:25 +0100 (BST)
+Received: from AMDC3061.digital.local (unknown [106.120.51.75]) by
+ eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165124eusmtip15fa0a5ba05c41b46ed86e7d3b1fc2541~H49H0sDr10901309013eusmtip1D;
+ Tue, 21 Apr 2020 16:51:24 +0000 (GMT)
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+To: u-boot@lists.denx.de, mbrugger@suse.com, marex@denx.de, bmeng.cn@gmail.com
+Cc: agraf@suse.de, sjg@chrmium.org, jh80.chung@samsung.com,
+ m.szyprowski@samsung.com, b.zolnierkie@samsung.com, Sylwester Nawrocki
+ <s.nawrocki@samsung.com>
+Subject: [RFC PATCH 8/9] pci: Add driver for Broadcom STB PCIe controller
+Date: Tue, 21 Apr 2020 18:50:58 +0200
+Message-Id: <20200421165059.19394-9-s.nawrocki@samsung.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200421165059.19394-1-s.nawrocki@samsung.com>
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprOKsWRmVeSWpSXmKPExsWy7djPc7q9KvPjDB5NVbE4ceUfo8XGGetZ
+ Lab2xFvc+NXGarH2yF12izdtjYwWCyY/YbU4/Kad1aLj6n9Gi7d7O9kduDzun2pg9Zg36wSL
+ x85Zd9k9zt7ZwejRt2UVo8f6LVdZPDafrg5gj+KySUnNySxLLdK3S+DKWDfvFnPB4weMFVdb
+ bzA1MK7dwdjFyMkhIWAi0fL6L3MXIxeHkMAKRomXO/ugnC+MEqvn/2aEcD4zSkzdfAau5fSE
+ iVCJ5YwS/3fMYIJr6f36igmkik3AUKL3aB9Yh4hAgMS1n9PAOpgF5jNK/PkE4nBwCAt4Suzo
+ CAWpYRFQlbh6+CAziM0rYC2xbvdyNoht8hKrNxwAi3MK2Ejc/T6DBWSOhMBkdokXe+YzQRS5
+ SFxZtZcFwhaWeHV8CzuELSPxf+d8JoiGZkaJnt232SGcCYwS948vgHrIWuLOuV9sIBcxC2hK
+ rN+lDxF2lOg5sZYZJCwhwCdx460gSJgZyJy0bTpUmFeio00IolpF4veq6VDnSEl0P/kPdY6H
+ xNVD3ayQAOpnlGj5+IVxAqP8LIRlCxgZVzGKp5YW56anFhvlpZbrFSfmFpfmpesl5+duYgQm
+ l9P/jn/ZwbjrT9IhRgEORiUe3hvn58UJsSaWFVfmHmKU4GBWEuHd8BAoxJuSWFmVWpQfX1Sa
+ k1p8iFGag0VJnNd40ctYIYH0xJLU7NTUgtQimCwTB6dUA2NEb/K2v9c3Gf2/fPSEilQmt+fk
+ nIuydjubLxYYtAan14tELLJf07M5eo3f7Q0K4rtel5bILQwvEN7/6szi8pMCOwxfLSwvdWVX
+ YrbkST/8boPRrDSlBDUhGZ6EVXHT1MxnGUr9vbc77bd1uFRUvab57JT/TxiftN7W/C48kcF/
+ rvLXJXPSQpVYijMSDbWYi4oTAdsPWBwqAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrKLMWRmVeSWpSXmKPExsVy+t/xu7q9KvPjDH7e4LA4ceUfo8XGGetZ
+ Lab2xFvc+NXGarH2yF12izdtjYwWCyY/YbU4/Kad1aLj6n9Gi7d7O9kduDzun2pg9Zg36wSL
+ x85Zd9k9zt7ZwejRt2UVo8f6LVdZPDafrg5gj9KzKcovLUlVyMgvLrFVija0MNIztLTQMzKx
+ 1DM0No+1MjJV0rezSUnNySxLLdK3S9DLWDfvFnPB4weMFVdbbzA1MK7dwdjFyMkhIWAicXrC
+ RCCbi0NIYCmjxPzGAyxdjBxACSmJ+S1KEDXCEn+udbGB2EICnxgldq0uALHZBAwleo/2gc0R
+ EQiReHH0ChPIHGaQOX8a3rCCzBEW8JTY0REKUsMioCpx9fBBZhCbV8BaYt3u5WwQ8+UlVm84
+ ABbnFLCRuPt9BgvELmuJhktLWCYw8i1gZFjFKJJaWpybnltspFecmFtcmpeul5yfu4kRGOTb
+ jv3cAvTPu+BDjAIcjEo8vDfOz4sTYk0sK67MPcQowcGsJMK74SFQiDclsbIqtSg/vqg0J7X4
+ EKMp0FETmaVEk/OBEZhXEm9oamhuYWlobmxubGahJM7bIXAwRkggPbEkNTs1tSC1CKaPiYNT
+ qoHxyITUbVOmzfOe6xBQei+5rl3V9HyUYsrtstT3c/rPzTS5LfD/4tcN+rExMZsfCgefY3u/
+ S3bGuWj2fSqzpogm8l8sO5tk0pj8VP3c50dhfaJ7u0JT1D8Ebdu46dSWX/8NJVkncJTv+3h4
+ q3zpPtHlG9bk7lRYe1juQ+jL8jebYzzemgp82DHxjxJLcUaioRZzUXEiAG5+y62IAgAA
+X-CMS-MailID: 20200421165125eucas1p1a4cc19f4c58f449375e6d66b19d51e04
+X-Msg-Generator: CA
+X-RootMTR: 20200421165125eucas1p1a4cc19f4c58f449375e6d66b19d51e04
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20200421165125eucas1p1a4cc19f4c58f449375e6d66b19d51e04
+References: <20200421165059.19394-1-s.nawrocki@samsung.com>
+ <CGME20200421165125eucas1p1a4cc19f4c58f449375e6d66b19d51e04@eucas1p1.samsung.com>
+X-Mailman-Approved-At: Tue, 21 Apr 2020 19:40:20 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+This patch adds basic driver for the Broadcom STB PCIe host controller.
+The code is based on Linux upstream driver (pcie-brcmtsb.c) with MSI
+handling removed. The inbound access memory region is not currently
+parsed from dma-ranges DT property and is fixed as a 1:1 mapping of
+whole RAM.
+The patch has been tested on rpi4 board, i.e. on BCM2711 SoC with VL805
+USB Host Controller.
+
+Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+---
+ drivers/pci/Kconfig        |   5 +
+ drivers/pci/Makefile       |   1 +
+ drivers/pci/pcie_brcmstb.c | 844 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 850 insertions(+)
+ create mode 100644 drivers/pci/pcie_brcmstb.c
+
+diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
+index 437cd9a..02dcc57 100644
+--- a/drivers/pci/Kconfig
++++ b/drivers/pci/Kconfig
+@@ -197,4 +197,9 @@ config PCIE_MEDIATEK
+ 	  Say Y here if you want to enable Gen2 PCIe controller,
+ 	  which could be found on MT7623 SoC family.
+ 
++config PCI_BRCMSTB
++	bool "Broadcom STB PCIe controller"
++	depends on DM_PCI
++	help
++	  Say Y here if you want to enable PCI controller support on BCM2711 SoC.
+ endif
+diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
+index c051ecc..3e53b1f 100644
+--- a/drivers/pci/Makefile
++++ b/drivers/pci/Makefile
+@@ -43,3 +43,4 @@ obj-$(CONFIG_PCI_PHYTIUM) += pcie_phytium.o
+ obj-$(CONFIG_PCIE_INTEL_FPGA) += pcie_intel_fpga.o
+ obj-$(CONFIG_PCI_KEYSTONE) += pcie_dw_ti.o
+ obj-$(CONFIG_PCIE_MEDIATEK) += pcie_mediatek.o
++obj-$(CONFIG_PCI_BRCMSTB) += pcie_brcmstb.o
+diff --git a/drivers/pci/pcie_brcmstb.c b/drivers/pci/pcie_brcmstb.c
+new file mode 100644
+index 0000000..e96e163
+--- /dev/null
++++ b/drivers/pci/pcie_brcmstb.c
+@@ -0,0 +1,844 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Broadcom STB PCIe controller driver
++ *
++ * Copyright (C) 2020 Samsung Electronics Co., Ltd.
++ * Author: Sylwester Nawrocki <s.nawrocki@samsung.com>
++ *
++ * Based on upstream Linux kernel driver:
++ *
++ *  drivers/pci/controller/pcie-brcmstb.c
++ *  Copyright (C) 2009 - 2017 Broadcom
++ */
++
++#include <asm/io.h>
++#include <common.h>
++#include <dm.h>
++#include <dm/device-internal.h>
++#include <dm/lists.h>
++#include <dm/of_access.h>
++#include <dm/of.h>
++#include <linux/errno.h>
++#include <linux/ioport.h>
++#include <linux/log2.h>
++#include <linux/mbus.h>
++#include <pci.h>
++
++DECLARE_GLOBAL_DATA_PTR;
++
++/* BRCM_PCIE_CAP_REGS - Offset for the mandatory capability config regs */
++#define BRCM_PCIE_CAP_REGS				0x00ac
++
++/*
++ * Broadcom Settop Box PCIe Register Offsets. The names are from
++ * the chip's RDB and we use them here so that a script can correlate
++ * this code and the RDB to prevent discrepancies.
++ */
++#define PCIE_RC_CFG_VENDOR_VENDOR_SPECIFIC_REG1		0x0188
++#define PCIE_RC_CFG_PRIV1_ID_VAL3			0x043c
++#define PCIE_RC_DL_MDIO_ADDR				0x1100
++#define PCIE_RC_DL_MDIO_WR_DATA				0x1104
++#define PCIE_RC_DL_MDIO_RD_DATA				0x1108
++#define PCIE_MISC_MISC_CTRL				0x4008
++#define PCIE_MISC_CPU_2_PCIE_MEM_WIN0_LO		0x400c
++#define PCIE_MISC_CPU_2_PCIE_MEM_WIN0_HI		0x4010
++#define PCIE_MISC_RC_BAR1_CONFIG_LO			0x402c
++#define PCIE_MISC_RC_BAR2_CONFIG_LO			0x4034
++#define PCIE_MISC_RC_BAR2_CONFIG_HI			0x4038
++#define PCIE_MISC_RC_BAR3_CONFIG_LO			0x403c
++#define PCIE_MISC_MSI_BAR_CONFIG_LO			0x4044
++#define PCIE_MISC_MSI_BAR_CONFIG_HI			0x4048
++#define PCIE_MISC_MSI_DATA_CONFIG			0x404c
++#define PCIE_MISC_EOI_CTRL				0x4060
++#define PCIE_MISC_PCIE_CTRL				0x4064
++#define PCIE_MISC_PCIE_STATUS				0x4068
++#define PCIE_MISC_REVISION				0x406c
++#define PCIE_MISC_CPU_2_PCIE_MEM_WIN0_BASE_LIMIT	0x4070
++#define PCIE_MISC_CPU_2_PCIE_MEM_WIN0_BASE_HI		0x4080
++#define PCIE_MISC_CPU_2_PCIE_MEM_WIN0_LIMIT_HI		0x4084
++#define PCIE_MISC_HARD_PCIE_HARD_DEBUG			0x4204
++#define PCIE_INTR2_CPU_BASE				0x4300
++#define PCIE_MSI_INTR2_BASE				0x4500
++
++/*
++ * Broadcom Settop Box PCIe Register Field shift and mask info. The
++ * names are from the chip's RDB and we use them here so that a script
++ * can correlate this code and the RDB to prevent discrepancies.
++ */
++#define PCIE_RC_CFG_VENDOR_VENDOR_SPECIFIC_REG1_ENDIAN_MODE_BAR2_MASK	0xc
++#define PCIE_RC_CFG_VENDOR_VENDOR_SPECIFIC_REG1_ENDIAN_MODE_BAR2_SHIFT	0x2
++#define PCIE_RC_CFG_PRIV1_ID_VAL3_CLASS_CODE_MASK		0xffffff
++#define PCIE_RC_CFG_PRIV1_ID_VAL3_CLASS_CODE_SHIFT		0x0
++#define PCIE_MISC_MISC_CTRL_SCB_ACCESS_EN_MASK			0x1000
++#define PCIE_MISC_MISC_CTRL_SCB_ACCESS_EN_SHIFT			0xc
++#define PCIE_MISC_MISC_CTRL_CFG_READ_UR_MODE_MASK		0x2000
++#define PCIE_MISC_MISC_CTRL_CFG_READ_UR_MODE_SHIFT		0xd
++#define PCIE_MISC_MISC_CTRL_MAX_BURST_SIZE_MASK			0x300000
++#define PCIE_MISC_MISC_CTRL_MAX_BURST_SIZE_SHIFT		0x14
++#define PCIE_MISC_MISC_CTRL_SCB0_SIZE_MASK			0xf8000000
++#define PCIE_MISC_MISC_CTRL_SCB0_SIZE_SHIFT			0x1b
++#define PCIE_MISC_MISC_CTRL_SCB1_SIZE_MASK			0x7c00000
++#define PCIE_MISC_MISC_CTRL_SCB1_SIZE_SHIFT			0x16
++#define PCIE_MISC_MISC_CTRL_SCB2_SIZE_MASK			0x1f
++#define PCIE_MISC_MISC_CTRL_SCB2_SIZE_SHIFT			0x0
++#define PCIE_MISC_RC_BAR1_CONFIG_LO_SIZE_MASK			0x1f
++#define PCIE_MISC_RC_BAR1_CONFIG_LO_SIZE_SHIFT			0x0
++#define PCIE_MISC_RC_BAR2_CONFIG_LO_SIZE_MASK			0x1f
++#define PCIE_MISC_RC_BAR2_CONFIG_LO_SIZE_SHIFT			0x0
++#define PCIE_MISC_RC_BAR3_CONFIG_LO_SIZE_MASK			0x1f
++#define PCIE_MISC_RC_BAR3_CONFIG_LO_SIZE_SHIFT			0x0
++#define PCIE_MISC_PCIE_CTRL_PCIE_PERSTB_MASK			0x4
++#define PCIE_MISC_PCIE_CTRL_PCIE_PERSTB_SHIFT			0x2
++#define PCIE_MISC_PCIE_CTRL_PCIE_L23_REQUEST_MASK		0x1
++#define PCIE_MISC_PCIE_CTRL_PCIE_L23_REQUEST_SHIFT		0x0
++#define PCIE_MISC_PCIE_STATUS_PCIE_PORT_MASK			0x80
++#define PCIE_MISC_PCIE_STATUS_PCIE_PORT_SHIFT			0x7
++#define PCIE_MISC_PCIE_STATUS_PCIE_DL_ACTIVE_MASK		0x20
++#define PCIE_MISC_PCIE_STATUS_PCIE_DL_ACTIVE_SHIFT		0x5
++#define PCIE_MISC_PCIE_STATUS_PCIE_PHYLINKUP_MASK		0x10
++#define PCIE_MISC_PCIE_STATUS_PCIE_PHYLINKUP_SHIFT		0x4
++#define PCIE_MISC_PCIE_STATUS_PCIE_LINK_IN_L23_MASK		0x40
++#define PCIE_MISC_PCIE_STATUS_PCIE_LINK_IN_L23_SHIFT		0x6
++#define PCIE_MISC_REVISION_MAJMIN_MASK				0xffff
++#define PCIE_MISC_REVISION_MAJMIN_SHIFT				0
++#define PCIE_MISC_CPU_2_PCIE_MEM_WIN0_BASE_LIMIT_LIMIT_MASK	0xfff00000
++#define PCIE_MISC_CPU_2_PCIE_MEM_WIN0_BASE_LIMIT_LIMIT_SHIFT	0x14
++#define PCIE_MISC_CPU_2_PCIE_MEM_WIN0_BASE_LIMIT_BASE_MASK	0xfff0
++#define PCIE_MISC_CPU_2_PCIE_MEM_WIN0_BASE_LIMIT_BASE_SHIFT	0x4
++#define PCIE_MISC_CPU_2_PCIE_MEM_WIN0_BASE_LIMIT_NUM_MASK_BITS	0xc
++#define PCIE_MISC_CPU_2_PCIE_MEM_WIN0_BASE_HI_BASE_MASK		0xff
++#define PCIE_MISC_CPU_2_PCIE_MEM_WIN0_BASE_HI_BASE_SHIFT	0x0
++#define PCIE_MISC_CPU_2_PCIE_MEM_WIN0_LIMIT_HI_LIMIT_MASK	0xff
++#define PCIE_MISC_CPU_2_PCIE_MEM_WIN0_LIMIT_HI_LIMIT_SHIFT	0x0
++#define PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_DEBUG_ENABLE_MASK	0x2
++#define PCIE_MISC_HARD_PCIE_HARD_DEBUG_CLKREQ_DEBUG_ENABLE_SHIFT 0x1
++#define PCIE_MISC_HARD_PCIE_HARD_DEBUG_SERDES_IDDQ_MASK		0x08000000
++#define PCIE_MISC_HARD_PCIE_HARD_DEBUG_SERDES_IDDQ_SHIFT	0x1b
++#define PCIE_RGR1_SW_INIT_1_PERST_MASK				0x1
++#define PCIE_RGR1_SW_INIT_1_PERST_SHIFT				0x0
++
++/* Offsets from PCIE_INTR2_CPU_BASE */
++#define STATUS				0x0
++#define SET				0x4
++#define CLR				0x8
++#define MASK_STATUS			0xc
++#define MASK_SET			0x10
++#define MASK_CLR			0x14
++
++#define BRCM_NUM_PCIE_OUT_WINS		0x4
++#define BRCM_MAX_SCB			0x4
++
++#define BURST_SIZE_128			0
++
++#define PCIE_BUSNUM_SHIFT		20
++#define PCIE_SLOT_SHIFT			15
++#define PCIE_FUNC_SHIFT			12
++
++#if defined(__BIG_ENDIAN)
++#define	DATA_ENDIAN			2	/* PCIe->DDR inbound traffic */
++#define MMIO_ENDIAN			2	/* CPU->PCIe outbound traffic */
++#else
++#define	DATA_ENDIAN			0
++#define MMIO_ENDIAN			0
++#endif
++
++#define MDIO_PORT0			0x0
++#define MDIO_DATA_MASK			0x7fffffff
++#define MDIO_DATA_SHIFT			0x0
++#define MDIO_PORT_MASK			0xf0000
++#define MDIO_PORT_SHIFT			0x16
++#define MDIO_REGAD_MASK			0xffff
++#define MDIO_REGAD_SHIFT		0x0
++#define MDIO_CMD_MASK			0xfff00000
++#define MDIO_CMD_SHIFT			0x14
++#define MDIO_CMD_READ			0x1
++#define MDIO_CMD_WRITE			0x0
++#define MDIO_DATA_DONE_MASK		0x80000000
++#define MDIO_RD_DONE(x)			(((x) & MDIO_DATA_DONE_MASK) ? 1 : 0)
++#define MDIO_WT_DONE(x)			(((x) & MDIO_DATA_DONE_MASK) ? 0 : 1)
++#define SSC_REGS_ADDR			0x1100
++#define SET_ADDR_OFFSET			0x1f
++#define SSC_CNTL_OFFSET			0x2
++#define SSC_CNTL_OVRD_EN_MASK		0x8000
++#define SSC_CNTL_OVRD_EN_SHIFT		0xf
++#define SSC_CNTL_OVRD_VAL_MASK		0x4000
++#define SSC_CNTL_OVRD_VAL_SHIFT		0xe
++#define SSC_STATUS_OFFSET		0x1
++#define SSC_STATUS_SSC_MASK		0x400
++#define SSC_STATUS_SSC_SHIFT		0xa
++#define SSC_STATUS_PLL_LOCK_MASK	0x800
++#define SSC_STATUS_PLL_LOCK_SHIFT	0xb
++
++#define IDX_ADDR(pcie)	((pcie)->reg_offsets[EXT_CFG_INDEX])
++#define DATA_ADDR(pcie)	((pcie)->reg_offsets[EXT_CFG_DATA])
++#define PCIE_RGR1_SW_INIT_1(pcie) ((pcie)->reg_offsets[RGR1_SW_INIT_1])
++
++enum {
++	RGR1_SW_INIT_1,
++	EXT_CFG_INDEX,
++	EXT_CFG_DATA,
++};
++
++enum {
++	RGR1_SW_INIT_1_INIT_MASK,
++	RGR1_SW_INIT_1_INIT_SHIFT,
++	RGR1_SW_INIT_1_PERST_MASK,
++	RGR1_SW_INIT_1_PERST_SHIFT,
++};
++
++enum pcie_type {
++	BCM7425,
++	BCM7435,
++	GENERIC,
++	BCM7278,
++	BCM2711,
++};
++
++struct brcm_window {
++	dma_addr_t pci_addr;
++	phys_addr_t phys_addr;
++	dma_addr_t size;
++};
++
++struct brcm_pcie {
++	struct resource		mem;
++	bool			ssc;
++
++	struct device_node	*dn;
++	void __iomem		*base;
++
++	int			num_out_wins;
++	struct brcm_window	out_wins[BRCM_NUM_PCIE_OUT_WINS];
++
++	int			gen;
++	unsigned int		rev;
++
++	const int		*reg_offsets;
++	const int		*reg_field_info;
++	u32			max_burst_size;
++	enum pcie_type		type;
++};
++
++struct pcie_cfg_data {
++	const int		*reg_field_info;
++	const int		*offsets;
++	const u32		max_burst_size;
++	const enum pcie_type	type;
++};
++
++static struct brcm_window dma_ranges[1];
++static int num_dma_ranges;
++
++static const int pcie_reg_field_info[] = {
++	[RGR1_SW_INIT_1_INIT_MASK] = 0x2,
++	[RGR1_SW_INIT_1_INIT_SHIFT] = 0x1,
++};
++
++static const int pcie_offsets[] = {
++	[RGR1_SW_INIT_1] = 0x9210,
++	[EXT_CFG_INDEX]  = 0x9000,
++	[EXT_CFG_DATA]   = 0x8000,
++};
++
++static const struct pcie_cfg_data generic_cfg = {
++	.reg_field_info	= pcie_reg_field_info,
++	.offsets	= pcie_offsets,
++	.max_burst_size	= BURST_SIZE_128,
++	.type		= GENERIC,
++};
++
++static const struct pcie_cfg_data bcm2711_cfg = {
++	.reg_field_info	= pcie_reg_field_info,
++	.offsets	= pcie_offsets,
++	.max_burst_size	= BURST_SIZE_128,
++	.type		= BCM2711,
++};
++
++/* These macros extract/insert fields to host controller's register set */
++#define WR_FLD(base, reg, field, val) \
++	wr_fld(base + reg, reg##_##field##_MASK, reg##_##field##_SHIFT, val)
++#define WR_FLD_RB(base, reg, field, val) \
++	wr_fld_rb(base + reg, reg##_##field##_MASK, reg##_##field##_SHIFT, val)
++#define WR_FLD_WITH_OFFSET(base, off, reg, field, val) \
++	wr_fld(base + reg + off, reg##_##field##_MASK, \
++	       reg##_##field##_SHIFT, val)
++#define EXTRACT_FIELD(val, reg, field) \
++	((val & reg##_##field##_MASK) >> reg##_##field##_SHIFT)
++#define INSERT_FIELD(val, reg, field, field_val) \
++	((val & ~reg##_##field##_MASK) | \
++	 (reg##_##field##_MASK & (field_val << reg##_##field##_SHIFT)))
++
++#define msleep(a) udelay((a) * 1000)
++
++/*
++ * The roundup_pow_of_two() from log2.h invokes
++ * __roundup_pow_of_two(unsigned long), but we really need
++ * such a function to take a native u64 since unsigned long
++ * is 32 bits on some configurations.  So we provide this helper
++ * function below.
++ */
++static u64 roundup_pow_of_two_64(u64 n)
++{
++	return 1ULL << fls64(n - 1);
++}
++
++/*
++ * This is to convert the size of the inbound "BAR" region to the
++ * non-linear values of PCIE_X_MISC_RC_BAR[123]_CONFIG_LO.SIZE
++ */
++int encode_ibar_size(u64 size)
++{
++	int log2_in = ilog2(size);
++
++	if (log2_in >= 12 && log2_in <= 15)
++		/* Covers 4KB to 32KB (inclusive) */
++		return (log2_in - 12) + 0x1c;
++	else if (log2_in >= 16 && log2_in <= 37)
++		/* Covers 64KB to 32GB, (inclusive) */
++		return log2_in - 15;
++	/* Something is awry so disable */
++	return 0;
++}
++
++/* Configuration space read/write support */
++static int cfg_index(int busnr, int devfn, int reg)
++{
++	return (PCI_DEV(devfn) << PCIE_SLOT_SHIFT)
++		| (PCI_FUNC(devfn) << PCIE_FUNC_SHIFT)
++		| (busnr << PCIE_BUSNUM_SHIFT)
++		| (reg & ~3);
++}
++
++/* The controller is capable of serving in both RC and EP roles */
++static bool brcm_pcie_rc_mode(struct brcm_pcie *pcie)
++{
++	void __iomem *base = pcie->base;
++	u32 val = readl(base + PCIE_MISC_PCIE_STATUS);
++
++	return !!EXTRACT_FIELD(val, PCIE_MISC_PCIE_STATUS, PCIE_PORT);
++}
++
++static bool brcm_pcie_link_up(struct brcm_pcie *pcie)
++{
++	void __iomem *base = pcie->base;
++	u32 val = readl(base + PCIE_MISC_PCIE_STATUS);
++	u32 dla = EXTRACT_FIELD(val, PCIE_MISC_PCIE_STATUS, PCIE_DL_ACTIVE);
++	u32 plu = EXTRACT_FIELD(val, PCIE_MISC_PCIE_STATUS, PCIE_PHYLINKUP);
++
++	return  (dla && plu) ? true : false;
++}
++
++static int brcm_pcie_config_address(const struct udevice *udev, pci_dev_t bdf,
++				    uint offset, void **paddress)
++{
++	struct brcm_pcie *pcie = dev_get_priv(udev);
++	unsigned int bus = PCI_BUS(bdf);
++	unsigned int dev = PCI_DEV(bdf);
++	int idx;
++
++	if (bus > 0 && !brcm_pcie_link_up(pcie))
++		return -ENODEV;
++
++	/*
++	 * Busses 0 (host PCIe bridge) and 1 (its immediate child)
++	 * are limited to a single device each
++	 */
++	if ((bus == (udev->seq + 1)) && dev > 0)
++		return -ENODEV;
++
++	/* Accesses to the RC go right to the RC registers if PCI device == 0 */
++	if (bus == udev->seq) {
++		if (PCI_DEV(bdf))
++			return -ENODEV;
++
++		*paddress = pcie->base + offset;
++		return 0;
++	}
++
++	/* For devices, write to the config space index register */
++	idx = cfg_index(bus, bdf, 0);
++
++	writel(idx, pcie->base + IDX_ADDR(pcie));
++	*paddress = pcie->base + DATA_ADDR(pcie) + offset;
++
++	return 0;
++}
++
++static int brcm_pcie_read_config(const struct udevice *bus, pci_dev_t bdf,
++				 uint offset, ulong *valuep,
++				 enum pci_size_t size)
++{
++	return pci_generic_mmap_read_config(bus, brcm_pcie_config_address,
++					    bdf, offset, valuep, size);
++}
++
++static int brcm_pcie_write_config(struct udevice *bus, pci_dev_t bdf,
++				  uint offset, ulong value,
++				  enum pci_size_t size)
++{
++	return pci_generic_mmap_write_config(bus, brcm_pcie_config_address,
++					     bdf, offset, value, size);
++}
++
++static void wr_fld(void __iomem *p, u32 mask, int shift, u32 val)
++{
++	u32 reg = readl(p);
++
++	reg = (reg & ~mask) | ((val << shift) & mask);
++	writel(reg, p);
++}
++
++static void wr_fld_rb(void __iomem *p, u32 mask, int shift, u32 val)
++{
++	wr_fld(p, mask, shift, val);
++	(void)readl(p);
++}
++
++static const char *link_speed_to_str(int s)
++{
++	switch (s) {
++	case 1:
++		return "2.5";
++	case 2:
++		return "5.0";
++	case 3:
++		return "8.0";
++	default:
++		break;
++	}
++	return "???";
++}
++
++static inline void brcm_pcie_bridge_sw_init_set(struct brcm_pcie *pcie,
++						unsigned int val)
++{
++	unsigned int shift = pcie->reg_field_info[RGR1_SW_INIT_1_INIT_SHIFT];
++	u32 mask =  pcie->reg_field_info[RGR1_SW_INIT_1_INIT_MASK];
++
++	wr_fld_rb(pcie->base + PCIE_RGR1_SW_INIT_1(pcie), mask, shift, val);
++}
++
++static inline void brcm_pcie_perst_set(struct brcm_pcie *pcie,
++				       unsigned int val)
++{
++	if (pcie->type != BCM7278)
++		wr_fld_rb(pcie->base + PCIE_RGR1_SW_INIT_1(pcie),
++			  PCIE_RGR1_SW_INIT_1_PERST_MASK,
++			  PCIE_RGR1_SW_INIT_1_PERST_SHIFT, val);
++	else
++		/* Assert = 0, de-assert = 1 on 7278 */
++		WR_FLD_RB(pcie->base, PCIE_MISC_PCIE_CTRL, PCIE_PERSTB, !val);
++}
++
++static u32 mdio_form_pkt(int port, int regad, int cmd)
++{
++	u32 pkt = 0;
++
++	pkt |= (port << MDIO_PORT_SHIFT) & MDIO_PORT_MASK;
++	pkt |= (regad << MDIO_REGAD_SHIFT) & MDIO_REGAD_MASK;
++	pkt |= (cmd << MDIO_CMD_SHIFT) & MDIO_CMD_MASK;
++
++	return pkt;
++}
++
++/* Negative return value indicates error */
++static int mdio_read(void __iomem *base, u8 port, u8 regad)
++{
++	int tries;
++	u32 data;
++
++	writel(mdio_form_pkt(port, regad, MDIO_CMD_READ),
++	       base + PCIE_RC_DL_MDIO_ADDR);
++	readl(base + PCIE_RC_DL_MDIO_ADDR);
++
++	data = readl(base + PCIE_RC_DL_MDIO_RD_DATA);
++	for (tries = 0; !MDIO_RD_DONE(data) && tries < 10; tries++) {
++		udelay(10);
++		data = readl(base + PCIE_RC_DL_MDIO_RD_DATA);
++	}
++
++	return MDIO_RD_DONE(data)
++		? (data & MDIO_DATA_MASK) >> MDIO_DATA_SHIFT
++		: -EIO;
++}
++
++/* Negative return value indicates error */
++static int mdio_write(void __iomem *base, u8 port, u8 regad, u16 wrdata)
++{
++	int tries;
++	u32 data;
++
++	writel(mdio_form_pkt(port, regad, MDIO_CMD_WRITE),
++	       base + PCIE_RC_DL_MDIO_ADDR);
++	readl(base + PCIE_RC_DL_MDIO_ADDR);
++	writel(MDIO_DATA_DONE_MASK | wrdata,
++	       base + PCIE_RC_DL_MDIO_WR_DATA);
++
++	data = readl(base + PCIE_RC_DL_MDIO_WR_DATA);
++	for (tries = 0; !MDIO_WT_DONE(data) && tries < 10; tries++) {
++		udelay(10);
++		data = readl(base + PCIE_RC_DL_MDIO_WR_DATA);
++	}
++
++	return MDIO_WT_DONE(data) ? 0 : -EIO;
++}
++
++/*
++ * Configures device for Spread Spectrum Clocking (SSC) mode; negative
++ * return value indicates error.
++ */
++static int set_ssc(void __iomem *base)
++{
++	int tmp;
++	u16 wrdata;
++	int pll, ssc;
++
++	tmp = mdio_write(base, MDIO_PORT0, SET_ADDR_OFFSET, SSC_REGS_ADDR);
++	if (tmp < 0)
++		return tmp;
++
++	tmp = mdio_read(base, MDIO_PORT0, SSC_CNTL_OFFSET);
++	if (tmp < 0)
++		return tmp;
++
++	wrdata = INSERT_FIELD(tmp, SSC_CNTL_OVRD, EN, 1);
++	wrdata = INSERT_FIELD(wrdata, SSC_CNTL_OVRD, VAL, 1);
++	tmp = mdio_write(base, MDIO_PORT0, SSC_CNTL_OFFSET, wrdata);
++	if (tmp < 0)
++		return tmp;
++
++	udelay(1500);
++	tmp = mdio_read(base, MDIO_PORT0, SSC_STATUS_OFFSET);
++	if (tmp < 0)
++		return tmp;
++
++	ssc = EXTRACT_FIELD(tmp, SSC_STATUS, SSC);
++	pll = EXTRACT_FIELD(tmp, SSC_STATUS, PLL_LOCK);
++
++	return (ssc && pll) ? 0 : -EIO;
++}
++
++/* Limits operation to a specific generation (1, 2, or 3) */
++static void set_gen(void __iomem *base, int gen)
++{
++	u32 lnkcap = readl(base + BRCM_PCIE_CAP_REGS + PCI_EXP_LNKCAP);
++	u16 lnkctl2 = readw(base + BRCM_PCIE_CAP_REGS + PCI_EXP_LNKCTL2);
++
++	lnkcap = (lnkcap & ~PCI_EXP_LNKCAP_SLS) | gen;
++	writel(lnkcap, base + BRCM_PCIE_CAP_REGS + PCI_EXP_LNKCAP);
++
++	lnkctl2 = (lnkctl2 & ~0xf) | gen;
++	writew(lnkctl2, base + BRCM_PCIE_CAP_REGS + PCI_EXP_LNKCTL2);
++}
++
++static void brcm_pcie_set_outbound_win(struct brcm_pcie *pcie,
++				       unsigned int win, phys_addr_t phys_addr,
++				       dma_addr_t pcie_addr, dma_addr_t size)
++{
++	void __iomem *base = pcie->base;
++	phys_addr_t phys_addr_mb, limit_addr_mb;
++	u32 tmp;
++
++	/* Set the base of the pcie_addr window */
++	writel(lower_32_bits(pcie_addr) + MMIO_ENDIAN,
++	       base + PCIE_MISC_CPU_2_PCIE_MEM_WIN0_LO + (win * 8));
++	writel(upper_32_bits(pcie_addr),
++	       base + PCIE_MISC_CPU_2_PCIE_MEM_WIN0_HI + (win * 8));
++
++	phys_addr_mb = phys_addr >> 20;
++	limit_addr_mb = (phys_addr + size - 1) >> 20;
++
++	/* Write the addr base low register */
++	WR_FLD_WITH_OFFSET(base, (win * 4),
++			   PCIE_MISC_CPU_2_PCIE_MEM_WIN0_BASE_LIMIT,
++			   BASE, phys_addr_mb);
++	/* Write the addr limit low register */
++	WR_FLD_WITH_OFFSET(base, (win * 4),
++			   PCIE_MISC_CPU_2_PCIE_MEM_WIN0_BASE_LIMIT,
++			   LIMIT, limit_addr_mb);
++
++	if (pcie->type != BCM7435 && pcie->type != BCM7425) {
++		/* Write the cpu addr high register */
++		tmp = (u32)(phys_addr_mb >>
++			PCIE_MISC_CPU_2_PCIE_MEM_WIN0_BASE_LIMIT_NUM_MASK_BITS);
++		WR_FLD_WITH_OFFSET(base, (win * 8),
++				   PCIE_MISC_CPU_2_PCIE_MEM_WIN0_BASE_HI,
++				   BASE, tmp);
++		/* Write the cpu limit high register */
++		tmp = (u32)(limit_addr_mb >>
++			PCIE_MISC_CPU_2_PCIE_MEM_WIN0_BASE_LIMIT_NUM_MASK_BITS);
++		WR_FLD_WITH_OFFSET(base, (win * 8),
++				   PCIE_MISC_CPU_2_PCIE_MEM_WIN0_LIMIT_HI,
++				   LIMIT, tmp);
++	}
++}
++
++static int brcm_pcie_setup(struct brcm_pcie *pcie)
++{
++	phys_addr_t scb_size[BRCM_MAX_SCB] = {0};
++	void __iomem *base = pcie->base;
++	unsigned int scb_size_val;
++	u64 rc_bar2_offset, rc_bar2_size;
++	u64 total_mem_size = 0;
++	int i, j, ret, limit, num_memc;
++	u16 nlw, cls, lnksta;
++	bool ssc_good = false;
++	u32 tmp;
++
++	/* Reset the bridge */
++	brcm_pcie_bridge_sw_init_set(pcie, 1);
++
++	/*
++	 * Ensure that the fundamental reset is asserted, except for 7278,
++	 * which fails if we do this.
++	 */
++	if (pcie->type != BCM7278)
++		brcm_pcie_perst_set(pcie, 1);
++
++	udelay(150);
++
++	/* Take the bridge out of reset */
++	brcm_pcie_bridge_sw_init_set(pcie, 0);
++
++	WR_FLD_RB(base, PCIE_MISC_HARD_PCIE_HARD_DEBUG, SERDES_IDDQ, 0);
++	/* Wait for SerDes to be stable */
++	udelay(150);
++
++	/* Grab the PCIe hw revision number */
++	tmp = readl(base + PCIE_MISC_REVISION);
++	pcie->rev = EXTRACT_FIELD(tmp, PCIE_MISC_REVISION, MAJMIN);
++
++	/* Set SCB_MAX_BURST_SIZE, CFG_READ_UR_MODE, SCB_ACCESS_EN */
++	tmp = INSERT_FIELD(0, PCIE_MISC_MISC_CTRL, SCB_ACCESS_EN, 1);
++	tmp = INSERT_FIELD(tmp, PCIE_MISC_MISC_CTRL, CFG_READ_UR_MODE, 1);
++	tmp = INSERT_FIELD(tmp, PCIE_MISC_MISC_CTRL, MAX_BURST_SIZE,
++			   pcie->max_burst_size);
++	writel(tmp, base + PCIE_MISC_MISC_CTRL);
++
++	/*
++	 * Set up inbound memory view for the EP (called RC_BAR2, not to be
++	 * confused with the BARs that are advertised by the EP).
++	 *
++	 * The PCIe host controller by design must set the inbound viewport
++	 * to be a contiguous arrangement of all of the system's memory.
++	 * In addition, its size must be a power of two.  Further, the MSI
++	 * target address must NOT be placed inside this region, as the
++	 * decoding logic will consider its address to be inbound memory
++	 * traffic.  To further complicate matters, the viewport must start
++	 * on a pcie-address that is aligned on a multiple of its size.
++	 * If a portion of the viewport does not represent system memory
++	 * -- e.g. 3GB of memory requires a 4GB viewport -- we can map
++	 * the outbound memory in or after 3GB and even though the viewport
++	 * will overlap the outbound memory the controller will know to send
++	 * outbound memory downstream and everything else upstream.
++	 */
++
++	if (num_dma_ranges) {
++		/*
++		 * Use the base address and size(s) provided in the dma-ranges
++		 * property.
++		 */
++		for (i = 0; i < num_dma_ranges; i++)
++			scb_size[i] = roundup_pow_of_two_64(dma_ranges[i].size);
++
++		num_memc = num_dma_ranges;
++		rc_bar2_offset = dma_ranges[0].pci_addr;
++	} else {
++		return -EINVAL;
++	}
++
++	for (i = 0; i < num_memc; i++)
++		total_mem_size += scb_size[i];
++
++	rc_bar2_size = roundup_pow_of_two_64(total_mem_size);
++
++	/* Verify the alignment is correct */
++	if (rc_bar2_offset & (rc_bar2_size - 1)) {
++		printf("PCIe BRCM: inbound window is misaligned\n");
++		return -EINVAL;
++	}
++
++	tmp = lower_32_bits(rc_bar2_offset);
++	tmp = INSERT_FIELD(tmp, PCIE_MISC_RC_BAR2_CONFIG_LO, SIZE,
++			   encode_ibar_size(rc_bar2_size));
++	writel(tmp, base + PCIE_MISC_RC_BAR2_CONFIG_LO);
++	writel(upper_32_bits(rc_bar2_offset),
++	       base + PCIE_MISC_RC_BAR2_CONFIG_HI);
++
++	scb_size_val = scb_size[0]
++		? ilog2(scb_size[0]) - 15 : 0xf; /* 0xf is 1GB */
++	WR_FLD(base, PCIE_MISC_MISC_CTRL, SCB0_SIZE, scb_size_val);
++
++	if (num_memc > 1) {
++		scb_size_val = scb_size[1]
++			? ilog2(scb_size[1]) - 15 : 0xf; /* 0xf is 1GB */
++		WR_FLD(base, PCIE_MISC_MISC_CTRL, SCB1_SIZE, scb_size_val);
++	}
++
++	if (num_memc > 2) {
++		scb_size_val = scb_size[2]
++			? ilog2(scb_size[2]) - 15 : 0xf; /* 0xf is 1GB */
++		WR_FLD(base, PCIE_MISC_MISC_CTRL, SCB2_SIZE, scb_size_val);
++	}
++
++	/* Disable the PCIe->GISB memory window (RC_BAR1) */
++	WR_FLD(base, PCIE_MISC_RC_BAR1_CONFIG_LO, SIZE, 0);
++
++	/* Disable the PCIe->SCB memory window (RC_BAR3) */
++	WR_FLD(base, PCIE_MISC_RC_BAR3_CONFIG_LO, SIZE, 0);
++
++	/* Clear any interrupts we find on boot */
++	writel(0xffffffff, base + PCIE_INTR2_CPU_BASE + CLR);
++	(void)readl(base + PCIE_INTR2_CPU_BASE + CLR);
++
++	/* Mask all interrupts since we are not handling any yet */
++	writel(0xffffffff, base + PCIE_INTR2_CPU_BASE + MASK_SET);
++	(void)readl(base + PCIE_INTR2_CPU_BASE + MASK_SET);
++
++	if (pcie->gen)
++		set_gen(base, pcie->gen);
++
++	/* Unassert the fundamental reset */
++	brcm_pcie_perst_set(pcie, 0);
++
++	/* Give the RC/EP time to wake up, before trying to configure RC. */
++	limit = 100;
++	for (i = 1, j = 0; j < limit && !brcm_pcie_link_up(pcie);
++	     j += i, i = i * 2)
++		msleep(i + j > limit ? limit - j : i);
++
++	if (!brcm_pcie_link_up(pcie)) {
++		printf("PCIe BRCM: link down\n");
++		return -ENODEV;
++	}
++
++	if (!brcm_pcie_rc_mode(pcie)) {
++		printf("PCIe misconfigured; is in EP mode\n");
++		return -EINVAL;
++	}
++
++	for (i = 0; i < pcie->num_out_wins; i++)
++		brcm_pcie_set_outbound_win(pcie, i, pcie->out_wins[i].phys_addr,
++					   pcie->out_wins[i].pci_addr,
++					   pcie->out_wins[i].size);
++
++	/*
++	 * For config space accesses on the RC, show the right class for
++	 * a PCIe-PCIe bridge (the default setting is to be EP mode).
++	 */
++	WR_FLD_RB(base, PCIE_RC_CFG_PRIV1_ID_VAL3, CLASS_CODE, 0x060400);
++
++	if (pcie->ssc) {
++		ret = set_ssc(base);
++		if (ret == 0)
++			ssc_good = true;
++		else
++			printf("PCIe BRCM: failed attempt to enter ssc mode\n");
++	}
++
++	lnksta = readw(base + BRCM_PCIE_CAP_REGS + PCI_EXP_LNKSTA);
++	cls = lnksta & PCI_EXP_LNKSTA_CLS;
++	nlw = (lnksta & PCI_EXP_LNKSTA_NLW) >> PCI_EXP_LNKSTA_NLW_SHIFT;
++
++	printf("PCIe BRCM: link up, %s Gbps x%u %s\n", link_speed_to_str(cls),
++	       nlw, ssc_good ? "(SSC)" : "(!SSC)");
++
++	/* PCIe->SCB endian mode for BAR */
++	/* field ENDIAN_MODE_BAR2 = DATA_ENDIAN */
++	WR_FLD_RB(base, PCIE_RC_CFG_VENDOR_VENDOR_SPECIFIC_REG1,
++		  ENDIAN_MODE_BAR2, DATA_ENDIAN);
++
++	/*
++	 * Refclk from RC should be gated with CLKREQ# input when ASPM L0s,L1
++	 * is enabled =>  setting the CLKREQ_DEBUG_ENABLE field to 1.
++	 */
++	WR_FLD_RB(base, PCIE_MISC_HARD_PCIE_HARD_DEBUG, CLKREQ_DEBUG_ENABLE, 1);
++
++	return 0;
++}
++
++static const struct udevice_id brcm_pcie_ids[] = {
++	{ .compatible = "brcm,bcm7445-pcie", .data = (ulong)&generic_cfg },
++	{ .compatible = "brcm,bcm2711-pcie", .data = (ulong)&bcm2711_cfg },
++	{ }
++};
++
++static int brcm_pcie_probe(struct udevice *dev)
++{
++	struct udevice *ctlr = pci_get_controller(dev);
++	struct pci_controller *hose = dev_get_uclass_priv(ctlr);
++	struct brcm_pcie *pcie = dev_get_priv(dev);
++	struct pcie_cfg_data *data = (struct pcie_cfg_data *)dev_get_driver_data(dev);
++	ofnode dn = dev_ofnode(dev);
++	u32 max_link_speed;
++	int i;
++
++	if (hose->region_count < 2) {
++		pr_err("PCIe BRCM: Missing PCI regions definition");
++		return -EINVAL;
++	}
++
++	for (i = 0; i < hose->region_count; i++) {
++		if (hose->regions[i].flags == PCI_REGION_SYS_MEMORY)
++			continue;
++
++		pcie->out_wins[i].phys_addr = hose->regions[i].phys_start;
++		pcie->out_wins[i].pci_addr = hose->regions[i].bus_start;
++		pcie->out_wins[i].size = hose->regions[i].size;
++		pcie->num_out_wins++;
++	}
++
++	/* TODO: Parse inbound access mapping from dma-ranges DT property */
++	num_dma_ranges = 1;
++	for (i = 0; i < hose->region_count; i++) {
++		if (hose->regions[i].flags != PCI_REGION_SYS_MEMORY)
++			continue;
++
++		dma_ranges[0].pci_addr = hose->regions[i].bus_start;
++		dma_ranges[0].phys_addr = hose->regions[i].phys_start;
++		dma_ranges[0].size = hose->regions[i].size;
++		break;
++	}
++
++	pcie->reg_offsets = data->offsets;
++	pcie->reg_field_info = data->reg_field_info;
++	pcie->max_burst_size = data->max_burst_size;
++	pcie->type = data->type;
++
++	if (ofnode_read_u32(dn, "max-link-speed", &max_link_speed) ||
++	    max_link_speed > 4)
++		pcie->gen = 0;
++	else
++		pcie->gen = max_link_speed;
++
++	pcie->ssc = ofnode_read_bool(dn, "brcm,enable-ssc");
++
++	return brcm_pcie_setup(pcie);
++}
++
++static int brcm_pcie_ofdata_to_platdata(struct udevice *dev)
++{
++	struct brcm_pcie *pcie = dev_get_priv(dev);
++
++	/* Get the controller base address */
++	pcie->base = dev_read_addr_ptr(dev);
++	if (!pcie->base)
++		return -EINVAL;
++
++	return 0;
++}
++
++static const struct dm_pci_ops brcm_pcie_ops = {
++	.read_config	= brcm_pcie_read_config,
++	.write_config	= brcm_pcie_write_config,
++};
++
++U_BOOT_DRIVER(pcie_brcm_base) = {
++	.name			= "pcie_brcm",
++	.id			= UCLASS_PCI,
++	.ops			= &brcm_pcie_ops,
++	.of_match		= brcm_pcie_ids,
++	.probe			= brcm_pcie_probe,
++	.ofdata_to_platdata	= brcm_pcie_ofdata_to_platdata,
++	.priv_auto_alloc_size	= sizeof(struct brcm_pcie),
++};
+
+From patchwork Tue Apr 21 16:50:59 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Sylwester Nawrocki <s.nawrocki@samsung.com>
+X-Patchwork-Id: 1274448
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256
+ header.s=mail20170921 header.b=RBB5T/f+;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4969rP1mTgz9sSJ
+ for <incoming@patchwork.ozlabs.org>; Wed, 22 Apr 2020 03:42:45 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 622F381C7C;
+ Tue, 21 Apr 2020 19:41:20 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="RBB5T/f+";
+ dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 6ACE281A07; Tue, 21 Apr 2020 18:51:32 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+ DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_PASS,UPPERCASE_50_75,URIBL_BLOCKED
+ autolearn=no autolearn_force=no version=3.4.2
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
+ [210.118.77.11])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 349DF81A18
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 18:51:27 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=s.nawrocki@samsung.com
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+ by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165126euoutp01ba71afc4eba05b35dc346ebddbc61e90~H49JqbGbV0959709597euoutp01d
+ for <u-boot@lists.denx.de>; Tue, 21 Apr 2020 16:51:26 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com
+ 20200421165126euoutp01ba71afc4eba05b35dc346ebddbc61e90~H49JqbGbV0959709597euoutp01d
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+ s=mail20170921; t=1587487886;
+ bh=8f+WvUWDLHHwwlhMHv7Ajbo0xyRT3miVzyvERB5pdSk=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=RBB5T/f+9abZt7lxRvmjd9QryZYRjDraN7ut4dXLhBwPD2eV+kaieGV249a0v7U+3
+ tqOn6re8nw14/F7arQUaSDrIpPkgXeCpdB6PobnHkkarORdCeBSzm+uXPDb0+oCD3X
+ tddbFFXixkL45CFRP0UHTYBPA7shkibzGJy1hnOc=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165126eucas1p2eee4102e9b89b1ee388217f4081c67f0~H49JVcFSF1251112511eucas1p25;
+ Tue, 21 Apr 2020 16:51:26 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+ eusmges2new.samsung.com (EUCPMTA) with SMTP id EB.64.60679.E842F9E5; Tue, 21
+ Apr 2020 17:51:26 +0100 (BST)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+ eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165125eucas1p12d7451082887a52073ba795aa0ee398a~H49I7LR4B1762717627eucas1p1U;
+ Tue, 21 Apr 2020 16:51:25 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
+ eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+ 20200421165125eusmtrp222bb00f71d4a2ef821d21350fb24e056~H49I6l4i73266732667eusmtrp2f;
+ Tue, 21 Apr 2020 16:51:25 +0000 (GMT)
+X-AuditID: cbfec7f4-0e5ff7000001ed07-23-5e9f248e6317
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+ eusmgms2.samsung.com (EUCPMTA) with SMTP id BA.3B.07950.D842F9E5; Tue, 21
+ Apr 2020 17:51:25 +0100 (BST)
+Received: from AMDC3061.digital.local (unknown [106.120.51.75]) by
+ eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+ 20200421165125eusmtip1a3d057804e72a9f3cec2268d56b5f631~H49IZf0be0895708957eusmtip1J;
+ Tue, 21 Apr 2020 16:51:25 +0000 (GMT)
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+To: u-boot@lists.denx.de, mbrugger@suse.com, marex@denx.de, bmeng.cn@gmail.com
+Cc: agraf@suse.de, sjg@chrmium.org, jh80.chung@samsung.com,
+ m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+Subject: [RFC PATCH 9/9] config: Enable support for the XHCI controller on
+ RPI4 board
+Date: Tue, 21 Apr 2020 18:50:59 +0200
+Message-Id: <20200421165059.19394-10-s.nawrocki@samsung.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200421165059.19394-1-s.nawrocki@samsung.com>
+X-Brightmail-Tracker: H4sIAAAAAAAAA0WSbUhTcRTG+e++zppcp+AflYxhH9LUzIhbiVkG3Q998ENkRWpTb1PTKfc6
+ zYQwheVbU7OcTFJLaWWEM81Xwlo1zdcvvoEbthzhLAObIFq63K7Vt995zvNwOIdDItIqzI9M
+ V+aynFKeKcM90G7TxmSoJqgp8fBYCUoPT20DuqO+HaMfVibRc5tqjH75wULQ39V3AN1ca8Po
+ 0mknoFfelBExYmZhpAhjGnXDKNOnsxDMuLkXMJquNsC0d02jTOdoYRxxxSMqlc1Mz2O58Ohr
+ HmnFzRt4TuX+m7XqQawIfPYvByQJqaPQ8DS2HHiQUuoZgMsPHCKhWAOwxdqJCIUDQJNmCZQD
+ sTvR8mlgt6EHsNioBf8iG48eYy4XTkXAex817oQPFQdnNurcjFA5sG7WhrvYm4qHFYb3bkap
+ A7DB8U7kYgkVBecNHbgwLRC+MLxFXCze0S3r9ahrGKQqCLhp78EE01lY12ncDXjD5aEuQuAA
+ 6OxrEgmBEgArB+YJoagGcGGoeXehk9A8sYm7zoFQB2F7f7ggn4Z6rRMTruQJ51a8hAU84f1u
+ LSLIEliqlgruIPirTSsS2A9W2JyowAy011h3r1UF4OvnZqIaBOr+D2sGoA34sio+S8HyR5Rs
+ fhgvz+JVSkVYSnbWK7DzJqPbQ2u9oP93shFQJJDtlcxNNiZKMXkeX5BlBJBEZD4Sg3VHkqTK
+ C26xXHYSp8pkeSPwJ1GZryTyiT1BSinkuewNls1hub9dESn2KwLJg1+3GcJnoqnQntS+dGor
+ g3FOHjdfGtBf3qOc0h3Sr0dor2/GpFrGwsdmW+P3rVGj+DHrlk2f34qDkC8hIzWmqbvG1YD+
+ tBlrRoiXmps5Lynzjmsd+ZnClZ5zLJ4oi/3mQ6Y3jJ9R9Ny2R5pCfySsXo1WiS8uhnHBjYkd
+ F2QonyaPCEY4Xv4HlRBgdCIDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrPLMWRmVeSWpSXmKPExsVy+t/xu7q9KvPjDBrnaFmcuPKP0WLjjPWs
+ FlN74i1u/GpjtVh75C67xZu2RkaLBZOfsFp0XP3PaPF2bye7A6fH/VMNrB7zZp1g8dg56y67
+ x9k7Oxg9+rasYvRYv+Uqi8fm09UB7FF6NkX5pSWpChn5xSW2StGGFkZ6hpYWekYmlnqGxuax
+ VkamSvp2NimpOZllqUX6dgl6GU0LfrIV9ChUTG7bz9rA+EC6i5GTQ0LARGLxyd3MXYxcHEIC
+ SxklPvy/yt7FyAGUkJKY36IEUSMs8edaFxtEzSdGibXPXzGDJNgEDCV6j/YxgtgiAiESL45e
+ YQKxmQXKJNa0vgaLCwuEStyd0gNmswioSsz+fBCshlfARuL2ho1sEAvkJVZvOAA2kxMofvf7
+ DBYQW0jAWqLh0hKWCYx8CxgZVjGKpJYW56bnFhvpFSfmFpfmpesl5+duYgQG9rZjP7fsYOx6
+ F3yIUYCDUYmH98b5eXFCrIllxZW5hxglOJiVRHg3PAQK8aYkVlalFuXHF5XmpBYfYjQFOmoi
+ s5Rocj4w6vJK4g1NDc0tLA3Njc2NzSyUxHk7BA7GCAmkJ5akZqemFqQWwfQxcXBKNTBWTnjA
+ 9rfi5OHFK1WDPefc1Lu4NHa3k0wcX1F135VL2qWb2AoizLZIZYrNyrjw0f+d94ZWruRVorea
+ j/wSO5bju/fInhW3XUo8DDUe22meFxPewrSBefPkV4tqufjmZfw2215cNE+8PDvoi1vXG/vu
+ HJazefOrPDX48nXr2GPVpXas8L377pESS3FGoqEWc1FxIgDja1QoggIAAA==
+X-CMS-MailID: 20200421165125eucas1p12d7451082887a52073ba795aa0ee398a
+X-Msg-Generator: CA
+X-RootMTR: 20200421165125eucas1p12d7451082887a52073ba795aa0ee398a
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20200421165125eucas1p12d7451082887a52073ba795aa0ee398a
+References: <20200421165059.19394-1-s.nawrocki@samsung.com>
+ <CGME20200421165125eucas1p12d7451082887a52073ba795aa0ee398a@eucas1p1.samsung.com>
+X-Mailman-Approved-At: Tue, 21 Apr 2020 19:40:20 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+
+This requires enabling BRCMSTB PCIe and XHCI_PCI drivers as well as PCI
+and USB commands. To get it working one has to call the following commands:
+"pci enum; usb start;", thus such commands have been added to the default
+"preboot" environment variable. One has to update his environment if it is
+already configured to get this feature working out of the box.
+
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+ configs/rpi_4_32b_defconfig |  9 +++++++++
+ configs/rpi_4_defconfig     | 10 ++++++++++
+ configs/rpi_arm64_defconfig |  9 ++++++++-
+ 3 files changed, 27 insertions(+), 1 deletion(-)
+
+diff --git a/configs/rpi_4_32b_defconfig b/configs/rpi_4_32b_defconfig
+index 72cda5d..0dd763f 100644
+--- a/configs/rpi_4_32b_defconfig
++++ b/configs/rpi_4_32b_defconfig
+@@ -8,6 +8,8 @@ CONFIG_NR_DRAM_BANKS=2
+ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_OF_BOARD_SETUP=y
+ # CONFIG_ARCH_FIXUP_FDT_MEMORY is not set
++CONFIG_USE_PREBOOT=y
++CONFIG_PREBOOT="pci enum; usb start;"
+ CONFIG_MISC_INIT_R=y
+ # CONFIG_DISPLAY_CPUINFO is not set
+ # CONFIG_DISPLAY_BOARDINFO is not set
+@@ -15,6 +17,8 @@ CONFIG_SYS_PROMPT="U-Boot> "
+ CONFIG_CMD_DFU=y
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_MMC=y
++CONFIG_CMD_PCI=y
++CONFIG_CMD_USB=y
+ CONFIG_CMD_FS_UUID=y
+ CONFIG_OF_BOARD=y
+ CONFIG_ENV_FAT_INTERFACE="mmc"
+@@ -28,12 +32,17 @@ CONFIG_MMC_SDHCI=y
+ CONFIG_MMC_SDHCI_BCM2835=y
+ CONFIG_DM_ETH=y
+ CONFIG_BCMGENET=y
++CONFIG_PCI=y
++CONFIG_DM_PCI=y
++CONFIG_PCI_BRCMSTB=y
+ CONFIG_PINCTRL=y
+ # CONFIG_PINCTRL_GENERIC is not set
+ # CONFIG_REQUIRE_SERIAL_CONSOLE is not set
+ CONFIG_USB=y
+ CONFIG_DM_USB=y
+ CONFIG_DM_USB_GADGET=y
++CONFIG_USB_XHCI_HCD=y
++CONFIG_USB_XHCI_PCI=y
+ CONFIG_USB_GADGET=y
+ CONFIG_USB_GADGET_MANUFACTURER="FSL"
+ CONFIG_USB_GADGET_VENDOR_NUM=0x0525
+diff --git a/configs/rpi_4_defconfig b/configs/rpi_4_defconfig
+index 6d148da..f80e5da 100644
+--- a/configs/rpi_4_defconfig
++++ b/configs/rpi_4_defconfig
+@@ -8,6 +8,8 @@ CONFIG_NR_DRAM_BANKS=2
+ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_OF_BOARD_SETUP=y
+ # CONFIG_ARCH_FIXUP_FDT_MEMORY is not set
++CONFIG_USE_PREBOOT=y
++CONFIG_PREBOOT="pci enum; usb start;"
+ CONFIG_MISC_INIT_R=y
+ # CONFIG_DISPLAY_CPUINFO is not set
+ # CONFIG_DISPLAY_BOARDINFO is not set
+@@ -15,6 +17,8 @@ CONFIG_SYS_PROMPT="U-Boot> "
+ CONFIG_CMD_DFU=y
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_MMC=y
++CONFIG_CMD_PCI=y
++CONFIG_CMD_USB=y
+ CONFIG_CMD_FS_UUID=y
+ CONFIG_OF_BOARD=y
+ CONFIG_ENV_FAT_INTERFACE="mmc"
+@@ -28,12 +32,18 @@ CONFIG_MMC_SDHCI=y
+ CONFIG_MMC_SDHCI_BCM2835=y
+ CONFIG_DM_ETH=y
+ CONFIG_BCMGENET=y
++CONFIG_PCI=y
++CONFIG_DM_PCI=y
++CONFIG_PCI_BRCMSTB=y
+ CONFIG_PINCTRL=y
+ # CONFIG_PINCTRL_GENERIC is not set
+ # CONFIG_REQUIRE_SERIAL_CONSOLE is not set
+ CONFIG_USB=y
+ CONFIG_DM_USB=y
+ CONFIG_DM_USB_GADGET=y
++CONFIG_USB_XHCI_HCD=y
++CONFIG_XHCI_64BIT_DWORD_ACCESS_ONLY=y
++CONFIG_USB_XHCI_PCI=y
+ CONFIG_USB_GADGET=y
+ CONFIG_USB_GADGET_MANUFACTURER="FSL"
+ CONFIG_USB_GADGET_VENDOR_NUM=0x0525
+diff --git a/configs/rpi_arm64_defconfig b/configs/rpi_arm64_defconfig
+index fea86be..926dfc3 100644
+--- a/configs/rpi_arm64_defconfig
++++ b/configs/rpi_arm64_defconfig
+@@ -7,13 +7,14 @@ CONFIG_NR_DRAM_BANKS=2
+ CONFIG_DISTRO_DEFAULTS=y
+ CONFIG_OF_BOARD_SETUP=y
+ CONFIG_USE_PREBOOT=y
+-CONFIG_PREBOOT="usb start"
++CONFIG_PREBOOT="pci enum; usb start;"
+ CONFIG_MISC_INIT_R=y
+ # CONFIG_DISPLAY_CPUINFO is not set
+ # CONFIG_DISPLAY_BOARDINFO is not set
+ CONFIG_SYS_PROMPT="U-Boot> "
+ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_MMC=y
++CONFIG_CMD_PCI=y
+ CONFIG_CMD_USB=y
+ CONFIG_CMD_FS_UUID=y
+ CONFIG_OF_BOARD=y
+@@ -26,11 +27,17 @@ CONFIG_MMC_SDHCI=y
+ CONFIG_MMC_SDHCI_BCM2835=y
+ CONFIG_DM_ETH=y
+ CONFIG_BCMGENET=y
++CONFIG_PCI=y
++CONFIG_DM_PCI=y
++CONFIG_PCI_BRCMSTB=y
+ CONFIG_PINCTRL=y
+ # CONFIG_PINCTRL_GENERIC is not set
+ # CONFIG_REQUIRE_SERIAL_CONSOLE is not set
+ CONFIG_USB=y
+ CONFIG_DM_USB=y
++CONFIG_USB_XHCI_HCD=y
++CONFIG_XHCI_64BIT_DWORD_ACCESS_ONLY=y
++CONFIG_USB_XHCI_PCI=y
+ CONFIG_USB_DWC2=y
+ CONFIG_USB_KEYBOARD=y
+ CONFIG_USB_HOST_ETHER=y
+From 41e5d853779e91ea193ea0251bae9328083e2374 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Tue, 21 Apr 2020 20:18:31 +0100
+Subject: [PATCH] rpi4: add usb keyboard/storage
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ configs/rpi_4_32b_defconfig | 2 ++
+ configs/rpi_4_defconfig     | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/configs/rpi_4_32b_defconfig b/configs/rpi_4_32b_defconfig
+index 0dd763f06f..2e137414f7 100644
+--- a/configs/rpi_4_32b_defconfig
++++ b/configs/rpi_4_32b_defconfig
+@@ -49,6 +49,8 @@ CONFIG_USB_GADGET_VENDOR_NUM=0x0525
+ CONFIG_USB_GADGET_PRODUCT_NUM=0xa4a5
+ CONFIG_USB_GADGET_DWC2_OTG=y
+ CONFIG_USB_GADGET_DOWNLOAD=y
++CONFIG_USB_KEYBOARD=y
++CONFIG_USB_STORAGE=y
+ CONFIG_DM_VIDEO=y
+ # CONFIG_VIDEO_BPP8 is not set
+ # CONFIG_VIDEO_BPP16 is not set
+diff --git a/configs/rpi_4_defconfig b/configs/rpi_4_defconfig
+index f80e5dac3e..bdefbd2a45 100644
+--- a/configs/rpi_4_defconfig
++++ b/configs/rpi_4_defconfig
+@@ -50,6 +50,8 @@ CONFIG_USB_GADGET_VENDOR_NUM=0x0525
+ CONFIG_USB_GADGET_PRODUCT_NUM=0xa4a5
+ CONFIG_USB_GADGET_DWC2_OTG=y
+ CONFIG_USB_GADGET_DOWNLOAD=y
++CONFIG_USB_KEYBOARD=y
++CONFIG_USB_STORAGE=y
+ CONFIG_DM_VIDEO=y
+ # CONFIG_VIDEO_BPP8 is not set
+ # CONFIG_VIDEO_BPP16 is not set
+-- 
+2.26.1
+

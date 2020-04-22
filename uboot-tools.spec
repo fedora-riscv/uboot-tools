@@ -2,7 +2,7 @@
 
 Name:      uboot-tools
 Version:   2020.04
-Release:   3%{?candidate:.%{candidate}}%{?dist}
+Release:   4%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -39,6 +39,8 @@ Patch16:   initial-support-for-the-Pinebook-Pro-laptop-from.patch
 Patch17:   rockpro64-limit-speed-on-mSD-slot.patch
 # AllWinner improvements
 Patch18:   AllWinner-Pine64-bits.patch
+# RPi4
+Patch19:   USB-host-support-for-Raspberry-Pi-4-board.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -252,6 +254,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Apr 21 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.04-4
+- Initial support for USB on Rasperry Pi 4
+
 * Tue Apr 21 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.04-3
 - Ship u-boot-rockchip.bin for SPI flash
 
