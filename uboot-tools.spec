@@ -1,8 +1,8 @@
-#global candidate rc1
+%global candidate rc1
 
 Name:      uboot-tools
-Version:   2020.04
-Release:   4%{?candidate:.%{candidate}}%{?dist}
+Version:   2020.07
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -24,23 +24,19 @@ Patch2:    uefi-use-Fedora-specific-path-name.patch
 Patch4:    usb-kbd-fixes.patch
 Patch5:    rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:    dragonboard-fixes.patch
-Patch7:    efi_loader-enable-RNG-if-DM_RNG-is-enabled.patch
 
 # Tegra improvements
-Patch10:   Misc-fixes-for-Tegra.patch
-Patch11:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
-Patch12:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
-# Wandboard fixes
-Patch13:   wandboard-Fix-version-detection-for-mx6q-mx6dl-revD1.patch
+Patch10:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
+Patch11:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
 # Rockchips improvements
-Patch14:   arm-dts-rockchip-rk3399-add-and-enable-rng-node.patch
-Patch15:   arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
-Patch16:   initial-support-for-the-Pinebook-Pro-laptop-from.patch
-Patch17:   rockpro64-limit-speed-on-mSD-slot.patch
+Patch12:   arm-dts-rockchip-rk3399-add-and-enable-rng-node.patch
+Patch13:   arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
+Patch14:   initial-support-for-the-Pinebook-Pro-laptop-from.patch
+Patch15:   rockpro64-limit-speed-on-mSD-slot.patch
 # AllWinner improvements
-Patch18:   AllWinner-Pine64-bits.patch
+Patch16:   AllWinner-Pine64-bits.patch
 # RPi4
-Patch19:   USB-host-support-for-Raspberry-Pi-4-board.patch
+Patch17:   USB-host-support-for-Raspberry-Pi-4-board.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -254,6 +250,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Apr 29 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.07-0.1.rc1
+- 2020.07 RC1
+
 * Tue Apr 21 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.04-4
 - Initial support for USB on Rasperry Pi 4
 
