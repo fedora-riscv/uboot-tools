@@ -1,6 +1,6 @@
-From ce2493a9dec8af2dd57839e337b002d256d2a842 Mon Sep 17 00:00:00 2001
+From c3332b102d2ddae01710ae8f4393a2a18a3a1bb3 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 31 Mar 2020 10:38:41 +0100
+Date: Tue, 12 May 2020 08:19:48 +0100
 Subject: [PATCH] arm: tegra: define fdtfile option for distro boot
 
 For booting via UEFI we need to define the fdtfile option so
@@ -20,12 +20,12 @@ Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
  7 files changed, 12 insertions(+)
 
 diff --git a/include/configs/tegra-common.h b/include/configs/tegra-common.h
-index f2cdd9c019..997b50394b 100644
+index 175c55c613..8026f4b32e 100644
 --- a/include/configs/tegra-common.h
 +++ b/include/configs/tegra-common.h
-@@ -55,6 +55,12 @@
- #define CONFIG_SYS_MEMTEST_START	(NV_PA_SDRC_CS0 + 0x600000)
- #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + 0x100000)
+@@ -52,6 +52,12 @@
+ /* Boot Argument Buffer Size */
+ #define CONFIG_SYS_BARGSIZE		(CONFIG_SYS_CBSIZE)
  
 +#ifdef CONFIG_ARM64
 +#define FDTFILE "nvidia/" CONFIG_DEFAULT_DEVICE_TREE ".dtb"
@@ -109,5 +109,5 @@ index 54bc6756ab..6c5dc24b26 100644
  	"ramdisk_addr_r=0x83100000\0"
  
 -- 
-2.26.0
+2.26.2
 
