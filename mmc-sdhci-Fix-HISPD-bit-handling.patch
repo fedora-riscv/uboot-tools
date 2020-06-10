@@ -1,0 +1,182 @@
+From patchwork Wed Jun 10 11:43:47 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Jagan Teki <jagan@amarulasolutions.com>
+X-Patchwork-Id: 1306828
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=amarulasolutions.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=amarulasolutions.com header.i=@amarulasolutions.com
+ header.a=rsa-sha256 header.s=google header.b=Q+0/eSrJ;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 49hlWg1F7rz9sRW
+ for <incoming@patchwork.ozlabs.org>; Wed, 10 Jun 2020 21:44:12 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id E30A9813BC;
+ Wed, 10 Jun 2020 13:44:06 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=amarulasolutions.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (1024-bit key;
+ unprotected) header.d=amarulasolutions.com header.i=@amarulasolutions.com
+ header.b="Q+0/eSrJ"; dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 5063381578; Wed, 10 Jun 2020 13:44:05 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,SPF_HELO_NONE,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com
+ [IPv6:2607:f8b0:4864:20::1042])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 3B4D28006D
+ for <u-boot@lists.denx.de>; Wed, 10 Jun 2020 13:44:01 +0200 (CEST)
+Authentication-Results: phobos.denx.de; dmarc=none (p=none dis=none)
+ header.from=amarulasolutions.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=jagan@amarulasolutions.com
+Received: by mail-pj1-x1042.google.com with SMTP id jz3so753364pjb.0
+ for <u-boot@lists.denx.de>; Wed, 10 Jun 2020 04:44:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=amarulasolutions.com; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=O2V5XL3BREsrFDwBw4n7RZ8T6utX5AdnG2I6ivLZnCA=;
+ b=Q+0/eSrJuVhFqQmrlsBwCwCZAbCe2xEaqucnx2B5U1ugNqUWmowKDVxmV5llgcsrnJ
+ zliXEiVt8Az8b9zOxZM/0Tej8xH1pjdM08pw2sA/I0IEIg2fHq6zUioAR/MCZ4rbf9EN
+ j/l6kIrf0ADHDtPscUlgRaN0nVou3/T0cGpcA=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=O2V5XL3BREsrFDwBw4n7RZ8T6utX5AdnG2I6ivLZnCA=;
+ b=U9gtAvMEdX23LPpZhHK26RY/0f9o9C22NUE5HjIBTjpytNzjSO+1cHxLPFk9lQyNzK
+ A0693YATc8RhLMFiRS1libP6Urk18kkSIzdwMfAYBN3jRuTRT88vPg3jKUJhK+p1R/Vz
+ kwzTq1MlBG8N2xNCzTM9ajfCl36013fN+MiLr9xkej7L+zLSpiBj+8z3MCmHKzj1hn1y
+ 2gOT5lVWyZydc/Ao516He/rhFhiRfGBf1w/KbCXfSg0x9kQ83UO4FPFPjDs3TiWm47PC
+ WS4+muMzuJIDAm+rZNt8iGY7igpHHzT51vBqF70ti3mCE1NFPQqzjWc4M8WuVFx84vh9
+ LPjA==
+X-Gm-Message-State: AOAM533ux1c2iDQS6fhMmnMScouMQxlbt1o1Hb7wwTLlbsql4mLEXoL/
+ kq6k/AcVEksPK0a3hzH6EWbhMQ==
+X-Google-Smtp-Source: ABdhPJxfGS37PA5Fx79Ub2piTMRhJFMfO0r/k3qlpvGvsVv9giEauDno4rbVNspBFxzzTtqDA1vwmw==
+X-Received: by 2002:a17:90a:9484:: with SMTP id
+ s4mr2691977pjo.30.1591789439428;
+ Wed, 10 Jun 2020 04:43:59 -0700 (PDT)
+Received: from localhost.localdomain ([2405:201:c809:c7d5:9daa:1b72:7bd0:50df])
+ by smtp.gmail.com with ESMTPSA id y4sm12934672pfr.182.2020.06.10.04.43.54
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 10 Jun 2020 04:43:58 -0700 (PDT)
+From: Jagan Teki <jagan@amarulasolutions.com>
+To: Peng Fan <peng.fan@nxp.com>, Jaehoon Chung <jh80.chung@samsung.com>,
+ Kever Yang <kever.yang@rock-chips.com>
+Cc: Marc Zyngier <maz@kernel.org>, sunil@amarulasolutions.com,
+ u-boot@lists.denx.de, linux-rockchip@lists.infradead.org,
+ linux-amarula@amarulasolutions.com,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Robin Murphy <robin.murphy@arm.com>
+Subject: [PATCH v3] mmc: sdhci: Fix HISPD bit handling
+Date: Wed, 10 Jun 2020 17:13:47 +0530
+Message-Id: <20200610114347.118501-1-jagan@amarulasolutions.com>
+X-Mailer: git-send-email 2.25.1
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+SDHCI HISPD bits need to be configured based on desired mmc
+timings mode and some HISPD quirks.
+
+So, handle the HISPD bit based on the mmc computed selected
+mode(timing parameter) rather than fixed mmc card clock
+frequency.
+
+Linux handle the HISPD similar like this in below commit,
+
+commit <501639bf2173> ("mmc: sdhci: fix SDHCI_QUIRK_NO_HISPD_BIT handling")
+
+This eventually fixed the mmc write issue observed in
+rk3399 sdhci controller.
+
+Bug log for refernece,
+=> gpt write mmc 0 $partitions
+Writing GPT: mmc write failed
+** Can't write to device 0 **
+** Can't write to device 0 **
+error!
+
+Cc: Robin Murphy <robin.murphy@arm.com>
+Cc: Kever Yang <kever.yang@rock-chips.com>
+Cc: Peng Fan <peng.fan@nxp.com>
+Reviewed-by: Jaehoon Chung <jh80.chung@samsung.com>
+Tested-by: Marc Zyngier <maz@kernel.org> # nanopc-t4
+Tested-by: Suniel Mahesh <sunil@amarulasolutions.com> # roc-rk3399-pc
+Signed-off-by: Jagan Teki <jagan@amarulasolutions.com>
+---
+Changes for v3:
+- use && for quirk check.
+
+ drivers/mmc/sdhci.c | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/mmc/sdhci.c b/drivers/mmc/sdhci.c
+index 92cc8434af..a7db278a0e 100644
+--- a/drivers/mmc/sdhci.c
++++ b/drivers/mmc/sdhci.c
+@@ -594,14 +594,21 @@ static int sdhci_set_ios(struct mmc *mmc)
+ 			ctrl &= ~SDHCI_CTRL_4BITBUS;
+ 	}
+ 
+-	if (mmc->clock > 26000000)
+-		ctrl |= SDHCI_CTRL_HISPD;
+-	else
+-		ctrl &= ~SDHCI_CTRL_HISPD;
+-
+-	if ((host->quirks & SDHCI_QUIRK_NO_HISPD_BIT) ||
+-	    (host->quirks & SDHCI_QUIRK_BROKEN_HISPD_MODE))
+-		ctrl &= ~SDHCI_CTRL_HISPD;
++	if (!(host->quirks & SDHCI_QUIRK_NO_HISPD_BIT) &&
++	    !(host->quirks & SDHCI_QUIRK_BROKEN_HISPD_MODE)) {
++		if (mmc->selected_mode == MMC_HS ||
++		    mmc->selected_mode == SD_HS ||
++		    mmc->selected_mode == MMC_DDR_52 ||
++		    mmc->selected_mode == MMC_HS_200 ||
++		    mmc->selected_mode == MMC_HS_400 ||
++		    mmc->selected_mode == UHS_SDR25 ||
++		    mmc->selected_mode == UHS_SDR50 ||
++		    mmc->selected_mode == UHS_SDR104 ||
++		    mmc->selected_mode == UHS_DDR50)
++			ctrl |= SDHCI_CTRL_HISPD;
++		else
++			ctrl &= ~SDHCI_CTRL_HISPD;
++	}
+ 
+ 	sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
+ 

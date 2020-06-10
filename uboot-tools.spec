@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc4
 
 Name:      uboot-tools
 Version:   2020.07
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
+Release:   0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -23,22 +23,21 @@ Patch2:    uefi-use-Fedora-specific-path-name.patch
 # Board fixes and enablement
 Patch4:    usb-kbd-fixes.patch
 Patch5:    dragonboard-fixes.patch
+# mmc fix
+Patch6:    mmc-sdhci-Fix-HISPD-bit-handling.patch
 
 # Tegra improvements
 Patch10:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
 Patch11:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
-# Rockchips improvements
-Patch12:   arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
-Patch13:   initial-support-for-the-Pinebook-Pro-laptop-from.patch
-Patch14:   rockpro64-limit-speed-on-mSD-slot.patch
 # AllWinner improvements
-Patch15:   AllWinner-Pine64-bits.patch
+Patch12:   AllWinner-Pine64-bits.patch
+# Rockchips improvements
+Patch13:   arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
+Patch14:   rockchip-Pinebook-Pro-Fixes.patch
 # RPi4
 Patch16:   USB-host-support-for-Raspberry-Pi-4-board-64-bit.patch
 Patch17:   usb-xhci-Load-Raspberry-Pi-4-VL805-s-firmware.patch
 Patch18:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-Patch19:   rpi4-enable-ARCH_FIXUP_FDT_MEMORY.patch
-Patch20:   rpi4-Enable-support-for-the-XHCI-controller-on-RPI.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -252,6 +251,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Jun 10 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.07-0.3.rc4
+- 2020.07 RC4
+- Minor updates and other fixes
+
 * Tue May 12 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.07-0.2.rc2
 - 2020.07 RC2
 - Minor device updates
