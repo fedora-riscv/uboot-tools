@@ -215,7 +215,6 @@ install -p -m 0755 %{SOURCE5} $RPM_BUILD_ROOT/lib/kernel/install.d/
 
 # Copy sone useful docs over
 mkdir -p builds/docs
-cp -p board/amlogic/p200/README.odroid-c2 builds/docs/README.odroid-c2
 cp -p board/hisilicon/hikey/README builds/docs/README.hikey
 cp -p board/hisilicon/hikey/README builds/docs/README.hikey
 cp -p board/Marvell/db-88f6820-gp/README builds/docs/README.mvebu-db-88f6820
@@ -235,6 +234,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %doc README doc/README.kwbimage doc/README.distro doc/README.gpt
 %doc doc/README.odroid doc/README.rockchip doc/uefi doc/uImage.FIT doc/arch/arm64.rst
 %doc doc/README.chromium builds/docs/*
+%doc doc/board/amlogic/ doc/board/rockchip/
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
 /lib/kernel/install.d/10-devicetree.install
