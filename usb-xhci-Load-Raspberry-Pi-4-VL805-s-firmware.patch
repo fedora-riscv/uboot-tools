@@ -1,33 +1,35 @@
-From patchwork Fri Jun 12 16:46:29 2020
+From patchwork Mon Jun 22 15:30:48 2020
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 X-Patchwork-Submitter: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-X-Patchwork-Id: 1308405
+X-Patchwork-Id: 1314562
+X-Patchwork-Delegate: matthias.bgg@gmail.com
 Return-Path: <u-boot-bounces@lists.denx.de>
 X-Original-To: incoming@patchwork.ozlabs.org
 Delivered-To: patchwork-incoming@bilbo.ozlabs.org
 Authentication-Results: ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
- (client-ip=85.214.62.61; helo=phobos.denx.de;
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
  envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=suse.de
-Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 49k68q2wrsz9sRN
- for <incoming@patchwork.ozlabs.org>; Sat, 13 Jun 2020 02:47:37 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 49rD0h00Mbz9s6w
+ for <incoming@patchwork.ozlabs.org>; Tue, 23 Jun 2020 01:31:47 +1000 (AEST)
 Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
- by phobos.denx.de (Postfix) with ESMTP id 51B4181C78;
- Fri, 12 Jun 2020 18:47:28 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTP id 1284581DC9;
+ Mon, 22 Jun 2020 17:31:31 +0200 (CEST)
 Authentication-Results: phobos.denx.de;
  dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
 Received: by phobos.denx.de (Postfix, from userid 109)
- id D3D0681CD0; Fri, 12 Jun 2020 18:47:26 +0200 (CEST)
+ id 4096C81DE9; Mon, 22 Jun 2020 17:31:26 +0200 (CEST)
 X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
@@ -36,26 +38,26 @@ X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by phobos.denx.de (Postfix) with ESMTPS id A5E2A81C78
- for <u-boot@lists.denx.de>; Fri, 12 Jun 2020 18:47:23 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTPS id 7C1E981D0B
+ for <u-boot@lists.denx.de>; Mon, 22 Jun 2020 17:31:23 +0200 (CEST)
 Authentication-Results: phobos.denx.de;
  dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=nsaenzjulienne@suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx2.suse.de (Postfix) with ESMTP id 93F95AC64;
- Fri, 12 Jun 2020 16:47:26 +0000 (UTC)
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id 76161C1BD;
+ Mon, 22 Jun 2020 15:31:22 +0000 (UTC)
 From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-To: mbrugger@suse.com, u-boot@lists.denx.de, bmeng.cn@gmail.com, marex@denx.de,
- linux-kernel@vger.kernel.org
-Cc: sjg@chromium.org, m.szyprowski@samsung.com, s.nawrocki@samsung.com,
- mark.kettenis@xs4all.nl, Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Subject: [PATCH v4 1/5] arm: rpi: Add function to trigger VL805's firmware load
-Date: Fri, 12 Jun 2020 18:46:29 +0200
-Message-Id: <20200612164632.25648-2-nsaenzjulienne@suse.de>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200612164632.25648-1-nsaenzjulienne@suse.de>
-References: <20200612164632.25648-1-nsaenzjulienne@suse.de>
+To: mbrugger@suse.com, u-boot@lists.denx.de, bmeng.cn@gmail.com,
+ sjg@chromium.org, marex@denx.de
+Cc: m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Subject: [PATCH v5 1/4] arm: rpi: Add function to trigger VL805's firmware load
+Date: Mon, 22 Jun 2020 17:30:48 +0200
+Message-Id: <20200622153050.23193-2-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20200622153050.23193-1-nsaenzjulienne@suse.de>
+References: <20200622153050.23193-1-nsaenzjulienne@suse.de>
 MIME-Version: 1.0
 X-BeenThere: u-boot@lists.denx.de
 X-Mailman-Version: 2.1.30rc1
@@ -82,7 +84,7 @@ Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
 ---
 Changes since v1:
  - Rename function so it's not mistaken with regular firmware loading
----
+
  arch/arm/mach-bcm283x/include/mach/mbox.h | 13 +++++++
  arch/arm/mach-bcm283x/include/mach/msg.h  |  7 ++++
  arch/arm/mach-bcm283x/msg.c               | 46 +++++++++++++++++++++++
@@ -197,12 +199,13 @@ index 94b75283f8..347aece3cd 100644
 +}
 +
 
-From patchwork Fri Jun 12 16:46:30 2020
+From patchwork Mon Jun 22 15:30:49 2020
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 X-Patchwork-Submitter: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-X-Patchwork-Id: 1308409
+X-Patchwork-Id: 1314565
+X-Patchwork-Delegate: matthias.bgg@gmail.com
 Return-Path: <u-boot-bounces@lists.denx.de>
 X-Original-To: incoming@patchwork.ozlabs.org
 Delivered-To: patchwork-incoming@bilbo.ozlabs.org
@@ -216,17 +219,17 @@ Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (4096 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 49k69h2xb7z9s1x
- for <incoming@patchwork.ozlabs.org>; Sat, 13 Jun 2020 02:48:24 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 49rD1F72RYz9s6w
+ for <incoming@patchwork.ozlabs.org>; Tue, 23 Jun 2020 01:32:17 +1000 (AEST)
 Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
- by phobos.denx.de (Postfix) with ESMTP id 0365A81C78;
- Fri, 12 Jun 2020 18:47:41 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTP id 10E5481E20;
+ Mon, 22 Jun 2020 17:31:41 +0200 (CEST)
 Authentication-Results: phobos.denx.de;
  dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
 Received: by phobos.denx.de (Postfix, from userid 109)
- id 9031981CAF; Fri, 12 Jun 2020 18:47:32 +0200 (CEST)
+ id 9851E81DE9; Mon, 22 Jun 2020 17:31:30 +0200 (CEST)
 X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
@@ -235,26 +238,26 @@ X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by phobos.denx.de (Postfix) with ESMTPS id 4162B81C80
- for <u-boot@lists.denx.de>; Fri, 12 Jun 2020 18:47:24 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTPS id A2A2281D52
+ for <u-boot@lists.denx.de>; Mon, 22 Jun 2020 17:31:23 +0200 (CEST)
 Authentication-Results: phobos.denx.de;
  dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=nsaenzjulienne@suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx2.suse.de (Postfix) with ESMTP id 7CEA1AAD0;
- Fri, 12 Jun 2020 16:47:27 +0000 (UTC)
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id CFE01C204;
+ Mon, 22 Jun 2020 15:31:22 +0000 (UTC)
 From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-To: mbrugger@suse.com, u-boot@lists.denx.de, bmeng.cn@gmail.com, marex@denx.de,
- linux-kernel@vger.kernel.org
-Cc: sjg@chromium.org, m.szyprowski@samsung.com, s.nawrocki@samsung.com,
- mark.kettenis@xs4all.nl, Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Subject: [PATCH v4 2/5] reset: Add Raspberry Pi 4 firmware reset controller
-Date: Fri, 12 Jun 2020 18:46:30 +0200
-Message-Id: <20200612164632.25648-3-nsaenzjulienne@suse.de>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200612164632.25648-1-nsaenzjulienne@suse.de>
-References: <20200612164632.25648-1-nsaenzjulienne@suse.de>
+To: mbrugger@suse.com, u-boot@lists.denx.de, bmeng.cn@gmail.com,
+ sjg@chromium.org, marex@denx.de
+Cc: m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Subject: [PATCH v5 2/4] reset: Add Raspberry Pi 4 firmware reset controller
+Date: Mon, 22 Jun 2020 17:30:49 +0200
+Message-Id: <20200622153050.23193-3-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20200622153050.23193-1-nsaenzjulienne@suse.de>
+References: <20200622153050.23193-1-nsaenzjulienne@suse.de>
 MIME-Version: 1.0
 X-BeenThere: u-boot@lists.denx.de
 X-Mailman-Version: 2.1.30rc1
@@ -402,12 +405,13 @@ index 0000000000..1a4f4c7927
 +
 +#endif
 
-From patchwork Fri Jun 12 16:46:32 2020
+From patchwork Mon Jun 22 15:30:50 2020
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 X-Patchwork-Submitter: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-X-Patchwork-Id: 1308408
+X-Patchwork-Id: 1314564
+X-Patchwork-Delegate: matthias.bgg@gmail.com
 Return-Path: <u-boot-bounces@lists.denx.de>
 X-Original-To: incoming@patchwork.ozlabs.org
 Delivered-To: patchwork-incoming@bilbo.ozlabs.org
@@ -420,145 +424,19 @@ Authentication-Results: ozlabs.org;
 Received: from phobos.denx.de (phobos.denx.de
  [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 49k69X1mVGz9s1x
- for <incoming@patchwork.ozlabs.org>; Sat, 13 Jun 2020 02:48:16 +1000 (AEST)
-Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
- by phobos.denx.de (Postfix) with ESMTP id 1349E81D14;
- Fri, 12 Jun 2020 18:47:39 +0200 (CEST)
-Authentication-Results: phobos.denx.de;
- dmarc=none (p=none dis=none) header.from=suse.de
-Authentication-Results: phobos.denx.de;
- spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
-Received: by phobos.denx.de (Postfix, from userid 109)
- id 20B1781CCF; Fri, 12 Jun 2020 18:47:32 +0200 (CEST)
-X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
-X-Spam-Level: 
-X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
- RCVD_IN_MSPIKE_WL,SPF_HELO_NONE,URIBL_BLOCKED autolearn=ham
- autolearn_force=no version=3.4.2
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by phobos.denx.de (Postfix) with ESMTPS id DE87281CAF
- for <u-boot@lists.denx.de>; Fri, 12 Jun 2020 18:47:25 +0200 (CEST)
-Authentication-Results: phobos.denx.de;
- dmarc=none (p=none dis=none) header.from=suse.de
-Authentication-Results: phobos.denx.de;
- spf=pass smtp.mailfrom=nsaenzjulienne@suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx2.suse.de (Postfix) with ESMTP id 3C117ACCF;
- Fri, 12 Jun 2020 16:47:29 +0000 (UTC)
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-To: mbrugger@suse.com, u-boot@lists.denx.de, bmeng.cn@gmail.com, marex@denx.de,
- linux-kernel@vger.kernel.org
-Cc: sjg@chromium.org, m.szyprowski@samsung.com, s.nawrocki@samsung.com,
- mark.kettenis@xs4all.nl, Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Subject: [PATCH v4 4/5] dm: pci: Assign controller device node to root bridge
-Date: Fri, 12 Jun 2020 18:46:32 +0200
-Message-Id: <20200612164632.25648-5-nsaenzjulienne@suse.de>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200612164632.25648-1-nsaenzjulienne@suse.de>
-References: <20200612164632.25648-1-nsaenzjulienne@suse.de>
-MIME-Version: 1.0
-X-BeenThere: u-boot@lists.denx.de
-X-Mailman-Version: 2.1.30rc1
-Precedence: list
-List-Id: U-Boot discussion <u-boot.lists.denx.de>
-List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
- <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
-List-Archive: <https://lists.denx.de/pipermail/u-boot/>
-List-Post: <mailto:u-boot@lists.denx.de>
-List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
-List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
- <mailto:u-boot-request@lists.denx.de?subject=subscribe>
-Errors-To: u-boot-bounces@lists.denx.de
-Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
-X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
-X-Virus-Status: Clean
-
-There is no distinction in DT between the PCI controller device and the
-root bridge, whereas such distinction exists from dm's perspective. Make
-sure the root bridge ofnode is assigned to the controller's platform
-device node.
-
-This permits setups like this to work correctly:
-
-	pcie {
-		compatible = "...";
-		...
-		dev {
-			reg = <0 0 0 0 0>;
-			...
-		};
-	};
-
-Without this the dev node is assigned to the root bridge and the
-actual device search starts one level lower than expected.
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
----
- drivers/pci/pci-uclass.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/pci/pci-uclass.c b/drivers/pci/pci-uclass.c
-index 9ab3539a49..ea27e78465 100644
---- a/drivers/pci/pci-uclass.c
-+++ b/drivers/pci/pci-uclass.c
-@@ -762,7 +762,20 @@ static int pci_find_and_bind_driver(struct udevice *parent,
- 	str = strdup(name);
- 	if (!str)
- 		return -ENOMEM;
--	drv = bridge ? "pci_bridge_drv" : "pci_generic_drv";
-+
-+	if (bridge) {
-+		drv = "pci_bridge_drv";
-+
-+		/*
-+		 * If we're dealing with the root bridge pass the parent device
-+		 * node, as there isn't a distinction in device tree between
-+		 * that and the actual controller platform device.
-+		 */
-+		if (!PCI_MASK_BUS(bdf))
-+			node = parent->node;
-+	} else {
-+		drv = "pci_generic_drv";
-+	}
- 
- 	ret = device_bind_driver_to_node(parent, drv, str, node, devp);
- 	if (ret) {
-
-From patchwork Fri Jun 12 16:46:33 2020
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-Patchwork-Submitter: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-X-Patchwork-Id: 1308407
-Return-Path: <u-boot-bounces@lists.denx.de>
-X-Original-To: incoming@patchwork.ozlabs.org
-Delivered-To: patchwork-incoming@bilbo.ozlabs.org
-Authentication-Results: ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
- (client-ip=85.214.62.61; helo=phobos.denx.de;
- envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.de
-Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (4096 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 49k69F21wdz9s1x
- for <incoming@patchwork.ozlabs.org>; Sat, 13 Jun 2020 02:48:01 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 49rD115xyZz9sQx
+ for <incoming@patchwork.ozlabs.org>; Tue, 23 Jun 2020 01:32:05 +1000 (AEST)
 Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
- by phobos.denx.de (Postfix) with ESMTP id 3049C81CF2;
- Fri, 12 Jun 2020 18:47:37 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTP id 4627E81E0C;
+ Mon, 22 Jun 2020 17:31:39 +0200 (CEST)
 Authentication-Results: phobos.denx.de;
  dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
 Received: by phobos.denx.de (Postfix, from userid 109)
- id 0EDC381CF5; Fri, 12 Jun 2020 18:47:31 +0200 (CEST)
+ id 5837781E04; Mon, 22 Jun 2020 17:31:30 +0200 (CEST)
 X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
@@ -567,26 +445,26 @@ X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by phobos.denx.de (Postfix) with ESMTPS id 946DD81CCF
- for <u-boot@lists.denx.de>; Fri, 12 Jun 2020 18:47:26 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTPS id 0D9F281DC9
+ for <u-boot@lists.denx.de>; Mon, 22 Jun 2020 17:31:24 +0200 (CEST)
 Authentication-Results: phobos.denx.de;
  dmarc=none (p=none dis=none) header.from=suse.de
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=nsaenzjulienne@suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx2.suse.de (Postfix) with ESMTP id E69F8ACDB;
- Fri, 12 Jun 2020 16:47:29 +0000 (UTC)
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id 478B9C207;
+ Mon, 22 Jun 2020 15:31:23 +0000 (UTC)
 From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-To: mbrugger@suse.com, u-boot@lists.denx.de, bmeng.cn@gmail.com, marex@denx.de,
- linux-kernel@vger.kernel.org
-Cc: sjg@chromium.org, m.szyprowski@samsung.com, s.nawrocki@samsung.com,
- mark.kettenis@xs4all.nl, Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Subject: [PATCH v4 5/5] usb: xhci-pci: Add reset controller support
-Date: Fri, 12 Jun 2020 18:46:33 +0200
-Message-Id: <20200612164632.25648-6-nsaenzjulienne@suse.de>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200612164632.25648-1-nsaenzjulienne@suse.de>
-References: <20200612164632.25648-1-nsaenzjulienne@suse.de>
+To: mbrugger@suse.com, u-boot@lists.denx.de, bmeng.cn@gmail.com,
+ sjg@chromium.org, marex@denx.de
+Cc: m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Subject: [PATCH v5 3/4] configs: Enable support for reset controllers on RPi4
+Date: Mon, 22 Jun 2020 17:30:50 +0200
+Message-Id: <20200622153050.23193-4-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20200622153050.23193-1-nsaenzjulienne@suse.de>
+References: <20200622153050.23193-1-nsaenzjulienne@suse.de>
 MIME-Version: 1.0
 X-BeenThere: u-boot@lists.denx.de
 X-Mailman-Version: 2.1.30rc1
@@ -603,102 +481,11 @@ Errors-To: u-boot-bounces@lists.denx.de
 Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
 X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
 X-Virus-Status: Clean
-
-Some atypical users of xhci-pci might need to manually reset their xHCI
-controller before starting the HCD setup. Check if a reset controller
-device is available to the PCI bus and trigger a reset.
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
----
- drivers/usb/host/xhci-pci.c | 38 +++++++++++++++++++++++++++++++++++--
- 1 file changed, 36 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/usb/host/xhci-pci.c b/drivers/usb/host/xhci-pci.c
-index 9fb6d2f763..710524fbb1 100644
---- a/drivers/usb/host/xhci-pci.c
-+++ b/drivers/usb/host/xhci-pci.c
-@@ -10,9 +10,14 @@
- #include <init.h>
- #include <log.h>
- #include <pci.h>
-+#include <reset.h>
- #include <usb.h>
- #include <usb/xhci.h>
- 
-+struct xhci_pci_platdata {
-+	struct reset_ctl reset;
-+};
-+
- static void xhci_pci_init(struct udevice *dev, struct xhci_hccr **ret_hccr,
- 			  struct xhci_hcor **ret_hcor)
- {
-@@ -39,14 +44,43 @@ static void xhci_pci_init(struct udevice *dev, struct xhci_hccr **ret_hccr,
- 
- static int xhci_pci_probe(struct udevice *dev)
- {
-+	struct xhci_pci_platdata *plat = dev_get_platdata(dev);
- 	struct xhci_hccr *hccr;
- 	struct xhci_hcor *hcor;
-+	int ret;
-+
-+	ret = reset_get_by_index(dev, 0, &plat->reset);
-+	if (ret && ret != -ENOENT) {
-+		dev_err(dev, "failed to get reset\n");
-+		return ret;
-+	}
-+
-+	if (reset_valid(&plat->reset)) {
-+		ret = reset_assert(&plat->reset);
-+		if (ret)
-+			return ret;
-+
-+		ret = reset_deassert(&plat->reset);
-+		if (ret)
-+			return ret;
-+	}
- 
- 	xhci_pci_init(dev, &hccr, &hcor);
- 
- 	return xhci_register(dev, hccr, hcor);
- }
- 
-+static int xhci_pci_remove(struct udevice *dev)
-+{
-+	struct xhci_pci_platdata *plat = dev_get_platdata(dev);
-+
-+	xhci_deregister(dev);
-+	if (reset_valid(&plat->reset))
-+		reset_free(&plat->reset);
-+
-+	return 0;
-+}
-+
- static const struct udevice_id xhci_pci_ids[] = {
- 	{ .compatible = "xhci-pci" },
- 	{ }
-@@ -56,10 +90,10 @@ U_BOOT_DRIVER(xhci_pci) = {
- 	.name	= "xhci_pci",
- 	.id	= UCLASS_USB,
- 	.probe = xhci_pci_probe,
--	.remove = xhci_deregister,
-+	.remove = xhci_pci_remove,
- 	.of_match = xhci_pci_ids,
- 	.ops	= &xhci_usb_ops,
--	.platdata_auto_alloc_size = sizeof(struct usb_platdata),
-+	.platdata_auto_alloc_size = sizeof(struct xhci_pci_platdata),
- 	.priv_auto_alloc_size = sizeof(struct xhci_ctrl),
- 	.flags	= DM_FLAG_ALLOC_PRIV_DMA,
- };
-From f9dfaab9a697f7e1c6456bf7e05eaba39394688c Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Thu, 18 Jun 2020 14:24:13 +0100
-Subject: [PATCH] configs: Enable support for reset controllers on RPi4
 
 This is required in order to access the reset controller used to
 initialize the board's xHCI chip.
 
 Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
  configs/rpi_4_32b_defconfig | 1 +
  configs/rpi_4_defconfig     | 1 +
@@ -706,11 +493,11 @@ Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
  3 files changed, 3 insertions(+)
 
 diff --git a/configs/rpi_4_32b_defconfig b/configs/rpi_4_32b_defconfig
-index a36a249540..0df5c17d6e 100644
+index b0797373b5..00c8d963ab 100644
 --- a/configs/rpi_4_32b_defconfig
 +++ b/configs/rpi_4_32b_defconfig
-@@ -28,6 +28,7 @@ CONFIG_DM_ETH=y
- CONFIG_BCMGENET=y
+@@ -35,6 +35,7 @@ CONFIG_DM_PCI=y
+ CONFIG_PCI_BRCMSTB=y
  CONFIG_PINCTRL=y
  # CONFIG_PINCTRL_GENERIC is not set
 +CONFIG_DM_RESET=y
@@ -718,11 +505,11 @@ index a36a249540..0df5c17d6e 100644
  CONFIG_USB=y
  CONFIG_DM_USB=y
 diff --git a/configs/rpi_4_defconfig b/configs/rpi_4_defconfig
-index f0301dc8bc..7034eb439b 100644
+index 932b768164..c73eccb61c 100644
 --- a/configs/rpi_4_defconfig
 +++ b/configs/rpi_4_defconfig
-@@ -28,6 +28,7 @@ CONFIG_DM_ETH=y
- CONFIG_BCMGENET=y
+@@ -35,6 +35,7 @@ CONFIG_DM_PCI=y
+ CONFIG_PCI_BRCMSTB=y
  CONFIG_PINCTRL=y
  # CONFIG_PINCTRL_GENERIC is not set
 +CONFIG_DM_RESET=y
@@ -730,17 +517,191 @@ index f0301dc8bc..7034eb439b 100644
  CONFIG_USB=y
  CONFIG_DM_USB=y
 diff --git a/configs/rpi_arm64_defconfig b/configs/rpi_arm64_defconfig
-index d16c2388af..3663a17048 100644
+index 855afcf1cf..800b51e6f5 100644
 --- a/configs/rpi_arm64_defconfig
 +++ b/configs/rpi_arm64_defconfig
-@@ -28,6 +28,7 @@ CONFIG_DM_ETH=y
- CONFIG_BCMGENET=y
+@@ -32,6 +32,7 @@ CONFIG_DM_PCI=y
+ CONFIG_PCI_BRCMSTB=y
  CONFIG_PINCTRL=y
  # CONFIG_PINCTRL_GENERIC is not set
 +CONFIG_DM_RESET=y
  # CONFIG_REQUIRE_SERIAL_CONSOLE is not set
  CONFIG_USB=y
  CONFIG_DM_USB=y
--- 
-2.26.2
 
+From patchwork Mon Jun 22 15:30:51 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+X-Patchwork-Id: 1314563
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 49rD0q0fqDz9s6w
+ for <incoming@patchwork.ozlabs.org>; Tue, 23 Jun 2020 01:31:55 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id CE84C81DE7;
+ Mon, 22 Jun 2020 17:31:37 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id EFDD181DD8; Mon, 22 Jun 2020 17:31:29 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_NONE,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 86E4581DD8
+ for <u-boot@lists.denx.de>; Mon, 22 Jun 2020 17:31:24 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=nsaenzjulienne@suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id C3DADC1D5;
+ Mon, 22 Jun 2020 15:31:23 +0000 (UTC)
+From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+To: mbrugger@suse.com, u-boot@lists.denx.de, bmeng.cn@gmail.com,
+ sjg@chromium.org, marex@denx.de
+Cc: m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Subject: [PATCH v5 4/4] usb: xhci: Add reset controller support
+Date: Mon, 22 Jun 2020 17:30:51 +0200
+Message-Id: <20200622153050.23193-5-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20200622153050.23193-1-nsaenzjulienne@suse.de>
+References: <20200622153050.23193-1-nsaenzjulienne@suse.de>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.30rc1
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+Some atypical users of xhci might need to manually reset their xHCI
+controller before starting the HCD setup. Check if a reset controller
+device is available to the PCI bus and trigger a reset.
+
+Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+---
+
+Changes since v3:
+ - Move reset support to xchi core
+
+ drivers/usb/host/xhci-mem.c |  2 ++
+ drivers/usb/host/xhci.c     | 33 +++++++++++++++++++++++++++++++++
+ include/usb/xhci.h          |  2 ++
+ 3 files changed, 37 insertions(+)
+
+diff --git a/drivers/usb/host/xhci-mem.c b/drivers/usb/host/xhci-mem.c
+index f446520528..108f4bd8cf 100644
+--- a/drivers/usb/host/xhci-mem.c
++++ b/drivers/usb/host/xhci-mem.c
+@@ -180,6 +180,8 @@ void xhci_cleanup(struct xhci_ctrl *ctrl)
+ 	xhci_free_virt_devices(ctrl);
+ 	free(ctrl->erst.entries);
+ 	free(ctrl->dcbaa);
++	if (reset_valid(&ctrl->reset))
++		reset_free(&ctrl->reset);
+ 	memset(ctrl, '\0', sizeof(struct xhci_ctrl));
+ }
+ 
+diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
+index ebd2954571..03b41cc855 100644
+--- a/drivers/usb/host/xhci.c
++++ b/drivers/usb/host/xhci.c
+@@ -190,6 +190,35 @@ static int xhci_start(struct xhci_hcor *hcor)
+ 	return ret;
+ }
+ 
++/**
++ * Resets XHCI Hardware
++ *
++ * @param ctrl	pointer to host controller
++ * @return 0 if OK, or a negative error code.
++ */
++static int xhci_reset_hw(struct xhci_ctrl *ctrl)
++{
++	int ret;
++
++	ret = reset_get_by_index(ctrl->dev, 0, &ctrl->reset);
++	if (ret && ret != -ENOENT) {
++		dev_err(ctrl->dev, "failed to get reset\n");
++		return ret;
++	}
++
++	if (reset_valid(&ctrl->reset)) {
++		ret = reset_assert(&ctrl->reset);
++		if (ret)
++			return ret;
++
++		ret = reset_deassert(&ctrl->reset);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
+ /**
+  * Resets the XHCI Controller
+  *
+@@ -1508,6 +1537,10 @@ int xhci_register(struct udevice *dev, struct xhci_hccr *hccr,
+ 
+ 	ctrl->dev = dev;
+ 
++	ret = xhci_reset_hw(ctrl);
++	if (ret)
++		goto err;
++
+ 	/*
+ 	 * XHCI needs to issue a Address device command to setup
+ 	 * proper device context structures, before it can interact
+diff --git a/include/usb/xhci.h b/include/usb/xhci.h
+index 1170c0ac69..7d34103fd5 100644
+--- a/include/usb/xhci.h
++++ b/include/usb/xhci.h
+@@ -16,6 +16,7 @@
+ #ifndef HOST_XHCI_H_
+ #define HOST_XHCI_H_
+ 
++#include <reset.h>
+ #include <asm/types.h>
+ #include <asm/cache.h>
+ #include <asm/io.h>
+@@ -1209,6 +1210,7 @@ struct xhci_ctrl {
+ #if CONFIG_IS_ENABLED(DM_USB)
+ 	struct udevice *dev;
+ #endif
++	struct reset_ctl reset;
+ 	struct xhci_hccr *hccr;	/* R/O registers, not need for volatile */
+ 	struct xhci_hcor *hcor;
+ 	struct xhci_doorbell_array *dba;
