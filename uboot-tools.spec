@@ -1,9 +1,9 @@
-%global candidate rc5
+#global candidate rc5
 %global _default_patch_fuzz 2
 
 Name:      uboot-tools
 Version:   2020.07
-Release:   0.5%{?candidate:.%{candidate}}%{?dist}
+Release:   1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -24,8 +24,6 @@ Patch2:    uefi-use-Fedora-specific-path-name.patch
 # Board fixes and enablement
 Patch4:    usb-kbd-fixes.patch
 Patch5:    dragonboard-fixes.patch
-# mmc fix
-Patch6:    mmc-sdhci-Fix-HISPD-bit-handling.patch
 
 # Tegra improvements
 Patch10:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
@@ -252,6 +250,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Jul 06 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.07-1
+- 2020.07 GA
+
 * Tue Jun 23 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.07-0.5.rc5
 - 2020.07 RC5
 
