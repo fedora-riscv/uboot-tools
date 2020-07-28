@@ -1,15 +1,403 @@
-From 2c213379d9ec786480a655f8c5687b2df376017f Mon Sep 17 00:00:00 2001
+From 6e5d771060dff5350e5940b7e457884b47a560ac Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 10 Mar 2020 12:27:15 +0000
-Subject: [PATCH 1/9] arm: dts: AllWinner: sync sun50i-a64.dtsi to 5.6-rc1
+Date: Thu, 9 Jul 2020 12:20:53 +0100
+Subject: [PATCH 1/8] dt-bindings: clk: sync sun50i-a64-ccu.h to linux 5.8-rc1
+
+Sync the clock bindings for the Allwinner A64 to Linux
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- arch/arm/dts/sun50i-a64.dtsi | 472 ++++++++++++++++++++++++++++-------
- 1 file changed, 387 insertions(+), 85 deletions(-)
+ include/dt-bindings/clock/sun50i-a64-ccu.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/include/dt-bindings/clock/sun50i-a64-ccu.h b/include/dt-bindings/clock/sun50i-a64-ccu.h
+index d66432c6e6..318eb15c41 100644
+--- a/include/dt-bindings/clock/sun50i-a64-ccu.h
++++ b/include/dt-bindings/clock/sun50i-a64-ccu.h
+@@ -43,8 +43,10 @@
+ #ifndef _DT_BINDINGS_CLK_SUN50I_A64_H_
+ #define _DT_BINDINGS_CLK_SUN50I_A64_H_
+ 
++#define CLK_PLL_VIDEO0		7
+ #define CLK_PLL_PERIPH0		11
+ 
++#define CLK_CPUX		21
+ #define CLK_BUS_MIPI_DSI	28
+ #define CLK_BUS_CE		29
+ #define CLK_BUS_DMA		30
+@@ -129,7 +131,7 @@
+ #define CLK_AVS			109
+ #define CLK_HDMI		110
+ #define CLK_HDMI_DDC		111
+-
++#define CLK_MBUS		112
+ #define CLK_DSI_DPHY		113
+ #define CLK_GPU			114
+ 
+-- 
+2.26.2
+
+From 274dff055e80778277860f72a903c01ef33f87c7 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Thu, 9 Jul 2020 12:29:15 +0100
+Subject: [PATCH 2/8] dt-bindings: leds: sync leds common.h to linux from
+ 5.8-rc1
+
+Sync the leds common.h to the latest Linux version.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ include/dt-bindings/leds/common.h | 36 ++++++++++++++++++++++---------
+ 1 file changed, 26 insertions(+), 10 deletions(-)
+
+diff --git a/include/dt-bindings/leds/common.h b/include/dt-bindings/leds/common.h
+index 9e1256a7c1..0ce7dfc00d 100644
+--- a/include/dt-bindings/leds/common.h
++++ b/include/dt-bindings/leds/common.h
+@@ -6,6 +6,7 @@
+  * Author: Jacek Anaszewski <j.anaszewski@samsung.com>
+  *
+  * Copyright (C) 2019 Jacek Anaszewski <jacek.anaszewski@gmail.com>
++ * Copyright (C) 2020 Pavel Machek <pavel@ucw.cz>
+  */
+ 
+ #ifndef __DT_BINDINGS_LEDS_H
+@@ -32,16 +33,38 @@
+ #define LED_COLOR_ID_MAX	8
+ 
+ /* Standard LED functions */
++/* Keyboard LEDs, usually it would be input4::capslock etc. */
++/*   Obsolete equivalent: "shift-key-light" */
++#define LED_FUNCTION_CAPSLOCK "capslock"
++#define LED_FUNCTION_SCROLLLOCK "scrolllock"
++#define LED_FUNCTION_NUMLOCK "numlock"
++/*   Obsolete equivalents: "tpacpi::thinklight" (IBM/Lenovo Thinkpads),
++     "lp5523:kb{1,2,3,4,5,6}" (Nokia N900) */
++#define LED_FUNCTION_KBD_BACKLIGHT "kbd_backlight"
++
++/* System LEDs, usually found on system body.
++   platform::mute (etc) is sometimes seen, :mute would be better */
++#define LED_FUNCTION_POWER "power"
++#define LED_FUNCTION_DISK "disk"
++
++/*   Obsolete: "platform:*:charging" (allwinner sun50i) */
++#define LED_FUNCTION_CHARGING "charging"
++/*   Used RGB notification LEDs common on phones.
++     Obsolete equivalents: "status-led:{red,green,blue}" (Motorola Droid 4),
++     "lp5523:{r,g,b}" (Nokia N900) */
++#define LED_FUNCTION_STATUS "status"
++
++#define LED_FUNCTION_MICMUTE "micmute"
++#define LED_FUNCTION_MUTE "mute"
++
++/* Miscelleaus functions. Use functions above if you can. */
+ #define LED_FUNCTION_ACTIVITY "activity"
+ #define LED_FUNCTION_ALARM "alarm"
+ #define LED_FUNCTION_BACKLIGHT "backlight"
+ #define LED_FUNCTION_BLUETOOTH "bluetooth"
+ #define LED_FUNCTION_BOOT "boot"
+ #define LED_FUNCTION_CPU "cpu"
+-#define LED_FUNCTION_CAPSLOCK "capslock"
+-#define LED_FUNCTION_CHARGING "charging"
+ #define LED_FUNCTION_DEBUG "debug"
+-#define LED_FUNCTION_DISK "disk"
+ #define LED_FUNCTION_DISK_ACTIVITY "disk-activity"
+ #define LED_FUNCTION_DISK_ERR "disk-err"
+ #define LED_FUNCTION_DISK_READ "disk-read"
+@@ -50,21 +73,14 @@
+ #define LED_FUNCTION_FLASH "flash"
+ #define LED_FUNCTION_HEARTBEAT "heartbeat"
+ #define LED_FUNCTION_INDICATOR "indicator"
+-#define LED_FUNCTION_KBD_BACKLIGHT "kbd_backlight"
+ #define LED_FUNCTION_LAN "lan"
+ #define LED_FUNCTION_MAIL "mail"
+ #define LED_FUNCTION_MTD "mtd"
+-#define LED_FUNCTION_MICMUTE "micmute"
+-#define LED_FUNCTION_MUTE "mute"
+-#define LED_FUNCTION_NUMLOCK "numlock"
+ #define LED_FUNCTION_PANIC "panic"
+ #define LED_FUNCTION_PROGRAMMING "programming"
+-#define LED_FUNCTION_POWER "power"
+ #define LED_FUNCTION_RX "rx"
+ #define LED_FUNCTION_SD "sd"
+-#define LED_FUNCTION_SCROLLLOCK "scrolllock"
+ #define LED_FUNCTION_STANDBY "standby"
+-#define LED_FUNCTION_STATUS "status"
+ #define LED_FUNCTION_TORCH "torch"
+ #define LED_FUNCTION_TX "tx"
+ #define LED_FUNCTION_USB "usb"
+-- 
+2.26.2
+
+From 7010e7d2b19d2ded674e376855d2716b7cd421b7 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Fri, 10 Jul 2020 12:46:11 +0100
+Subject: [PATCH 3/8] dt-bindings: clk/reset: sync updated bindings for
+ Allwinner DE2 display engine
+
+Sync the clock and reset bindings for the Allwinner DE2 display engine to Linux 5.8-rc1.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ include/dt-bindings/clock/sun8i-de2.h | 3 +++
+ include/dt-bindings/reset/sun8i-de2.h | 1 +
+ 2 files changed, 4 insertions(+)
+
+diff --git a/include/dt-bindings/clock/sun8i-de2.h b/include/dt-bindings/clock/sun8i-de2.h
+index 3bed63b524..7768f73b05 100644
+--- a/include/dt-bindings/clock/sun8i-de2.h
++++ b/include/dt-bindings/clock/sun8i-de2.h
+@@ -15,4 +15,7 @@
+ #define CLK_MIXER1		7
+ #define CLK_WB			8
+ 
++#define CLK_BUS_ROT		9
++#define CLK_ROT			10
++
+ #endif /* _DT_BINDINGS_CLOCK_SUN8I_DE2_H_ */
+diff --git a/include/dt-bindings/reset/sun8i-de2.h b/include/dt-bindings/reset/sun8i-de2.h
+index 9526017432..1c36a6ac86 100644
+--- a/include/dt-bindings/reset/sun8i-de2.h
++++ b/include/dt-bindings/reset/sun8i-de2.h
+@@ -10,5 +10,6 @@
+ #define RST_MIXER0	0
+ #define RST_MIXER1	1
+ #define RST_WB		2
++#define RST_ROT		3
+ 
+ #endif /* _DT_BINDINGS_RESET_SUN8I_DE2_H_ */
+-- 
+2.26.2
+
+From bdbf5f21343571af989754c908299854e81f44dd Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Thu, 9 Jul 2020 12:24:41 +0100
+Subject: [PATCH 4/8] arm: dts: sync axp803.dtsi from linux 5.8-rc1
+
+Sync the Allwinner axp803 device tree to the latest upstream Linux.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ arch/arm/dts/axp803.dtsi | 82 ++++++++++++++++++++--------------------
+ 1 file changed, 41 insertions(+), 41 deletions(-)
+
+diff --git a/arch/arm/dts/axp803.dtsi b/arch/arm/dts/axp803.dtsi
+index e5eae8bafc..10e9186a76 100644
+--- a/arch/arm/dts/axp803.dtsi
++++ b/arch/arm/dts/axp803.dtsi
+@@ -1,44 +1,5 @@
+-/*
+- * Copyright 2017 Icenowy Zheng <icenowy@aosc.xyz>
+- *
+- * This file is dual-licensed: you can use it either under the terms
+- * of the GPL or the X11 license, at your option. Note that this dual
+- * licensing only applies to this file, and not this project as a
+- * whole.
+- *
+- *  a) This file is free software; you can redistribute it and/or
+- *     modify it under the terms of the GNU General Public License as
+- *     published by the Free Software Foundation; either version 2 of the
+- *     License, or (at your option) any later version.
+- *
+- *     This file is distributed in the hope that it will be useful,
+- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- *     GNU General Public License for more details.
+- *
+- * Or, alternatively,
+- *
+- *  b) Permission is hereby granted, free of charge, to any person
+- *     obtaining a copy of this software and associated documentation
+- *     files (the "Software"), to deal in the Software without
+- *     restriction, including without limitation the rights to use,
+- *     copy, modify, merge, publish, distribute, sublicense, and/or
+- *     sell copies of the Software, and to permit persons to whom the
+- *     Software is furnished to do so, subject to the following
+- *     conditions:
+- *
+- *     The above copyright notice and this permission notice shall be
+- *     included in all copies or substantial portions of the Software.
+- *
+- *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+- *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+- *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+- *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+- *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+- *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+- *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+- *     OTHER DEALINGS IN THE SOFTWARE.
+- */
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++// Copyright 2017 Icenowy Zheng <icenowy@aosc.xyz>
+ 
+ /*
+  * AXP803 Integrated Power Management Chip
+@@ -49,6 +10,39 @@
+ 	interrupt-controller;
+ 	#interrupt-cells = <1>;
+ 
++	ac_power_supply: ac-power-supply {
++		compatible = "x-powers,axp803-ac-power-supply",
++			     "x-powers,axp813-ac-power-supply";
++		status = "disabled";
++	};
++
++	axp_adc: adc {
++		compatible = "x-powers,axp803-adc", "x-powers,axp813-adc";
++		#io-channel-cells = <1>;
++	};
++
++	axp_gpio: gpio {
++		compatible = "x-powers,axp803-gpio", "x-powers,axp813-gpio";
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio0_ldo: gpio0-ldo {
++			pins = "GPIO0";
++			function = "ldo";
++		};
++
++		gpio1_ldo: gpio1-ldo {
++			pins = "GPIO1";
++			function = "ldo";
++		};
++	};
++
++	battery_power_supply: battery-power-supply {
++		compatible = "x-powers,axp803-battery-power-supply",
++			     "x-powers,axp813-battery-power-supply";
++		status = "disabled";
++	};
++
+ 	regulators {
+ 		/* Default work frequency for buck regulators */
+ 		x-powers,dcdc-freq = <3000>;
+@@ -152,4 +146,10 @@
+ 			status = "disabled";
+ 		};
+ 	};
++
++	usb_power_supply: usb-power-supply {
++		compatible = "x-powers,axp803-usb-power-supply",
++			     "x-powers,axp813-usb-power-supply";
++		status = "disabled";
++	};
+ };
+-- 
+2.26.2
+
+From e0f7e9ce1a8a889bf7a1c5842700f0cb368bc81b Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Thu, 9 Jul 2020 12:26:34 +0100
+Subject: [PATCH 5/8] arm: dts: Add new sun50i-a64-cpu-opp.dtsi from Linux
+ 5.8-rc1
+
+Sync the Allwinner A64 CPU operating points dtsi from Linux.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ arch/arm/dts/sun50i-a64-cpu-opp.dtsi | 75 ++++++++++++++++++++++++++++
+ 1 file changed, 75 insertions(+)
+ create mode 100644 arch/arm/dts/sun50i-a64-cpu-opp.dtsi
+
+diff --git a/arch/arm/dts/sun50i-a64-cpu-opp.dtsi b/arch/arm/dts/sun50i-a64-cpu-opp.dtsi
+new file mode 100644
+index 0000000000..578c37490d
+--- /dev/null
++++ b/arch/arm/dts/sun50i-a64-cpu-opp.dtsi
+@@ -0,0 +1,75 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2020 Vasily khoruzhick <anarsoul@gmail.com>
++ */
++
++/ {
++	cpu0_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp-648000000 {
++			opp-hz = /bits/ 64 <648000000>;
++			opp-microvolt = <1040000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp-816000000 {
++			opp-hz = /bits/ 64 <816000000>;
++			opp-microvolt = <1100000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp-912000000 {
++			opp-hz = /bits/ 64 <912000000>;
++			opp-microvolt = <1120000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp-960000000 {
++			opp-hz = /bits/ 64 <960000000>;
++			opp-microvolt = <1160000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp-1008000000 {
++			opp-hz = /bits/ 64 <1008000000>;
++			opp-microvolt = <1200000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp-1056000000 {
++			opp-hz = /bits/ 64 <1056000000>;
++			opp-microvolt = <1240000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp-1104000000 {
++			opp-hz = /bits/ 64 <1104000000>;
++			opp-microvolt = <1260000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++
++		opp-1152000000 {
++			opp-hz = /bits/ 64 <1152000000>;
++			opp-microvolt = <1300000>;
++			clock-latency-ns = <244144>; /* 8 32k periods */
++		};
++	};
++};
++
++&cpu0 {
++	operating-points-v2 = <&cpu0_opp_table>;
++};
++
++&cpu1 {
++	operating-points-v2 = <&cpu0_opp_table>;
++};
++
++&cpu2 {
++	operating-points-v2 = <&cpu0_opp_table>;
++};
++
++&cpu3 {
++	operating-points-v2 = <&cpu0_opp_table>;
++};
+-- 
+2.26.2
+
+From b077a5962ba631e198d42c14516426b878c157eb Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Fri, 10 Jul 2020 12:39:21 +0100
+Subject: [PATCH 6/8] arm: dts: Sync the sun50i-a64.dtsi from Linux 5.8-rc1
+
+Sync the Allwinner A64 sun50i-a64.dtsi from Linux.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ arch/arm/dts/sun50i-a64.dtsi | 532 ++++++++++++++++++++++++++++-------
+ 1 file changed, 434 insertions(+), 98 deletions(-)
 
 diff --git a/arch/arm/dts/sun50i-a64.dtsi b/arch/arm/dts/sun50i-a64.dtsi
-index ff41abc96a..862b47dc9d 100644
+index ff41abc96a..8dfbcd1440 100644
 --- a/arch/arm/dts/sun50i-a64.dtsi
 +++ b/arch/arm/dts/sun50i-a64.dtsi
 @@ -1,46 +1,7 @@
@@ -147,12 +535,14 @@ index ff41abc96a..862b47dc9d 100644
  	};
  
  	psci {
-@@ -155,6 +130,30 @@
+@@ -155,26 +130,33 @@
  		method = "smc";
  	};
  
+-	sound_spdif {
 +	sound: sound {
-+		compatible = "simple-audio-card";
+ 		compatible = "simple-audio-card";
+-		simple-audio-card,name = "On-board SPDIF";
 +		simple-audio-card,name = "sun50i-a64-audio";
 +		simple-audio-card,format = "i2s";
 +		simple-audio-card,frame-master = <&cpudai>;
@@ -165,28 +555,32 @@ index ff41abc96a..862b47dc9d 100644
 +				"AIF1 Slot 0 Left ADC", "Left ADC",
 +				"AIF1 Slot 0 Right ADC", "Right ADC";
 +		status = "disabled";
-+
+ 
+-		simple-audio-card,cpu {
+-			sound-dai = <&spdif>;
 +		cpudai: simple-audio-card,cpu {
 +			sound-dai = <&dai>;
-+		};
-+
+ 		};
+ 
+-		simple-audio-card,codec {
+-			sound-dai = <&spdif_out>;
 +		link_codec: simple-audio-card,codec {
 +			sound-dai = <&codec>;
-+		};
-+	};
-+
- 	sound_spdif {
- 		compatible = "simple-audio-card";
- 		simple-audio-card,name = "On-board SPDIF";
-@@ -175,6 +174,7 @@
+ 		};
+ 	};
  
+-	spdif_out: spdif-out {
+-		#sound-dai-cells = <0>;
+-		compatible = "linux,spdif-dit";
+-	};
+-
  	timer {
  		compatible = "arm,armv8-timer";
 +		allwinner,erratum-unknown1;
  		interrupts = <GIC_PPI 13
  			(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>,
  			     <GIC_PPI 14
-@@ -185,13 +185,76 @@
+@@ -185,13 +167,76 @@
  			(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
  	};
  
@@ -264,14 +658,16 @@ index ff41abc96a..862b47dc9d 100644
  			compatible = "allwinner,sun50i-a64-de2";
  			reg = <0x1000000 0x400000>;
  			allwinner,sram = <&de2_sram 1>;
-@@ -202,10 +265,10 @@
+@@ -201,16 +246,28 @@
+ 
  			display_clocks: clock@0 {
  				compatible = "allwinner,sun50i-a64-de2-clk";
- 				reg = <0x0 0x100000>;
+-				reg = <0x0 0x100000>;
 -				clocks = <&ccu CLK_DE>,
 -					 <&ccu CLK_BUS_DE>;
 -				clock-names = "mod",
 -					      "bus";
++				reg = <0x0 0x10000>;
 +				clocks = <&ccu CLK_BUS_DE>,
 +					 <&ccu CLK_DE>;
 +				clock-names = "bus",
@@ -279,7 +675,24 @@ index ff41abc96a..862b47dc9d 100644
  				resets = <&ccu RST_BUS_DE>;
  				#clock-cells = <1>;
  				#reset-cells = <1>;
-@@ -225,11 +288,19 @@
+ 			};
+ 
++			rotate: rotate@20000 {
++				compatible = "allwinner,sun50i-a64-de2-rotate",
++					     "allwinner,sun8i-a83t-de2-rotate";
++				reg = <0x20000 0x10000>;
++				interrupts = <GIC_SPI 96 IRQ_TYPE_LEVEL_HIGH>;
++				clocks = <&display_clocks CLK_BUS_ROT>,
++					 <&display_clocks CLK_ROT>;
++				clock-names = "bus",
++					      "mod";
++				resets = <&display_clocks RST_ROT>;
++			};
++
+ 			mixer0: mixer@100000 {
+ 				compatible = "allwinner,sun50i-a64-de2-mixer-0";
+ 				reg = <0x100000 0x100000>;
+@@ -225,11 +282,19 @@
  					#size-cells = <0>;
  
  					mixer0_out: port@1 {
@@ -300,7 +713,7 @@ index ff41abc96a..862b47dc9d 100644
  					};
  				};
  			};
-@@ -248,9 +319,17 @@
+@@ -248,9 +313,17 @@
  					#size-cells = <0>;
  
  					mixer1_out: port@1 {
@@ -319,7 +732,7 @@ index ff41abc96a..862b47dc9d 100644
  							remote-endpoint = <&tcon1_in_mixer1>;
  						};
  					};
-@@ -259,8 +338,7 @@
+@@ -259,8 +332,7 @@
  		};
  
  		syscon: syscon@1c00000 {
@@ -329,7 +742,7 @@ index ff41abc96a..862b47dc9d 100644
  			reg = <0x01c00000 0x1000>;
  			#address-cells = <1>;
  			#size-cells = <1>;
-@@ -278,6 +356,20 @@
+@@ -278,6 +350,20 @@
  					reg = <0x0000 0x28000>;
  				};
  			};
@@ -350,7 +763,7 @@ index ff41abc96a..862b47dc9d 100644
  		};
  
  		dma: dma-controller@1c02000 {
-@@ -299,6 +391,7 @@
+@@ -299,6 +385,7 @@
  			clocks = <&ccu CLK_BUS_TCON0>, <&ccu CLK_TCON0>;
  			clock-names = "ahb", "tcon-ch0";
  			clock-output-names = "tcon-pixel-clock";
@@ -358,7 +771,7 @@ index ff41abc96a..862b47dc9d 100644
  			resets = <&ccu RST_BUS_TCON0>, <&ccu RST_BUS_LVDS>;
  			reset-names = "lcd", "lvds";
  
-@@ -315,12 +408,23 @@
+@@ -315,12 +402,23 @@
  						reg = <0>;
  						remote-endpoint = <&mixer0_out_tcon0>;
  					};
@@ -382,7 +795,7 @@ index ff41abc96a..862b47dc9d 100644
  				};
  			};
  		};
-@@ -340,9 +444,17 @@
+@@ -340,9 +438,17 @@
  				#size-cells = <0>;
  
  				tcon1_in: port@0 {
@@ -401,7 +814,7 @@ index ff41abc96a..862b47dc9d 100644
  						remote-endpoint = <&mixer1_out_tcon1>;
  					};
  				};
-@@ -360,6 +472,17 @@
+@@ -360,6 +466,17 @@
  			};
  		};
  
@@ -419,7 +832,7 @@ index ff41abc96a..862b47dc9d 100644
  		mmc0: mmc@1c0f000 {
  			compatible = "allwinner,sun50i-a64-mmc";
  			reg = <0x01c0f000 0x1000>;
-@@ -405,6 +528,21 @@
+@@ -405,6 +522,31 @@
  		sid: eeprom@1c14000 {
  			compatible = "allwinner,sun50i-a64-sid";
  			reg = <0x1c14000 0x400>;
@@ -438,10 +851,20 @@ index ff41abc96a..862b47dc9d 100644
 +			clocks = <&ccu CLK_BUS_CE>, <&ccu CLK_CE>;
 +			clock-names = "bus", "mod";
 +			resets = <&ccu RST_BUS_CE>;
++		};
++
++		msgbox: mailbox@1c17000 {
++			compatible = "allwinner,sun50i-a64-msgbox",
++				     "allwinner,sun6i-a31-msgbox";
++			reg = <0x01c17000 0x1000>;
++			clocks = <&ccu CLK_BUS_MSGBOX>;
++			resets = <&ccu RST_BUS_MSGBOX>;
++			interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
++			#mbox-cells = <1>;
  		};
  
  		usb_otg: usb@1c19000 {
-@@ -417,6 +555,7 @@
+@@ -417,6 +559,7 @@
  			phys = <&usbphy 0>;
  			phy-names = "usb";
  			extcon = <&usbphy 0>;
@@ -449,7 +872,7 @@ index ff41abc96a..862b47dc9d 100644
  			status = "disabled";
  		};
  
-@@ -491,7 +630,7 @@
+@@ -491,7 +634,7 @@
  		ccu: clock@1c20000 {
  			compatible = "allwinner,sun50i-a64-ccu";
  			reg = <0x01c20000 0x400>;
@@ -458,7 +881,7 @@ index ff41abc96a..862b47dc9d 100644
  			clock-names = "hosc", "losc";
  			#clock-cells = <1>;
  			#reset-cells = <1>;
-@@ -503,22 +642,45 @@
+@@ -503,22 +646,50 @@
  			interrupts = <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>,
  				     <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>,
  				     <GIC_SPI 21 IRQ_TYPE_LEVEL_HIGH>;
@@ -494,6 +917,11 @@ index ff41abc96a..862b47dc9d 100644
  				function = "i2c1";
  			};
  
++			i2c2_pins: i2c2-pins {
++				pins = "PE14", "PE15";
++				function = "i2c2";
++			};
++
 +			/omit-if-no-ref/
 +			lcd_rgb666_pins: lcd-rgb666-pins {
 +				pins = "PD0", "PD1", "PD2", "PD3", "PD4",
@@ -507,7 +935,7 @@ index ff41abc96a..862b47dc9d 100644
  			mmc0_pins: mmc0-pins {
  				pins = "PF0", "PF1", "PF2", "PF3",
  				       "PF4", "PF5";
-@@ -551,19 +713,19 @@
+@@ -551,19 +722,19 @@
  				bias-pull-up;
  			};
  
@@ -530,7 +958,7 @@ index ff41abc96a..862b47dc9d 100644
  				pins = "PD8", "PD9", "PD10", "PD11", "PD12",
  				       "PD13", "PD15", "PD16", "PD17", "PD18",
  				       "PD19", "PD20", "PD21", "PD22", "PD23";
-@@ -571,17 +733,17 @@
+@@ -571,17 +742,17 @@
  				drive-strength = <40>;
  			};
  
@@ -551,7 +979,7 @@ index ff41abc96a..862b47dc9d 100644
  				pins = "PD0", "PD1", "PD2", "PD3";
  				function = "spi1";
  			};
-@@ -591,12 +753,12 @@
+@@ -591,12 +762,12 @@
  				function = "uart0";
  			};
  
@@ -566,7 +994,7 @@ index ff41abc96a..862b47dc9d 100644
  				pins = "PG8", "PG9";
  				function = "uart1";
  			};
-@@ -638,6 +800,14 @@
+@@ -638,6 +809,14 @@
  			status = "disabled";
  		};
  
@@ -581,7 +1009,7 @@ index ff41abc96a..862b47dc9d 100644
  		i2s0: i2s@1c22000 {
  			#sound-dai-cells = <0>;
  			compatible = "allwinner,sun50i-a64-i2s",
-@@ -666,6 +836,41 @@
+@@ -666,6 +845,41 @@
  			status = "disabled";
  		};
  
@@ -623,7 +1051,7 @@ index ff41abc96a..862b47dc9d 100644
  		uart0: serial@1c28000 {
  			compatible = "snps,dw-apb-uart";
  			reg = <0x01c28000 0x400>;
-@@ -727,6 +932,8 @@
+@@ -727,6 +941,8 @@
  			interrupts = <GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>;
  			clocks = <&ccu CLK_BUS_I2C0>;
  			resets = <&ccu RST_BUS_I2C0>;
@@ -632,7 +1060,7 @@ index ff41abc96a..862b47dc9d 100644
  			status = "disabled";
  			#address-cells = <1>;
  			#size-cells = <0>;
-@@ -738,6 +945,8 @@
+@@ -738,6 +954,8 @@
  			interrupts = <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>;
  			clocks = <&ccu CLK_BUS_I2C1>;
  			resets = <&ccu RST_BUS_I2C1>;
@@ -641,7 +1069,22 @@ index ff41abc96a..862b47dc9d 100644
  			status = "disabled";
  			#address-cells = <1>;
  			#size-cells = <0>;
-@@ -808,6 +1017,28 @@
+@@ -749,12 +967,13 @@
+ 			interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&ccu CLK_BUS_I2C2>;
+ 			resets = <&ccu RST_BUS_I2C2>;
++			pinctrl-names = "default";
++			pinctrl-0 = <&i2c2_pins>;
+ 			status = "disabled";
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 		};
+ 
+-
+ 		spi0: spi@1c68000 {
+ 			compatible = "allwinner,sun8i-h3-spi";
+ 			reg = <0x01c68000 0x1000>;
+@@ -808,6 +1027,28 @@
  			};
  		};
  
@@ -670,10 +1113,20 @@ index ff41abc96a..862b47dc9d 100644
  		gic: interrupt-controller@1c81000 {
  			compatible = "arm,gic-400";
  			reg = <0x01c81000 0x1000>,
-@@ -830,6 +1061,51 @@
+@@ -830,6 +1071,75 @@
  			status = "disabled";
  		};
  
++		mbus: dram-controller@1c62000 {
++			compatible = "allwinner,sun50i-a64-mbus";
++			reg = <0x01c62000 0x1000>;
++			clocks = <&ccu 112>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++			dma-ranges = <0x00000000 0x40000000 0xc0000000>;
++			#interconnect-cells = <1>;
++		};
++
 +		csi: csi@1cb0000 {
 +			compatible = "allwinner,sun50i-a64-csi";
 +			reg = <0x01cb0000 0x1000>;
@@ -719,10 +1172,24 @@ index ff41abc96a..862b47dc9d 100644
 +			#phy-cells = <0>;
 +		};
 +
++		deinterlace: deinterlace@1e00000 {
++			compatible = "allwinner,sun50i-a64-deinterlace",
++				     "allwinner,sun8i-h3-deinterlace";
++			reg = <0x01e00000 0x20000>;
++			clocks = <&ccu CLK_BUS_DEINTERLACE>,
++				 <&ccu CLK_DEINTERLACE>,
++				 <&ccu CLK_DRAM_DEINTERLACE>;
++			clock-names = "bus", "mod", "ram";
++			resets = <&ccu RST_BUS_DEINTERLACE>;
++			interrupts = <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH>;
++			interconnects = <&mbus 9>;
++			interconnect-names = "dma-mem";
++		};
++
  		hdmi: hdmi@1ee0000 {
  			compatible = "allwinner,sun50i-a64-dw-hdmi",
  				     "allwinner,sun8i-a83t-dw-hdmi";
-@@ -842,7 +1118,7 @@
+@@ -842,7 +1152,7 @@
  			resets = <&ccu RST_BUS_HDMI1>;
  			reset-names = "ctrl";
  			phys = <&hdmi_phy>;
@@ -731,7 +1198,7 @@ index ff41abc96a..862b47dc9d 100644
  			status = "disabled";
  
  			ports {
-@@ -867,7 +1143,7 @@
+@@ -867,7 +1177,7 @@
  			compatible = "allwinner,sun50i-a64-hdmi-phy";
  			reg = <0x01ef0000 0x10000>;
  			clocks = <&ccu CLK_BUS_HDMI>, <&ccu CLK_HDMI_DDC>,
@@ -740,7 +1207,7 @@ index ff41abc96a..862b47dc9d 100644
  			clock-names = "bus", "mod", "pll-0";
  			resets = <&ccu RST_BUS_HDMI0>;
  			reset-names = "phy";
-@@ -875,11 +1151,12 @@
+@@ -875,11 +1185,12 @@
  		};
  
  		rtc: rtc@1f00000 {
@@ -756,7 +1223,7 @@ index ff41abc96a..862b47dc9d 100644
  			clocks = <&osc32k>;
  			#clock-cells = <1>;
  		};
-@@ -896,13 +1173,19 @@
+@@ -896,13 +1207,19 @@
  		r_ccu: clock@1f01400 {
  			compatible = "allwinner,sun50i-a64-r-ccu";
  			reg = <0x01f01400 0x100>;
@@ -778,7 +1245,7 @@ index ff41abc96a..862b47dc9d 100644
  		r_i2c: i2c@1f02400 {
  			compatible = "allwinner,sun50i-a64-i2c",
  				     "allwinner,sun6i-a31-i2c";
-@@ -915,6 +1198,19 @@
+@@ -915,6 +1232,19 @@
  			#size-cells = <0>;
  		};
  
@@ -798,7 +1265,7 @@ index ff41abc96a..862b47dc9d 100644
  		r_pwm: pwm@1f03800 {
  			compatible = "allwinner,sun50i-a64-pwm",
  				     "allwinner,sun5i-a13-pwm";
-@@ -942,12 +1238,17 @@
+@@ -942,12 +1272,17 @@
  				function = "s_i2c";
  			};
  
@@ -818,7 +1285,7 @@ index ff41abc96a..862b47dc9d 100644
  				pins = "PL0", "PL1";
  				function = "s_rsb";
  			};
-@@ -972,6 +1273,7 @@
+@@ -972,6 +1307,7 @@
  				     "allwinner,sun6i-a31-wdt";
  			reg = <0x01c20ca0 0x20>;
  			interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
@@ -827,195 +1294,20 @@ index ff41abc96a..862b47dc9d 100644
  	};
  };
 -- 
-2.26.0
+2.26.2
 
-From fbe1642e24188e96f20ab5a3b003597288104e31 Mon Sep 17 00:00:00 2001
+From 9e91885814f880ce13ee98cab79876338811949f Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 10 Mar 2020 15:32:51 +0000
-Subject: [PATCH 2/9] arm: dts: AllWinner: sync axp803.dtsi to 5.6-rc1
-
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
----
- arch/arm/dts/axp803.dtsi | 82 ++++++++++++++++++++--------------------
- 1 file changed, 41 insertions(+), 41 deletions(-)
-
-diff --git a/arch/arm/dts/axp803.dtsi b/arch/arm/dts/axp803.dtsi
-index e5eae8bafc..10e9186a76 100644
---- a/arch/arm/dts/axp803.dtsi
-+++ b/arch/arm/dts/axp803.dtsi
-@@ -1,44 +1,5 @@
--/*
-- * Copyright 2017 Icenowy Zheng <icenowy@aosc.xyz>
-- *
-- * This file is dual-licensed: you can use it either under the terms
-- * of the GPL or the X11 license, at your option. Note that this dual
-- * licensing only applies to this file, and not this project as a
-- * whole.
-- *
-- *  a) This file is free software; you can redistribute it and/or
-- *     modify it under the terms of the GNU General Public License as
-- *     published by the Free Software Foundation; either version 2 of the
-- *     License, or (at your option) any later version.
-- *
-- *     This file is distributed in the hope that it will be useful,
-- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- *     GNU General Public License for more details.
-- *
-- * Or, alternatively,
-- *
-- *  b) Permission is hereby granted, free of charge, to any person
-- *     obtaining a copy of this software and associated documentation
-- *     files (the "Software"), to deal in the Software without
-- *     restriction, including without limitation the rights to use,
-- *     copy, modify, merge, publish, distribute, sublicense, and/or
-- *     sell copies of the Software, and to permit persons to whom the
-- *     Software is furnished to do so, subject to the following
-- *     conditions:
-- *
-- *     The above copyright notice and this permission notice shall be
-- *     included in all copies or substantial portions of the Software.
-- *
-- *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-- *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-- *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-- *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-- *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-- *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-- *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-- *     OTHER DEALINGS IN THE SOFTWARE.
-- */
-+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-+// Copyright 2017 Icenowy Zheng <icenowy@aosc.xyz>
- 
- /*
-  * AXP803 Integrated Power Management Chip
-@@ -49,6 +10,39 @@
- 	interrupt-controller;
- 	#interrupt-cells = <1>;
- 
-+	ac_power_supply: ac-power-supply {
-+		compatible = "x-powers,axp803-ac-power-supply",
-+			     "x-powers,axp813-ac-power-supply";
-+		status = "disabled";
-+	};
-+
-+	axp_adc: adc {
-+		compatible = "x-powers,axp803-adc", "x-powers,axp813-adc";
-+		#io-channel-cells = <1>;
-+	};
-+
-+	axp_gpio: gpio {
-+		compatible = "x-powers,axp803-gpio", "x-powers,axp813-gpio";
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio0_ldo: gpio0-ldo {
-+			pins = "GPIO0";
-+			function = "ldo";
-+		};
-+
-+		gpio1_ldo: gpio1-ldo {
-+			pins = "GPIO1";
-+			function = "ldo";
-+		};
-+	};
-+
-+	battery_power_supply: battery-power-supply {
-+		compatible = "x-powers,axp803-battery-power-supply",
-+			     "x-powers,axp813-battery-power-supply";
-+		status = "disabled";
-+	};
-+
- 	regulators {
- 		/* Default work frequency for buck regulators */
- 		x-powers,dcdc-freq = <3000>;
-@@ -152,4 +146,10 @@
- 			status = "disabled";
- 		};
- 	};
-+
-+	usb_power_supply: usb-power-supply {
-+		compatible = "x-powers,axp803-usb-power-supply",
-+			     "x-powers,axp813-usb-power-supply";
-+		status = "disabled";
-+	};
- };
--- 
-2.26.0
-
-From f44987a0ccf064f9da4a119e7700605a3eb56447 Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 10 Mar 2020 15:34:58 +0000
-Subject: [PATCH 3/9] arm: dts: AllWinner: sync sun50i-a64.dtsi to 5.7-rc1
-
-Adds the following two patches queued for 5.7:
-- arm64: dts: sun50i-a64: Add i2c2 pins
-- arm64: dts: allwinner: a64: Add MBUS controller node
-
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
----
- arch/arm/dts/sun50i-a64.dtsi | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/dts/sun50i-a64.dtsi b/arch/arm/dts/sun50i-a64.dtsi
-index 862b47dc9d..89a60fcf5a 100644
---- a/arch/arm/dts/sun50i-a64.dtsi
-+++ b/arch/arm/dts/sun50i-a64.dtsi
-@@ -671,6 +671,11 @@
- 				function = "i2c1";
- 			};
- 
-+			i2c2_pins: i2c2-pins {
-+				pins = "PE14", "PE15";
-+				function = "i2c2";
-+			};
-+
- 			/omit-if-no-ref/
- 			lcd_rgb666_pins: lcd-rgb666-pins {
- 				pins = "PD0", "PD1", "PD2", "PD3", "PD4",
-@@ -958,12 +963,13 @@
- 			interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>;
- 			clocks = <&ccu CLK_BUS_I2C2>;
- 			resets = <&ccu RST_BUS_I2C2>;
-+			pinctrl-names = "default";
-+			pinctrl-0 = <&i2c2_pins>;
- 			status = "disabled";
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 		};
- 
--
- 		spi0: spi@1c68000 {
- 			compatible = "allwinner,sun8i-h3-spi";
- 			reg = <0x01c68000 0x1000>;
-@@ -1061,6 +1067,14 @@
- 			status = "disabled";
- 		};
- 
-+		mbus: dram-controller@1c62000 {
-+			compatible = "allwinner,sun50i-a64-mbus";
-+			reg = <0x01c62000 0x1000>;
-+			clocks = <&ccu 112>;
-+			dma-ranges = <0x00000000 0x40000000 0xc0000000>;
-+			#interconnect-cells = <1>;
-+		};
-+
- 		csi: csi@1cb0000 {
- 			compatible = "allwinner,sun50i-a64-csi";
- 			reg = <0x01cb0000 0x1000>;
--- 
-2.26.0
-
-From 465dbf297edb9881e79c1b81fef8d9328fbaf7ad Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 10 Mar 2020 15:37:39 +0000
-Subject: [PATCH 4/9] arm: dts: allwinner: Add initial support for Pine64
+Date: Thu, 9 Jul 2020 12:44:55 +0100
+Subject: [PATCH 7/8] arm64: dts: allwinner: Add initial support for Pine64
  PinePhone
 
-The initial DT for the PinePhone models are queued for 5.7-rc1:
+At the moment PinePhone comes in two slightly incompatible variants:
+
 - 1.0: Early Developer Batch
 - 1.1: Braveheart Batch
+
+This syncs the Pinephone DTs from Linux 5.8-rc1.
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
@@ -1029,10 +1321,10 @@ Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
  create mode 100644 arch/arm/dts/sun50i-a64-pinephone.dtsi
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 820ee9733a..fb7516ee83 100644
+index cee10f533f..efaadeecf3 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -573,6 +573,8 @@ dtb-$(CONFIG_MACH_SUN50I) += \
+@@ -597,6 +597,8 @@ dtb-$(CONFIG_MACH_SUN50I) += \
  	sun50i-a64-pine64-plus.dtb \
  	sun50i-a64-pine64.dtb \
  	sun50i-a64-pinebook.dtb \
@@ -1461,148 +1753,50 @@ index 0000000000..cefda145c3
 +	status = "okay";
 +};
 -- 
-2.26.0
+2.26.2
 
-From e8fd62cbf02828da817628d15111e6e974144473 Mon Sep 17 00:00:00 2001
+From ab4bad52587be7da4262d943f19b5db02a24a045 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 10 Mar 2020 15:46:43 +0000
-Subject: [PATCH 5/9] sync sun50i-a64 clocks with linux 5.6
+Date: Wed, 15 Jul 2020 13:14:09 +0100
+Subject: [PATCH 8/8] Initial Pine64 Pinephone support
+
+The Pine64 Pinephone is a smartphone based on the AllWinner A64 SoC.
+It has the following features:
+* 2GB LPDDR3 SDRAM
+* 5.95 inch 1440x720 HD IPS capacitive touchscreen
+* 16GB eMMC, mSD slot
+* Quectel EG25 LTE Modem
+* Realtek RTL8723CS WiFi/BT
+* Front and read cameras
+* Accelerometer, gyro, proximity, ambient light, compass sensors
+* A USB Type-C, USB Host, DisplayPort alt mode output, 15W 5V 3A Quick Charge, follows USB PD specification
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- include/dt-bindings/clock/sun50i-a64-ccu.h | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/include/dt-bindings/clock/sun50i-a64-ccu.h b/include/dt-bindings/clock/sun50i-a64-ccu.h
-index d66432c6e6..e512a1c9b0 100644
---- a/include/dt-bindings/clock/sun50i-a64-ccu.h
-+++ b/include/dt-bindings/clock/sun50i-a64-ccu.h
-@@ -43,8 +43,10 @@
- #ifndef _DT_BINDINGS_CLK_SUN50I_A64_H_
- #define _DT_BINDINGS_CLK_SUN50I_A64_H_
- 
-+#define CLK_PLL_VIDEO0		7
- #define CLK_PLL_PERIPH0		11
- 
-+#define CLK_CPUX		21
- #define CLK_BUS_MIPI_DSI	28
- #define CLK_BUS_CE		29
- #define CLK_BUS_DMA		30
--- 
-2.26.0
-
-From a07a9d6cb77ea0bc21cd64922bb428faf5b7e121 Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 10 Mar 2020 15:49:11 +0000
-Subject: [PATCH 6/9] add upstream sun50i-a64-cpu-opp.dtsi added in 5.6
-
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
----
- arch/arm/dts/sun50i-a64-cpu-opp.dtsi | 75 ++++++++++++++++++++++++++++
- 1 file changed, 75 insertions(+)
- create mode 100644 arch/arm/dts/sun50i-a64-cpu-opp.dtsi
-
-diff --git a/arch/arm/dts/sun50i-a64-cpu-opp.dtsi b/arch/arm/dts/sun50i-a64-cpu-opp.dtsi
-new file mode 100644
-index 0000000000..578c37490d
---- /dev/null
-+++ b/arch/arm/dts/sun50i-a64-cpu-opp.dtsi
-@@ -0,0 +1,75 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2020 Vasily khoruzhick <anarsoul@gmail.com>
-+ */
-+
-+/ {
-+	cpu0_opp_table: opp_table0 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp-648000000 {
-+			opp-hz = /bits/ 64 <648000000>;
-+			opp-microvolt = <1040000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+
-+		opp-816000000 {
-+			opp-hz = /bits/ 64 <816000000>;
-+			opp-microvolt = <1100000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+
-+		opp-912000000 {
-+			opp-hz = /bits/ 64 <912000000>;
-+			opp-microvolt = <1120000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+
-+		opp-960000000 {
-+			opp-hz = /bits/ 64 <960000000>;
-+			opp-microvolt = <1160000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+
-+		opp-1008000000 {
-+			opp-hz = /bits/ 64 <1008000000>;
-+			opp-microvolt = <1200000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+
-+		opp-1056000000 {
-+			opp-hz = /bits/ 64 <1056000000>;
-+			opp-microvolt = <1240000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+
-+		opp-1104000000 {
-+			opp-hz = /bits/ 64 <1104000000>;
-+			opp-microvolt = <1260000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+
-+		opp-1152000000 {
-+			opp-hz = /bits/ 64 <1152000000>;
-+			opp-microvolt = <1300000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+	};
-+};
-+
-+&cpu0 {
-+	operating-points-v2 = <&cpu0_opp_table>;
-+};
-+
-+&cpu1 {
-+	operating-points-v2 = <&cpu0_opp_table>;
-+};
-+
-+&cpu2 {
-+	operating-points-v2 = <&cpu0_opp_table>;
-+};
-+
-+&cpu3 {
-+	operating-points-v2 = <&cpu0_opp_table>;
-+};
--- 
-2.26.0
-
-From 493869ec73e6ba999b6f7c49369e966ebfb8ef0b Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 14 Apr 2020 09:50:11 +0100
-Subject: [PATCH 7/9] Initial Pinephone support
-
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
----
- configs/pinephone_defconfig | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ arch/arm/Kconfig            |  2 +-
+ configs/pinephone_defconfig | 38 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 39 insertions(+), 1 deletion(-)
  create mode 100644 configs/pinephone_defconfig
 
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index e16fe03887..636ba26938 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -1004,7 +1004,7 @@ config ARCH_SUNXI
+ 	bool "Support sunxi (Allwinner) SoCs"
+ 	select BINMAN
+ 	select CMD_GPIO
+-	select CMD_MMC if MMC
++select CMD_MMC if MMC
+ 	select CMD_USB if DISTRO_DEFAULTS
+ 	select CLK
+ 	select DM
 diff --git a/configs/pinephone_defconfig b/configs/pinephone_defconfig
 new file mode 100644
-index 0000000000..a7d1e610d4
+index 0000000000..d5750aa954
 --- /dev/null
 +++ b/configs/pinephone_defconfig
-@@ -0,0 +1,26 @@
+@@ -0,0 +1,38 @@
 +CONFIG_ARM=y
 +CONFIG_ARCH_SUNXI=y
 +CONFIG_SPL=y
@@ -1610,11 +1804,11 @@ index 0000000000..a7d1e610d4
 +CONFIG_SUNXI_DRAM_LPDDR3_STOCK=y
 +CONFIG_DRAM_CLK=552
 +CONFIG_DRAM_ZQ=3881949
++CONFIG_NR_DRAM_BANKS=1
 +CONFIG_MMC_SUNXI_SLOT_EXTRA=2
 +CONFIG_R_I2C_ENABLE=y
-+CONFIG_SPL_SPI_SUNXI=y
 +# CONFIG_SYS_MALLOC_CLEAR_ON_INIT is not set
-+CONFIG_USE_PREBOOT=y
++# CONFIG_SPL_SPI_SUNXI is not set
 +# CONFIG_SPL_DOS_PARTITION is not set
 +# CONFIG_SPL_EFI_PARTITION is not set
 +CONFIG_DEFAULT_DEVICE_TREE="sun50i-a64-pinephone-1.1"
@@ -1624,14 +1818,25 @@ index 0000000000..a7d1e610d4
 +CONFIG_DM_REGULATOR_FIXED=y
 +CONFIG_DM_PWM=y
 +CONFIG_PWM_SUNXI=y
-+CONFIG_LED=y
-+CONFIG_LED_GPIO=y
-+CONFIG_USB_EHCI_HCD=y
-+CONFIG_USB_OHCI_HCD=y
-+CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
++CONFIG_CMD_GPIO=y
++CONFIG_CMD_GPT=y
++CONFIG_CMD_I2C=y
++CONFIG_CMD_MMC=y
++# CONFIG_CMD_MII is not set
++# CONFIG_CMD_NFS is not set
++# CONFIG_DM_ETH is not set
++# CONFIG_PHY is not set
++# CONFIG_PHY_GIGE is not set
++# CONFIG_SUN8I_EMAC is not set
++# CONFIG_PHY_REALTEK is not set
++# CONFIG_CMD_SF is not set
++# CONFIG_SPI is not set
++# CONFIG_DM_SPI is not set
++# CONFIG_SPI_FLASH is not set
++# CONFIG_SPI_MEM is not set
++# CONFIG_DM_SPI_FLASH is not set
 -- 
-2.26.0
-
+2.26.2
 From 163b30d9cd1c0cf77107e0330567bbda063410da Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Tue, 14 Apr 2020 09:51:44 +0100

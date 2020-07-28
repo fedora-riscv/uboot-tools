@@ -1,9 +1,8 @@
-#global candidate rc5
-%global _default_patch_fuzz 2
+%global candidate rc1
 
 Name:      uboot-tools
-Version:   2020.07
-Release:   2%{?candidate:.%{candidate}}%{?dist}
+Version:   2020.10
+Release:   0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:   U-Boot utilities
 License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:       http://www.denx.de/wiki/U-Boot
@@ -22,8 +21,8 @@ Patch1:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch2:    uefi-use-Fedora-specific-path-name.patch
 
 # Board fixes and enablement
-Patch4:    usb-kbd-fixes.patch
-Patch5:    dragonboard-fixes.patch
+Patch3:    usb-kbd-fixes.patch
+Patch4:    dragonboard-fixes.patch
 
 # Tegra improvements
 Patch10:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
@@ -32,11 +31,8 @@ Patch11:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
 Patch12:   AllWinner-Pine64-bits.patch
 # Rockchips improvements
 Patch13:   arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
-Patch14:   rockchip-Pinebook-Pro-Fixes.patch
-# RPi4
-Patch16:   USB-host-support-for-Raspberry-Pi-4-board-64-bit.patch
-Patch17:   usb-xhci-Load-Raspberry-Pi-4-VL805-s-firmware.patch
-Patch18:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+# RPi
+Patch14:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -250,6 +246,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Jul 28 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-0.1.rc1
+- 2020.10 RC1
+
 * Tue Jul 14 2020 Tom Stellard <tstellar@redhat.com> - 2020.07-2
 - Use make macros
 - https://fedoraproject.org/wiki/Changes/UseMakeBuildInstallMacro
