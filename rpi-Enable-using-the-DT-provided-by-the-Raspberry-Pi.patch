@@ -1,19 +1,20 @@
-From 7389a936fbd5ccaae7c39d38d1440e0359f9d0e5 Mon Sep 17 00:00:00 2001
+From f10f94831450671a77f61fe413b4a57459963860 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Tue, 12 May 2020 08:14:26 +0100
+Date: Mon, 10 Aug 2020 22:20:29 +0100
 Subject: [PATCH] rpi: Use firmware provided device tree
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- configs/rpi_0_w_defconfig   | 2 +-
- configs/rpi_2_defconfig     | 2 +-
- configs/rpi_3_32b_defconfig | 2 +-
- configs/rpi_3_defconfig     | 2 +-
- configs/rpi_defconfig       | 2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
+ configs/rpi_0_w_defconfig      | 2 +-
+ configs/rpi_2_defconfig        | 2 +-
+ configs/rpi_3_32b_defconfig    | 2 +-
+ configs/rpi_3_b_plus_defconfig | 2 +-
+ configs/rpi_3_defconfig        | 2 +-
+ configs/rpi_defconfig          | 2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/configs/rpi_0_w_defconfig b/configs/rpi_0_w_defconfig
-index 5053a38822..3c6af2b367 100644
+index bba5e12b12..0241f4c6d3 100644
 --- a/configs/rpi_0_w_defconfig
 +++ b/configs/rpi_0_w_defconfig
 @@ -17,7 +17,7 @@ CONFIG_CMD_GPIO=y
@@ -22,11 +23,11 @@ index 5053a38822..3c6af2b367 100644
  CONFIG_CMD_FS_UUID=y
 -CONFIG_OF_EMBED=y
 +CONFIG_OF_BOARD=y
- CONFIG_DEFAULT_DEVICE_TREE="bcm2835-rpi-zero-w"
  CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
  CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
 diff --git a/configs/rpi_2_defconfig b/configs/rpi_2_defconfig
-index 0000a759f1..f27c5ab1f6 100644
+index 1c2bbb29ce..9573e475f4 100644
 --- a/configs/rpi_2_defconfig
 +++ b/configs/rpi_2_defconfig
 @@ -17,7 +17,7 @@ CONFIG_CMD_GPIO=y
@@ -35,11 +36,11 @@ index 0000a759f1..f27c5ab1f6 100644
  CONFIG_CMD_FS_UUID=y
 -CONFIG_OF_EMBED=y
 +CONFIG_OF_BOARD=y
- CONFIG_DEFAULT_DEVICE_TREE="bcm2836-rpi-2-b"
  CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
  CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
 diff --git a/configs/rpi_3_32b_defconfig b/configs/rpi_3_32b_defconfig
-index a714f9ec49..90ce6ea22e 100644
+index b8a3d17f43..252df994e6 100644
 --- a/configs/rpi_3_32b_defconfig
 +++ b/configs/rpi_3_32b_defconfig
 @@ -18,7 +18,7 @@ CONFIG_CMD_GPIO=y
@@ -48,11 +49,24 @@ index a714f9ec49..90ce6ea22e 100644
  CONFIG_CMD_FS_UUID=y
 -CONFIG_OF_EMBED=y
 +CONFIG_OF_BOARD=y
- CONFIG_DEFAULT_DEVICE_TREE="bcm2837-rpi-3-b"
  CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
  CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
+diff --git a/configs/rpi_3_b_plus_defconfig b/configs/rpi_3_b_plus_defconfig
+index 4c361438fa..3b2996a2f9 100644
+--- a/configs/rpi_3_b_plus_defconfig
++++ b/configs/rpi_3_b_plus_defconfig
+@@ -18,7 +18,7 @@ CONFIG_CMD_GPIO=y
+ CONFIG_CMD_MMC=y
+ CONFIG_CMD_USB=y
+ CONFIG_CMD_FS_UUID=y
+-CONFIG_OF_EMBED=y
++CONFIG_OF_BOARD=y
+ CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
+ CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
 diff --git a/configs/rpi_3_defconfig b/configs/rpi_3_defconfig
-index 244d9b3a78..f72d6d35e2 100644
+index 9b281a4f15..1e9ee6122e 100644
 --- a/configs/rpi_3_defconfig
 +++ b/configs/rpi_3_defconfig
 @@ -18,7 +18,7 @@ CONFIG_CMD_GPIO=y
@@ -61,11 +75,11 @@ index 244d9b3a78..f72d6d35e2 100644
  CONFIG_CMD_FS_UUID=y
 -CONFIG_OF_EMBED=y
 +CONFIG_OF_BOARD=y
- CONFIG_DEFAULT_DEVICE_TREE="bcm2837-rpi-3-b"
  CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
  CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
 diff --git a/configs/rpi_defconfig b/configs/rpi_defconfig
-index 64bb184c2b..645dbbec33 100644
+index b5ad53c37b..223fc03275 100644
 --- a/configs/rpi_defconfig
 +++ b/configs/rpi_defconfig
 @@ -17,7 +17,7 @@ CONFIG_CMD_GPIO=y
@@ -74,9 +88,9 @@ index 64bb184c2b..645dbbec33 100644
  CONFIG_CMD_FS_UUID=y
 -CONFIG_OF_EMBED=y
 +CONFIG_OF_BOARD=y
- CONFIG_DEFAULT_DEVICE_TREE="bcm2835-rpi-b"
  CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
  CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
 -- 
 2.26.2
 
