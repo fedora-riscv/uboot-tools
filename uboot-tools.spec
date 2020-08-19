@@ -21,8 +21,7 @@ Patch1:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch2:    uefi-use-Fedora-specific-path-name.patch
 
 # Board fixes and enablement
-Patch3:    usb-kbd-fixes.patch
-Patch4:    dragonboard-fixes.patch
+# Patch4:    dragonboard-fixes.patch
 
 # Tegra improvements
 Patch10:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
