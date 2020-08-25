@@ -1,37 +1,36 @@
 %global candidate rc2
 
-Name:      uboot-tools
-Version:   2020.10
-Release:   0.2%{?candidate:.%{candidate}}%{?dist}
-Summary:   U-Boot utilities
-License:   GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
-URL:       http://www.denx.de/wiki/U-Boot
+Name:     uboot-tools
+Version:  2020.10
+Release:  0.3%{?candidate:.%{candidate}}%{?dist}
+Summary:  U-Boot utilities
+License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
+URL:      http://www.denx.de/wiki/U-Boot
 
-Source0:   ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
-Source1:   arm-boards
-Source2:   arm-chromebooks
-Source3:   aarch64-boards
-Source4:   aarch64-chromebooks
-Source5:   10-devicetree.install
+Source0:  ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
+Source1:  arm-boards
+Source2:  arm-chromebooks
+Source3:  aarch64-boards
+Source4:  aarch64-chromebooks
+Source5:  10-devicetree.install
 
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
-Patch1:    uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 # Needed due to issues with shim
-Patch2:    uefi-use-Fedora-specific-path-name.patch
+Patch2:   uefi-use-Fedora-specific-path-name.patch
 
 # Board fixes and enablement
-# Patch4:    dragonboard-fixes.patch
-
+# RPi - uses RPI firmware device tree for HAT support
+Patch5:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 # Tegra improvements
-Patch10:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
-Patch11:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
+Patch6:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
+Patch7:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
 # AllWinner improvements
-Patch12:   AllWinner-Pine64-bits.patch
+Patch8:   AllWinner-Pine64-bits.patch
 # Rockchips improvements
-Patch13:   arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
-# RPi
-Patch14:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+Patch9:   arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
+Patch10:  rockchip-Rock960-Fix-up-USB-support.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -121,12 +120,12 @@ do
     echo "Board: $board using sun50i_h6"
     cp /usr/share/arm-trusted-firmware/sun50i_h6/* builds/$(echo $board)/
   fi
-  rk3328=(evb-rk3328 rock64-rk3328)
+  rk3328=(evb-rk3328 rock64-rk3328 rock-pi-e-rk3328 roc-cc-rk3328)
   if [[ " ${rk3328[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3328"
     cp /usr/share/arm-trusted-firmware/rk3328/* builds/$(echo $board)/
   fi
-  rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 khadas-edge-captain-rk3399 khadas-edge-v-rk3399 khadas-edge-rk3399 nanopc-t4-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 orangepi-rk3399 pinebook-pro-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4-rk3399 rockpro64-rk3399 roc-pc-rk3399)
+  rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 khadas-edge-captain-rk3399 khadas-edge-rk3399 khadas-edge-v-rk3399 nanopc-t4-rk3399 nanopi-m4-2gb-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 orangepi-rk3399 pinebook-pro-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4c-rk3399 rock-pi-4-rk3399 rock-pi-n10-rk3399pro rockpro64-rk3399 roc-pc-mezzanine-rk3399 roc-pc-rk3399)
   if [[ " ${rk3399[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3399"
     cp /usr/share/arm-trusted-firmware/rk3399/* builds/$(echo $board)/
@@ -245,6 +244,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Aug 19 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-0.3.rc2
+- Enable a number of new Rockchip devices
+
 * Mon Aug 10 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-0.2.rc2
 - Update to 2020.10 RC2
 

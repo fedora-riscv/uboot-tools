@@ -29,6 +29,7 @@ nanopc-t4-rk3399
 nanopi_a64
 nanopi-k2
 nanopi-m4-rk3399
+nanopi-m4-2gb-rk3399
 nanopi_neo2
 nanopi-neo4-rk3399
 nanopi_neo_plus2
@@ -57,8 +58,13 @@ puma-rk3399
 rock64-rk3328
 rock960-rk3399
 rock-pi-4-rk3399
+rock-pi-4c-rk3399
+rock-pi-e-rk3328
+rock-pi-n10-rk3399pro
 rockpro64-rk3399
+roc-cc-rk3328
 roc-pc-rk3399
+roc-pc-mezzanine-rk3399
 rpi_3
 rpi_4
 rpi_arm64

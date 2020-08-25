@@ -112,6 +112,7 @@ qemu_arm
 r7-tv-dongle
 riotboard
 rock
+rock-pi-n8-rk3288
 rock2
 rpi_2
 rpi_3_32b
