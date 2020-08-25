@@ -1,0 +1,69 @@
+From 74ac6aad46c7d05e925b767fdb9a1306af6d5168 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Wed, 19 Aug 2020 16:55:11 +0100
+Subject: [PATCH] rockchip: Rock960: Fix up USB support
+
+Fix up USB config options so keyboards and other USB devices work.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ configs/rock960-rk3399_defconfig | 9 ++++++++-
+ include/configs/rock960_rk3399.h | 2 ++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/configs/rock960-rk3399_defconfig b/configs/rock960-rk3399_defconfig
+index 9c4d8871b7..d6d787aa02 100644
+--- a/configs/rock960-rk3399_defconfig
++++ b/configs/rock960-rk3399_defconfig
+@@ -33,6 +33,7 @@ CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_SYS_MMC_ENV_DEV=1
+ CONFIG_ROCKCHIP_GPIO=y
+ CONFIG_SYS_I2C_ROCKCHIP=y
++CONFIG_DM_KEYBOARD=y
+ CONFIG_MMC_DW=y
+ CONFIG_MMC_DW_ROCKCHIP=y
+ CONFIG_MMC_SDHCI=y
+@@ -43,6 +44,8 @@ CONFIG_RNG_ROCKCHIP=y
+ CONFIG_DM_ETH=y
+ CONFIG_NVME=y
+ CONFIG_PCI=y
++CONFIG_PHY_ROCKCHIP_INNO_USB2=y
++CONFIG_PHY_ROCKCHIP_TYPEC=y
+ CONFIG_PMIC_RK8XX=y
+ CONFIG_REGULATOR_PWM=y
+ CONFIG_REGULATOR_RK8XX=y
+@@ -56,8 +59,10 @@ CONFIG_USB_XHCI_HCD=y
+ CONFIG_USB_XHCI_DWC3=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_USB_EHCI_GENERIC=y
++CONFIG_USB_OHCI_HCD=y
++CONFIG_USB_OHCI_GENERIC=y
+ CONFIG_USB_DWC3=y
+-CONFIG_ROCKCHIP_USB2_PHY=y
++CONFIG_USB_DWC3_GENERIC=y
+ CONFIG_USB_KEYBOARD=y
+ CONFIG_USB_GADGET=y
+ CONFIG_USB_HOST_ETHER=y
+@@ -68,6 +73,8 @@ CONFIG_USB_ETHER_RTL8152=y
+ CONFIG_USB_ETHER_SMSC95XX=y
+ CONFIG_DM_VIDEO=y
+ CONFIG_DISPLAY=y
++CONFIG_VIDEO_BPP16=y
++CONFIG_VIDEO_BPP32=y
+ CONFIG_VIDEO_ROCKCHIP=y
+ CONFIG_DISPLAY_ROCKCHIP_HDMI=y
+ CONFIG_SPL_TINY_MEMSET=y
+diff --git a/include/configs/rock960_rk3399.h b/include/configs/rock960_rk3399.h
+index c6f9122154..2edad71028 100644
+--- a/include/configs/rock960_rk3399.h
++++ b/include/configs/rock960_rk3399.h
+@@ -15,4 +15,6 @@
+ 
+ #define SDRAM_BANK_SIZE			(2UL << 30)
+ 
++#define CONFIG_USB_OHCI_NEW
++#define CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS     2
+ #endif
+-- 
+2.26.2
+
