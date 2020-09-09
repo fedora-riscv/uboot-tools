@@ -27,7 +27,7 @@ Patch5:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
 Patch7:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
 # AllWinner improvements
-Patch8:   PinePhone-automatic-device-tree-selection.patch
+Patch8:   AllWinner-UpstreamSync.patch
 Patch9:   AllWinner-PinePhone.patch
 Patch10:  AllWinner-PineTab.patch
 # Rockchips improvements

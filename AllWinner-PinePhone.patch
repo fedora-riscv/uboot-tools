@@ -1,1300 +1,1116 @@
-From 6e5d771060dff5350e5940b7e457884b47a560ac Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Thu, 9 Jul 2020 12:20:53 +0100
-Subject: [PATCH 1/8] dt-bindings: clk: sync sun50i-a64-ccu.h to linux 5.8-rc1
+From patchwork Thu Sep  3 05:07:09 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Samuel Holland <samuel@sholland.org>
+X-Patchwork-Id: 1356315
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=sholland.org header.i=@sholland.org header.a=rsa-sha256
+ header.s=fm3 header.b=buHTSW+5;
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm3 header.b=soUNU+zi;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4Bhpk04dbHz9sTR
+ for <incoming@patchwork.ozlabs.org>; Thu,  3 Sep 2020 15:08:40 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id B8046822FB;
+ Thu,  3 Sep 2020 07:07:34 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (2048-bit key;
+ unprotected) header.d=sholland.org header.i=@sholland.org
+ header.b="buHTSW+5"; dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="soUNU+zi"; dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 5B11B822E1; Thu,  3 Sep 2020 07:07:27 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,RCVD_IN_MSPIKE_WL,
+ SPF_HELO_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+ version=3.4.2
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
+ [66.111.4.26])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id AF853822D8
+ for <u-boot@lists.denx.de>; Thu,  3 Sep 2020 07:07:19 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=samuel@sholland.org
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+ by mailout.nyi.internal (Postfix) with ESMTP id 6D2045C0190;
+ Thu,  3 Sep 2020 01:07:18 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute3.internal (MEProxy); Thu, 03 Sep 2020 01:07:18 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sholland.org; h=
+ from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding; s=fm3; bh=U4jA0nvRK7Czr
+ dgeNIS5gDY5tElSJ2feLLbT7NYhO6s=; b=buHTSW+5/tt6GjGA2vOU6Ivto0Cdk
+ fngE70LZVaDreoNlTLgMANhhiJzWyBYb3mjmMUR2EHBJeYNdzuOYpRL/hBztVsqa
+ B+hq24fQr6OsXlroOC+9DIkrBtgkfEXrmaHqyO9jP0/BBHQUHBAjJr6RkItNOJqs
+ tL5255/XbQw05IUwTN+fwQs+x1qtv9dPXiYVdELfBIhuTKSyQJaKqBLEO3mPFxRz
+ PIISy3OQi1lzdrJdmurLcp6DfbzqB9nJfuD0CtslCI1Bu09KsMgr7sn/mxITx0Vy
+ qyWz9p5t9Vr2A3xct652aED771i3Ra6UK+UYoSayMMMyCG4g+rb0DzJhQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :in-reply-to:message-id:mime-version:references:subject:to
+ :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm3; bh=U4jA0nvRK7CzrdgeNIS5gDY5tElSJ2feLLbT7NYhO6s=; b=soUNU+zi
+ uXuVOTwtphqr7B11oSRvrTR5EMY1G0DCfVWT5s+K/e9h3V/TodXW0tbddWCX1Qhf
+ 2EbJfg61h8/UFqtAFCwuDtcIaxiykHsoFtLgyvzZrBQIoWF9LF/YDvRSmyDr1lyV
+ hY8s0GIVyKaAXjkwwoUEaknhWhGHrbVOeWZTWUnB9W1++iN+4uXoWlMohB72yOlk
+ 3TZ7XBSJLe2Nd4NxPuirhOfuGpWFLHiTQ/cSUcvZW+8DPmy+hZL/KNYEgY4NjN0I
+ uAZwnZNHCO2j+82cPGETrg4u4iziby3clWWhVNK04wJCiBfVWlkQgL5VP4ORJUzp
+ E1csDeRCXdGAgw==
+X-ME-Sender: <xms:BnpQXx9_PUlNyjIx5zHr2D0x2L0MLv-4GoErnnIYHap8BU2XHfXUfQ>
+ <xme:BnpQX1sW78n05URhfrutxj4dTMrvA9QGnB647POJfNoYpYONJRZSjCE7tI6CZEn-0
+ 2Fv3NycBGN5W5b4gw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduiedrudegtddgleduucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhephffvufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpefurghmuhgv
+ lhcujfholhhlrghnugcuoehsrghmuhgvlhesshhhohhllhgrnhgurdhorhhgqeenucggtf
+ frrghtthgvrhhnpeduhfejfedvhffgfeehtefghfeiiefgfeehgfdvvdevfeegjeehjedv
+ gfejheeuieenucfkphepjedtrddufeehrddugeekrdduhedunecuvehluhhsthgvrhfuih
+ iivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepshgrmhhuvghlsehshhholhhlrghn
+ ugdrohhrgh
+X-ME-Proxy: <xmx:BnpQX_CeJkZDynF2MZ6JVXdna800Btpr7R___VHR_nSgvd6Jnkvolg>
+ <xmx:BnpQX1e4YHt1m_KYeEp1T96Eve9O3N8DW2i-DBl9qHyi0ZYh8bxrKw>
+ <xmx:BnpQX2NrRAxEPR_SYbS5w9-vXxnKHStkZxIXF_Y-QjSYrJfK-ZPFFw>
+ <xmx:BnpQXzrDOasvgZzjOkrKORESrlNpQntMb9bn8L0XzpptnwNTemXJGw>
+Received: from titanium.stl.sholland.net
+ (70-135-148-151.lightspeed.stlsmo.sbcglobal.net [70.135.148.151])
+ by mail.messagingengine.com (Postfix) with ESMTPA id B6856306005E;
+ Thu,  3 Sep 2020 01:07:17 -0400 (EDT)
+From: Samuel Holland <samuel@sholland.org>
+To: Jagan Teki <jagan@amarulasolutions.com>, Maxime Ripard <mripard@kernel.org>
+Cc: Andre Przywara <andre.przywara@arm.com>,
+ Peter Robinson <pbrobinson@gmail.com>, u-boot@lists.denx.de,
+ Samuel Holland <samuel@sholland.org>
+Subject: [PATCH 1/8] sunxi: board: Use a more descriptive variable name
+Date: Thu,  3 Sep 2020 00:07:09 -0500
+Message-Id: <20200903050716.48488-2-samuel@sholland.org>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200903050716.48488-1-samuel@sholland.org>
+References: <20200903050716.48488-1-samuel@sholland.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
 
-Sync the clock bindings for the Allwinner A64 to Linux
+The variable "cmp_str" always leaves me wondering if it is the DT name
+of the current board (yes) or DT name in the FIT config entry (no).
 
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+In preparation for expanding the functionality here, rename it to
+something that obviously means "this is the DT name we are looking for".
+
+Signed-off-by: Samuel Holland <samuel@sholland.org>
 ---
- include/dt-bindings/clock/sun50i-a64-ccu.h | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ board/sunxi/board.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/include/dt-bindings/clock/sun50i-a64-ccu.h b/include/dt-bindings/clock/sun50i-a64-ccu.h
-index d66432c6e6..318eb15c41 100644
---- a/include/dt-bindings/clock/sun50i-a64-ccu.h
-+++ b/include/dt-bindings/clock/sun50i-a64-ccu.h
-@@ -43,8 +43,10 @@
- #ifndef _DT_BINDINGS_CLK_SUN50I_A64_H_
- #define _DT_BINDINGS_CLK_SUN50I_A64_H_
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index 71e2b758a3e..674e6816d2d 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -892,14 +892,14 @@ int ft_board_setup(void *blob, struct bd_info *bd)
+ int board_fit_config_name_match(const char *name)
+ {
+ 	struct boot_file_head *spl = get_spl_header(SPL_DT_HEADER_VERSION);
+-	const char *cmp_str = (const char *)spl;
++	const char *best_dt_name = (const char *)spl;
  
-+#define CLK_PLL_VIDEO0		7
- #define CLK_PLL_PERIPH0		11
+ 	/* Check if there is a DT name stored in the SPL header and use that. */
+ 	if (spl != INVALID_SPL_HEADER && spl->dt_name_offset) {
+-		cmp_str += spl->dt_name_offset;
++		best_dt_name += spl->dt_name_offset;
+ 	} else {
+ #ifdef CONFIG_DEFAULT_DEVICE_TREE
+-		cmp_str = CONFIG_DEFAULT_DEVICE_TREE;
++		best_dt_name = CONFIG_DEFAULT_DEVICE_TREE;
+ #else
+ 		return 0;
+ #endif
+@@ -907,15 +907,15 @@ int board_fit_config_name_match(const char *name)
  
-+#define CLK_CPUX		21
- #define CLK_BUS_MIPI_DSI	28
- #define CLK_BUS_CE		29
- #define CLK_BUS_DMA		30
-@@ -129,7 +131,7 @@
- #define CLK_AVS			109
- #define CLK_HDMI		110
- #define CLK_HDMI_DDC		111
--
-+#define CLK_MBUS		112
- #define CLK_DSI_DPHY		113
- #define CLK_GPU			114
- 
--- 
-2.26.2
+ #ifdef CONFIG_PINE64_DT_SELECTION
+ /* Differentiate the two Pine64 board DTs by their DRAM size. */
+-	if (strstr(name, "-pine64") && strstr(cmp_str, "-pine64")) {
++	if (strstr(name, "-pine64") && strstr(best_dt_name, "-pine64")) {
+ 		if ((gd->ram_size > 512 * 1024 * 1024))
+ 			return !strstr(name, "plus");
+ 		else
+ 			return !!strstr(name, "plus");
+ 	} else {
+-		return strcmp(name, cmp_str);
++		return strcmp(name, best_dt_name);
+ 	}
+ #endif
+-	return strcmp(name, cmp_str);
++	return strcmp(name, best_dt_name);
+ }
+ #endif
 
-From 274dff055e80778277860f72a903c01ef33f87c7 Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Thu, 9 Jul 2020 12:29:15 +0100
-Subject: [PATCH 2/8] dt-bindings: leds: sync leds common.h to linux from
- 5.8-rc1
+From patchwork Thu Sep  3 05:07:10 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Samuel Holland <samuel@sholland.org>
+X-Patchwork-Id: 1356309
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=sholland.org header.i=@sholland.org header.a=rsa-sha256
+ header.s=fm3 header.b=Sj8OLfL4;
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm3 header.b=gP0Xb3h8;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4Bhphf6BH6z9sTR
+ for <incoming@patchwork.ozlabs.org>; Thu,  3 Sep 2020 15:07:30 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id A8413822E3;
+ Thu,  3 Sep 2020 07:07:25 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (2048-bit key;
+ unprotected) header.d=sholland.org header.i=@sholland.org
+ header.b="Sj8OLfL4"; dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="gP0Xb3h8"; dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 7B2D9822E8; Thu,  3 Sep 2020 07:07:23 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,RCVD_IN_MSPIKE_WL,
+ SPF_HELO_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+ version=3.4.2
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
+ [66.111.4.26])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 88299822CA
+ for <u-boot@lists.denx.de>; Thu,  3 Sep 2020 07:07:19 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=samuel@sholland.org
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+ by mailout.nyi.internal (Postfix) with ESMTP id 76A985C0185;
+ Thu,  3 Sep 2020 01:07:18 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute3.internal (MEProxy); Thu, 03 Sep 2020 01:07:18 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sholland.org; h=
+ from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding; s=fm3; bh=PQN64SHY0DFbJ
+ Xj9YPEcwJKL0bbybvo9/xMWQLiHCkU=; b=Sj8OLfL4WM4t/eW8xPA7XiaXE7bRC
+ 9oDd5605MwRja78aJ+GwV1TuxapJm7IlVNnlBETATblOjQenK4B7tAuxyPitzu+K
+ yJP+d0AYfgltsx888/hHtABBhsY20/7onFV1xxF/nB6fWwM6UTYfzsg2QQ2QYHmb
+ R5QGX38IUdDGZPR/U3bd2roatbUMK+xMqPZku3+3xxbSlLdWpeXp3YBmNCZFrkef
+ DjNUZE0kZWZIXIEk25bliOi1Yol1RZQZBq4As373rtZSvdXJbPKxU6C5c2TH6OgZ
+ ZcjNRU6zogMnOHhe/nklaCLzZQPx8Wz5Nse8PYJuRlDGk5tu5tOcONmog==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :in-reply-to:message-id:mime-version:references:subject:to
+ :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm3; bh=PQN64SHY0DFbJXj9YPEcwJKL0bbybvo9/xMWQLiHCkU=; b=gP0Xb3h8
+ lzo0knlriZlcpqJf2dY4yeWblYiYIsakrHO3GUDeZ7G9RYeSSWZ89RjUPZIHn4tw
+ mTk7vKxHbWz88EaQ+iPXaHsygzVk6RGrnU+7eGtJzZmUmKAm19hTi1uqkP/nXGyY
+ yyL1IKzw3pieBI1wHq1JPBo+AqTyAsrhrjgdalM+f9/0WwcdAWLTWYUXdR65xW1W
+ oFUPZ3bjJWrhFb1KFwEiJKdkK9tpivNCGKLe9fvnTLEelYQVoKMAE5G0xVdJhIqY
+ mQAq41sXJ3LRSeQWUb4Nd00bQsDTsroKLXDYc1P2K57wRGNIalbkkWZmbadPn2VW
+ 5jUVvdCWPvDEZQ==
+X-ME-Sender: <xms:BnpQX9w6qWEjgP-HDP83uE28ev_WFCc3M3VH1G_H81Nni28lOdO64g>
+ <xme:BnpQX9TTtfKwDyvAxrlYlOWWwu5zKmdNh7pm5CVXz7CYmXP7xUuXpDrd4Dbc9c3xC
+ cH8DJ02zS4OfSrIRg>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduiedrudegtddgleduucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhephffvufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpefurghmuhgv
+ lhcujfholhhlrghnugcuoehsrghmuhgvlhesshhhohhllhgrnhgurdhorhhgqeenucggtf
+ frrghtthgvrhhnpeduhfejfedvhffgfeehtefghfeiiefgfeehgfdvvdevfeegjeehjedv
+ gfejheeuieenucfkphepjedtrddufeehrddugeekrdduhedunecuvehluhhsthgvrhfuih
+ iivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepshgrmhhuvghlsehshhholhhlrghn
+ ugdrohhrgh
+X-ME-Proxy: <xmx:BnpQX3UBjMpW4g1iGmjP0DKk8h_Fw8L-CB7qCQgWJRBHZ0Fxma3eug>
+ <xmx:BnpQX_goqxm1QCcBKlFXHfGhuxipQafNoZw3ziT_2KQfvElJCBm4fQ>
+ <xmx:BnpQX_AFk8UANwbsO8P_rXfE2H1MC7Bp65TN6-u7KNJZqQU4LMG93A>
+ <xmx:BnpQX2NXrt07zyoaogm1SzNK6ccqlxI4Jnwx_38gMYcxYyuWR1iLHQ>
+Received: from titanium.stl.sholland.net
+ (70-135-148-151.lightspeed.stlsmo.sbcglobal.net [70.135.148.151])
+ by mail.messagingengine.com (Postfix) with ESMTPA id 0C6DA306005B;
+ Thu,  3 Sep 2020 01:07:18 -0400 (EDT)
+From: Samuel Holland <samuel@sholland.org>
+To: Jagan Teki <jagan@amarulasolutions.com>, Maxime Ripard <mripard@kernel.org>
+Cc: Andre Przywara <andre.przywara@arm.com>,
+ Peter Robinson <pbrobinson@gmail.com>, u-boot@lists.denx.de,
+ Samuel Holland <samuel@sholland.org>
+Subject: [PATCH 2/8] sunxi: board: Add a helper to get the SPL DT name
+Date: Thu,  3 Sep 2020 00:07:10 -0500
+Message-Id: <20200903050716.48488-3-samuel@sholland.org>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200903050716.48488-1-samuel@sholland.org>
+References: <20200903050716.48488-1-samuel@sholland.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
 
-Sync the leds common.h to the latest Linux version.
+This moves the validity checking and typecasts all to one place away
+from the string comparison logic, and it detangles the compile-time
+and runtime control flow.
 
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+The new helper will also be used by U-Boot proper in a future commit.
+
+Signed-off-by: Samuel Holland <samuel@sholland.org>
 ---
- include/dt-bindings/leds/common.h | 36 ++++++++++++++++++++++---------
- 1 file changed, 26 insertions(+), 10 deletions(-)
+ board/sunxi/board.c | 26 +++++++++++++++++---------
+ 1 file changed, 17 insertions(+), 9 deletions(-)
 
-diff --git a/include/dt-bindings/leds/common.h b/include/dt-bindings/leds/common.h
-index 9e1256a7c1..0ce7dfc00d 100644
---- a/include/dt-bindings/leds/common.h
-+++ b/include/dt-bindings/leds/common.h
-@@ -6,6 +6,7 @@
-  * Author: Jacek Anaszewski <j.anaszewski@samsung.com>
-  *
-  * Copyright (C) 2019 Jacek Anaszewski <jacek.anaszewski@gmail.com>
-+ * Copyright (C) 2020 Pavel Machek <pavel@ucw.cz>
-  */
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index 674e6816d2d..5c9b811f27a 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -319,6 +319,17 @@ static struct boot_file_head * get_spl_header(uint8_t req_version)
+ 	return spl;
+ }
  
- #ifndef __DT_BINDINGS_LEDS_H
-@@ -32,16 +33,38 @@
- #define LED_COLOR_ID_MAX	8
++static const char *get_spl_dt_name(void)
++{
++	struct boot_file_head *spl = get_spl_header(SPL_DT_HEADER_VERSION);
++
++	/* Check if there is a DT name stored in the SPL header. */
++	if (spl != INVALID_SPL_HEADER && spl->dt_name_offset)
++		return (char *)spl + spl->dt_name_offset;
++
++	return NULL;
++}
++
+ int dram_init(void)
+ {
+ 	struct boot_file_head *spl = get_spl_header(SPL_DRAM_HEADER_VERSION);
+@@ -891,20 +902,17 @@ int ft_board_setup(void *blob, struct bd_info *bd)
+ #ifdef CONFIG_SPL_LOAD_FIT
+ int board_fit_config_name_match(const char *name)
+ {
+-	struct boot_file_head *spl = get_spl_header(SPL_DT_HEADER_VERSION);
+-	const char *best_dt_name = (const char *)spl;
++	const char *best_dt_name = get_spl_dt_name();
  
- /* Standard LED functions */
-+/* Keyboard LEDs, usually it would be input4::capslock etc. */
-+/*   Obsolete equivalent: "shift-key-light" */
-+#define LED_FUNCTION_CAPSLOCK "capslock"
-+#define LED_FUNCTION_SCROLLLOCK "scrolllock"
-+#define LED_FUNCTION_NUMLOCK "numlock"
-+/*   Obsolete equivalents: "tpacpi::thinklight" (IBM/Lenovo Thinkpads),
-+     "lp5523:kb{1,2,3,4,5,6}" (Nokia N900) */
-+#define LED_FUNCTION_KBD_BACKLIGHT "kbd_backlight"
-+
-+/* System LEDs, usually found on system body.
-+   platform::mute (etc) is sometimes seen, :mute would be better */
-+#define LED_FUNCTION_POWER "power"
-+#define LED_FUNCTION_DISK "disk"
-+
-+/*   Obsolete: "platform:*:charging" (allwinner sun50i) */
-+#define LED_FUNCTION_CHARGING "charging"
-+/*   Used RGB notification LEDs common on phones.
-+     Obsolete equivalents: "status-led:{red,green,blue}" (Motorola Droid 4),
-+     "lp5523:{r,g,b}" (Nokia N900) */
-+#define LED_FUNCTION_STATUS "status"
-+
-+#define LED_FUNCTION_MICMUTE "micmute"
-+#define LED_FUNCTION_MUTE "mute"
-+
-+/* Miscelleaus functions. Use functions above if you can. */
- #define LED_FUNCTION_ACTIVITY "activity"
- #define LED_FUNCTION_ALARM "alarm"
- #define LED_FUNCTION_BACKLIGHT "backlight"
- #define LED_FUNCTION_BLUETOOTH "bluetooth"
- #define LED_FUNCTION_BOOT "boot"
- #define LED_FUNCTION_CPU "cpu"
--#define LED_FUNCTION_CAPSLOCK "capslock"
--#define LED_FUNCTION_CHARGING "charging"
- #define LED_FUNCTION_DEBUG "debug"
--#define LED_FUNCTION_DISK "disk"
- #define LED_FUNCTION_DISK_ACTIVITY "disk-activity"
- #define LED_FUNCTION_DISK_ERR "disk-err"
- #define LED_FUNCTION_DISK_READ "disk-read"
-@@ -50,21 +73,14 @@
- #define LED_FUNCTION_FLASH "flash"
- #define LED_FUNCTION_HEARTBEAT "heartbeat"
- #define LED_FUNCTION_INDICATOR "indicator"
--#define LED_FUNCTION_KBD_BACKLIGHT "kbd_backlight"
- #define LED_FUNCTION_LAN "lan"
- #define LED_FUNCTION_MAIL "mail"
- #define LED_FUNCTION_MTD "mtd"
--#define LED_FUNCTION_MICMUTE "micmute"
--#define LED_FUNCTION_MUTE "mute"
--#define LED_FUNCTION_NUMLOCK "numlock"
- #define LED_FUNCTION_PANIC "panic"
- #define LED_FUNCTION_PROGRAMMING "programming"
--#define LED_FUNCTION_POWER "power"
- #define LED_FUNCTION_RX "rx"
- #define LED_FUNCTION_SD "sd"
--#define LED_FUNCTION_SCROLLLOCK "scrolllock"
- #define LED_FUNCTION_STANDBY "standby"
--#define LED_FUNCTION_STATUS "status"
- #define LED_FUNCTION_TORCH "torch"
- #define LED_FUNCTION_TX "tx"
- #define LED_FUNCTION_USB "usb"
--- 
-2.26.2
-
-From 7010e7d2b19d2ded674e376855d2716b7cd421b7 Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Fri, 10 Jul 2020 12:46:11 +0100
-Subject: [PATCH 3/8] dt-bindings: clk/reset: sync updated bindings for
- Allwinner DE2 display engine
-
-Sync the clock and reset bindings for the Allwinner DE2 display engine to Linux 5.8-rc1.
-
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
----
- include/dt-bindings/clock/sun8i-de2.h | 3 +++
- include/dt-bindings/reset/sun8i-de2.h | 1 +
- 2 files changed, 4 insertions(+)
-
-diff --git a/include/dt-bindings/clock/sun8i-de2.h b/include/dt-bindings/clock/sun8i-de2.h
-index 3bed63b524..7768f73b05 100644
---- a/include/dt-bindings/clock/sun8i-de2.h
-+++ b/include/dt-bindings/clock/sun8i-de2.h
-@@ -15,4 +15,7 @@
- #define CLK_MIXER1		7
- #define CLK_WB			8
- 
-+#define CLK_BUS_ROT		9
-+#define CLK_ROT			10
-+
- #endif /* _DT_BINDINGS_CLOCK_SUN8I_DE2_H_ */
-diff --git a/include/dt-bindings/reset/sun8i-de2.h b/include/dt-bindings/reset/sun8i-de2.h
-index 9526017432..1c36a6ac86 100644
---- a/include/dt-bindings/reset/sun8i-de2.h
-+++ b/include/dt-bindings/reset/sun8i-de2.h
-@@ -10,5 +10,6 @@
- #define RST_MIXER0	0
- #define RST_MIXER1	1
- #define RST_WB		2
-+#define RST_ROT		3
- 
- #endif /* _DT_BINDINGS_RESET_SUN8I_DE2_H_ */
--- 
-2.26.2
-
-From bdbf5f21343571af989754c908299854e81f44dd Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Thu, 9 Jul 2020 12:24:41 +0100
-Subject: [PATCH 4/8] arm: dts: sync axp803.dtsi from linux 5.8-rc1
-
-Sync the Allwinner axp803 device tree to the latest upstream Linux.
-
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
----
- arch/arm/dts/axp803.dtsi | 82 ++++++++++++++++++++--------------------
- 1 file changed, 41 insertions(+), 41 deletions(-)
-
-diff --git a/arch/arm/dts/axp803.dtsi b/arch/arm/dts/axp803.dtsi
-index e5eae8bafc..10e9186a76 100644
---- a/arch/arm/dts/axp803.dtsi
-+++ b/arch/arm/dts/axp803.dtsi
-@@ -1,44 +1,5 @@
--/*
-- * Copyright 2017 Icenowy Zheng <icenowy@aosc.xyz>
-- *
-- * This file is dual-licensed: you can use it either under the terms
-- * of the GPL or the X11 license, at your option. Note that this dual
-- * licensing only applies to this file, and not this project as a
-- * whole.
-- *
-- *  a) This file is free software; you can redistribute it and/or
-- *     modify it under the terms of the GNU General Public License as
-- *     published by the Free Software Foundation; either version 2 of the
-- *     License, or (at your option) any later version.
-- *
-- *     This file is distributed in the hope that it will be useful,
-- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- *     GNU General Public License for more details.
-- *
-- * Or, alternatively,
-- *
-- *  b) Permission is hereby granted, free of charge, to any person
-- *     obtaining a copy of this software and associated documentation
-- *     files (the "Software"), to deal in the Software without
-- *     restriction, including without limitation the rights to use,
-- *     copy, modify, merge, publish, distribute, sublicense, and/or
-- *     sell copies of the Software, and to permit persons to whom the
-- *     Software is furnished to do so, subject to the following
-- *     conditions:
-- *
-- *     The above copyright notice and this permission notice shall be
-- *     included in all copies or substantial portions of the Software.
-- *
-- *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-- *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-- *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-- *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-- *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-- *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-- *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-- *     OTHER DEALINGS IN THE SOFTWARE.
-- */
-+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-+// Copyright 2017 Icenowy Zheng <icenowy@aosc.xyz>
- 
- /*
-  * AXP803 Integrated Power Management Chip
-@@ -49,6 +10,39 @@
- 	interrupt-controller;
- 	#interrupt-cells = <1>;
- 
-+	ac_power_supply: ac-power-supply {
-+		compatible = "x-powers,axp803-ac-power-supply",
-+			     "x-powers,axp813-ac-power-supply";
-+		status = "disabled";
-+	};
-+
-+	axp_adc: adc {
-+		compatible = "x-powers,axp803-adc", "x-powers,axp813-adc";
-+		#io-channel-cells = <1>;
-+	};
-+
-+	axp_gpio: gpio {
-+		compatible = "x-powers,axp803-gpio", "x-powers,axp813-gpio";
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio0_ldo: gpio0-ldo {
-+			pins = "GPIO0";
-+			function = "ldo";
-+		};
-+
-+		gpio1_ldo: gpio1-ldo {
-+			pins = "GPIO1";
-+			function = "ldo";
-+		};
-+	};
-+
-+	battery_power_supply: battery-power-supply {
-+		compatible = "x-powers,axp803-battery-power-supply",
-+			     "x-powers,axp813-battery-power-supply";
-+		status = "disabled";
-+	};
-+
- 	regulators {
- 		/* Default work frequency for buck regulators */
- 		x-powers,dcdc-freq = <3000>;
-@@ -152,4 +146,10 @@
- 			status = "disabled";
- 		};
- 	};
-+
-+	usb_power_supply: usb-power-supply {
-+		compatible = "x-powers,axp803-usb-power-supply",
-+			     "x-powers,axp813-usb-power-supply";
-+		status = "disabled";
-+	};
- };
--- 
-2.26.2
-
-From e0f7e9ce1a8a889bf7a1c5842700f0cb368bc81b Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Thu, 9 Jul 2020 12:26:34 +0100
-Subject: [PATCH 5/8] arm: dts: Add new sun50i-a64-cpu-opp.dtsi from Linux
- 5.8-rc1
-
-Sync the Allwinner A64 CPU operating points dtsi from Linux.
-
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
----
- arch/arm/dts/sun50i-a64-cpu-opp.dtsi | 75 ++++++++++++++++++++++++++++
- 1 file changed, 75 insertions(+)
- create mode 100644 arch/arm/dts/sun50i-a64-cpu-opp.dtsi
-
-diff --git a/arch/arm/dts/sun50i-a64-cpu-opp.dtsi b/arch/arm/dts/sun50i-a64-cpu-opp.dtsi
-new file mode 100644
-index 0000000000..578c37490d
---- /dev/null
-+++ b/arch/arm/dts/sun50i-a64-cpu-opp.dtsi
-@@ -0,0 +1,75 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2020 Vasily khoruzhick <anarsoul@gmail.com>
-+ */
-+
-+/ {
-+	cpu0_opp_table: opp_table0 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp-648000000 {
-+			opp-hz = /bits/ 64 <648000000>;
-+			opp-microvolt = <1040000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+
-+		opp-816000000 {
-+			opp-hz = /bits/ 64 <816000000>;
-+			opp-microvolt = <1100000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+
-+		opp-912000000 {
-+			opp-hz = /bits/ 64 <912000000>;
-+			opp-microvolt = <1120000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+
-+		opp-960000000 {
-+			opp-hz = /bits/ 64 <960000000>;
-+			opp-microvolt = <1160000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+
-+		opp-1008000000 {
-+			opp-hz = /bits/ 64 <1008000000>;
-+			opp-microvolt = <1200000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+
-+		opp-1056000000 {
-+			opp-hz = /bits/ 64 <1056000000>;
-+			opp-microvolt = <1240000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+
-+		opp-1104000000 {
-+			opp-hz = /bits/ 64 <1104000000>;
-+			opp-microvolt = <1260000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+
-+		opp-1152000000 {
-+			opp-hz = /bits/ 64 <1152000000>;
-+			opp-microvolt = <1300000>;
-+			clock-latency-ns = <244144>; /* 8 32k periods */
-+		};
-+	};
-+};
-+
-+&cpu0 {
-+	operating-points-v2 = <&cpu0_opp_table>;
-+};
-+
-+&cpu1 {
-+	operating-points-v2 = <&cpu0_opp_table>;
-+};
-+
-+&cpu2 {
-+	operating-points-v2 = <&cpu0_opp_table>;
-+};
-+
-+&cpu3 {
-+	operating-points-v2 = <&cpu0_opp_table>;
-+};
--- 
-2.26.2
-
-From b077a5962ba631e198d42c14516426b878c157eb Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Fri, 10 Jul 2020 12:39:21 +0100
-Subject: [PATCH 6/8] arm: dts: Sync the sun50i-a64.dtsi from Linux 5.8-rc1
-
-Sync the Allwinner A64 sun50i-a64.dtsi from Linux.
-
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
----
- arch/arm/dts/sun50i-a64.dtsi | 532 ++++++++++++++++++++++++++++-------
- 1 file changed, 434 insertions(+), 98 deletions(-)
-
-diff --git a/arch/arm/dts/sun50i-a64.dtsi b/arch/arm/dts/sun50i-a64.dtsi
-index ff41abc96a..8dfbcd1440 100644
---- a/arch/arm/dts/sun50i-a64.dtsi
-+++ b/arch/arm/dts/sun50i-a64.dtsi
-@@ -1,46 +1,7 @@
--/*
-- * Copyright (C) 2016 ARM Ltd.
-- * based on the Allwinner H3 dtsi:
-- *    Copyright (C) 2015 Jens Kuske <jenskuske@gmail.com>
-- *
-- * This file is dual-licensed: you can use it either under the terms
-- * of the GPL or the X11 license, at your option. Note that this dual
-- * licensing only applies to this file, and not this project as a
-- * whole.
-- *
-- *  a) This file is free software; you can redistribute it and/or
-- *     modify it under the terms of the GNU General Public License as
-- *     published by the Free Software Foundation; either version 2 of the
-- *     License, or (at your option) any later version.
-- *
-- *     This file is distributed in the hope that it will be useful,
-- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- *     GNU General Public License for more details.
-- *
-- * Or, alternatively,
-- *
-- *  b) Permission is hereby granted, free of charge, to any person
-- *     obtaining a copy of this software and associated documentation
-- *     files (the "Software"), to deal in the Software without
-- *     restriction, including without limitation the rights to use,
-- *     copy, modify, merge, publish, distribute, sublicense, and/or
-- *     sell copies of the Software, and to permit persons to whom the
-- *     Software is furnished to do so, subject to the following
-- *     conditions:
-- *
-- *     The above copyright notice and this permission notice shall be
-- *     included in all copies or substantial portions of the Software.
-- *
-- *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-- *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-- *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-- *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-- *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-- *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-- *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-- *     OTHER DEALINGS IN THE SOFTWARE.
-- */
-+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-+// Copyright (C) 2016 ARM Ltd.
-+// based on the Allwinner H3 dtsi:
-+//    Copyright (C) 2015 Jens Kuske <jenskuske@gmail.com>
- 
- #include <dt-bindings/clock/sun50i-a64-ccu.h>
- #include <dt-bindings/clock/sun8i-de2.h>
-@@ -49,6 +10,7 @@
- #include <dt-bindings/reset/sun50i-a64-ccu.h>
- #include <dt-bindings/reset/sun8i-de2.h>
- #include <dt-bindings/reset/sun8i-r-ccu.h>
-+#include <dt-bindings/thermal/thermal.h>
- 
- / {
- 	interrupt-parent = <&gic>;
-@@ -84,35 +46,47 @@
- 		#size-cells = <0>;
- 
- 		cpu0: cpu@0 {
--			compatible = "arm,cortex-a53", "arm,armv8";
-+			compatible = "arm,cortex-a53";
- 			device_type = "cpu";
- 			reg = <0>;
- 			enable-method = "psci";
- 			next-level-cache = <&L2>;
-+			clocks = <&ccu 21>;
-+			clock-names = "cpu";
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu1: cpu@1 {
--			compatible = "arm,cortex-a53", "arm,armv8";
-+			compatible = "arm,cortex-a53";
- 			device_type = "cpu";
- 			reg = <1>;
- 			enable-method = "psci";
- 			next-level-cache = <&L2>;
-+			clocks = <&ccu 21>;
-+			clock-names = "cpu";
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu2: cpu@2 {
--			compatible = "arm,cortex-a53", "arm,armv8";
-+			compatible = "arm,cortex-a53";
- 			device_type = "cpu";
- 			reg = <2>;
- 			enable-method = "psci";
- 			next-level-cache = <&L2>;
-+			clocks = <&ccu 21>;
-+			clock-names = "cpu";
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu3: cpu@3 {
--			compatible = "arm,cortex-a53", "arm,armv8";
-+			compatible = "arm,cortex-a53";
- 			device_type = "cpu";
- 			reg = <3>;
- 			enable-method = "psci";
- 			next-level-cache = <&L2>;
-+			clocks = <&ccu 21>;
-+			clock-names = "cpu";
-+			#cooling-cells = <2>;
- 		};
- 
- 		L2: l2-cache {
-@@ -139,15 +113,16 @@
- 		#clock-cells = <0>;
- 		compatible = "fixed-clock";
- 		clock-frequency = <32768>;
--		clock-output-names = "osc32k";
-+		clock-output-names = "ext-osc32k";
- 	};
- 
--	iosc: internal-osc-clk {
--		#clock-cells = <0>;
--		compatible = "fixed-clock";
--		clock-frequency = <16000000>;
--		clock-accuracy = <300000000>;
--		clock-output-names = "iosc";
-+	pmu {
-+		compatible = "arm,cortex-a53-pmu";
-+		interrupts = <GIC_SPI 116 IRQ_TYPE_LEVEL_HIGH>,
-+			     <GIC_SPI 117 IRQ_TYPE_LEVEL_HIGH>,
-+			     <GIC_SPI 118 IRQ_TYPE_LEVEL_HIGH>,
-+			     <GIC_SPI 119 IRQ_TYPE_LEVEL_HIGH>;
-+		interrupt-affinity = <&cpu0>, <&cpu1>, <&cpu2>, <&cpu3>;
- 	};
- 
- 	psci {
-@@ -155,26 +130,33 @@
- 		method = "smc";
- 	};
- 
--	sound_spdif {
-+	sound: sound {
- 		compatible = "simple-audio-card";
--		simple-audio-card,name = "On-board SPDIF";
-+		simple-audio-card,name = "sun50i-a64-audio";
-+		simple-audio-card,format = "i2s";
-+		simple-audio-card,frame-master = <&cpudai>;
-+		simple-audio-card,bitclock-master = <&cpudai>;
-+		simple-audio-card,mclk-fs = <128>;
-+		simple-audio-card,aux-devs = <&codec_analog>;
-+		simple-audio-card,routing =
-+				"Left DAC", "AIF1 Slot 0 Left",
-+				"Right DAC", "AIF1 Slot 0 Right",
-+				"AIF1 Slot 0 Left ADC", "Left ADC",
-+				"AIF1 Slot 0 Right ADC", "Right ADC";
-+		status = "disabled";
- 
--		simple-audio-card,cpu {
--			sound-dai = <&spdif>;
-+		cpudai: simple-audio-card,cpu {
-+			sound-dai = <&dai>;
- 		};
- 
--		simple-audio-card,codec {
--			sound-dai = <&spdif_out>;
-+		link_codec: simple-audio-card,codec {
-+			sound-dai = <&codec>;
- 		};
- 	};
- 
--	spdif_out: spdif-out {
--		#sound-dai-cells = <0>;
--		compatible = "linux,spdif-dit";
+-	/* Check if there is a DT name stored in the SPL header and use that. */
+-	if (spl != INVALID_SPL_HEADER && spl->dt_name_offset) {
+-		best_dt_name += spl->dt_name_offset;
+-	} else {
+ #ifdef CONFIG_DEFAULT_DEVICE_TREE
++	if (best_dt_name == NULL)
+ 		best_dt_name = CONFIG_DEFAULT_DEVICE_TREE;
+-#else
+-		return 0;
+ #endif
 -	};
--
- 	timer {
- 		compatible = "arm,armv8-timer";
-+		allwinner,erratum-unknown1;
- 		interrupts = <GIC_PPI 13
- 			(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>,
- 			     <GIC_PPI 14
-@@ -185,13 +167,76 @@
- 			(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
- 	};
  
-+	thermal-zones {
-+		cpu_thermal: cpu0-thermal {
-+			/* milliseconds */
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&ths 0>;
++	if (best_dt_name == NULL) {
++		/* No DT name was provided, so accept the first config. */
++		return 0;
++	}
+ #ifdef CONFIG_PINE64_DT_SELECTION
+ /* Differentiate the two Pine64 board DTs by their DRAM size. */
+ 	if (strstr(name, "-pine64") && strstr(best_dt_name, "-pine64")) {
+
+From patchwork Thu Sep  3 05:07:11 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Samuel Holland <samuel@sholland.org>
+X-Patchwork-Id: 1356311
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=sholland.org header.i=@sholland.org header.a=rsa-sha256
+ header.s=fm3 header.b=YljKqDaX;
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm3 header.b=KFsvPFSQ;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4Bhpj50Q5mz9sTR
+ for <incoming@patchwork.ozlabs.org>; Thu,  3 Sep 2020 15:07:52 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 921A1822EA;
+ Thu,  3 Sep 2020 07:07:28 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (2048-bit key;
+ unprotected) header.d=sholland.org header.i=@sholland.org
+ header.b="YljKqDaX"; dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="KFsvPFSQ"; dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 29DBC822EA; Thu,  3 Sep 2020 07:07:26 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,RCVD_IN_MSPIKE_WL,
+ SPF_HELO_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+ version=3.4.2
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
+ [66.111.4.26])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id AA176822D5
+ for <u-boot@lists.denx.de>; Thu,  3 Sep 2020 07:07:19 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=samuel@sholland.org
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+ by mailout.nyi.internal (Postfix) with ESMTP id C1C965C01A4;
+ Thu,  3 Sep 2020 01:07:18 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute3.internal (MEProxy); Thu, 03 Sep 2020 01:07:18 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sholland.org; h=
+ from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding; s=fm3; bh=Qd9EKlOeDxNxU
+ GjePDGIEyZE9Rx9hOCoFpYSpjLblzg=; b=YljKqDaXzM+KcF2P5M1Qm4ZqIN47C
+ vZyob9mNeC9Ih6xzht0zmIiswyR4o06F6F75APKEHOLdF98lM16tFq5lm2c0K2C/
+ FLv20iU82lyakGbT5y0fX9BUw2B1l6InAM81fN1aIyj6vKXDINvzr0Njek5zd82e
+ EBZJnaT7r4LgQ3tDupNPvYm+nq18jIibpUUERREvoNh6ktNeYOJbWPpuyRpW06+o
+ zKpzwXrrMFjcTuczM3DCSk0LchI0IGfF9STJXcWYrkwILpOIIZIn7Pcxbxg3LuPP
+ EF8OLTHGhbp2yvtbSVxuSyV5XrLKaiMTJNs8Z8T/AVWTfuAfwA146icVg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :in-reply-to:message-id:mime-version:references:subject:to
+ :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm3; bh=Qd9EKlOeDxNxUGjePDGIEyZE9Rx9hOCoFpYSpjLblzg=; b=KFsvPFSQ
+ oz3tuB0IgFDRGBPs9pm02ZFiQW6XW9io0ha6PFYr7sl2irhSUuA89cAncxDeQ99n
+ /SKVx+jefi15iu+rEUTEdZwFzb8FbfQ6faNIyvJ1RL4m+eH9ifIF0yuc62Qe9Pt2
+ Y0+6e1tDB3SyFRABn0Vib5DrnmbMSYeSJZug7TRAxINnW/qdG6pq1ycNPbhvYy7V
+ L0yBLcV7gP/gwEF5OtEWV2X22kqKFir6fKCsAVDK2KUTmM3ezGifn8h6u7n8ksWC
+ +4UbNfjcBKfNLHFEEIb7CdNdtixI4oo/XIsA8eDHULQ0v7cF7bZ1KAR+jBSW4Bf9
+ CRQNy2hCu5K+Rg==
+X-ME-Sender: <xms:BnpQX-1xUnq5vfpyKLz7LRv2We5s63uYpYqQRsaLfVkc0MUNCEGQcQ>
+ <xme:BnpQXxGM5_svUspNTRkkYmn31F6bDqncbHGzmnT3In-YUdr9PGdrFSOT0OjpjO8iJ
+ X5Qh80tx98peH0sXA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduiedrudegtddgleduucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhephffvufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpefurghmuhgv
+ lhcujfholhhlrghnugcuoehsrghmuhgvlhesshhhohhllhgrnhgurdhorhhgqeenucggtf
+ frrghtthgvrhhnpeduhfejfedvhffgfeehtefghfeiiefgfeehgfdvvdevfeegjeehjedv
+ gfejheeuieenucfkphepjedtrddufeehrddugeekrdduhedunecuvehluhhsthgvrhfuih
+ iivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepshgrmhhuvghlsehshhholhhlrghn
+ ugdrohhrgh
+X-ME-Proxy: <xmx:BnpQX25Beh5W2V7OmuepdmJPDW4D87iT6cEJYaZo1ldNxV5fH_wo1A>
+ <xmx:BnpQX_0bIssZZoF3sVU-C93eH54OClbov-ePR6u25_KT6g8zrikG4A>
+ <xmx:BnpQXxH9KpLipbg9CjZv7DAlIG3G9XPEPPd7oBCrlYSeW0jDICgzBA>
+ <xmx:BnpQXxArPKssUheA4qKGyv5kY7N_byJxgzoodRnuGoC-cd9xWO9iwQ>
+Received: from titanium.stl.sholland.net
+ (70-135-148-151.lightspeed.stlsmo.sbcglobal.net [70.135.148.151])
+ by mail.messagingengine.com (Postfix) with ESMTPA id 56CF53060062;
+ Thu,  3 Sep 2020 01:07:18 -0400 (EDT)
+From: Samuel Holland <samuel@sholland.org>
+To: Jagan Teki <jagan@amarulasolutions.com>, Maxime Ripard <mripard@kernel.org>
+Cc: Andre Przywara <andre.przywara@arm.com>,
+ Peter Robinson <pbrobinson@gmail.com>, u-boot@lists.denx.de,
+ Samuel Holland <samuel@sholland.org>
+Subject: [PATCH 3/8] sunxi: board: Simplify Pine A64 DT selection logic
+Date: Thu,  3 Sep 2020 00:07:11 -0500
+Message-Id: <20200903050716.48488-4-samuel@sholland.org>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200903050716.48488-1-samuel@sholland.org>
+References: <20200903050716.48488-1-samuel@sholland.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+Instead of using an entirely separate matching algorithm, simply update
+the name of the DT we want to match. Enabling this logic does not depend
+on the FIT config name, only on the initial guess of the board name.
+
+Importantly, the initial guess must be "sun50i-a64-pine64-plus", because
+otherwise the logic would trigger when "sun50i-a64-pine64-lts" was
+written to the SPL header.
+
+Signed-off-by: Samuel Holland <samuel@sholland.org>
+---
+ board/sunxi/board.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index 5c9b811f27a..fb0d5bf4743 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -914,14 +914,10 @@ int board_fit_config_name_match(const char *name)
+ 		return 0;
+ 	}
+ #ifdef CONFIG_PINE64_DT_SELECTION
+-/* Differentiate the two Pine64 board DTs by their DRAM size. */
+-	if (strstr(name, "-pine64") && strstr(best_dt_name, "-pine64")) {
+-		if ((gd->ram_size > 512 * 1024 * 1024))
+-			return !strstr(name, "plus");
+-		else
+-			return !!strstr(name, "plus");
+-	} else {
+-		return strcmp(name, best_dt_name);
++	else if (strstr(best_dt_name, "-pine64-plus")) {
++		/* Differentiate the Pine A64 boards by their DRAM size. */
++		if ((gd->ram_size == 512 * 1024 * 1024))
++			best_dt_name = "sun50i-a64-pine64";
+ 	}
+ #endif
+ 	return strcmp(name, best_dt_name);
+
+From patchwork Thu Sep  3 05:07:12 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Samuel Holland <samuel@sholland.org>
+X-Patchwork-Id: 1356310
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=sholland.org header.i=@sholland.org header.a=rsa-sha256
+ header.s=fm3 header.b=WQvh0tb6;
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm3 header.b=Va8mMuMz;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4Bhphw0Nkzz9sTR
+ for <incoming@patchwork.ozlabs.org>; Thu,  3 Sep 2020 15:07:43 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 19AFA822DF;
+ Thu,  3 Sep 2020 07:07:27 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (2048-bit key;
+ unprotected) header.d=sholland.org header.i=@sholland.org
+ header.b="WQvh0tb6"; dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="Va8mMuMz"; dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 3129B822E3; Thu,  3 Sep 2020 07:07:24 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,RCVD_IN_MSPIKE_WL,
+ SPF_HELO_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+ version=3.4.2
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
+ [66.111.4.26])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id D694E822E1
+ for <u-boot@lists.denx.de>; Thu,  3 Sep 2020 07:07:19 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=samuel@sholland.org
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+ by mailout.nyi.internal (Postfix) with ESMTP id 1C9B95C0116;
+ Thu,  3 Sep 2020 01:07:19 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute3.internal (MEProxy); Thu, 03 Sep 2020 01:07:19 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sholland.org; h=
+ from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding; s=fm3; bh=CNkIsGtVD92kV
+ ynV0NXjTV4vykOq+sdspxFol5f0iNM=; b=WQvh0tb6tyqtZYusFC0NyOcSeWaQm
+ ikcA+euqToY6scf0d256r+20fb4HnTosS+vXbhpF5vlo1hBhc2RW2/e+dR3a3AKH
+ qb8j3UwBWhpnwwZMS8HqUob5Cfq1BxHU1+/2tjRXvlMxDxNd/HvUoRlLBhfK57OA
+ Ln6MfWcRmxHlq5Js5MGAD9hRdzkPrnDX4x/NdRttkUaH/WMSGNEO0TnKW88PYXsE
+ 8u0eiuJQWWLED8nBAxf89vvVUf7o+It6gx5i+r5Bjl/BE5Ykj4O4kpMX2MeiB+Zh
+ KjYjivDQw8wmG4CrFKPCq4Bd/RoSQd9zHYBp6QuYpvY80vw+jLX7oVwMw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :in-reply-to:message-id:mime-version:references:subject:to
+ :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm3; bh=CNkIsGtVD92kVynV0NXjTV4vykOq+sdspxFol5f0iNM=; b=Va8mMuMz
+ othxHX11xn91XUTb1pYRnk4BO4zhPNKy7f+RU+S4/3DaYnmV9zl4x03LblsUWZRs
+ bnICHr20DS5YKUcqT9ag5zm1ocAxwJQGTc/SnTpWkZsJXR8unpsmm89jDyV+w5dM
+ p3YUeZ3AhxjEFHJXhqUnnOIXSLXGzYsnWA+szWf0dHI7tpZJqaV5O4X8xTk2X5cp
+ 2siDwjLGLi7PUtB/vcNZmOOZQbROGonW6mu2iNurHnrBUk4gOOmQhmeiEkjJb9lk
+ +MfMZsLXllNr8/o7323d6iP90v1scxaBASDC+q2zzEmUVAmU/Y/fyH0B6frHJy3O
+ QTcFTnYy45X3Zw==
+X-ME-Sender: <xms:BnpQX6mrkuxjzLiy-8F0t0CmBqkcRkruh_XAzybvRnXXI0kI_YAkTA>
+ <xme:BnpQXx0Jb5bCl2w7RmyifozLilj1jSyNa7BwCE8zRiyUILH-4mQhU0YFa2jT24Lsd
+ lhagBbTs_TebGXfCQ>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduiedrudegtddgleduucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhephffvufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpefurghmuhgv
+ lhcujfholhhlrghnugcuoehsrghmuhgvlhesshhhohhllhgrnhgurdhorhhgqeenucggtf
+ frrghtthgvrhhnpeduhfejfedvhffgfeehtefghfeiiefgfeehgfdvvdevfeegjeehjedv
+ gfejheeuieenucfkphepjedtrddufeehrddugeekrdduhedunecuvehluhhsthgvrhfuih
+ iivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepshgrmhhuvghlsehshhholhhlrghn
+ ugdrohhrgh
+X-ME-Proxy: <xmx:BnpQX4pHk1OiWA2CaI8gZoQtncMKO7dXO0qcWz4g1T44qNTGMMpieQ>
+ <xmx:BnpQX-ndFsx3dsWWcNYyz-vE-McvCXtvdb-Z1wuAxQItbrh4OL5D9w>
+ <xmx:BnpQX42WK06q59gZZYqFVs9OBxh0BBGv8svgT_wOgb8BH5M8GmA7xA>
+ <xmx:B3pQX1zaZE8_Z1Ojh3XotSc3XIBvI8-fflrqGfmsk6bqYbqZxt9gSA>
+Received: from titanium.stl.sholland.net
+ (70-135-148-151.lightspeed.stlsmo.sbcglobal.net [70.135.148.151])
+ by mail.messagingengine.com (Postfix) with ESMTPA id A21AB306005B;
+ Thu,  3 Sep 2020 01:07:18 -0400 (EDT)
+From: Samuel Holland <samuel@sholland.org>
+To: Jagan Teki <jagan@amarulasolutions.com>, Maxime Ripard <mripard@kernel.org>
+Cc: Andre Przywara <andre.przywara@arm.com>,
+ Peter Robinson <pbrobinson@gmail.com>, u-boot@lists.denx.de,
+ Samuel Holland <samuel@sholland.org>
+Subject: [PATCH 4/8] sunxi: board: Add PinePhone DT selection logic
+Date: Thu,  3 Sep 2020 00:07:12 -0500
+Message-Id: <20200903050716.48488-5-samuel@sholland.org>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200903050716.48488-1-samuel@sholland.org>
+References: <20200903050716.48488-1-samuel@sholland.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+There are two different publicly-released revisions of the PinePhone
+hardware, versions 1.1 and 1.2; and they need different device trees.
+Since some GPIO pins were rerouted, we can use that to distinguish
+between them.
+
+Signed-off-by: Samuel Holland <samuel@sholland.org>
+---
+ arch/arm/mach-sunxi/Kconfig |  7 +++++++
+ board/sunxi/board.c         | 21 +++++++++++++++++++++
+ 2 files changed, 28 insertions(+)
+
+diff --git a/arch/arm/mach-sunxi/Kconfig b/arch/arm/mach-sunxi/Kconfig
+index be0822bfb7d..8421f3b6854 100644
+--- a/arch/arm/mach-sunxi/Kconfig
++++ b/arch/arm/mach-sunxi/Kconfig
+@@ -1010,4 +1010,11 @@ config PINE64_DT_SELECTION
+ 	  option, the device tree selection code specific to Pine64 which
+ 	  utilizes the DRAM size will be enabled.
+ 
++config PINEPHONE_DT_SELECTION
++	bool "Enable PinePhone device tree selection code"
++	depends on MACH_SUN50I
++	help
++	  Enable this option to automatically select the device tree for the
++	  correct PinePhone hardware revision during boot.
 +
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu_alert0>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+				map1 {
-+					trip = <&cpu_alert1>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+							 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+				};
-+			};
+ endif
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index fb0d5bf4743..3d64ed18664 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -27,6 +27,7 @@
+ #include <asm/arch/dram.h>
+ #include <asm/arch/gpio.h>
+ #include <asm/arch/mmc.h>
++#include <asm/arch/prcm.h>
+ #include <asm/arch/spl.h>
+ #include <linux/delay.h>
+ #include <u-boot/crc.h>
+@@ -920,6 +921,26 @@ int board_fit_config_name_match(const char *name)
+ 			best_dt_name = "sun50i-a64-pine64";
+ 	}
+ #endif
++#ifdef CONFIG_PINEPHONE_DT_SELECTION
++	else if (strstr(best_dt_name, "-pinephone")) {
++		/* Differentiate the PinePhone revisions by GPIO inputs. */
++		prcm_apb0_enable(PRCM_APB0_GATE_PIO);
++		sunxi_gpio_set_pull(SUNXI_GPL(6), SUNXI_GPIO_PULL_UP);
++		sunxi_gpio_set_cfgpin(SUNXI_GPL(6), SUNXI_GPIO_INPUT);
++		udelay(100);
 +
-+			trips {
-+				cpu_alert0: cpu_alert0 {
-+					/* milliCelsius */
-+					temperature = <75000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
++		/* PL6 is pulled low by the modem on v1.2. */
++		if (gpio_get_value(SUNXI_GPL(6)) == 0)
++			best_dt_name = "sun50i-a64-pinephone-1.2";
++		else
++			best_dt_name = "sun50i-a64-pinephone-1.1";
 +
-+				cpu_alert1: cpu_alert1 {
-+					/* milliCelsius */
-+					temperature = <90000>;
-+					hysteresis = <2000>;
-+					type = "hot";
-+				};
++		sunxi_gpio_set_cfgpin(SUNXI_GPL(6), SUNXI_GPIO_DISABLE);
++		sunxi_gpio_set_pull(SUNXI_GPL(6), SUNXI_GPIO_PULL_DISABLE);
++		prcm_apb0_disable(PRCM_APB0_GATE_PIO);
++	}
++#endif
 +
-+				cpu_crit: cpu_crit {
-+					/* milliCelsius */
-+					temperature = <110000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
+ 	return strcmp(name, best_dt_name);
+ }
+ #endif
+
+From patchwork Thu Sep  3 05:07:13 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Samuel Holland <samuel@sholland.org>
+X-Patchwork-Id: 1356314
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=sholland.org header.i=@sholland.org header.a=rsa-sha256
+ header.s=fm3 header.b=fyCJtExp;
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm3 header.b=B5Js1Nb8;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4Bhpjn2MLBz9sTR
+ for <incoming@patchwork.ozlabs.org>; Thu,  3 Sep 2020 15:08:29 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 774738230A;
+ Thu,  3 Sep 2020 07:07:33 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (2048-bit key;
+ unprotected) header.d=sholland.org header.i=@sholland.org
+ header.b="fyCJtExp"; dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="B5Js1Nb8"; dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 43189822ED; Thu,  3 Sep 2020 07:07:27 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,RCVD_IN_MSPIKE_WL,
+ SPF_HELO_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+ version=3.4.2
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
+ [66.111.4.26])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 2BF26822D9
+ for <u-boot@lists.denx.de>; Thu,  3 Sep 2020 07:07:21 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=samuel@sholland.org
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+ by mailout.nyi.internal (Postfix) with ESMTP id 672025C018A;
+ Thu,  3 Sep 2020 01:07:19 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute3.internal (MEProxy); Thu, 03 Sep 2020 01:07:19 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sholland.org; h=
+ from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding; s=fm3; bh=azt3bcG2gyjJM
+ Z+euNV8r3HcVvCpV+eSxdiwdmzQYjE=; b=fyCJtExpAf8Pds8sXBs5pz5z9Werb
+ vqBSzut0Ck+pcCvap7NpVy7HIRtLqRZZ5TVdGQrBdCyjMYPaBcpnxw/mfUNJKoX9
+ WjOBrSnHpTrRp42ZQmJhQhQwBcX/s0j54ruprCfSqKSDuTOBG1N1JvKxI/PpfY6r
+ SsSEbwLKYq1RtK4noXm6JikphM9ME5i5XlR5n4XPsXPdM3UhM9DZXrkVwtWp+NyK
+ 4Xz63Is8oAxwJZAmqv049v/YeMe/Rsf9FY93zxcnQyZVoOHuW1s17AsX7jF8wDRy
+ xqvpvT8c3cJYXaFLGLrY+nmcGoKIjQSszLh9y5NwbGmjlEElJCcUUJW1A==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :in-reply-to:message-id:mime-version:references:subject:to
+ :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm3; bh=azt3bcG2gyjJMZ+euNV8r3HcVvCpV+eSxdiwdmzQYjE=; b=B5Js1Nb8
+ 5VzNH4aOuAW1FHK3OmKXRhz2sqhORkqO2K1N+kVfuPWZeATNjSIGEHwqkBJeJDNc
+ i+/y18eeCQg5sWkt3YCGaFv//m+LNamP1DRTkwLglswewvGqj0zfgN4MjMJvBWt3
+ 0bbdP8+D9o1geSld8IyI3lyRZgu7QN+3vJs4xxyTQL6xTOg6VizhNwm6nwSSl2u8
+ O6WzLWqrShbb6PD7Lqy5FrJ+BiqwRR+QrRp1JI86QDXssPJh1CtMiF2LnrkmwPxB
+ DSp3hr1nqudSNopltfwdUyNu3GdkGbMCE8Iv+4KIZpD8oRH12hS19aRtIqosAuXm
+ 1Ljrqzx4Vp/yNA==
+X-ME-Sender: <xms:B3pQXwMRefJc91a4faBQPd0hBlplUnFWJ5dHaO_lwyl19zhQrBgaWg>
+ <xme:B3pQX28Mj5Pn7qs5DdD3mLiIoWo24ukqrAUIUKCyoicioSeUW_8iJ3MZx2gHE0POS
+ mhrtdzmeIZDigumsQ>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduiedrudegtddgleduucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhephffvufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpefurghmuhgv
+ lhcujfholhhlrghnugcuoehsrghmuhgvlhesshhhohhllhgrnhgurdhorhhgqeenucggtf
+ frrghtthgvrhhnpeduhfejfedvhffgfeehtefghfeiiefgfeehgfdvvdevfeegjeehjedv
+ gfejheeuieenucfkphepjedtrddufeehrddugeekrdduhedunecuvehluhhsthgvrhfuih
+ iivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepshgrmhhuvghlsehshhholhhlrghn
+ ugdrohhrgh
+X-ME-Proxy: <xmx:B3pQX3RdyAjY4tvyCIY-YB95LfiUAQm-5KuaR6zAyFGHcEbZ0MdXhw>
+ <xmx:B3pQX4tuGcUqK832xQntlMKVanfPEbgf7Q_sueE8ECci3ZVVJMiYXw>
+ <xmx:B3pQX4e3jHOWROZaf1cSTmJh7ODU-SbBS_BN-BDMHdP3GnkTRPrtUg>
+ <xmx:B3pQXw4dKG9MscPjdOnA0lhQ2I_dZpLXeTAx1iZQn782afAU4VRZgQ>
+Received: from titanium.stl.sholland.net
+ (70-135-148-151.lightspeed.stlsmo.sbcglobal.net [70.135.148.151])
+ by mail.messagingengine.com (Postfix) with ESMTPA id EE48F306005E;
+ Thu,  3 Sep 2020 01:07:18 -0400 (EDT)
+From: Samuel Holland <samuel@sholland.org>
+To: Jagan Teki <jagan@amarulasolutions.com>, Maxime Ripard <mripard@kernel.org>
+Cc: Andre Przywara <andre.przywara@arm.com>,
+ Peter Robinson <pbrobinson@gmail.com>, u-boot@lists.denx.de,
+ Samuel Holland <samuel@sholland.org>
+Subject: [PATCH 5/8] sunxi: board: Save the chosen DT name in the SPL header
+Date: Thu,  3 Sep 2020 00:07:13 -0500
+Message-Id: <20200903050716.48488-6-samuel@sholland.org>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200903050716.48488-1-samuel@sholland.org>
+References: <20200903050716.48488-1-samuel@sholland.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+This overwrites the name loaded from the SPL image. It will be different
+if there was previously no name provided, or if a more accurate name was
+determined by the board variant selection logic. This means that the DT
+name in the SPL header now always matches the DT appended to U-Boot.
+
+Signed-off-by: Samuel Holland <samuel@sholland.org>
+---
+ board/sunxi/board.c | 27 ++++++++++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index 3d64ed18664..eaa40a1ea96 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -331,6 +331,21 @@ static const char *get_spl_dt_name(void)
+ 	return NULL;
+ }
+ 
++static void set_spl_dt_name(const char *name)
++{
++	struct boot_file_head *spl = get_spl_header(SPL_ENV_HEADER_VERSION);
 +
-+		gpu0_thermal: gpu0-thermal {
-+			/* milliseconds */
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&ths 1>;
-+		};
++	if (spl == INVALID_SPL_HEADER)
++		return;
 +
-+		gpu1_thermal: gpu1-thermal {
-+			/* milliseconds */
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&ths 2>;
-+		};
-+	};
++	/* Promote the header version for U-Boot proper, if needed. */
++	if (spl->spl_signature[3] < SPL_DT_HEADER_VERSION)
++		spl->spl_signature[3] = SPL_DT_HEADER_VERSION;
 +
- 	soc {
- 		compatible = "simple-bus";
- 		#address-cells = <1>;
- 		#size-cells = <1>;
- 		ranges;
- 
--		de2@1000000 {
-+		bus@1000000 {
- 			compatible = "allwinner,sun50i-a64-de2";
- 			reg = <0x1000000 0x400000>;
- 			allwinner,sram = <&de2_sram 1>;
-@@ -201,16 +246,28 @@
- 
- 			display_clocks: clock@0 {
- 				compatible = "allwinner,sun50i-a64-de2-clk";
--				reg = <0x0 0x100000>;
--				clocks = <&ccu CLK_DE>,
--					 <&ccu CLK_BUS_DE>;
--				clock-names = "mod",
--					      "bus";
-+				reg = <0x0 0x10000>;
-+				clocks = <&ccu CLK_BUS_DE>,
-+					 <&ccu CLK_DE>;
-+				clock-names = "bus",
-+					      "mod";
- 				resets = <&ccu RST_BUS_DE>;
- 				#clock-cells = <1>;
- 				#reset-cells = <1>;
- 			};
- 
-+			rotate: rotate@20000 {
-+				compatible = "allwinner,sun50i-a64-de2-rotate",
-+					     "allwinner,sun8i-a83t-de2-rotate";
-+				reg = <0x20000 0x10000>;
-+				interrupts = <GIC_SPI 96 IRQ_TYPE_LEVEL_HIGH>;
-+				clocks = <&display_clocks CLK_BUS_ROT>,
-+					 <&display_clocks CLK_ROT>;
-+				clock-names = "bus",
-+					      "mod";
-+				resets = <&display_clocks RST_ROT>;
-+			};
++	strcpy((char *)&spl->string_pool, name);
++	spl->dt_name_offset = offsetof(struct boot_file_head, string_pool);
++}
 +
- 			mixer0: mixer@100000 {
- 				compatible = "allwinner,sun50i-a64-de2-mixer-0";
- 				reg = <0x100000 0x100000>;
-@@ -225,11 +282,19 @@
- 					#size-cells = <0>;
+ int dram_init(void)
+ {
+ 	struct boot_file_head *spl = get_spl_header(SPL_DRAM_HEADER_VERSION);
+@@ -904,6 +919,7 @@ int ft_board_setup(void *blob, struct bd_info *bd)
+ int board_fit_config_name_match(const char *name)
+ {
+ 	const char *best_dt_name = get_spl_dt_name();
++	int ret;
  
- 					mixer0_out: port@1 {
-+						#address-cells = <1>;
-+						#size-cells = <0>;
- 						reg = <1>;
+ #ifdef CONFIG_DEFAULT_DEVICE_TREE
+ 	if (best_dt_name == NULL)
+@@ -941,6 +957,15 @@ int board_fit_config_name_match(const char *name)
+ 	}
+ #endif
  
--						mixer0_out_tcon0: endpoint {
-+						mixer0_out_tcon0: endpoint@0 {
-+							reg = <0>;
- 							remote-endpoint = <&tcon0_in_mixer0>;
- 						};
+-	return strcmp(name, best_dt_name);
++	ret = strcmp(name, best_dt_name);
 +
-+						mixer0_out_tcon1: endpoint@1 {
-+							reg = <1>;
-+							remote-endpoint = <&tcon1_in_mixer0>;
-+						};
- 					};
- 				};
- 			};
-@@ -248,9 +313,17 @@
- 					#size-cells = <0>;
- 
- 					mixer1_out: port@1 {
-+						#address-cells = <1>;
-+						#size-cells = <0>;
- 						reg = <1>;
- 
--						mixer1_out_tcon1: endpoint {
-+						mixer1_out_tcon0: endpoint@0 {
-+							reg = <0>;
-+							remote-endpoint = <&tcon0_in_mixer1>;
-+						};
++	/*
++	 * If one of the FIT configurations matches the most accurate DT name,
++	 * update the SPL header to provide that DT name to U-Boot proper.
++	 */
++	if (ret == 0)
++		set_spl_dt_name(best_dt_name);
 +
-+						mixer1_out_tcon1: endpoint@1 {
-+							reg = <1>;
- 							remote-endpoint = <&tcon1_in_mixer1>;
- 						};
- 					};
-@@ -259,8 +332,7 @@
- 		};
++	return ret;
+ }
+ #endif
+
+From patchwork Thu Sep  3 05:07:14 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Samuel Holland <samuel@sholland.org>
+X-Patchwork-Id: 1356313
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=sholland.org header.i=@sholland.org header.a=rsa-sha256
+ header.s=fm3 header.b=Ps0W2fd7;
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.a=rsa-sha256 header.s=fm3 header.b=irLh9odg;
+ dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (4096 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4BhpjY18DVz9sTR
+ for <incoming@patchwork.ozlabs.org>; Thu,  3 Sep 2020 15:08:17 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+ by phobos.denx.de (Postfix) with ESMTP id 1375E82300;
+ Thu,  3 Sep 2020 07:07:32 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de; dkim=pass (2048-bit key;
+ unprotected) header.d=sholland.org header.i=@sholland.org
+ header.b="Ps0W2fd7"; dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="irLh9odg"; dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id E9DCE822E1; Thu,  3 Sep 2020 07:07:26 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,RCVD_IN_MSPIKE_WL,
+ SPF_HELO_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+ version=3.4.2
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
+ [66.111.4.26])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 2CC5D822DF
+ for <u-boot@lists.denx.de>; Thu,  3 Sep 2020 07:07:21 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=sholland.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=samuel@sholland.org
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+ by mailout.nyi.internal (Postfix) with ESMTP id AAA455C0197;
+ Thu,  3 Sep 2020 01:07:19 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute3.internal (MEProxy); Thu, 03 Sep 2020 01:07:19 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sholland.org; h=
+ from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding; s=fm3; bh=YJZBYh6lhnaT4
+ or+KKTYoX0BgbruFrnszv2AxRFjCUg=; b=Ps0W2fd7vmO9tBRewK6ov5Y2vWsh9
+ oAAVK6vPK0hEzUkkeBIkhSenj5xlmR2HCeP5LxQU+Vgty5CzLJnc48U8lCQwGRFR
+ ZZ6tAiD9/vOtdVCbU2dRH7WK3uoAEi4AB688do5c3H3KhS8ZN6N7vsakr50TbczK
+ beuX76xciz0QEuRhJUFbnK9EYpV8/CDS1OFv6P+kA6OSIb71gm9FeFgdHHpmdQ/U
+ 7sE6vbkMYhL7pFMzeBCYWSfUWF6NK3gfJApDaxFqR1KBlszLuGbIXLVYWImA3WV8
+ sFDNZWGk2swSOB1ivq+Xvb2WTlPidjY0OrROgggZcyDHPRFEoZaS1ezAA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :in-reply-to:message-id:mime-version:references:subject:to
+ :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm3; bh=YJZBYh6lhnaT4or+KKTYoX0BgbruFrnszv2AxRFjCUg=; b=irLh9odg
+ 4mUJO3vUBGyeYD/WBs8BrulYezzsNoTAJp4uGEv0b9KyxbofUjok4+liYvAT/QZa
+ ED/iKo1bqgGmEwNPLoM0YORd0pXRd5jyv9W53Z96qzGsNOe0iGkJtSlOMXF3Lrfl
+ aIpGPRSMoRkqztR6oWBAEHeCm3NCFY4LDzzCoPFQqdcWmiDl+Wi3YfpApRGHdL3v
+ 4XVOruQFZlZUHZPp42VOzgbJyz+uWB3Z/RN2y0P7Lof1CrYtsWNftV4LuXDQ70VZ
+ P9TlSWjk75qTa1dqHdj/cvbi5WFBqa4FJKgCCV1OgCCEAc1ZGLhPBVDjt4W7FHJh
+ hNPlKS0liPCmGQ==
+X-ME-Sender: <xms:B3pQX5Nj-MQCpaM4_FTCPAaAwNM7KKb6-N1ZikIe7KXHOaFWPr0N3w>
+ <xme:B3pQX7-TspSiEAPV459T3iyO_Dx5xI7qSyt1qsGkA5xQzi_K9j6bS_DYQWi_aQsID
+ E3TmTALneVqHz1xMw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduiedrudegtddgleduucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ cujfgurhephffvufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpefurghmuhgv
+ lhcujfholhhlrghnugcuoehsrghmuhgvlhesshhhohhllhgrnhgurdhorhhgqeenucggtf
+ frrghtthgvrhhnpeduhfejfedvhffgfeehtefghfeiiefgfeehgfdvvdevfeegjeehjedv
+ gfejheeuieenucfkphepjedtrddufeehrddugeekrdduhedunecuvehluhhsthgvrhfuih
+ iivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepshgrmhhuvghlsehshhholhhlrghn
+ ugdrohhrgh
+X-ME-Proxy: <xmx:B3pQX4TaOo7qNrEHw8Z-7ES5k8f7E-Fx5jkU3m4qGL6VGK_Ccz8GxQ>
+ <xmx:B3pQX1sO9Z3H_xbOTlcoSlur1AiHO9puxT2eBxkEEVFcNRgBPkDQCg>
+ <xmx:B3pQXxejZM45bW1mSBEoyhRTaPbeHmm5p5cycEGdKNj5jnDk-afnKA>
+ <xmx:B3pQX14DZp4SsGMyJAj8ijK_89T-l9lDf6obFBf1-OKICD4X5lwP9A>
+Received: from titanium.stl.sholland.net
+ (70-135-148-151.lightspeed.stlsmo.sbcglobal.net [70.135.148.151])
+ by mail.messagingengine.com (Postfix) with ESMTPA id 4678A306005B;
+ Thu,  3 Sep 2020 01:07:19 -0400 (EDT)
+From: Samuel Holland <samuel@sholland.org>
+To: Jagan Teki <jagan@amarulasolutions.com>, Maxime Ripard <mripard@kernel.org>
+Cc: Andre Przywara <andre.przywara@arm.com>,
+ Peter Robinson <pbrobinson@gmail.com>, u-boot@lists.denx.de,
+ Samuel Holland <samuel@sholland.org>
+Subject: [PATCH 6/8] sunxi: board: Set fdtfile to match the DT chosen by SPL
+Date: Thu,  3 Sep 2020 00:07:14 -0500
+Message-Id: <20200903050716.48488-7-samuel@sholland.org>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200903050716.48488-1-samuel@sholland.org>
+References: <20200903050716.48488-1-samuel@sholland.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+Previously, fdtfile was always the value in CONFIG_DEFAULT_DEVICE_TREE.
+This meant that, regardless of the DT chosen by SPL (either by changing
+the header in the image or by the selection code at runtime), Linux
+always used the default DT.
+
+By using the name from the SPL header (which, because of the previous
+commit, always matches the DT used by U-Boot proper), Linux also sees
+the same board as U-Boot/SPL, even if the boot script later loads a DT
+from disk.
+
+Signed-off-by: Samuel Holland <samuel@sholland.org>
+---
+ board/sunxi/board.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/board/sunxi/board.c b/board/sunxi/board.c
+index eaa40a1ea96..5457b28e135 100644
+--- a/board/sunxi/board.c
++++ b/board/sunxi/board.c
+@@ -870,6 +870,7 @@ static void setup_environment(const void *fdt)
  
- 		syscon: syscon@1c00000 {
--			compatible = "allwinner,sun50i-a64-system-control",
--				"syscon";
-+			compatible = "allwinner,sun50i-a64-system-control";
- 			reg = <0x01c00000 0x1000>;
- 			#address-cells = <1>;
- 			#size-cells = <1>;
-@@ -278,6 +350,20 @@
- 					reg = <0x0000 0x28000>;
- 				};
- 			};
+ int misc_init_r(void)
+ {
++	const char *spl_dt_name;
+ 	uint boot;
+ 
+ 	env_set("fel_booted", NULL);
+@@ -888,6 +889,16 @@ int misc_init_r(void)
+ 		env_set("mmc_bootdev", "1");
+ 	}
+ 
++	/* Set fdtfile to match the FIT configuration chosen in SPL. */
++	spl_dt_name = get_spl_dt_name();
++	if (spl_dt_name) {
++		char *prefix = IS_ENABLED(CONFIG_ARM64) ? "allwinner/" : "";
++		char str[64];
 +
-+			sram_c1: sram@1d00000 {
-+				compatible = "mmio-sram";
-+				reg = <0x01d00000 0x40000>;
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				ranges = <0 0x01d00000 0x40000>;
++		snprintf(str, sizeof(str), "%s%s.dtb", prefix, spl_dt_name);
++		env_set("fdtfile", str);
++	}
 +
-+				ve_sram: sram-section@0 {
-+					compatible = "allwinner,sun50i-a64-sram-c1",
-+						     "allwinner,sun4i-a10-sram-c1";
-+					reg = <0x000000 0x40000>;
-+				};
-+			};
- 		};
+ 	setup_environment(gd->fdt_blob);
  
- 		dma: dma-controller@1c02000 {
-@@ -299,6 +385,7 @@
- 			clocks = <&ccu CLK_BUS_TCON0>, <&ccu CLK_TCON0>;
- 			clock-names = "ahb", "tcon-ch0";
- 			clock-output-names = "tcon-pixel-clock";
-+			#clock-cells = <0>;
- 			resets = <&ccu RST_BUS_TCON0>, <&ccu RST_BUS_LVDS>;
- 			reset-names = "lcd", "lvds";
- 
-@@ -315,12 +402,23 @@
- 						reg = <0>;
- 						remote-endpoint = <&mixer0_out_tcon0>;
- 					};
-+
-+					tcon0_in_mixer1: endpoint@1 {
-+						reg = <1>;
-+						remote-endpoint = <&mixer1_out_tcon0>;
-+					};
- 				};
- 
- 				tcon0_out: port@1 {
- 					#address-cells = <1>;
- 					#size-cells = <0>;
- 					reg = <1>;
-+
-+					tcon0_out_dsi: endpoint@1 {
-+						reg = <1>;
-+						remote-endpoint = <&dsi_in_tcon0>;
-+						allwinner,tcon-channel = <1>;
-+					};
- 				};
- 			};
- 		};
-@@ -340,9 +438,17 @@
- 				#size-cells = <0>;
- 
- 				tcon1_in: port@0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
- 					reg = <0>;
- 
--					tcon1_in_mixer1: endpoint {
-+					tcon1_in_mixer0: endpoint@0 {
-+						reg = <0>;
-+						remote-endpoint = <&mixer0_out_tcon1>;
-+					};
-+
-+					tcon1_in_mixer1: endpoint@1 {
-+						reg = <1>;
- 						remote-endpoint = <&mixer1_out_tcon1>;
- 					};
- 				};
-@@ -360,6 +466,17 @@
- 			};
- 		};
- 
-+		video-codec@1c0e000 {
-+			compatible = "allwinner,sun50i-a64-video-engine";
-+			reg = <0x01c0e000 0x1000>;
-+			clocks = <&ccu CLK_BUS_VE>, <&ccu CLK_VE>,
-+				 <&ccu CLK_DRAM_VE>;
-+			clock-names = "ahb", "mod", "ram";
-+			resets = <&ccu RST_BUS_VE>;
-+			interrupts = <GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH>;
-+			allwinner,sram = <&ve_sram 1>;
-+		};
-+
- 		mmc0: mmc@1c0f000 {
- 			compatible = "allwinner,sun50i-a64-mmc";
- 			reg = <0x01c0f000 0x1000>;
-@@ -405,6 +522,31 @@
- 		sid: eeprom@1c14000 {
- 			compatible = "allwinner,sun50i-a64-sid";
- 			reg = <0x1c14000 0x400>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+
-+			ths_calibration: thermal-sensor-calibration@34 {
-+				reg = <0x34 0x8>;
-+			};
-+		};
-+
-+		crypto: crypto@1c15000 {
-+			compatible = "allwinner,sun50i-a64-crypto";
-+			reg = <0x01c15000 0x1000>;
-+			interrupts = <GIC_SPI 94 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&ccu CLK_BUS_CE>, <&ccu CLK_CE>;
-+			clock-names = "bus", "mod";
-+			resets = <&ccu RST_BUS_CE>;
-+		};
-+
-+		msgbox: mailbox@1c17000 {
-+			compatible = "allwinner,sun50i-a64-msgbox",
-+				     "allwinner,sun6i-a31-msgbox";
-+			reg = <0x01c17000 0x1000>;
-+			clocks = <&ccu CLK_BUS_MSGBOX>;
-+			resets = <&ccu RST_BUS_MSGBOX>;
-+			interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
-+			#mbox-cells = <1>;
- 		};
- 
- 		usb_otg: usb@1c19000 {
-@@ -417,6 +559,7 @@
- 			phys = <&usbphy 0>;
- 			phy-names = "usb";
- 			extcon = <&usbphy 0>;
-+			dr_mode = "otg";
- 			status = "disabled";
- 		};
- 
-@@ -491,7 +634,7 @@
- 		ccu: clock@1c20000 {
- 			compatible = "allwinner,sun50i-a64-ccu";
- 			reg = <0x01c20000 0x400>;
--			clocks = <&osc24M>, <&osc32k>;
-+			clocks = <&osc24M>, <&rtc 0>;
- 			clock-names = "hosc", "losc";
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
-@@ -503,22 +646,50 @@
- 			interrupts = <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>,
- 				     <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>,
- 				     <GIC_SPI 21 IRQ_TYPE_LEVEL_HIGH>;
--			clocks = <&ccu 58>;
-+			clocks = <&ccu CLK_BUS_PIO>, <&osc24M>, <&rtc 0>;
-+			clock-names = "apb", "hosc", "losc";
- 			gpio-controller;
- 			#gpio-cells = <3>;
- 			interrupt-controller;
- 			#interrupt-cells = <3>;
- 
--			i2c0_pins: i2c0_pins {
-+			csi_pins: csi-pins {
-+				pins = "PE0", "PE2", "PE3", "PE4", "PE5", "PE6",
-+				       "PE7", "PE8", "PE9", "PE10", "PE11";
-+				function = "csi";
-+			};
-+
-+			/omit-if-no-ref/
-+			csi_mclk_pin: csi-mclk-pin {
-+				pins = "PE1";
-+				function = "csi";
-+			};
-+
-+			i2c0_pins: i2c0-pins {
- 				pins = "PH0", "PH1";
- 				function = "i2c0";
- 			};
- 
--			i2c1_pins: i2c1_pins {
-+			i2c1_pins: i2c1-pins {
- 				pins = "PH2", "PH3";
- 				function = "i2c1";
- 			};
- 
-+			i2c2_pins: i2c2-pins {
-+				pins = "PE14", "PE15";
-+				function = "i2c2";
-+			};
-+
-+			/omit-if-no-ref/
-+			lcd_rgb666_pins: lcd-rgb666-pins {
-+				pins = "PD0", "PD1", "PD2", "PD3", "PD4",
-+				       "PD5", "PD6", "PD7", "PD8", "PD9",
-+				       "PD10", "PD11", "PD12", "PD13",
-+				       "PD14", "PD15", "PD16", "PD17",
-+				       "PD18", "PD19", "PD20", "PD21";
-+				function = "lcd0";
-+			};
-+
- 			mmc0_pins: mmc0-pins {
- 				pins = "PF0", "PF1", "PF2", "PF3",
- 				       "PF4", "PF5";
-@@ -551,19 +722,19 @@
- 				bias-pull-up;
- 			};
- 
--			pwm_pin: pwm_pin {
-+			pwm_pin: pwm-pin {
- 				pins = "PD22";
- 				function = "pwm";
- 			};
- 
--			rmii_pins: rmii_pins {
-+			rmii_pins: rmii-pins {
- 				pins = "PD10", "PD11", "PD13", "PD14", "PD17",
- 				       "PD18", "PD19", "PD20", "PD22", "PD23";
- 				function = "emac";
- 				drive-strength = <40>;
- 			};
- 
--			rgmii_pins: rgmii_pins {
-+			rgmii_pins: rgmii-pins {
- 				pins = "PD8", "PD9", "PD10", "PD11", "PD12",
- 				       "PD13", "PD15", "PD16", "PD17", "PD18",
- 				       "PD19", "PD20", "PD21", "PD22", "PD23";
-@@ -571,17 +742,17 @@
- 				drive-strength = <40>;
- 			};
- 
--			spdif_tx_pin: spdif {
-+			spdif_tx_pin: spdif-tx-pin {
- 				pins = "PH8";
- 				function = "spdif";
- 			};
- 
--			spi0_pins: spi0 {
-+			spi0_pins: spi0-pins {
- 				pins = "PC0", "PC1", "PC2", "PC3";
- 				function = "spi0";
- 			};
- 
--			spi1_pins: spi1 {
-+			spi1_pins: spi1-pins {
- 				pins = "PD0", "PD1", "PD2", "PD3";
- 				function = "spi1";
- 			};
-@@ -591,12 +762,12 @@
- 				function = "uart0";
- 			};
- 
--			uart1_pins: uart1_pins {
-+			uart1_pins: uart1-pins {
- 				pins = "PG6", "PG7";
- 				function = "uart1";
- 			};
- 
--			uart1_rts_cts_pins: uart1_rts_cts_pins {
-+			uart1_rts_cts_pins: uart1-rts-cts-pins {
- 				pins = "PG8", "PG9";
- 				function = "uart1";
- 			};
-@@ -638,6 +809,14 @@
- 			status = "disabled";
- 		};
- 
-+		lradc: lradc@1c21800 {
-+			compatible = "allwinner,sun50i-a64-lradc",
-+				     "allwinner,sun8i-a83t-r-lradc";
-+			reg = <0x01c21800 0x400>;
-+			interrupts = <GIC_SPI 30 IRQ_TYPE_LEVEL_HIGH>;
-+			status = "disabled";
-+		};
-+
- 		i2s0: i2s@1c22000 {
- 			#sound-dai-cells = <0>;
- 			compatible = "allwinner,sun50i-a64-i2s",
-@@ -666,6 +845,41 @@
- 			status = "disabled";
- 		};
- 
-+		dai: dai@1c22c00 {
-+			#sound-dai-cells = <0>;
-+			compatible = "allwinner,sun50i-a64-codec-i2s";
-+			reg = <0x01c22c00 0x200>;
-+			interrupts = <GIC_SPI 29 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&ccu CLK_BUS_CODEC>, <&ccu CLK_AC_DIG>;
-+			clock-names = "apb", "mod";
-+			resets = <&ccu RST_BUS_CODEC>;
-+			dmas = <&dma 15>, <&dma 15>;
-+			dma-names = "rx", "tx";
-+			status = "disabled";
-+		};
-+
-+		codec: codec@1c22e00 {
-+			#sound-dai-cells = <0>;
-+			compatible = "allwinner,sun8i-a33-codec";
-+			reg = <0x01c22e00 0x600>;
-+			interrupts = <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&ccu CLK_BUS_CODEC>, <&ccu CLK_AC_DIG>;
-+			clock-names = "bus", "mod";
-+			status = "disabled";
-+		};
-+
-+		ths: thermal-sensor@1c25000 {
-+			compatible = "allwinner,sun50i-a64-ths";
-+			reg = <0x01c25000 0x100>;
-+			clocks = <&ccu CLK_BUS_THS>, <&ccu CLK_THS>;
-+			clock-names = "bus", "mod";
-+			interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
-+			resets = <&ccu RST_BUS_THS>;
-+			nvmem-cells = <&ths_calibration>;
-+			nvmem-cell-names = "calibration";
-+			#thermal-sensor-cells = <1>;
-+		};
-+
- 		uart0: serial@1c28000 {
- 			compatible = "snps,dw-apb-uart";
- 			reg = <0x01c28000 0x400>;
-@@ -727,6 +941,8 @@
- 			interrupts = <GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>;
- 			clocks = <&ccu CLK_BUS_I2C0>;
- 			resets = <&ccu RST_BUS_I2C0>;
-+			pinctrl-names = "default";
-+			pinctrl-0 = <&i2c0_pins>;
- 			status = "disabled";
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-@@ -738,6 +954,8 @@
- 			interrupts = <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>;
- 			clocks = <&ccu CLK_BUS_I2C1>;
- 			resets = <&ccu RST_BUS_I2C1>;
-+			pinctrl-names = "default";
-+			pinctrl-0 = <&i2c1_pins>;
- 			status = "disabled";
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-@@ -749,12 +967,13 @@
- 			interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>;
- 			clocks = <&ccu CLK_BUS_I2C2>;
- 			resets = <&ccu RST_BUS_I2C2>;
-+			pinctrl-names = "default";
-+			pinctrl-0 = <&i2c2_pins>;
- 			status = "disabled";
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 		};
- 
--
- 		spi0: spi@1c68000 {
- 			compatible = "allwinner,sun8i-h3-spi";
- 			reg = <0x01c68000 0x1000>;
-@@ -808,6 +1027,28 @@
- 			};
- 		};
- 
-+		mali: gpu@1c40000 {
-+			compatible = "allwinner,sun50i-a64-mali", "arm,mali-400";
-+			reg = <0x01c40000 0x10000>;
-+			interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 99 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 102 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>,
-+				     <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
-+			interrupt-names = "gp",
-+					  "gpmmu",
-+					  "pp0",
-+					  "ppmmu0",
-+					  "pp1",
-+					  "ppmmu1",
-+					  "pmu";
-+			clocks = <&ccu CLK_BUS_GPU>, <&ccu CLK_GPU>;
-+			clock-names = "bus", "core";
-+			resets = <&ccu RST_BUS_GPU>;
-+		};
-+
- 		gic: interrupt-controller@1c81000 {
- 			compatible = "arm,gic-400";
- 			reg = <0x01c81000 0x1000>,
-@@ -830,6 +1071,75 @@
- 			status = "disabled";
- 		};
- 
-+		mbus: dram-controller@1c62000 {
-+			compatible = "allwinner,sun50i-a64-mbus";
-+			reg = <0x01c62000 0x1000>;
-+			clocks = <&ccu 112>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			dma-ranges = <0x00000000 0x40000000 0xc0000000>;
-+			#interconnect-cells = <1>;
-+		};
-+
-+		csi: csi@1cb0000 {
-+			compatible = "allwinner,sun50i-a64-csi";
-+			reg = <0x01cb0000 0x1000>;
-+			interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&ccu CLK_BUS_CSI>,
-+				 <&ccu CLK_CSI_SCLK>,
-+				 <&ccu CLK_DRAM_CSI>;
-+			clock-names = "bus", "mod", "ram";
-+			resets = <&ccu RST_BUS_CSI>;
-+			pinctrl-names = "default";
-+			pinctrl-0 = <&csi_pins>;
-+			status = "disabled";
-+		};
-+
-+		dsi: dsi@1ca0000 {
-+			compatible = "allwinner,sun50i-a64-mipi-dsi";
-+			reg = <0x01ca0000 0x1000>;
-+			interrupts = <GIC_SPI 89 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&ccu CLK_BUS_MIPI_DSI>;
-+			resets = <&ccu RST_BUS_MIPI_DSI>;
-+			phys = <&dphy>;
-+			phy-names = "dphy";
-+			status = "disabled";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			port {
-+				dsi_in_tcon0: endpoint {
-+					remote-endpoint = <&tcon0_out_dsi>;
-+				};
-+			};
-+		};
-+
-+		dphy: d-phy@1ca1000 {
-+			compatible = "allwinner,sun50i-a64-mipi-dphy",
-+				     "allwinner,sun6i-a31-mipi-dphy";
-+			reg = <0x01ca1000 0x1000>;
-+			clocks = <&ccu CLK_BUS_MIPI_DSI>,
-+				 <&ccu CLK_DSI_DPHY>;
-+			clock-names = "bus", "mod";
-+			resets = <&ccu RST_BUS_MIPI_DSI>;
-+			status = "disabled";
-+			#phy-cells = <0>;
-+		};
-+
-+		deinterlace: deinterlace@1e00000 {
-+			compatible = "allwinner,sun50i-a64-deinterlace",
-+				     "allwinner,sun8i-h3-deinterlace";
-+			reg = <0x01e00000 0x20000>;
-+			clocks = <&ccu CLK_BUS_DEINTERLACE>,
-+				 <&ccu CLK_DEINTERLACE>,
-+				 <&ccu CLK_DRAM_DEINTERLACE>;
-+			clock-names = "bus", "mod", "ram";
-+			resets = <&ccu RST_BUS_DEINTERLACE>;
-+			interrupts = <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH>;
-+			interconnects = <&mbus 9>;
-+			interconnect-names = "dma-mem";
-+		};
-+
- 		hdmi: hdmi@1ee0000 {
- 			compatible = "allwinner,sun50i-a64-dw-hdmi",
- 				     "allwinner,sun8i-a83t-dw-hdmi";
-@@ -842,7 +1152,7 @@
- 			resets = <&ccu RST_BUS_HDMI1>;
- 			reset-names = "ctrl";
- 			phys = <&hdmi_phy>;
--			phy-names = "hdmi-phy";
-+			phy-names = "phy";
- 			status = "disabled";
- 
- 			ports {
-@@ -867,7 +1177,7 @@
- 			compatible = "allwinner,sun50i-a64-hdmi-phy";
- 			reg = <0x01ef0000 0x10000>;
- 			clocks = <&ccu CLK_BUS_HDMI>, <&ccu CLK_HDMI_DDC>,
--				 <&ccu 7>;
-+				 <&ccu CLK_PLL_VIDEO0>;
- 			clock-names = "bus", "mod", "pll-0";
- 			resets = <&ccu RST_BUS_HDMI0>;
- 			reset-names = "phy";
-@@ -875,11 +1185,12 @@
- 		};
- 
- 		rtc: rtc@1f00000 {
--			compatible = "allwinner,sun6i-a31-rtc";
--			reg = <0x01f00000 0x54>;
-+			compatible = "allwinner,sun50i-a64-rtc",
-+				     "allwinner,sun8i-h3-rtc";
-+			reg = <0x01f00000 0x400>;
- 			interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>,
- 				     <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
--			clock-output-names = "rtc-osc32k", "rtc-osc32k-out";
-+			clock-output-names = "osc32k", "osc32k-out", "iosc";
- 			clocks = <&osc32k>;
- 			#clock-cells = <1>;
- 		};
-@@ -896,13 +1207,19 @@
- 		r_ccu: clock@1f01400 {
- 			compatible = "allwinner,sun50i-a64-r-ccu";
- 			reg = <0x01f01400 0x100>;
--			clocks = <&osc24M>, <&osc32k>, <&iosc>,
--				 <&ccu 11>;
-+			clocks = <&osc24M>, <&rtc 0>, <&rtc 2>,
-+				 <&ccu CLK_PLL_PERIPH0>;
- 			clock-names = "hosc", "losc", "iosc", "pll-periph";
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
- 		};
- 
-+		codec_analog: codec-analog@1f015c0 {
-+			compatible = "allwinner,sun50i-a64-codec-analog";
-+			reg = <0x01f015c0 0x4>;
-+			status = "disabled";
-+		};
-+
- 		r_i2c: i2c@1f02400 {
- 			compatible = "allwinner,sun50i-a64-i2c",
- 				     "allwinner,sun6i-a31-i2c";
-@@ -915,6 +1232,19 @@
- 			#size-cells = <0>;
- 		};
- 
-+		r_ir: ir@1f02000 {
-+			compatible = "allwinner,sun50i-a64-ir",
-+				     "allwinner,sun6i-a31-ir";
-+			reg = <0x01f02000 0x400>;
-+			clocks = <&r_ccu CLK_APB0_IR>, <&r_ccu CLK_IR>;
-+			clock-names = "apb", "ir";
-+			resets = <&r_ccu RST_APB0_IR>;
-+			interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-+			pinctrl-names = "default";
-+			pinctrl-0 = <&r_ir_rx_pin>;
-+			status = "disabled";
-+		};
-+
- 		r_pwm: pwm@1f03800 {
- 			compatible = "allwinner,sun50i-a64-pwm",
- 				     "allwinner,sun5i-a13-pwm";
-@@ -942,12 +1272,17 @@
- 				function = "s_i2c";
- 			};
- 
--			r_pwm_pin: pwm {
-+			r_ir_rx_pin: r-ir-rx-pin {
-+				pins = "PL11";
-+				function = "s_cir_rx";
-+			};
-+
-+			r_pwm_pin: r-pwm-pin {
- 				pins = "PL10";
- 				function = "s_pwm";
- 			};
- 
--			r_rsb_pins: rsb {
-+			r_rsb_pins: r-rsb-pins {
- 				pins = "PL0", "PL1";
- 				function = "s_rsb";
- 			};
-@@ -972,6 +1307,7 @@
- 				     "allwinner,sun6i-a31-wdt";
- 			reg = <0x01c20ca0 0x20>;
- 			interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&osc24M>;
- 		};
- 	};
- };
--- 
-2.26.2
+ #ifdef CONFIG_USB_ETHER
 
 From 9e91885814f880ce13ee98cab79876338811949f Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
@@ -1802,6 +1618,143 @@ index 0000000000..cefda145c3
 +&usbphy {
 +	status = "okay";
 +};
+-- 
+2.26.2
+
+From bed9375bf6d11bdbf08839135541c44d80189384 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Wed, 9 Sep 2020 11:19:09 +0100
+Subject: [PATCH] pinephone dts sync to 5.9-rc1
+
+---
+ arch/arm/dts/sun50i-a64-pinephone-1.1.dts | 19 ++++++++
+ arch/arm/dts/sun50i-a64-pinephone.dtsi    | 54 ++++++++++++++++++++++-
+ 2 files changed, 71 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/dts/sun50i-a64-pinephone-1.1.dts b/arch/arm/dts/sun50i-a64-pinephone-1.1.dts
+index 06a775c416..3e99a87e9c 100644
+--- a/arch/arm/dts/sun50i-a64-pinephone-1.1.dts
++++ b/arch/arm/dts/sun50i-a64-pinephone-1.1.dts
+@@ -9,3 +9,22 @@
+ 	model = "Pine64 PinePhone Braveheart (1.1)";
+ 	compatible = "pine64,pinephone-1.1", "allwinner,sun50i-a64";
+ };
++
++&backlight {
++	power-supply = <&reg_ldo_io0>;
++	/*
++	 * PWM backlight circuit on this PinePhone revision was changed since
++	 * 1.0, and the lowest PWM duty cycle that doesn't lead to backlight
++	 * being off is around 20%. Duty cycle for the lowest brightness level
++	 * also varries quite a bit between individual boards, so the lowest
++	 * value here was chosen as a safe default.
++	 */
++	brightness-levels = <
++		774  793  814  842
++		882  935  1003 1088
++		1192 1316 1462 1633
++		1830 2054 2309 2596
++		2916 3271 3664 4096>;
++	num-interpolated-steps = <50>;
++	default-brightness-level = <400>;
++};
+diff --git a/arch/arm/dts/sun50i-a64-pinephone.dtsi b/arch/arm/dts/sun50i-a64-pinephone.dtsi
+index cefda145c3..25150aba74 100644
+--- a/arch/arm/dts/sun50i-a64-pinephone.dtsi
++++ b/arch/arm/dts/sun50i-a64-pinephone.dtsi
+@@ -16,6 +16,13 @@
+ 		serial0 = &uart0;
+ 	};
+ 
++	backlight: backlight {
++		compatible = "pwm-backlight";
++		pwms = <&r_pwm 0 50000 PWM_POLARITY_INVERTED>;
++		enable-gpios = <&pio 7 10 GPIO_ACTIVE_HIGH>; /* PH10 */
++		/* Backlight configuration differs per PinePhone revision. */
++	};
++
+ 	chosen {
+ 		stdout-path = "serial0:115200n8";
+ 	};
+@@ -84,6 +91,28 @@
+ 	status = "okay";
+ };
+ 
++&de {
++	status = "okay";
++};
++
++&dphy {
++	status = "okay";
++};
++
++&dsi {
++	vcc-dsi-supply = <&reg_dldo1>;
++	status = "okay";
++
++	panel@0 {
++		compatible = "xingbangda,xbd599";
++		reg = <0>;
++		reset-gpios = <&pio 3 23 GPIO_ACTIVE_LOW>; /* PD23 */
++		iovcc-supply = <&reg_dldo2>;
++		vcc-supply = <&reg_ldo_io0>;
++		backlight = <&backlight>;
++	};
++};
++
+ &ehci0 {
+ 	status = "okay";
+ };
+@@ -92,11 +121,28 @@
+ 	status = "okay";
+ };
+ 
++&i2c0 {
++	status = "okay";
++
++	touchscreen@5d {
++		compatible = "goodix,gt917s";
++		reg = <0x5d>;
++		interrupt-parent = <&pio>;
++		interrupts = <7 4 IRQ_TYPE_LEVEL_HIGH>; /* PH4 */
++		irq-gpios = <&pio 7 4 GPIO_ACTIVE_HIGH>; /* PH4 */
++		reset-gpios = <&pio 7 11 GPIO_ACTIVE_HIGH>; /* PH11 */
++		AVDD28-supply = <&reg_ldo_io0>;
++		VDDIO-supply = <&reg_ldo_io0>;
++		touchscreen-size-x = <720>;
++		touchscreen-size-y = <1440>;
++	};
++};
++
+ &i2c1 {
+ 	status = "okay";
+ 
+ 	/* Magnetometer */
+-	lis3mdl@1e {
++	lis3mdl: lis3mdl@1e {
+ 		compatible = "st,lis3mdl-magn";
+ 		reg = <0x1e>;
+ 		vdd-supply = <&reg_dldo1>;
+@@ -188,6 +234,10 @@
+ 	 */
+ };
+ 
++&r_pwm {
++	status = "okay";
++};
++
+ &r_rsb {
+ 	status = "okay";
+ 
+@@ -279,7 +329,7 @@
+ 
+ &reg_dldo4 {
+ 	regulator-min-microvolt = <1800000>;
+-	regulator-max-microvolt = <3300000>;
++	regulator-max-microvolt = <1800000>;
+ 	regulator-name = "vcc-wifi-io";
+ };
+ 
 -- 
 2.26.2
 
