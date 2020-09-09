@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc4
 
 Name:     uboot-tools
 Version:  2020.10
-Release:  0.3%{?candidate:.%{candidate}}%{?dist}
+Release:  0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -27,10 +27,12 @@ Patch5:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch6:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
 Patch7:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
 # AllWinner improvements
-Patch8:   AllWinner-Pine64-bits.patch
+Patch8:   PinePhone-automatic-device-tree-selection.patch
+Patch9:   AllWinner-PinePhone.patch
+Patch10:  AllWinner-PineTab.patch
 # Rockchips improvements
-Patch9:   arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
-Patch10:  rockchip-Rock960-Fix-up-USB-support.patch
+Patch11:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
+Patch12:  rockchip-Rock960-Fix-up-USB-support.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -244,6 +246,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Sep 09 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-0.4.rc4
+- Update to 2020.10 RC4
+
 * Wed Aug 19 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-0.3.rc2
 - Enable a number of new Rockchip devices
 
