@@ -1,0 +1,42 @@
+From 5cd7e94ea67d13d16628af865ae68b8fbc6ef62a Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Tue, 29 Sep 2020 10:44:07 +0100
+Subject: [PATCH] Define default CONFIG_PREBOOT with right config option
+
+The 44758771ee commit removes CONFIG_PREBOOT but actually sets the USE_PREBOOT
+Kconfig option which isn't CONFIG_PREBOOT and is also a bool option which means
+we regress because 'usb start' isn't run when expected, it should also be run
+for devices that have USB storage because keyboards aren't the only thing we
+might need the USB bus for.
+
+Fixes: 44758771ee ("arm: move CONFIG_PREBOOT="usb start" to KConfig")
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+Cc: Jonas Smedegaard <dr@jones.dk>
+Cc: Neil Armstrong <narmstrong@baylibre.com>
+---
+ common/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/common/Kconfig b/common/Kconfig
+index b1934b3a9c..9c20a9738e 100644
+--- a/common/Kconfig
++++ b/common/Kconfig
+@@ -403,7 +403,6 @@ config BOOTCOMMAND
+ 
+ config USE_PREBOOT
+ 	bool "Enable preboot"
+-	default "usb start" if USB_KEYBOARD
+ 	help
+ 	  When this option is enabled, the existence of the environment
+ 	  variable "preboot" will be checked immediately before starting the
+@@ -417,6 +416,7 @@ config USE_PREBOOT
+ config PREBOOT
+ 	string "preboot default value"
+ 	depends on USE_PREBOOT && !USE_DEFAULT_ENV_FILE
++	default "usb start" if USB_KEYBOARD || USB_STORAGE
+ 	default ""
+ 	help
+ 	  This is the default of "preboot" environment variable.
+-- 
+2.26.2
+

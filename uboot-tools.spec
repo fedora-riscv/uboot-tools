@@ -37,6 +37,7 @@ Patch13:  rk3399-Pinebook-pro-EDP-support.patch
 Patch14:  rk3399-reset-display-hack.patch
 # TI fixes
 Patch15:  0001-Fix-BeagleAI-detection.patch
+Patch16: 0001-Define-default-CONFIG_PREBOOT-with-right-config-opti.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
