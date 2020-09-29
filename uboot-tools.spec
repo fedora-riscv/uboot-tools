@@ -30,14 +30,14 @@ Patch7:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
 Patch8:   AllWinner-UpstreamSync.patch
 Patch9:   AllWinner-PinePhone.patch
 Patch10:  AllWinner-PineTab.patch
-# Rockchips improvements
-Patch11:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
-Patch12:  rockchip-Rock960-Fix-up-USB-support.patch
-Patch13:  rk3399-Pinebook-pro-EDP-support.patch
-Patch14:  rk3399-reset-display-hack.patch
 # TI fixes
-Patch15:  0001-Fix-BeagleAI-detection.patch
-Patch16: 0001-Define-default-CONFIG_PREBOOT-with-right-config-opti.patch
+Patch12:  0001-Fix-BeagleAI-detection.patch
+# Rockchips improvements
+Patch13:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
+Patch14:  rk3399-Pinebook-pro-EDP-support.patch
+Patch15:  rk3399-reset-display-hack.patch
+Patch16:  0001-Define-default-CONFIG_PREBOOT-with-right-config-opti.patch
+Patch17:  rockchip-Rock960-Fix-up-USB-support.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
