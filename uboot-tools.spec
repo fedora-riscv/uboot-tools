@@ -1,8 +1,8 @@
-%global candidate rc5
+#global candidate rc5
 
 Name:     uboot-tools
 Version:  2020.10
-Release:  0.6%{?candidate:.%{candidate}}%{?dist}
+Release:  1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -36,8 +36,7 @@ Patch12:  0001-Fix-BeagleAI-detection.patch
 Patch13:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
 Patch14:  rk3399-Pinebook-pro-EDP-support.patch
 Patch15:  rk3399-reset-display-hack.patch
-Patch16:  0001-Define-default-CONFIG_PREBOOT-with-right-config-opti.patch
-Patch17:  rockchip-Rock960-Fix-up-USB-support.patch
+Patch16:  rockchip-Rock960-Fix-up-USB-support.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -48,7 +47,7 @@ BuildRequires:  devtoolset-7-build
 BuildRequires:  devtoolset-7-binutils
 BuildRequires:  devtoolset-7-gcc
 BuildRequires:  python2-devel
-BuildRequires:  python3-setuptools
+BuildRequires:  python2-setuptools
 BuildRequires:  python2-libfdt
 %else
 BuildRequires:  gcc
@@ -80,22 +79,20 @@ and fw_printenv/fw_setenv for manipulating the boot environment variables.
 
 %ifarch aarch64
 %package     -n uboot-images-armv8
-Summary:     u-boot bootloader images for aarch64 boards
-Requires:    uboot-tools
+Summary:     U-Boot firmware images for aarch64 boards
 BuildArch:   noarch
 
 %description -n uboot-images-armv8
-u-boot bootloader binaries for aarch64 boards
+U-Boot firmware binaries for aarch64 boards
 %endif
 
 %ifarch %{arm}
 %package     -n uboot-images-armv7
-Summary:     u-boot bootloader images for armv7 boards
-Requires:    uboot-tools
+Summary:     U-Boot firmware images for armv7 boards
 BuildArch:   noarch
 
 %description -n uboot-images-armv7
-u-boot bootloader binaries for armv7 boards
+U-Boot firmware binaries for armv7 boards
 %endif
 
 %prep
@@ -251,6 +248,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Oct 06 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-1
+- Update to 2020.10
+
 * Sun Sep 27 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-0.6.rc5
 - Initial support for display output on Pinebook Pro
 
