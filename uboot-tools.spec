@@ -31,6 +31,7 @@ Patch7:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
 Patch8:   AllWinner-UpstreamSync.patch
 Patch9:   AllWinner-PinePhone.patch
 Patch10:  AllWinner-PineTab.patch
+Patch11:  0001-Fixes-for-AllWinner-ethernet-network-interfaces.patch
 # TI fixes
 Patch12:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
@@ -253,6 +254,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %changelog
 * Wed Oct 28 08:21:56 GMT 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-2
 - Fix kernel installs for non EBBR systems
+- Fix for wired networks on some Allwinner devices
 
 * Tue Oct 06 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-1
 - Update to 2020.10
