@@ -119,7 +119,7 @@ index 24f1aac366..b09b4276f1 100644
  	pinctrl-names = "default";
  	pinctrl-0 = <&rgmii_pins>;
 -	phy-mode = "rgmii";
-+	phy-mode = "rgmii-id";
++	phy-mode = "rgmii-txid";
  	phy-handle = <&ext_rgmii_phy>;
  	status = "okay";
  };
