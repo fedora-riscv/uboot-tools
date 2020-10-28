@@ -2,7 +2,7 @@
 
 Name:     uboot-tools
 Version:  2020.10
-Release:  1%{?candidate:.%{candidate}}%{?dist}
+Release:  2%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -81,6 +81,7 @@ and fw_printenv/fw_setenv for manipulating the boot environment variables.
 %ifarch aarch64
 %package     -n uboot-images-armv8
 Summary:     U-Boot firmware images for aarch64 boards
+Requires:    uboot-tools
 BuildArch:   noarch
 
 %description -n uboot-images-armv8
@@ -90,6 +91,7 @@ U-Boot firmware binaries for aarch64 boards
 %ifarch %{arm}
 %package     -n uboot-images-armv7
 Summary:     U-Boot firmware images for armv7 boards
+Requires:    uboot-tools
 BuildArch:   noarch
 
 %description -n uboot-images-armv7
@@ -249,6 +251,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Oct 28 08:21:56 GMT 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-2
+- Fix kernel installs for non EBBR systems
+
 * Tue Oct 06 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-1
 - Update to 2020.10
 
