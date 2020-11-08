@@ -1,0 +1,104 @@
+From 71f86c48580642a8d6a7d1049427bb72cb93b480 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Sun, 8 Nov 2020 19:57:50 +0000
+Subject: [PATCH] rockchip: Move Bob specific bits to it's specific u-boot.dtsi
+
+Move the bits that are device specific to the -u-boot.dtsi as the
+bits may be different on other devices and hence breaks SPI on
+those devices such as the Pinebook Pro.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+Fixes: c4cea2bbf995 ("rockchip: Enable building a SPI ROM image on bob")
+Cc: Simon Glass <sjg@chromium.org>
+---
+ arch/arm/dts/rk3399-gru-u-boot.dtsi | 30 +++++++++++++++++++++++++++++
+ arch/arm/dts/rk3399-u-boot.dtsi     | 25 ------------------------
+ 2 files changed, 30 insertions(+), 25 deletions(-)
+
+diff --git a/arch/arm/dts/rk3399-gru-u-boot.dtsi b/arch/arm/dts/rk3399-gru-u-boot.dtsi
+index 390ac2bb5a..5e95cacfea 100644
+--- a/arch/arm/dts/rk3399-gru-u-boot.dtsi
++++ b/arch/arm/dts/rk3399-gru-u-boot.dtsi
+@@ -5,6 +5,36 @@
+ 
+ #include "rk3399-u-boot.dtsi"
+ 
++/ {
++	aliases {
++		spi1 = &spi1;
++	};
++};
++
++#ifdef CONFIG_ROCKCHIP_SPI_IMAGE
++&binman {
++	rom {
++		filename = "u-boot.rom";
++		size = <0x400000>;
++		pad-byte = <0xff>;
++
++		mkimage {
++			args = "-n rk3399 -T rkspi";
++			u-boot-spl {
++			};
++		};
++		u-boot-img {
++			offset = <0x40000>;
++		};
++		u-boot {
++			offset = <0x300000>;
++		};
++		fdtmap {
++		};
++	};
++};
++#endif
++
+ &spi_flash {
+ 	u-boot,dm-pre-reloc;
+ };
+diff --git a/arch/arm/dts/rk3399-u-boot.dtsi b/arch/arm/dts/rk3399-u-boot.dtsi
+index ecd230c720..26b0a34e64 100644
+--- a/arch/arm/dts/rk3399-u-boot.dtsi
++++ b/arch/arm/dts/rk3399-u-boot.dtsi
+@@ -11,7 +11,6 @@
+ 		mmc0 = &sdhci;
+ 		mmc1 = &sdmmc;
+ 		pci0 = &pcie0;
+-		spi1 = &spi1;
+ 	};
+ 
+ 	cic: syscon@ff620000 {
+@@ -60,30 +59,6 @@
+ 
+ };
+ 
+-#ifdef CONFIG_ROCKCHIP_SPI_IMAGE
+-&binman {
+-	rom {
+-		filename = "u-boot.rom";
+-		size = <0x400000>;
+-		pad-byte = <0xff>;
+-
+-		mkimage {
+-			args = "-n rk3399 -T rkspi";
+-			u-boot-spl {
+-			};
+-		};
+-		u-boot-img {
+-			offset = <0x40000>;
+-		};
+-		u-boot {
+-			offset = <0x300000>;
+-		};
+-		fdtmap {
+-		};
+-	};
+-};
+-#endif
+-
+ &cru {
+ 	u-boot,dm-pre-reloc;
+ };
+-- 
+2.28.0
+
