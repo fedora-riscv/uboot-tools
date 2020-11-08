@@ -1,53 +1,52 @@
-From patchwork Fri Sep 25 18:36:55 2020
+From patchwork Tue Oct 27 13:21:32 2020
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
-X-Patchwork-Id: 1371525
+X-Patchwork-Id: 1388576
+X-Patchwork-Delegate: ykai007@gmail.com
 Return-Path: <u-boot-bounces@lists.denx.de>
 X-Original-To: incoming@patchwork.ozlabs.org
 Delivered-To: patchwork-incoming@bilbo.ozlabs.org
 Authentication-Results: ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
- (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
  envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=rtp-net.org
-Received: from phobos.denx.de (phobos.denx.de
- [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(No client certificate requested)
-	by ozlabs.org (Postfix) with ESMTPS id 4BygrL4fh7z9sS8
-	for <incoming@patchwork.ozlabs.org>; Sat, 26 Sep 2020 04:47:14 +1000 (AEST)
+	by ozlabs.org (Postfix) with ESMTPS id 4CLC8m2r2mz9sV1
+	for <incoming@patchwork.ozlabs.org>; Wed, 28 Oct 2020 00:24:08 +1100 (AEDT)
 Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
-	by phobos.denx.de (Postfix) with ESMTP id 1DE9D823F2;
-	Fri, 25 Sep 2020 20:46:51 +0200 (CEST)
+	by phobos.denx.de (Postfix) with ESMTP id AD95E823FC;
+	Tue, 27 Oct 2020 14:23:49 +0100 (CET)
 Authentication-Results: phobos.denx.de;
  dmarc=fail (p=none dis=none) header.from=rtp-net.org
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
 Received: by phobos.denx.de (Postfix, from userid 109)
- id 7FF818240A; Fri, 25 Sep 2020 20:46:47 +0200 (CEST)
+ id 37F7C8249E; Tue, 27 Oct 2020 14:23:47 +0100 (CET)
 X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE,
  URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.2
-Received: from lechat.rtp-net.org (lechat.rtp-net.org
- [IPv6:2001:bc8:3430:1000::c0f:fee])
+Received: from lechat.rtp-net.org (lechat.rtp-net.org [51.15.165.164])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by phobos.denx.de (Postfix) with ESMTPS id 60178823ED
- for <u-boot@lists.denx.de>; Fri, 25 Sep 2020 20:46:44 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTPS id 65DDC81260
+ for <u-boot@lists.denx.de>; Tue, 27 Oct 2020 14:23:44 +0100 (CET)
 Authentication-Results: phobos.denx.de;
  dmarc=pass (p=none dis=none) header.from=rtp-net.org
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
 Received: by lechat.rtp-net.org (Postfix, from userid 1000)
- id 21266180A8C; Fri, 25 Sep 2020 20:46:42 +0200 (CEST)
-Message-ID: <20200925183856.346332079@rtp-net.org>
+ id 166971802C6; Tue, 27 Oct 2020 14:23:43 +0100 (CET)
+Message-ID: <20201027132235.729230758@rtp-net.org>
 User-Agent: quilt/0.66
-Date: Fri, 25 Sep 2020 20:36:55 +0200
+Date: Tue, 27 Oct 2020 14:21:32 +0100
 From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
 To: u-boot@lists.denx.de
 Cc: Kever Yang <kever.yang@rock-chips.com>,
@@ -55,10 +54,11 @@ Cc: Kever Yang <kever.yang@rock-chips.com>,
  Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
  Peter Robinson <pbrobinson@gmail.com>,
  Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
  Arnaud Patard <arnaud.patard@rtp-net.org>
-Subject: [patch 1/8] RFC: drivers/video/rockchip/rk_vop.c: Use endpoint
+Subject: [patch v2 01/10] drivers/video/rockchip/rk_vop.c: Use endpoint
  compatible string to find VOP mode
-References: <20200925183654.723338620@rtp-net.org>
+References: <20201027132131.016984025@rtp-net.org>
 MIME-Version: 1.0
 X-BeenThere: u-boot@lists.denx.de
 X-Mailman-Version: 2.1.34
@@ -87,6 +87,7 @@ to find the kind of endpoint by comparing the endpoint compatible value.
 This patch is implementing the more flexible second solution.
 
 Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
 
 Index: u-boot/arch/arm/include/asm/arch-rockchip/vop_rk3288.h
 ===================================================================
@@ -168,12 +169,13 @@ Index: u-boot/drivers/video/rockchip/rk_vop.c
  	disp_uc_plat = dev_get_uclass_platdata(disp);
  	debug("Found device '%s', disp_uc_priv=%p\n", disp->name, disp_uc_plat);
 
-From patchwork Fri Sep 25 18:36:56 2020
+From patchwork Tue Oct 27 13:21:33 2020
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
-X-Patchwork-Id: 1371530
+X-Patchwork-Id: 1388588
+X-Patchwork-Delegate: ykai007@gmail.com
 Return-Path: <u-boot-bounces@lists.denx.de>
 X-Original-To: incoming@patchwork.ozlabs.org
 Delivered-To: patchwork-incoming@bilbo.ozlabs.org
@@ -188,35 +190,36 @@ Received: from phobos.denx.de (phobos.denx.de
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(No client certificate requested)
-	by ozlabs.org (Postfix) with ESMTPS id 4BygsJ4hGqz9sS8
-	for <incoming@patchwork.ozlabs.org>; Sat, 26 Sep 2020 04:48:04 +1000 (AEST)
+	by ozlabs.org (Postfix) with ESMTPS id 4CLCC535Xyz9sV1
+	for <incoming@patchwork.ozlabs.org>; Wed, 28 Oct 2020 00:26:07 +1100 (AEDT)
 Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
-	by phobos.denx.de (Postfix) with ESMTP id 50C6E82503;
-	Fri, 25 Sep 2020 20:47:09 +0200 (CEST)
+	by phobos.denx.de (Postfix) with ESMTP id F3D8182517;
+	Tue, 27 Oct 2020 14:24:08 +0100 (CET)
 Authentication-Results: phobos.denx.de;
  dmarc=fail (p=none dis=none) header.from=rtp-net.org
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
 Received: by phobos.denx.de (Postfix, from userid 109)
- id 0F41F8246F; Fri, 25 Sep 2020 20:46:51 +0200 (CEST)
+ id 99F18824A7; Tue, 27 Oct 2020 14:23:53 +0100 (CET)
 X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE,
  URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.2
-Received: from lechat.rtp-net.org (lechat.rtp-net.org [51.15.165.164])
+Received: from lechat.rtp-net.org (lechat.rtp-net.org
+ [IPv6:2001:bc8:3430:1000::c0f:fee])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by phobos.denx.de (Postfix) with ESMTPS id BD6E0823F5
- for <u-boot@lists.denx.de>; Fri, 25 Sep 2020 20:46:44 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTPS id 6CEE382496
+ for <u-boot@lists.denx.de>; Tue, 27 Oct 2020 14:23:45 +0100 (CET)
 Authentication-Results: phobos.denx.de;
  dmarc=pass (p=none dis=none) header.from=rtp-net.org
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
 Received: by lechat.rtp-net.org (Postfix, from userid 1000)
- id 0B30218054F; Fri, 25 Sep 2020 20:46:43 +0200 (CEST)
-Message-ID: <20200925183856.398231733@rtp-net.org>
+ id 354541806F5; Tue, 27 Oct 2020 14:23:43 +0100 (CET)
+Message-ID: <20201027132235.781283753@rtp-net.org>
 User-Agent: quilt/0.66
-Date: Fri, 25 Sep 2020 20:36:56 +0200
+Date: Tue, 27 Oct 2020 14:21:33 +0100
 From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
 To: u-boot@lists.denx.de
 Cc: Kever Yang <kever.yang@rock-chips.com>,
@@ -224,9 +227,10 @@ Cc: Kever Yang <kever.yang@rock-chips.com>,
  Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
  Peter Robinson <pbrobinson@gmail.com>,
  Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
  Arnaud Patard <arnaud.patard@rtp-net.org>
-Subject: [patch 2/8] RFC: drivers/video/rockchip/rk_edp.c: Add rk3399 support
-References: <20200925183654.723338620@rtp-net.org>
+Subject: [patch v2 02/10] drivers/video/rockchip/rk_edp.c: Add rk3399 support
+References: <20201027132131.016984025@rtp-net.org>
 MIME-Version: 1.0
 X-BeenThere: u-boot@lists.denx.de
 X-Mailman-Version: 2.1.34
@@ -255,6 +259,7 @@ on rk3399, so don't try changing the clock at index 1 to rate 0 on
 rk3399.
 
 Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
 
 Index: u-boot/drivers/video/rockchip/rk_edp.c
 ===================================================================
@@ -422,12 +427,13 @@ Index: u-boot/arch/arm/include/asm/arch-rockchip/edp_rk3288.h
  /* line_map */
  #define LANE3_MAP_LOGIC_LANE_0			(0x0 << 6)
 
-From patchwork Fri Sep 25 18:36:57 2020
+From patchwork Tue Oct 27 13:21:34 2020
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
-X-Patchwork-Id: 1371528
+X-Patchwork-Id: 1388575
+X-Patchwork-Delegate: ykai007@gmail.com
 Return-Path: <u-boot-bounces@lists.denx.de>
 X-Original-To: incoming@patchwork.ozlabs.org
 Delivered-To: patchwork-incoming@bilbo.ozlabs.org
@@ -439,19 +445,20 @@ Authentication-Results: ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=rtp-net.org
 Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
+ SHA256)
 	(No client certificate requested)
-	by ozlabs.org (Postfix) with ESMTPS id 4Bygrs3CVDz9sSJ
-	for <incoming@patchwork.ozlabs.org>; Sat, 26 Sep 2020 04:47:41 +1000 (AEST)
+	by ozlabs.org (Postfix) with ESMTPS id 4CLC8l3jS0z9sSG
+	for <incoming@patchwork.ozlabs.org>; Wed, 28 Oct 2020 00:23:56 +1100 (AEDT)
 Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
-	by phobos.denx.de (Postfix) with ESMTP id A6BF7824BB;
-	Fri, 25 Sep 2020 20:47:04 +0200 (CEST)
+	by phobos.denx.de (Postfix) with ESMTP id 4A07082361;
+	Tue, 27 Oct 2020 14:23:48 +0100 (CET)
 Authentication-Results: phobos.denx.de;
  dmarc=fail (p=none dis=none) header.from=rtp-net.org
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
 Received: by phobos.denx.de (Postfix, from userid 109)
- id A050F82499; Fri, 25 Sep 2020 20:46:50 +0200 (CEST)
+ id 1BE93824A7; Tue, 27 Oct 2020 14:23:47 +0100 (CET)
 X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE,
@@ -459,17 +466,17 @@ X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE,
 Received: from lechat.rtp-net.org (lechat.rtp-net.org [51.15.165.164])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by phobos.denx.de (Postfix) with ESMTPS id 8F65D823F0
- for <u-boot@lists.denx.de>; Fri, 25 Sep 2020 20:46:44 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTPS id BEBE082361
+ for <u-boot@lists.denx.de>; Tue, 27 Oct 2020 14:23:44 +0100 (CET)
 Authentication-Results: phobos.denx.de;
  dmarc=pass (p=none dis=none) header.from=rtp-net.org
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
 Received: by lechat.rtp-net.org (Postfix, from userid 1000)
- id 3BBA4180A6C; Fri, 25 Sep 2020 20:46:43 +0200 (CEST)
-Message-ID: <20200925183856.447902421@rtp-net.org>
+ id 5A45C1808B6; Tue, 27 Oct 2020 14:23:43 +0100 (CET)
+Message-ID: <20201027132235.832232313@rtp-net.org>
 User-Agent: quilt/0.66
-Date: Fri, 25 Sep 2020 20:36:57 +0200
+Date: Tue, 27 Oct 2020 14:21:34 +0100
 From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
 To: u-boot@lists.denx.de
 Cc: Kever Yang <kever.yang@rock-chips.com>,
@@ -477,10 +484,11 @@ Cc: Kever Yang <kever.yang@rock-chips.com>,
  Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
  Peter Robinson <pbrobinson@gmail.com>,
  Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
  Arnaud Patard <arnaud.patard@rtp-net.org>
-Subject: [patch 3/8] RFC: drivers/video/rockchip/rk_edp.c: Change interrupt
+Subject: [patch v2 03/10] drivers/video/rockchip/rk_edp.c: Change interrupt
  polarity configuration
-References: <20200925183654.723338620@rtp-net.org>
+References: <20201027132131.016984025@rtp-net.org>
 MIME-Version: 1.0
 X-BeenThere: u-boot@lists.denx.de
 X-Mailman-Version: 2.1.34
@@ -503,77 +511,73 @@ uboot code is setting it to 1. Change the configuration to match the
 linux configuration
 
 Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
 
-Index: u-boot/drivers/video/rockchip/rk_edp.c
+Index: u-boot/arch/arm/include/asm/arch-rockchip/edp_rk3288.h
 ===================================================================
---- u-boot.orig/drivers/video/rockchip/rk_edp.c
-+++ u-boot/drivers/video/rockchip/rk_edp.c
-@@ -100,10 +100,13 @@ static void rk_edp_init_refclk(struct rk
- 	       &regs->dp_reserv2);
- }
+--- u-boot.orig/arch/arm/include/asm/arch-rockchip/edp_rk3288.h
++++ u-boot/arch/arm/include/asm/arch-rockchip/edp_rk3288.h
+@@ -297,7 +297,9 @@ check_member(rk3288_edp, pll_reg_5, 0xa0
  
-+#define INT_POL1                                (0x1 << 1)
-+#define INT_POL0                                (0x1 << 0)
-+
- static void rk_edp_init_interrupt(struct rk3288_edp *regs)
- {
- 	/* Set interrupt pin assertion polarity as high */
--	writel(INT_POL, &regs->int_ctl);
-+	writel(INT_POL0 | INT_POL1, &regs->int_ctl);
+ /* int_ctl */
+ #define SOFT_INT_CTRL				(0x1 << 2)
+-#define INT_POL					(0x1 << 0)
++#define INT_POL1				(0x1 << 1)
++#define INT_POL0				(0x1 << 0)
++#define INT_POL					(INT_POL0 | INT_POL1)
  
- 	/* Clear pending registers */
- 	writel(0xff, &regs->common_int_sta_1);
+ /* sys_ctl_1 */
+ #define DET_STA					(0x1 << 2)
 
-From patchwork Fri Sep 25 18:36:58 2020
+From patchwork Tue Oct 27 13:21:35 2020
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
-X-Patchwork-Id: 1371526
+X-Patchwork-Id: 1388577
+X-Patchwork-Delegate: ykai007@gmail.com
 Return-Path: <u-boot-bounces@lists.denx.de>
 X-Original-To: incoming@patchwork.ozlabs.org
 Delivered-To: patchwork-incoming@bilbo.ozlabs.org
 Authentication-Results: ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
- (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
  envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=rtp-net.org
-Received: from phobos.denx.de (phobos.denx.de
- [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(No client certificate requested)
-	by ozlabs.org (Postfix) with ESMTPS id 4BygrP4k49z9sS8
-	for <incoming@patchwork.ozlabs.org>; Sat, 26 Sep 2020 04:47:17 +1000 (AEST)
+	by ozlabs.org (Postfix) with ESMTPS id 4CLC932V0Bz9sSG
+	for <incoming@patchwork.ozlabs.org>; Wed, 28 Oct 2020 00:24:22 +1100 (AEDT)
 Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
-	by phobos.denx.de (Postfix) with ESMTP id 59CA8824A5;
-	Fri, 25 Sep 2020 20:46:58 +0200 (CEST)
+	by phobos.denx.de (Postfix) with ESMTP id 129E182496;
+	Tue, 27 Oct 2020 14:23:55 +0100 (CET)
 Authentication-Results: phobos.denx.de;
  dmarc=fail (p=none dis=none) header.from=rtp-net.org
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
 Received: by phobos.denx.de (Postfix, from userid 109)
- id 35BF482489; Fri, 25 Sep 2020 20:46:50 +0200 (CEST)
+ id 7EA32824BC; Tue, 27 Oct 2020 14:23:49 +0100 (CET)
 X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE,
  URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.2
-Received: from lechat.rtp-net.org (lechat.rtp-net.org
- [IPv6:2001:bc8:3430:1000::c0f:fee])
+Received: from lechat.rtp-net.org (lechat.rtp-net.org [51.15.165.164])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by phobos.denx.de (Postfix) with ESMTPS id 8FB9B823F2
- for <u-boot@lists.denx.de>; Fri, 25 Sep 2020 20:46:44 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTPS id ED572823FC
+ for <u-boot@lists.denx.de>; Tue, 27 Oct 2020 14:23:44 +0100 (CET)
 Authentication-Results: phobos.denx.de;
  dmarc=pass (p=none dis=none) header.from=rtp-net.org
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
 Received: by lechat.rtp-net.org (Postfix, from userid 1000)
- id 4C3F8180AAC; Fri, 25 Sep 2020 20:46:43 +0200 (CEST)
-Message-ID: <20200925183856.497901419@rtp-net.org>
+ id 6676F1808BC; Tue, 27 Oct 2020 14:23:43 +0100 (CET)
+Message-ID: <20201027132235.883717675@rtp-net.org>
 User-Agent: quilt/0.66
-Date: Fri, 25 Sep 2020 20:36:58 +0200
+Date: Tue, 27 Oct 2020 14:21:35 +0100
 From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
 To: u-boot@lists.denx.de
 Cc: Kever Yang <kever.yang@rock-chips.com>,
@@ -581,107 +585,11 @@ Cc: Kever Yang <kever.yang@rock-chips.com>,
  Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
  Peter Robinson <pbrobinson@gmail.com>,
  Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
  Arnaud Patard <arnaud.patard@rtp-net.org>
-Subject: [patch 4/8] RFC: drivers/video/rockchip/rk_edp.c: Change clock rate
-References: <20200925183654.723338620@rtp-net.org>
-MIME-Version: 1.0
-X-BeenThere: u-boot@lists.denx.de
-X-Mailman-Version: 2.1.34
-Precedence: list
-List-Id: U-Boot discussion <u-boot.lists.denx.de>
-List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
- <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
-List-Archive: <https://lists.denx.de/pipermail/u-boot/>
-List-Post: <mailto:u-boot@lists.denx.de>
-List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
-List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
- <mailto:u-boot-request@lists.denx.de?subject=subscribe>
-Errors-To: u-boot-bounces@lists.denx.de
-Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
-X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
-X-Virus-Status: Clean
-
-The current code is setting the clock rate to 192000000, but
-due to the current device-tree configuration and linux code,
-it should rather be 100000000.
-
-Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
-
-Index: u-boot/drivers/video/rockchip/rk_edp.c
-===================================================================
---- u-boot.orig/drivers/video/rockchip/rk_edp.c
-+++ u-boot/drivers/video/rockchip/rk_edp.c
-@@ -1075,7 +1078,7 @@ static int rk_edp_probe(struct udevice *
- 	}
- 	ret = clk_get_by_index(uc_plat->src_dev, 0, &clk);
- 	if (ret >= 0) {
--		ret = clk_set_rate(&clk, 192000000);
-+		ret = clk_set_rate(&clk, 100000000);
- 		clk_free(&clk);
- 	}
- 	if (ret < 0) {
-
-From patchwork Fri Sep 25 18:36:59 2020
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
-X-Patchwork-Id: 1371529
-Return-Path: <u-boot-bounces@lists.denx.de>
-X-Original-To: incoming@patchwork.ozlabs.org
-Delivered-To: patchwork-incoming@bilbo.ozlabs.org
-Authentication-Results: ozlabs.org;
- spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
- (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
- envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=rtp-net.org
-Received: from phobos.denx.de (phobos.denx.de
- [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
-	(No client certificate requested)
-	by ozlabs.org (Postfix) with ESMTPS id 4Bygs45XdNz9sS8
-	for <incoming@patchwork.ozlabs.org>; Sat, 26 Sep 2020 04:47:52 +1000 (AEST)
-Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
-	by phobos.denx.de (Postfix) with ESMTP id 61E26824EE;
-	Fri, 25 Sep 2020 20:47:07 +0200 (CEST)
-Authentication-Results: phobos.denx.de;
- dmarc=fail (p=none dis=none) header.from=rtp-net.org
-Authentication-Results: phobos.denx.de;
- spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
-Received: by phobos.denx.de (Postfix, from userid 109)
- id B47DD8248B; Fri, 25 Sep 2020 20:46:50 +0200 (CEST)
-X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
-X-Spam-Level: 
-X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE,
- URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.2
-Received: from lechat.rtp-net.org (lechat.rtp-net.org
- [IPv6:2001:bc8:3430:1000::c0f:fee])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by phobos.denx.de (Postfix) with ESMTPS id DD7248246F
- for <u-boot@lists.denx.de>; Fri, 25 Sep 2020 20:46:44 +0200 (CEST)
-Authentication-Results: phobos.denx.de;
- dmarc=pass (p=none dis=none) header.from=rtp-net.org
-Authentication-Results: phobos.denx.de;
- spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
-Received: by lechat.rtp-net.org (Postfix, from userid 1000)
- id 6D075180ABF; Fri, 25 Sep 2020 20:46:43 +0200 (CEST)
-Message-ID: <20200925183856.548086571@rtp-net.org>
-User-Agent: quilt/0.66
-Date: Fri, 25 Sep 2020 20:36:59 +0200
-From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
-To: u-boot@lists.denx.de
-Cc: Kever Yang <kever.yang@rock-chips.com>,
- Anatolij Gustschin <agust@denx.de>,
- Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
- Peter Robinson <pbrobinson@gmail.com>,
- Samuel Dionne-Riel <samuel@dionne-riel.com>,
- Arnaud Patard <arnaud.patard@rtp-net.org>
-Subject: [patch 5/8] RFC: drivers/video/rockchip/rk_vop.c: Reserve efi fb
+Subject: [patch v2 04/10] drivers/video/rockchip/rk_vop.c: Reserve efi fb
  memory
-References: <20200925183654.723338620@rtp-net.org>
+References: <20201027132131.016984025@rtp-net.org>
 MIME-Version: 1.0
 X-BeenThere: u-boot@lists.denx.de
 X-Mailman-Version: 2.1.34
@@ -704,6 +612,7 @@ has to be reserved, otherwise it may leads to kernel memory
 overwrite.
 
 Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
 
 Index: u-boot/drivers/video/rockchip/rk_vop.c
 ===================================================================
@@ -733,55 +642,56 @@ Index: u-boot/drivers/video/rockchip/rk_vop.c
  
  	/*
 
-From patchwork Fri Sep 25 18:37:00 2020
+From patchwork Tue Oct 27 13:21:36 2020
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
-X-Patchwork-Id: 1371527
+X-Patchwork-Id: 1388583
+X-Patchwork-Delegate: ykai007@gmail.com
 Return-Path: <u-boot-bounces@lists.denx.de>
 X-Original-To: incoming@patchwork.ozlabs.org
 Delivered-To: patchwork-incoming@bilbo.ozlabs.org
 Authentication-Results: ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
- (client-ip=85.214.62.61; helo=phobos.denx.de;
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
  envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=rtp-net.org
-Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(No client certificate requested)
-	by ozlabs.org (Postfix) with ESMTPS id 4Bygrg0YBjz9sS8
-	for <incoming@patchwork.ozlabs.org>; Sat, 26 Sep 2020 04:47:31 +1000 (AEST)
+	by ozlabs.org (Postfix) with ESMTPS id 4CLCB85bVhz9sSf
+	for <incoming@patchwork.ozlabs.org>; Wed, 28 Oct 2020 00:25:20 +1100 (AEDT)
 Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
-	by phobos.denx.de (Postfix) with ESMTP id 63B7B82489;
-	Fri, 25 Sep 2020 20:47:01 +0200 (CEST)
+	by phobos.denx.de (Postfix) with ESMTP id 1CD88824E5;
+	Tue, 27 Oct 2020 14:24:01 +0100 (CET)
 Authentication-Results: phobos.denx.de;
  dmarc=fail (p=none dis=none) header.from=rtp-net.org
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
 Received: by phobos.denx.de (Postfix, from userid 109)
- id 3E20082412; Fri, 25 Sep 2020 20:46:50 +0200 (CEST)
+ id 15038824A9; Tue, 27 Oct 2020 14:23:50 +0100 (CET)
 X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE,
  URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.2
-Received: from lechat.rtp-net.org (lechat.rtp-net.org
- [IPv6:2001:bc8:3430:1000::c0f:fee])
+Received: from lechat.rtp-net.org (lechat.rtp-net.org [51.15.165.164])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by phobos.denx.de (Postfix) with ESMTPS id D99C482423
- for <u-boot@lists.denx.de>; Fri, 25 Sep 2020 20:46:44 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTPS id 16A2C8246A
+ for <u-boot@lists.denx.de>; Tue, 27 Oct 2020 14:23:45 +0100 (CET)
 Authentication-Results: phobos.denx.de;
  dmarc=pass (p=none dis=none) header.from=rtp-net.org
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
 Received: by lechat.rtp-net.org (Postfix, from userid 1000)
- id 81B21180AC6; Fri, 25 Sep 2020 20:46:43 +0200 (CEST)
-Message-ID: <20200925183856.598156739@rtp-net.org>
+ id 8FBF11808D1; Tue, 27 Oct 2020 14:23:43 +0100 (CET)
+Message-ID: <20201027132235.934181387@rtp-net.org>
 User-Agent: quilt/0.66
-Date: Fri, 25 Sep 2020 20:37:00 +0200
+Date: Tue, 27 Oct 2020 14:21:36 +0100
 From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
 To: u-boot@lists.denx.de
 Cc: Kever Yang <kever.yang@rock-chips.com>,
@@ -789,9 +699,10 @@ Cc: Kever Yang <kever.yang@rock-chips.com>,
  Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
  Peter Robinson <pbrobinson@gmail.com>,
  Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
  Arnaud Patard <arnaud.patard@rtp-net.org>
-Subject: [patch 6/8] RFC: rk3399-pinebook-pro-u-boot.dtsi: Enable edp
-References: <20200925183654.723338620@rtp-net.org>
+Subject: [patch v2 05/10] rk3399-pinebook-pro-u-boot.dtsi: Enable edp
+References: <20201027132131.016984025@rtp-net.org>
 MIME-Version: 1.0
 X-BeenThere: u-boot@lists.denx.de
 X-Mailman-Version: 2.1.34
@@ -827,12 +738,13 @@ Index: u-boot/arch/arm/dts/rk3399-pinebook-pro-u-boot.dtsi
 +	rockchip,panel = <&edp_panel>;
 +};
 
-From patchwork Fri Sep 25 18:37:01 2020
+From patchwork Tue Oct 27 13:21:37 2020
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
-X-Patchwork-Id: 1371532
+X-Patchwork-Id: 1388578
+X-Patchwork-Delegate: ykai007@gmail.com
 Return-Path: <u-boot-bounces@lists.denx.de>
 X-Original-To: incoming@patchwork.ozlabs.org
 Delivered-To: patchwork-incoming@bilbo.ozlabs.org
@@ -846,36 +758,35 @@ Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(No client certificate requested)
-	by ozlabs.org (Postfix) with ESMTPS id 4Bygsg53Gnz9sSJ
-	for <incoming@patchwork.ozlabs.org>; Sat, 26 Sep 2020 04:48:23 +1000 (AEST)
+	by ozlabs.org (Postfix) with ESMTPS id 4CLC9J4D9wz9sSf
+	for <incoming@patchwork.ozlabs.org>; Wed, 28 Oct 2020 00:24:35 +1100 (AEDT)
 Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
-	by phobos.denx.de (Postfix) with ESMTP id C15BF82513;
-	Fri, 25 Sep 2020 20:47:13 +0200 (CEST)
+	by phobos.denx.de (Postfix) with ESMTP id 164CE82494;
+	Tue, 27 Oct 2020 14:23:56 +0100 (CET)
 Authentication-Results: phobos.denx.de;
  dmarc=fail (p=none dis=none) header.from=rtp-net.org
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
 Received: by phobos.denx.de (Postfix, from userid 109)
- id 4F0DE8247A; Fri, 25 Sep 2020 20:46:53 +0200 (CEST)
+ id 980AA824B8; Tue, 27 Oct 2020 14:23:49 +0100 (CET)
 X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE,
  URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.2
-Received: from lechat.rtp-net.org (lechat.rtp-net.org
- [IPv6:2001:bc8:3430:1000::c0f:fee])
+Received: from lechat.rtp-net.org (lechat.rtp-net.org [51.15.165.164])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by phobos.denx.de (Postfix) with ESMTPS id EFE03823FF
- for <u-boot@lists.denx.de>; Fri, 25 Sep 2020 20:46:44 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTPS id 1369A82430
+ for <u-boot@lists.denx.de>; Tue, 27 Oct 2020 14:23:45 +0100 (CET)
 Authentication-Results: phobos.denx.de;
  dmarc=pass (p=none dis=none) header.from=rtp-net.org
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
 Received: by lechat.rtp-net.org (Postfix, from userid 1000)
- id 9A94A180ACB; Fri, 25 Sep 2020 20:46:43 +0200 (CEST)
-Message-ID: <20200925183856.648221737@rtp-net.org>
+ id B8905180904; Tue, 27 Oct 2020 14:23:43 +0100 (CET)
+Message-ID: <20201027132235.984153676@rtp-net.org>
 User-Agent: quilt/0.66
-Date: Fri, 25 Sep 2020 20:37:01 +0200
+Date: Tue, 27 Oct 2020 14:21:37 +0100
 From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
 To: u-boot@lists.denx.de
 Cc: Kever Yang <kever.yang@rock-chips.com>,
@@ -883,10 +794,11 @@ Cc: Kever Yang <kever.yang@rock-chips.com>,
  Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
  Peter Robinson <pbrobinson@gmail.com>,
  Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
  Arnaud Patard <arnaud.patard@rtp-net.org>
-Subject: [patch 7/8] RFC: configs/pinebook-pro-rk3399_defconfig: enable
+Subject: [patch v2 06/10] configs/pinebook-pro-rk3399_defconfig: enable
  SYS_USB_EVENT_POLL_VIA_INT_QUEUE
-References: <20200925183654.723338620@rtp-net.org>
+References: <20201027132131.016984025@rtp-net.org>
 MIME-Version: 1.0
 X-BeenThere: u-boot@lists.denx.de
 X-Mailman-Version: 2.1.34
@@ -927,54 +839,57 @@ Index: u-boot/configs/pinebook-pro-rk3399_defconfig
  CONFIG_USB_ETHER_ASIX=y
  CONFIG_USB_ETHER_RTL8152=y
 
-From patchwork Fri Sep 25 18:37:02 2020
+From patchwork Tue Oct 27 13:21:38 2020
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
-X-Patchwork-Id: 1371531
+X-Patchwork-Id: 1388584
+X-Patchwork-Delegate: ykai007@gmail.com
 Return-Path: <u-boot-bounces@lists.denx.de>
 X-Original-To: incoming@patchwork.ozlabs.org
 Delivered-To: patchwork-incoming@bilbo.ozlabs.org
 Authentication-Results: ozlabs.org;
  spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
- (client-ip=85.214.62.61; helo=phobos.denx.de;
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
  envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=rtp-net.org
-Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(No client certificate requested)
-	by ozlabs.org (Postfix) with ESMTPS id 4BygsV69FWz9sS8
-	for <incoming@patchwork.ozlabs.org>; Sat, 26 Sep 2020 04:48:14 +1000 (AEST)
+	by ozlabs.org (Postfix) with ESMTPS id 4CLCBN6wXXz9sSG
+	for <incoming@patchwork.ozlabs.org>; Wed, 28 Oct 2020 00:25:32 +1100 (AEDT)
 Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
-	by phobos.denx.de (Postfix) with ESMTP id 94D3B824F4;
-	Fri, 25 Sep 2020 20:47:11 +0200 (CEST)
+	by phobos.denx.de (Postfix) with ESMTP id E86AC824F1;
+	Tue, 27 Oct 2020 14:24:03 +0100 (CET)
 Authentication-Results: phobos.denx.de;
  dmarc=fail (p=none dis=none) header.from=rtp-net.org
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
 Received: by phobos.denx.de (Postfix, from userid 109)
- id EA6CB8248B; Fri, 25 Sep 2020 20:46:52 +0200 (CEST)
+ id DED28824A9; Tue, 27 Oct 2020 14:23:51 +0100 (CET)
 X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE,
  URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.2
-Received: from lechat.rtp-net.org (lechat.rtp-net.org [51.15.165.164])
+Received: from lechat.rtp-net.org (lechat.rtp-net.org
+ [IPv6:2001:bc8:3430:1000::c0f:fee])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by phobos.denx.de (Postfix) with ESMTPS id 0460082475
- for <u-boot@lists.denx.de>; Fri, 25 Sep 2020 20:46:45 +0200 (CEST)
+ by phobos.denx.de (Postfix) with ESMTPS id 51B9D82483
+ for <u-boot@lists.denx.de>; Tue, 27 Oct 2020 14:23:45 +0100 (CET)
 Authentication-Results: phobos.denx.de;
  dmarc=pass (p=none dis=none) header.from=rtp-net.org
 Authentication-Results: phobos.denx.de;
  spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
 Received: by lechat.rtp-net.org (Postfix, from userid 1000)
- id B7788180ACE; Fri, 25 Sep 2020 20:46:43 +0200 (CEST)
-Message-ID: <20200925183856.699546249@rtp-net.org>
+ id CD3AC180A2B; Tue, 27 Oct 2020 14:23:43 +0100 (CET)
+Message-ID: <20201027132236.036333749@rtp-net.org>
 User-Agent: quilt/0.66
-Date: Fri, 25 Sep 2020 20:37:02 +0200
+Date: Tue, 27 Oct 2020 14:21:38 +0100
 From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
 To: u-boot@lists.denx.de
 Cc: Kever Yang <kever.yang@rock-chips.com>,
@@ -982,9 +897,10 @@ Cc: Kever Yang <kever.yang@rock-chips.com>,
  Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
  Peter Robinson <pbrobinson@gmail.com>,
  Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
  Arnaud Patard <arnaud.patard@rtp-net.org>
-Subject: [patch 8/8] RFC: drivers/pwm/rk_pwm.c: Fix default polarity
-References: <20200925183654.723338620@rtp-net.org>
+Subject: [patch v2 07/10] drivers/pwm/rk_pwm.c: Fix default polarity
+References: <20201027132131.016984025@rtp-net.org>
 MIME-Version: 1.0
 X-BeenThere: u-boot@lists.denx.de
 X-Mailman-Version: 2.1.34
@@ -1011,6 +927,7 @@ Update the code to use PWM_DUTY_POSTIVE | PWM_INACTIVE_NEGATIVE
 by default instead.
 
 Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
 
 Index: u-boot/drivers/pwm/rk_pwm.c
 ===================================================================
@@ -1025,3 +942,438 @@ Index: u-boot/drivers/pwm/rk_pwm.c
  
  	return 0;
  }
+
+From patchwork Tue Oct 27 13:21:39 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
+X-Patchwork-Id: 1388585
+X-Patchwork-Delegate: ykai007@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4CLCBc1H6Xz9sSG
+	for <incoming@patchwork.ozlabs.org>; Wed, 28 Oct 2020 00:25:44 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id A78FF824FC;
+	Tue, 27 Oct 2020 14:24:05 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 038C68248F; Tue, 27 Oct 2020 14:23:52 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE,
+ URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.2
+Received: from lechat.rtp-net.org (lechat.rtp-net.org
+ [IPv6:2001:bc8:3430:1000::c0f:fee])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 5684482494
+ for <u-boot@lists.denx.de>; Tue, 27 Oct 2020 14:23:45 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
+Received: by lechat.rtp-net.org (Postfix, from userid 1000)
+ id ECF51180ACB; Tue, 27 Oct 2020 14:23:43 +0100 (CET)
+Message-ID: <20201027132236.086716818@rtp-net.org>
+User-Agent: quilt/0.66
+Date: Tue, 27 Oct 2020 14:21:39 +0100
+From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Peter Robinson <pbrobinson@gmail.com>,
+ Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
+ Arnaud Patard <arnaud.patard@rtp-net.org>
+Subject: [patch v2 08/10] drivers/video/rockchip/rk_vop.c: Fix format of
+ fbbase in debug string
+References: <20201027132131.016984025@rtp-net.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+The debug string printing the device name, framebuffer address and of node
+is using %lu as format for the framebuffer address, which is not so nice.
+Change it to %lx.
+
+Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+
+Index: u-boot/drivers/video/rockchip/rk_vop.c
+===================================================================
+--- u-boot.orig/drivers/video/rockchip/rk_vop.c
++++ u-boot/drivers/video/rockchip/rk_vop.c
+@@ -239,7 +239,7 @@ static int rk_display_init(struct udevic
+ 	ofnode remote;
+ 	const char *compat;
+ 
+-	debug("%s(%s, %lu, %s)\n", __func__,
++	debug("%s(%s, %lx, %s)\n", __func__,
+ 	      dev_read_name(dev), fbbase, ofnode_get_name(ep_node));
+ 
+ 	ret = ofnode_read_u32(ep_node, "remote-endpoint", &remote_phandle);
+
+From patchwork Tue Oct 27 13:21:40 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
+X-Patchwork-Id: 1388579
+X-Patchwork-Delegate: ykai007@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
+ SHA256)
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4CLC9j13jpz9sSG
+	for <incoming@patchwork.ozlabs.org>; Wed, 28 Oct 2020 00:24:56 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 83485824BC;
+	Tue, 27 Oct 2020 14:23:57 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id A548C824AD; Tue, 27 Oct 2020 14:23:49 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE,
+ URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.2
+Received: from lechat.rtp-net.org (lechat.rtp-net.org [51.15.165.164])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 547EC8248F
+ for <u-boot@lists.denx.de>; Tue, 27 Oct 2020 14:23:45 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
+Received: by lechat.rtp-net.org (Postfix, from userid 1000)
+ id 24EC8180ACE; Tue, 27 Oct 2020 14:23:44 +0100 (CET)
+Message-ID: <20201027132236.137690139@rtp-net.org>
+User-Agent: quilt/0.66
+Date: Tue, 27 Oct 2020 14:21:40 +0100
+From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Peter Robinson <pbrobinson@gmail.com>,
+ Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
+ Arnaud Patard <arnaud.patard@rtp-net.org>
+Subject: [patch v2 09/10] drivers/video/rockchip/rk_edp.c: Add missing reset
+ support
+References: <20201027132131.016984025@rtp-net.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+In order to ensure that the eDP registers are in correct state,
+add missing support for the eDP reset lines found in the device-tree.
+
+
+Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+
+Index: u-boot/drivers/video/rockchip/rk_edp.c
+===================================================================
+--- u-boot.orig/drivers/video/rockchip/rk_edp.c
++++ u-boot/drivers/video/rockchip/rk_edp.c
+@@ -8,11 +8,13 @@
+ #include <clk.h>
+ #include <display.h>
+ #include <dm.h>
++#include <dm/device_compat.h>
+ #include <edid.h>
+ #include <log.h>
+ #include <malloc.h>
+ #include <panel.h>
+ #include <regmap.h>
++#include <reset.h>
+ #include <syscon.h>
+ #include <asm/gpio.h>
+ #include <asm/io.h>
+@@ -1047,6 +1049,7 @@ static int rk_edp_probe(struct udevice *
+ 	struct rk_edp_priv *priv = dev_get_priv(dev);
+ 	struct rk3288_edp *regs = priv->regs;
+ 	struct rockchip_dp_data *edp_data = (struct rockchip_dp_data *)dev_get_driver_data(dev);
++	struct reset_ctl dp_rst;
+ 
+ 	struct clk clk;
+ 	int ret;
+@@ -1059,6 +1062,25 @@ static int rk_edp_probe(struct udevice *
+ 		return ret;
+ 	}
+ 
++	ret = reset_get_by_name(dev, "dp", &dp_rst);
++	if (ret) {
++		dev_err(dev, "failed to get dp reset (ret=%d)\n", ret);
++		return ret;
++	}
++
++	ret = reset_assert(&dp_rst);
++	if (ret) {
++		dev_err(dev, "failed to assert dp reset (ret=%d)\n", ret);
++		return ret;
++	}
++	udelay(20);
++
++	ret = reset_deassert(&dp_rst);
++	if (ret) {
++		dev_err(dev, "failed to deassert dp reset (ret=%d)\n", ret);
++		return ret;
++	}
++
+ 	int vop_id = uc_plat->source_id;
+ 	debug("%s, uc_plat=%p, vop_id=%u\n", __func__, uc_plat, vop_id);
+ 
+
+From patchwork Tue Oct 27 13:21:41 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
+X-Patchwork-Id: 1388586
+X-Patchwork-Delegate: ykai007@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4CLCBq60Vjz9sSf
+	for <incoming@patchwork.ozlabs.org>; Wed, 28 Oct 2020 00:25:55 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id EE5EB82508;
+	Tue, 27 Oct 2020 14:24:06 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 7F9D582494; Tue, 27 Oct 2020 14:23:52 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE,
+ URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.2
+Received: from lechat.rtp-net.org (lechat.rtp-net.org
+ [IPv6:2001:bc8:3430:1000::c0f:fee])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 7009E8249C
+ for <u-boot@lists.denx.de>; Tue, 27 Oct 2020 14:23:45 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
+Received: by lechat.rtp-net.org (Postfix, from userid 1000)
+ id 2F20C180AF9; Tue, 27 Oct 2020 14:23:44 +0100 (CET)
+Message-ID: <20201027132236.187863854@rtp-net.org>
+User-Agent: quilt/0.66
+Date: Tue, 27 Oct 2020 14:21:41 +0100
+From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Peter Robinson <pbrobinson@gmail.com>,
+ Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
+ Arnaud Patard <arnaud.patard@rtp-net.org>
+Subject: [patch v2 10/10] drivers/video/rockchip/rk_vop.c: Add reset support
+References: <20201027132131.016984025@rtp-net.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+In order to ensure that the VOP registers are in correct state,
+add missing support for the VOP reset lines found in the device-tree
+
+Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Alper Nebi Yasak <alpernebiyasak@gmail.com>
+
+Index: u-boot/drivers/video/rockchip/rk_vop.c
+===================================================================
+--- u-boot.orig/drivers/video/rockchip/rk_vop.c
++++ u-boot/drivers/video/rockchip/rk_vop.c
+@@ -8,9 +8,11 @@
+ #include <clk.h>
+ #include <display.h>
+ #include <dm.h>
++#include <dm/device_compat.h>
+ #include <edid.h>
+ #include <log.h>
+ #include <regmap.h>
++#include <reset.h>
+ #include <syscon.h>
+ #include <video.h>
+ #include <asm/gpio.h>
+@@ -36,14 +38,16 @@ enum vop_pol {
+ 	DCLK_INVERT    = 3
+ };
+ 
+-static void rkvop_enable(struct rk3288_vop *regs, ulong fbbase,
++static void rkvop_enable(struct udevice *dev, struct rk3288_vop *regs, ulong fbbase,
+ 			 int fb_bits_per_pixel,
+-			 const struct display_timing *edid)
++			 const struct display_timing *edid,
++			 struct reset_ctl *dclk_rst)
+ {
+ 	u32 lb_mode;
+ 	u32 rgb_mode;
+ 	u32 hactive = edid->hactive.typ;
+ 	u32 vactive = edid->vactive.typ;
++	int ret;
+ 
+ 	writel(V_ACT_WIDTH(hactive - 1) | V_ACT_HEIGHT(vactive - 1),
+ 	       &regs->win0_act_info);
+@@ -91,6 +95,18 @@ static void rkvop_enable(struct rk3288_v
+ 
+ 	writel(fbbase, &regs->win0_yrgb_mst);
+ 	writel(0x01, &regs->reg_cfg_done); /* enable reg config */
++
++	ret = reset_assert(dclk_rst);
++	if (ret) {
++		dev_warn(dev, "failed to assert dclk reset (ret=%d)\n", ret);
++		return;
++	}
++	udelay(20);
++
++	ret = reset_deassert(dclk_rst);
++	if (ret)
++		dev_warn(dev, "failed to deassert dclk reset (ret=%d)\n", ret);
++
+ }
+ 
+ static void rkvop_set_pin_polarity(struct udevice *dev,
+@@ -238,6 +254,7 @@ static int rk_display_init(struct udevic
+ 	enum video_log2_bpp l2bpp;
+ 	ofnode remote;
+ 	const char *compat;
++	struct reset_ctl dclk_rst;
+ 
+ 	debug("%s(%s, %lx, %s)\n", __func__,
+ 	      dev_read_name(dev), fbbase, ofnode_get_name(ep_node));
+@@ -354,7 +371,14 @@ static int rk_display_init(struct udevic
+ 	}
+ 
+ 	rkvop_mode_set(dev, &timing, vop_id);
+-	rkvop_enable(regs, fbbase, 1 << l2bpp, &timing);
++
++	ret = reset_get_by_name(dev, "dclk", &dclk_rst);
++	if (ret) {
++		dev_err(dev, "failed to get dclk reset (ret=%d)\n", ret);
++		return ret;
++	}
++
++	rkvop_enable(dev, regs, fbbase, 1 << l2bpp, &timing, &dclk_rst);
+ 
+ 	ret = display_enable(disp, 1 << l2bpp, &timing);
+ 	if (ret)
+@@ -391,11 +415,31 @@ int rk_vop_probe(struct udevice *dev)
+ 	struct rk_vop_priv *priv = dev_get_priv(dev);
+ 	int ret = 0;
+ 	ofnode port, node;
++	struct reset_ctl ahb_rst;
+ 
+ 	/* Before relocation we don't need to do anything */
+ 	if (!(gd->flags & GD_FLG_RELOC))
+ 		return 0;
+ 
++	ret = reset_get_by_name(dev, "ahb", &ahb_rst);
++	if (ret) {
++		dev_err(dev, "failed to get ahb reset (ret=%d)\n", ret);
++		return ret;
++	}
++
++	ret = reset_assert(&ahb_rst);
++	if (ret) {
++		dev_err(dev, "failed to assert ahb reset (ret=%d)\n", ret);
++	return ret;
++	}
++	udelay(20);
++
++	ret = reset_deassert(&ahb_rst);
++	if (ret) {
++		dev_err(dev, "failed to deassert ahb reset (ret=%d)\n", ret);
++		return ret;
++	}
++
+ 	plat->base = gd->bd->bi_dram[0].start + gd->bd->bi_dram[0].size - plat->size;
+ 
+ #if defined(CONFIG_EFI_LOADER)

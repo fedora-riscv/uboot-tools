@@ -36,10 +36,9 @@ Patch11:  0001-Fixes-for-AllWinner-ethernet-network-interfaces.patch
 Patch12:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
 Patch13:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
-Patch14:  rk3399-Pinebook-pro-EDP-support.patch
-Patch15:  rk3399-reset-display-hack.patch
-Patch16:  rockchip-Rock960-Fix-up-USB-support.patch
-Patch17:  rockchip-Move-Bob-specific-bits-to-it-s-specific-u-b.patch
+Patch14:  rockchip-Rock960-Fix-up-USB-support.patch
+Patch15:  rockchip-Move-Bob-specific-bits-to-it-s-specific-u-b.patch
+Patch16:  rk3399-Pinebook-pro-EDP-support.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -255,6 +254,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %changelog
 * Sun Nov  8 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-3
 - Fix SPI on Rockchip devices
+- Latest Pinebook Pro display patches
 
 * Wed Oct 28 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-2
 - Fix kernel installs for non EBBR systems
