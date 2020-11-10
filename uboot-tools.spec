@@ -19,7 +19,7 @@ Source5:  10-devicetree.install
 Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 # Needed due to issues with shim
 Patch2:   uefi-use-Fedora-specific-path-name.patch
-Patch3:   rockchip-spl-u-boot-itb-offset.patch
+#Patch3:   rockchip-spl-u-boot-itb-offset.patch
 
 # Board fixes and enablement
 # RPi - uses RPI firmware device tree for HAT support
