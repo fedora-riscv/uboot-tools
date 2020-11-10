@@ -1,0 +1,39 @@
+From 12bc3e2c7c805f989629d1a546276491a7d28922 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Mon, 9 Nov 2020 23:01:19 +0000
+Subject: [PATCH] rockchip: Pinebook Pro: Fix USB
+
+Improve USB config so keyboard and USB-A ports work.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ configs/pinebook-pro-rk3399_defconfig | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/configs/pinebook-pro-rk3399_defconfig b/configs/pinebook-pro-rk3399_defconfig
+index 1ed54ad0ed..8fbd7280ac 100644
+--- a/configs/pinebook-pro-rk3399_defconfig
++++ b/configs/pinebook-pro-rk3399_defconfig
+@@ -55,6 +55,8 @@ CONFIG_SPI_FLASH_WINBOND=y
+ CONFIG_DM_ETH=y
+ CONFIG_NVME=y
+ CONFIG_PCI=y
++CONFIG_PHY_ROCKCHIP_INNO_USB2=y
++CONFIG_PHY_ROCKCHIP_TYPEC=y
+ CONFIG_DM_PMIC_FAN53555=y
+ CONFIG_PMIC_RK8XX=y
+ CONFIG_REGULATOR_PWM=y
+@@ -76,8 +78,9 @@ CONFIG_USB_EHCI_GENERIC=y
+ CONFIG_USB_OHCI_HCD=y
+ CONFIG_USB_OHCI_GENERIC=y
+ CONFIG_USB_DWC3=y
+-CONFIG_ROCKCHIP_USB2_PHY=y
++CONFIG_USB_DWC3_GENERIC=y
+ CONFIG_USB_KEYBOARD=y
++CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE=y
+ CONFIG_USB_HOST_ETHER=y
+ CONFIG_USB_ETHER_ASIX=y
+ CONFIG_USB_ETHER_RTL8152=y
+-- 
+2.28.0
+
