@@ -1,8 +1,8 @@
-#global candidate rc5
+%global candidate rc2
 
 Name:     uboot-tools
-Version:  2020.10
-Release:  3%{?candidate:.%{candidate}}%{?dist}
+Version:  2021.01
+Release:  0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -12,7 +12,6 @@ Source1:  arm-boards
 Source2:  arm-chromebooks
 Source3:  aarch64-boards
 Source4:  aarch64-chromebooks
-Source5:  10-devicetree.install
 
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
@@ -23,7 +22,8 @@ Patch2:   uefi-use-Fedora-specific-path-name.patch
 
 # Board fixes and enablement
 # RPi - uses RPI firmware device tree for HAT support
-Patch5:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+Patch4:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+Patch5:   rpi-Add-identifier-for-the-new-RPi400.patch
 # Tegra improvements
 Patch6:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
 Patch7:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
@@ -36,10 +36,9 @@ Patch11:  0001-Fixes-for-AllWinner-ethernet-network-interfaces.patch
 Patch12:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
 Patch13:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
-Patch14:  rockchip-Rock960-Fix-up-USB-support.patch
-Patch15:  rockchip-Move-Bob-specific-bits-to-it-s-specific-u-b.patch
-Patch16:  rk3399-Pinebook-pro-EDP-support.patch
-Patch17:  rockchip-Pinebook-Pro-Fix-USB.patch
+Patch14:  rockchip-Move-Bob-specific-bits-to-it-s-specific-u-b.patch
+Patch15:  rk3399-Pinebook-pro-EDP-support.patch
+Patch16:  rockchip-Pinebook-Pro-Fix-USB.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -68,13 +67,7 @@ BuildRequires:  vboot-utils
 %ifarch aarch64
 BuildRequires:  arm-trusted-firmware-armv8
 %endif
-
 Requires:       dtc
-Requires:       systemd
-%ifarch aarch64 %{arm}
-Obsoletes:      uboot-images-elf < 2019.07
-Provides:       uboot-images-elf < 2019.07
-%endif
 
 %description
 This package contains a few U-Boot utilities - mkimage for creating boot images
@@ -83,7 +76,6 @@ and fw_printenv/fw_setenv for manipulating the boot environment variables.
 %ifarch aarch64
 %package     -n uboot-images-armv8
 Summary:     U-Boot firmware images for aarch64 boards
-Requires:    uboot-tools
 BuildArch:   noarch
 
 %description -n uboot-images-armv8
@@ -93,7 +85,6 @@ U-Boot firmware binaries for aarch64 boards
 %ifarch %{arm}
 %package     -n uboot-images-armv7
 Summary:     U-Boot firmware images for armv7 boards
-Requires:    uboot-tools
 BuildArch:   noarch
 
 %description -n uboot-images-armv7
@@ -210,10 +201,6 @@ install -p -m 0755 builds/tools/env/fw_printenv $RPM_BUILD_ROOT%{_bindir}
 
 install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 
-# systemd kernel-install script for device tree
-mkdir -p $RPM_BUILD_ROOT/lib/kernel/install.d/
-install -p -m 0755 %{SOURCE5} $RPM_BUILD_ROOT/lib/kernel/install.d/
-
 # Copy sone useful docs over
 mkdir -p builds/docs
 cp -p board/hisilicon/hikey/README builds/docs/README.hikey
@@ -238,7 +225,6 @@ cp -p board/warp7/README builds/docs/README.warp7
 %doc doc/board/amlogic/ doc/board/rockchip/
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
-/lib/kernel/install.d/10-devicetree.install
 %dir %{_datadir}/uboot/
 %config(noreplace) %{_sysconfdir}/fw_env.config
 
@@ -253,6 +239,12 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Nov 22 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.01-0.1.rc2
+- Update to 2021.01 RC2
+- Latest Pinebook Pro display patches
+- Initial RPi-400 support patch
+- Update Fedora specific patches
+
 * Sun Nov  8 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-3
 - Fix SPI on Rockchip devices
 - Latest Pinebook Pro display patches
