@@ -1,0 +1,1508 @@
+From patchwork Thu Nov 19 17:48:15 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+X-Patchwork-Id: 1403195
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
+ SHA256)
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4CcRyK4z4fz9sTR
+	for <incoming@patchwork.ozlabs.org>; Fri, 20 Nov 2020 04:49:25 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 350D882578;
+	Thu, 19 Nov 2020 18:49:06 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 0C6CC8258E; Thu, 19 Nov 2020 18:49:05 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_NONE,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id F2DC482384
+ for <u-boot@lists.denx.de>; Thu, 19 Nov 2020 18:49:01 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=nsaenzjulienne@suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id 80AEDACC6;
+ Thu, 19 Nov 2020 17:49:01 +0000 (UTC)
+From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+To: u-boot@lists.denx.de, bmeng.cn@gmail.com, sjg@chromium.org, marex@denx.de
+Cc: mbrugger@suse.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+ swarren@wwwdotorg.org, peng.fan@nxp.com,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Subject: [PATCH 1/8] rpi: Add identifier for the new RPi400
+Date: Thu, 19 Nov 2020 18:48:15 +0100
+Message-Id: <20201119174820.7820-2-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+References: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+The Raspberry Pi Foundation released the new RPi400 which we want to
+detect, so we can enable Ethernet on it and know the correct device tree
+file name.
+
+So far the Raspberry Pi foundation is using the RPi4b device-tree file
+to boot RPi400. I see no reason not to do the same as they are
+completely compatible.
+
+Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+---
+ board/raspberrypi/rpi/rpi.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/board/raspberrypi/rpi/rpi.c b/board/raspberrypi/rpi/rpi.c
+index 6b1fa5fc14..ce60a24352 100644
+--- a/board/raspberrypi/rpi/rpi.c
++++ b/board/raspberrypi/rpi/rpi.c
+@@ -157,6 +157,11 @@ static const struct rpi_model rpi_models_new_scheme[] = {
+ 		DTB_DIR "bcm2711-rpi-4-b.dtb",
+ 		true,
+ 	},
++	[0x13] = {
++		"400",
++		DTB_DIR "bcm2711-rpi-4-b.dtb",
++		true,
++	},
+ };
+ 
+ static const struct rpi_model rpi_models_old_scheme[] = {
+
+From patchwork Thu Nov 19 17:48:16 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+X-Patchwork-Id: 1403200
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4CcRzB2rFTz9s1l
+	for <incoming@patchwork.ozlabs.org>; Fri, 20 Nov 2020 04:50:14 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 647BF825AA;
+	Thu, 19 Nov 2020 18:49:19 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 8A3B282571; Thu, 19 Nov 2020 18:49:09 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_NONE,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 3FBD7823E1
+ for <u-boot@lists.denx.de>; Thu, 19 Nov 2020 18:49:02 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=nsaenzjulienne@suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id 0360EACEB;
+ Thu, 19 Nov 2020 17:49:02 +0000 (UTC)
+From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+To: u-boot@lists.denx.de, bmeng.cn@gmail.com, sjg@chromium.org, marex@denx.de
+Cc: mbrugger@suse.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+ swarren@wwwdotorg.org, peng.fan@nxp.com,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Subject: [PATCH 2/8] rpi: Add identifier for the new CM4
+Date: Thu, 19 Nov 2020 18:48:16 +0100
+Message-Id: <20201119174820.7820-3-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+References: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+The Raspberry Pi Foundation released the new Compute Module 4which we
+want to detect, so we can enable Ethernet on it and know the correct
+device tree file name.
+
+Note that this sets the Ethernet option to true since the official CM4
+IO board has an Ethernet port. But that might not be the case when using
+custom ones.
+
+Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+---
+---
+ board/raspberrypi/rpi/rpi.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/board/raspberrypi/rpi/rpi.c b/board/raspberrypi/rpi/rpi.c
+index ce60a24352..4ffd23c6ac 100644
+--- a/board/raspberrypi/rpi/rpi.c
++++ b/board/raspberrypi/rpi/rpi.c
+@@ -162,6 +162,11 @@ static const struct rpi_model rpi_models_new_scheme[] = {
+ 		DTB_DIR "bcm2711-rpi-4-b.dtb",
+ 		true,
+ 	},
++	[0x14] = {
++		"Compute Modue 4",
++		DTB_DIR "bcm2711-rpi-cm4.dtb",
++		true,
++	},
+ };
+ 
+ static const struct rpi_model rpi_models_old_scheme[] = {
+
+From patchwork Thu Nov 19 17:48:17 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+X-Patchwork-Id: 1403196
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
+ SHA256)
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4CcRyb0r6Jz9s1l
+	for <incoming@patchwork.ozlabs.org>; Fri, 20 Nov 2020 04:49:43 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id CC8548258E;
+	Thu, 19 Nov 2020 18:49:11 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id D7281825A1; Thu, 19 Nov 2020 18:49:07 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_NONE,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id B218F8254E
+ for <u-boot@lists.denx.de>; Thu, 19 Nov 2020 18:49:02 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=nsaenzjulienne@suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id 7CC19ACF1;
+ Thu, 19 Nov 2020 17:49:02 +0000 (UTC)
+From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+To: u-boot@lists.denx.de, bmeng.cn@gmail.com, sjg@chromium.org, marex@denx.de
+Cc: mbrugger@suse.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+ swarren@wwwdotorg.org, peng.fan@nxp.com,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Subject: [PATCH 3/8] pci: pcie-brcmstb: Fix inbound window configurations
+Date: Thu, 19 Nov 2020 18:48:17 +0100
+Message-Id: <20201119174820.7820-4-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+References: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+So far we've assumed a fixed configuration for inbound windows as we had
+a single user for this controller. But the controller's DMA constraints
+were improved starting with BCM2711's B1 revision of the SoC, notably
+available in CM4 and Pi400. They allow for wider inbound windows. We can
+now cover the whole address space, whereas before we where limited to
+the lower 3GB.
+
+This information is passed to us through DT's 'dma-ranges' property and
+it's specially important for us to honor it them since some interactions
+with the board's co-processor assume we're doing so (specifically the
+XHCI firmware load operation, which is handled by the co-processor after
+u-boot has correctly configured the PCIe controller).
+
+Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+---
+ drivers/pci/pcie_brcmstb.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/pci/pcie_brcmstb.c b/drivers/pci/pcie_brcmstb.c
+index dade79e9c8..f6e8ad0d0a 100644
+--- a/drivers/pci/pcie_brcmstb.c
++++ b/drivers/pci/pcie_brcmstb.c
+@@ -432,6 +432,7 @@ static int brcm_pcie_probe(struct udevice *dev)
+ 	struct pci_controller *hose = dev_get_uclass_priv(ctlr);
+ 	struct brcm_pcie *pcie = dev_get_priv(dev);
+ 	void __iomem *base = pcie->base;
++	struct pci_region region;
+ 	bool ssc_good = false;
+ 	int num_out_wins = 0;
+ 	u64 rc_bar2_offset, rc_bar2_size;
+@@ -468,13 +469,10 @@ static int brcm_pcie_probe(struct udevice *dev)
+ 			MISC_CTRL_SCB_ACCESS_EN_MASK |
+ 			MISC_CTRL_CFG_READ_UR_MODE_MASK |
+ 			MISC_CTRL_MAX_BURST_SIZE_128);
+-	/*
+-	 * TODO: When support for other SoCs than BCM2711 is added we may
+-	 * need to use the base address and size(s) provided in the dma-ranges
+-	 * property.
+-	 */
+-	rc_bar2_offset = 0;
+-	rc_bar2_size = 0xc0000000;
++
++	pci_get_dma_regions(dev, &region, 0);
++	rc_bar2_offset = region.bus_start - region.phys_start;
++	rc_bar2_size = 1ULL << fls64(region.size - 1);
+ 
+ 	tmp = lower_32_bits(rc_bar2_offset);
+ 	u32p_replace_bits(&tmp, brcm_pcie_encode_ibar_size(rc_bar2_size),
+
+From patchwork Thu Nov 19 17:48:18 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+X-Patchwork-Id: 1403201
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4CcRzP329Pz9s1l
+	for <incoming@patchwork.ozlabs.org>; Fri, 20 Nov 2020 04:50:25 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 4AFAA825C6;
+	Thu, 19 Nov 2020 18:49:21 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id EFDD38258E; Thu, 19 Nov 2020 18:49:09 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_NONE,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 3C8D282552
+ for <u-boot@lists.denx.de>; Thu, 19 Nov 2020 18:49:03 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=nsaenzjulienne@suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id 01C33ACF5;
+ Thu, 19 Nov 2020 17:49:03 +0000 (UTC)
+From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+To: u-boot@lists.denx.de, bmeng.cn@gmail.com, sjg@chromium.org, marex@denx.de
+Cc: mbrugger@suse.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+ swarren@wwwdotorg.org, peng.fan@nxp.com,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Subject: [PATCH 4/8] dm: Introduce xxx_get_dma_range()
+Date: Thu, 19 Nov 2020 18:48:18 +0100
+Message-Id: <20201119174820.7820-5-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+References: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+Add the follwing functions to get a specific device's DMA ranges:
+ - dev_get_dma_range()
+ - ofnode_get_dma_range()
+ - of_get_dma_range()
+ - fdt_get_dma_range()
+They are specially useful in oder to be able validate a physical address
+space range into a bus's and to convert addresses from and to address
+spaces.
+
+Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+---
+ common/fdt_support.c   | 72 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/core/of_addr.c | 68 +++++++++++++++++++++++++++++++++++++++
+ drivers/core/ofnode.c  |  9 ++++++
+ drivers/core/read.c    |  5 +++
+ include/dm/of_addr.h   | 17 ++++++++++
+ include/dm/ofnode.h    | 16 ++++++++++
+ include/dm/read.h      |  6 ++++
+ include/fdt_support.h  | 14 ++++++++
+ 8 files changed, 207 insertions(+)
+
+diff --git a/common/fdt_support.c b/common/fdt_support.c
+index 5ae75df3c6..78dc7906bd 100644
+--- a/common/fdt_support.c
++++ b/common/fdt_support.c
+@@ -1342,6 +1342,78 @@ u64 fdt_translate_dma_address(const void *blob, int node_offset,
+ 	return __of_translate_address(blob, node_offset, in_addr, "dma-ranges");
+ }
+ 
++int fdt_get_dma_range(const void *blob, int node, phys_addr_t *cpu,
++		      dma_addr_t *bus, u64 *size)
++{
++	bool found_dma_ranges = false;
++	const fdt32_t *ranges;
++	int na, ns, pna, pns;
++	int parent = node;
++	u64 cpu_addr;
++	int ret = 0;
++	int len;
++
++	/* Find the closest dma-ranges property */
++	while (parent >= 0) {
++		ranges = fdt_getprop(blob, parent, "dma-ranges", &len);
++
++		/* Ignore empty ranges, they imply no translation required */
++		if (ranges && len > 0)
++			break;
++
++		/* Once we find 'dma-ranges', then a missing one is an error */
++		if (found_dma_ranges && !ranges) {
++			ret = -ENODEV;
++			goto out;
++		}
++
++		if (ranges)
++			found_dma_ranges = true;
++
++		parent = fdt_parent_offset(blob, parent);
++	}
++
++	if (!ranges || parent < 0) {
++		debug("no dma-ranges found for node %s\n",
++		      fdt_get_name(blob, node, NULL));
++		ret = -ENODEV;
++		goto out;
++	}
++
++	/* switch to that node */
++	node = parent;
++	parent = fdt_parent_offset(blob, node);
++	if (parent < 0) {
++		printf("Found dma-ranges in root node, shoudln't happen\n");
++		ret = -EINVAL;
++		goto out;
++	}
++
++	/* Get the address sizes both for the bus and its parent */
++	of_match_bus(blob, node)->count_cells(blob, node, &na, &ns);
++	if (!OF_CHECK_COUNTS(na, ns)) {
++		printf("%s: Bad cell count for %s\n", __FUNCTION__,
++		       fdt_get_name(blob, node, NULL));
++		return -EINVAL;
++		goto out;
++	}
++
++	of_match_bus(blob, parent)->count_cells(blob, parent, &pna, &pns);
++	if (!OF_CHECK_COUNTS(pna, pns)) {
++		printf("%s: Bad cell count for %s\n", __FUNCTION__,
++		       fdt_get_name(blob, parent, NULL));
++		return -EINVAL;
++		goto out;
++	}
++
++	*bus = fdt_read_number(ranges, na);
++	cpu_addr = fdt_read_number(ranges + na, pna);
++	*cpu = fdt_translate_dma_address(blob, node, (const fdt32_t*)&cpu_addr);
++	*size = fdt_read_number(ranges + na + pna, ns);
++out:
++	return ret;
++}
++
+ /**
+  * fdt_node_offset_by_compat_reg: Find a node that matches compatiable and
+  * who's reg property matches a physical cpu address
+diff --git a/drivers/core/of_addr.c b/drivers/core/of_addr.c
+index ca34d84922..8457e04a25 100644
+--- a/drivers/core/of_addr.c
++++ b/drivers/core/of_addr.c
+@@ -325,6 +325,74 @@ u64 of_translate_dma_address(const struct device_node *dev, const __be32 *in_add
+ 	return __of_translate_address(dev, in_addr, "dma-ranges");
+ }
+ 
++int of_get_dma_range(const struct device_node *dev, phys_addr_t *cpu,
++		     dma_addr_t *bus, u64 *size)
++{
++	bool found_dma_ranges = false;
++	struct device_node parent;
++	int na, ns, pna, pns;
++	const __be32 *ranges;
++	int ret = 0;
++	int len;
++
++	/* Find the closest dma-ranges property */
++	while (dev) {
++		ranges = of_get_property(dev, "dma-ranges", &len);
++
++		/* Ignore empty ranges, they imply no translation required */
++		if (ranges && len > 0)
++			break;
++
++		/* Once we find 'dma-ranges', then a missing one is an error */
++		if (found_dma_ranges && !ranges) {
++			ret = -ENODEV;
++			goto out;
++		}
++
++		if (ranges)
++			found_dma_ranges = true;
++
++		dev = of_get_parent(dev);
++	}
++
++	if (!dev || !ranges) {
++		debug("no dma-ranges found for node %s\n",
++		      of_node_full_name(dev));
++		ret = -ENODEV
++		goto out;
++	}
++
++	/* switch to that node */
++	parent = of_get_parent(dev);
++	if (!parent) {
++		printf("Found dma-ranges in root node, shoudln't happen\n");
++		ret = -EINVAL;
++		goto out;
++	}
++
++	/* Get the address sizes both for the bus and its parent */
++	of_match_bus(dev)->count_cells(dev, &na, &ns);
++	if (!OF_CHECK_COUNTS(na, ns)) {
++		printf("Bad cell count for %s\n", of_node_full_name(dev));
++		return -EINVAL;
++		goto out;
++	}
++
++	of_match_bus(parent)->count_cells(parent, &pna, &pns);
++	if (!OF_CHECK_COUNTS(pna, pns)) {
++		printf("Bad cell count for %s\n", of_node_full_name(parent));
++		return -EINVAL;
++		goto out;
++	}
++
++	*bus = of_read_number(ranges, na);
++	*cpu = of_translate_dma_address(dev, of_read_number(ranges + na, pna));
++	*size = of_read_number(ranges + na + pna, ns);
++out:
++	return ret;
++}
++
++
+ static int __of_address_to_resource(const struct device_node *dev,
+ 		const __be32 *addrp, u64 size, unsigned int flags,
+ 		const char *name, struct resource *r)
+diff --git a/drivers/core/ofnode.c b/drivers/core/ofnode.c
+index a68076bf35..15470d4875 100644
+--- a/drivers/core/ofnode.c
++++ b/drivers/core/ofnode.c
+@@ -911,6 +911,15 @@ u64 ofnode_translate_dma_address(ofnode node, const fdt32_t *in_addr)
+ 		return fdt_translate_dma_address(gd->fdt_blob, ofnode_to_offset(node), in_addr);
+ }
+ 
++int ofnode_get_dma_range(ofnode node, phys_addr_t *cpu, dma_addr_t *bus, u64 *size)
++{
++	if (ofnode_is_np(node))
++		return of_get_dma_range(ofnode_to_np(node), cpu, bus, size);
++	else
++		return fdt_get_dma_range(gd->fdt_blob, ofnode_to_offset(node),
++					 cpu, bus, size);
++}
++
+ int ofnode_device_is_compatible(ofnode node, const char *compat)
+ {
+ 	if (ofnode_is_np(node))
+diff --git a/drivers/core/read.c b/drivers/core/read.c
+index 076125824c..b835e82be9 100644
+--- a/drivers/core/read.c
++++ b/drivers/core/read.c
+@@ -338,6 +338,11 @@ u64 dev_translate_dma_address(const struct udevice *dev, const fdt32_t *in_addr)
+ 	return ofnode_translate_dma_address(dev_ofnode(dev), in_addr);
+ }
+ 
++u64 dev_translate_cpu_address(const struct udevice *dev, const fdt32_t *in_addr)
++{
++	return ofnode_translate_cpu_address(dev_ofnode(dev), in_addr);
++}
++
+ int dev_read_alias_highest_id(const char *stem)
+ {
+ 	if (of_live_active())
+diff --git a/include/dm/of_addr.h b/include/dm/of_addr.h
+index 3fa1ffce81..ee21d5cf4f 100644
+--- a/include/dm/of_addr.h
++++ b/include/dm/of_addr.h
+@@ -44,6 +44,23 @@ u64 of_translate_address(const struct device_node *no, const __be32 *in_addr);
+  */
+ u64 of_translate_dma_address(const struct device_node *no, const __be32 *in_addr);
+ 
++
++/**
++ * of_get_dma_range() - get dma-ranges for a specific DT node
++ *
++ * Get DMA ranges for a specifc node, this is useful to perform bus->cpu and
++ * cpu->bus address translations
++ *
++ * @param blob		Pointer to device tree blob
++ * @param node_offset	Node DT offset
++ * @param cpu		Pointer to variable storing the range's cpu address
++ * @param bus		Pointer to variable storing the range's bus address
++ * @param size		Pointer to variable storing the range's size
++ * @return translated DMA address or OF_BAD_ADDR on error
++ */
++int of_get_dma_range(const struct device_node *dev, phys_addr_t *cpu,
++		     dma_addr_t *bus, u64 *size);
++
+ /**
+  * of_get_address() - obtain an address from a node
+  *
+diff --git a/include/dm/ofnode.h b/include/dm/ofnode.h
+index ced7f6ffb2..dc3dd84d9f 100644
+--- a/include/dm/ofnode.h
++++ b/include/dm/ofnode.h
+@@ -939,6 +939,22 @@ u64 ofnode_translate_address(ofnode node, const fdt32_t *in_addr);
+  */
+ u64 ofnode_translate_dma_address(ofnode node, const fdt32_t *in_addr);
+ 
++/**
++ * ofnode_get_dma_range() - get dma-ranges for a specific DT node
++ *
++ * Get DMA ranges for a specifc node, this is useful to perform bus->cpu and
++ * cpu->bus address translations
++ *
++ * @param blob		Pointer to device tree blob
++ * @param node_offset	Node DT offset
++ * @param cpu		Pointer to variable storing the range's cpu address
++ * @param bus		Pointer to variable storing the range's bus address
++ * @param size		Pointer to variable storing the range's size
++ * @return translated DMA address or OF_BAD_ADDR on error
++ */
++int ofnode_get_dma_range(ofnode node, phys_addr_t *cpu, dma_addr_t *bus,
++			 u64 *size);
++
+ /**
+  * ofnode_device_is_compatible() - check if the node is compatible with compat
+  *
+diff --git a/include/dm/read.h b/include/dm/read.h
+index 0585eb1228..9e1f3f5f12 100644
+--- a/include/dm/read.h
++++ b/include/dm/read.h
+@@ -1004,6 +1004,12 @@ static inline u64 dev_translate_dma_address(const struct udevice *dev,
+ 	return ofnode_translate_dma_address(dev_ofnode(dev), in_addr);
+ }
+ 
++static inline u64 dev_get_dma_range(const struct udevice *dev, phys_addr_t *cpu,
++				    dma_addr_t *bus, u64 *size)
++{
++	return ofnode_get_dma_range(dev_ofnode(dev), cpu, bus, size);
++}
++
+ static inline int dev_read_alias_highest_id(const char *stem)
+ {
+ 	if (!CONFIG_IS_ENABLED(OF_LIBFDT))
+diff --git a/include/fdt_support.h b/include/fdt_support.h
+index dbbac0fb6a..46eb1dbbb2 100644
+--- a/include/fdt_support.h
++++ b/include/fdt_support.h
+@@ -260,6 +260,20 @@ u64 fdt_translate_address(const void *blob, int node_offset,
+ u64 fdt_translate_dma_address(const void *blob, int node_offset,
+ 			      const __be32 *in_addr);
+ 
++/**
++ * Get DMA ranges for a specifc node, this is useful to perform bus->cpu and
++ * cpu->bus address translations
++ *
++ * @param blob		Pointer to device tree blob
++ * @param node_offset	Node DT offset
++ * @param cpu		Pointer to variable storing the range's cpu address
++ * @param bus		Pointer to variable storing the range's bus address
++ * @param size		Pointer to variable storing the range's size
++ * @return translated DMA address or OF_BAD_ADDR on error
++ */
++int fdt_get_dma_range(const void *blob, int node_offset, phys_addr_t *cpu,
++		      dma_addr_t *bus, u64 *size);
++
+ int fdt_node_offset_by_compat_reg(void *blob, const char *compat,
+ 					phys_addr_t compat_off);
+ int fdt_alloc_phandle(void *blob);
+
+From patchwork Thu Nov 19 17:48:19 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+X-Patchwork-Id: 1403197
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4CcRyk3Wgvz9s1l
+	for <incoming@patchwork.ozlabs.org>; Fri, 20 Nov 2020 04:49:50 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 7EFFE825A3;
+	Thu, 19 Nov 2020 18:49:13 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 31A79825A4; Thu, 19 Nov 2020 18:49:08 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_NONE,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id B2CC482563
+ for <u-boot@lists.denx.de>; Thu, 19 Nov 2020 18:49:03 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=nsaenzjulienne@suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id 7CCA0AD09;
+ Thu, 19 Nov 2020 17:49:03 +0000 (UTC)
+From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+To: u-boot@lists.denx.de, bmeng.cn@gmail.com, sjg@chromium.org, marex@denx.de
+Cc: mbrugger@suse.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+ swarren@wwwdotorg.org, peng.fan@nxp.com,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Subject: [PATCH 5/8] dm: Introduce DMA constraints into the core device model
+Date: Thu, 19 Nov 2020 18:48:19 +0100
+Message-Id: <20201119174820.7820-6-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+References: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+Calculating the DMA offset between a bus address space and CPU's every
+time we call phys_to_bus() and bus_to_phys() isn't ideal performance
+wise. This information is static and available before initializing the
+devices so parse it before the probe call an provide the DMA offset it
+in 'struct udevice' for the DMA code to use it.
+
+Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+---
+ drivers/core/device.c | 24 ++++++++++++++++++++++++
+ include/dm/device.h   |  1 +
+ 2 files changed, 25 insertions(+)
+
+diff --git a/drivers/core/device.c b/drivers/core/device.c
+index 4b3dcb3b37..4255bea24d 100644
+--- a/drivers/core/device.c
++++ b/drivers/core/device.c
+@@ -421,6 +421,28 @@ fail:
+ 	return ret;
+ }
+ 
++void device_get_dma_constraints(struct udevice *dev)
++{
++	phys_addr_t cpu;
++	dma_addr_t bus;
++	u64 size;
++	int ret;
++
++	if (!dev_of_valid(dev))
++		return;
++
++	ret = dev_get_dma_range(dev, &cpu, &bus, &size);
++	if (ret) {
++		/* Don't complain if no 'dma-ranges' were found */
++		if (ret != -ENODEV)
++			dm_warn("%s: failed to get DMA range, %d\n",
++				dev->name, ret);
++		return;
++	}
++
++	dev->dma_offset = cpu - bus;
++}
++
+ int device_probe(struct udevice *dev)
+ {
+ 	const struct driver *drv;
+@@ -482,6 +504,8 @@ int device_probe(struct udevice *dev)
+ 			goto fail;
+ 	}
+ 
++	device_get_dma_constraints(dev);
++
+ 	ret = uclass_pre_probe_device(dev);
+ 	if (ret)
+ 		goto fail;
+diff --git a/include/dm/device.h b/include/dm/device.h
+index 5bef484247..59f711e3dd 100644
+--- a/include/dm/device.h
++++ b/include/dm/device.h
+@@ -161,6 +161,7 @@ struct udevice {
+ #ifdef CONFIG_DEVRES
+ 	struct list_head devres_head;
+ #endif
++	u64 dma_offset;
+ };
+ 
+ /* Maximum sequence number supported */
+
+From patchwork Thu Nov 19 17:48:20 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+X-Patchwork-Id: 1403199
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4CcRyy5XbHz9sVd
+	for <incoming@patchwork.ozlabs.org>; Fri, 20 Nov 2020 04:50:02 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 32DE7825B9;
+	Thu, 19 Nov 2020 18:49:15 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 0DC4482563; Thu, 19 Nov 2020 18:49:09 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_NONE,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 375DF82571
+ for <u-boot@lists.denx.de>; Thu, 19 Nov 2020 18:49:04 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=nsaenzjulienne@suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id 0202DAD0B;
+ Thu, 19 Nov 2020 17:49:04 +0000 (UTC)
+From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+To: u-boot@lists.denx.de, bmeng.cn@gmail.com, sjg@chromium.org, marex@denx.de
+Cc: mbrugger@suse.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+ swarren@wwwdotorg.org, peng.fan@nxp.com,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Subject: [PATCH 6/8] dm: Introduce dev_phys_to_bus()/dev_bus_to_phys()
+Date: Thu, 19 Nov 2020 18:48:20 +0100
+Message-Id: <20201119174820.7820-7-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+References: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+These functions, instead of relying on hard-coded platform-specific
+address translations, make use of the DMA constraints provided by the DM
+core. This allows for per-device translations.
+
+Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+---
+ include/phys2bus.h | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/include/phys2bus.h b/include/phys2bus.h
+index dc9b8e5a25..a380063af4 100644
+--- a/include/phys2bus.h
++++ b/include/phys2bus.h
+@@ -21,4 +21,20 @@ static inline unsigned long bus_to_phys(unsigned long bus)
+ }
+ #endif
+ 
++#if CONFIG_IS_ENABLED(DM)
++#include <dm/device.h>
++
++static inline dma_addr_t dev_phys_to_bus(struct udevice *dev,
++					 phys_addr_t phys)
++{
++	return phys - dev->dma_offset;
++}
++
++static inline phys_addr_t dev_bus_to_phys(struct udevice *dev,
++					  dma_addr_t bus)
++{
++	return bus + dev->dma_offset;
++}
++#endif
++
+ #endif
+
+From patchwork Thu Nov 19 17:48:21 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+X-Patchwork-Id: 1403203
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4CcRzp2ZpRz9sTR
+	for <incoming@patchwork.ozlabs.org>; Fri, 20 Nov 2020 04:50:46 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 2D4E0825D9;
+	Thu, 19 Nov 2020 18:49:25 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id BFF1B825A3; Thu, 19 Nov 2020 18:49:12 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_NONE,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id B7CCF82586
+ for <u-boot@lists.denx.de>; Thu, 19 Nov 2020 18:49:04 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=nsaenzjulienne@suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id 7AA0FAD0F;
+ Thu, 19 Nov 2020 17:49:04 +0000 (UTC)
+From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+To: u-boot@lists.denx.de, bmeng.cn@gmail.com, sjg@chromium.org, marex@denx.de
+Cc: mbrugger@suse.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+ swarren@wwwdotorg.org, peng.fan@nxp.com,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Subject: [PATCH 7/8] xhci: translate virtual addresses into the bus's address
+ space
+Date: Thu, 19 Nov 2020 18:48:21 +0100
+Message-Id: <20201119174820.7820-8-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+References: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+So far we've been content with passing physical addresses when
+configuring memory addresses into XHCI controllers, but not all
+platforms have buses with transparent mappings. Specifically the
+Raspberry Pi 4 might introduce an offset to memory accesses incoming
+from its PCIe port.
+
+Introduce xhci_virt_to_bus() and xhci_bus_to_virt() to cater with these
+limitations and make sure we don't break non DM users.
+
+Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+---
+ drivers/usb/host/xhci-mem.c  | 45 +++++++++++++++++++-----------------
+ drivers/usb/host/xhci-ring.c | 11 +++++----
+ drivers/usb/host/xhci.c      |  4 ++--
+ include/usb/xhci.h           | 22 +++++++++++++++++-
+ 4 files changed, 54 insertions(+), 28 deletions(-)
+
+diff --git a/drivers/usb/host/xhci-mem.c b/drivers/usb/host/xhci-mem.c
+index b002d6f166..e8d435d644 100644
+--- a/drivers/usb/host/xhci-mem.c
++++ b/drivers/usb/host/xhci-mem.c
+@@ -110,7 +110,7 @@ static void xhci_scratchpad_free(struct xhci_ctrl *ctrl)
+ 
+ 	ctrl->dcbaa->dev_context_ptrs[0] = 0;
+ 
+-	free((void *)(uintptr_t)le64_to_cpu(ctrl->scratchpad->sp_array[0]));
++	free(xhci_bus_to_virt(ctrl, le64_to_cpu(ctrl->scratchpad->sp_array[0])));
+ 	free(ctrl->scratchpad->sp_array);
+ 	free(ctrl->scratchpad);
+ 	ctrl->scratchpad = NULL;
+@@ -216,8 +216,8 @@ static void *xhci_malloc(unsigned int size)
+  * @param link_trbs	flag to indicate whether to link the trbs or NOT
+  * @return none
+  */
+-static void xhci_link_segments(struct xhci_segment *prev,
+-				struct xhci_segment *next, bool link_trbs)
++static void xhci_link_segments(struct xhci_ctrl *ctrl, struct xhci_segment *prev,
++			       struct xhci_segment *next, bool link_trbs)
+ {
+ 	u32 val;
+ 	u64 val_64 = 0;
+@@ -226,7 +226,7 @@ static void xhci_link_segments(struct xhci_segment *prev,
+ 		return;
+ 	prev->next = next;
+ 	if (link_trbs) {
+-		val_64 = virt_to_phys(next->trbs);
++		val_64 = xhci_virt_to_bus(ctrl, next->trbs);
+ 		prev->trbs[TRBS_PER_SEGMENT-1].link.segment_ptr =
+ 			cpu_to_le64(val_64);
+ 
+@@ -304,7 +304,8 @@ static struct xhci_segment *xhci_segment_alloc(void)
+  * @param link_trbs	flag to indicate whether to link the trbs or NOT
+  * @return pointer to the newly created RING
+  */
+-struct xhci_ring *xhci_ring_alloc(unsigned int num_segs, bool link_trbs)
++struct xhci_ring *xhci_ring_alloc(struct xhci_ctrl *ctrl, unsigned int num_segs,
++				  bool link_trbs)
+ {
+ 	struct xhci_ring *ring;
+ 	struct xhci_segment *prev;
+@@ -327,12 +328,12 @@ struct xhci_ring *xhci_ring_alloc(unsigned int num_segs, bool link_trbs)
+ 		next = xhci_segment_alloc();
+ 		BUG_ON(!next);
+ 
+-		xhci_link_segments(prev, next, link_trbs);
++		xhci_link_segments(ctrl, prev, next, link_trbs);
+ 
+ 		prev = next;
+ 		num_segs--;
+ 	}
+-	xhci_link_segments(prev, ring->first_seg, link_trbs);
++	xhci_link_segments(ctrl, prev, ring->first_seg, link_trbs);
+ 	if (link_trbs) {
+ 		/* See section 4.9.2.1 and 6.4.4.1 */
+ 		prev->trbs[TRBS_PER_SEGMENT-1].link.control |=
+@@ -354,6 +355,7 @@ static int xhci_scratchpad_alloc(struct xhci_ctrl *ctrl)
+ 	struct xhci_hccr *hccr = ctrl->hccr;
+ 	struct xhci_hcor *hcor = ctrl->hcor;
+ 	struct xhci_scratchpad *scratchpad;
++	uint64_t val_64;
+ 	int num_sp;
+ 	uint32_t page_size;
+ 	void *buf;
+@@ -371,8 +373,9 @@ static int xhci_scratchpad_alloc(struct xhci_ctrl *ctrl)
+ 	scratchpad->sp_array = xhci_malloc(num_sp * sizeof(u64));
+ 	if (!scratchpad->sp_array)
+ 		goto fail_sp2;
+-	ctrl->dcbaa->dev_context_ptrs[0] =
+-		cpu_to_le64((uintptr_t)scratchpad->sp_array);
++
++	val_64 = xhci_virt_to_bus(ctrl, scratchpad->sp_array);
++	ctrl->dcbaa->dev_context_ptrs[0] = cpu_to_le64((uintptr_t)val_64);
+ 
+ 	xhci_flush_cache((uintptr_t)&ctrl->dcbaa->dev_context_ptrs[0],
+ 		sizeof(ctrl->dcbaa->dev_context_ptrs[0]));
+@@ -393,8 +396,8 @@ static int xhci_scratchpad_alloc(struct xhci_ctrl *ctrl)
+ 	xhci_flush_cache((uintptr_t)buf, num_sp * page_size);
+ 
+ 	for (i = 0; i < num_sp; i++) {
+-		uintptr_t ptr = (uintptr_t)buf + i * page_size;
+-		scratchpad->sp_array[i] = cpu_to_le64(ptr);
++		val_64 = xhci_virt_to_bus(ctrl, buf + i * page_size);
++		scratchpad->sp_array[i] = cpu_to_le64(val_64);
+ 	}
+ 
+ 	xhci_flush_cache((uintptr_t)scratchpad->sp_array,
+@@ -484,9 +487,9 @@ int xhci_alloc_virt_device(struct xhci_ctrl *ctrl, unsigned int slot_id)
+ 	}
+ 
+ 	/* Allocate endpoint 0 ring */
+-	virt_dev->eps[0].ring = xhci_ring_alloc(1, true);
++	virt_dev->eps[0].ring = xhci_ring_alloc(ctrl, 1, true);
+ 
+-	byte_64 = virt_to_phys(virt_dev->out_ctx->bytes);
++	byte_64 = xhci_virt_to_bus(ctrl, virt_dev->out_ctx->bytes);
+ 
+ 	/* Point to output device context in dcbaa. */
+ 	ctrl->dcbaa->dev_context_ptrs[slot_id] = cpu_to_le64(byte_64);
+@@ -522,15 +525,15 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
+ 		return -ENOMEM;
+ 	}
+ 
+-	val_64 = virt_to_phys(ctrl->dcbaa);
++	val_64 = xhci_virt_to_bus(ctrl, ctrl->dcbaa);
+ 	/* Set the pointer in DCBAA register */
+ 	xhci_writeq(&hcor->or_dcbaap, val_64);
+ 
+ 	/* Command ring control pointer register initialization */
+-	ctrl->cmd_ring = xhci_ring_alloc(1, true);
++	ctrl->cmd_ring = xhci_ring_alloc(ctrl, 1, true);
+ 
+ 	/* Set the address in the Command Ring Control register */
+-	trb_64 = virt_to_phys(ctrl->cmd_ring->first_seg->trbs);
++	trb_64 = xhci_virt_to_bus(ctrl, ctrl->cmd_ring->first_seg->trbs);
+ 	val_64 = xhci_readq(&hcor->or_crcr);
+ 	val_64 = (val_64 & (u64) CMD_RING_RSVD_BITS) |
+ 		(trb_64 & (u64) ~CMD_RING_RSVD_BITS) |
+@@ -551,7 +554,7 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
+ 	ctrl->ir_set = &ctrl->run_regs->ir_set[0];
+ 
+ 	/* Event ring does not maintain link TRB */
+-	ctrl->event_ring = xhci_ring_alloc(ERST_NUM_SEGS, false);
++	ctrl->event_ring = xhci_ring_alloc(ctrl, ERST_NUM_SEGS, false);
+ 	ctrl->erst.entries = xhci_malloc(sizeof(struct xhci_erst_entry) *
+ 					 ERST_NUM_SEGS);
+ 
+@@ -560,8 +563,8 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
+ 	for (val = 0, seg = ctrl->event_ring->first_seg;
+ 			val < ERST_NUM_SEGS;
+ 			val++) {
+-		trb_64 = virt_to_phys(seg->trbs);
+ 		struct xhci_erst_entry *entry = &ctrl->erst.entries[val];
++		trb_64 = xhci_virt_to_bus(ctrl, seg->trbs);
+ 		entry->seg_addr = cpu_to_le64(trb_64);
+ 		entry->seg_size = cpu_to_le32(TRBS_PER_SEGMENT);
+ 		entry->rsvd = 0;
+@@ -570,7 +573,7 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
+ 	xhci_flush_cache((uintptr_t)ctrl->erst.entries,
+ 			 ERST_NUM_SEGS * sizeof(struct xhci_erst_entry));
+ 
+-	deq = virt_to_phys(ctrl->event_ring->dequeue);
++	deq = xhci_virt_to_bus(ctrl, ctrl->event_ring->dequeue);
+ 
+ 	/* Update HC event ring dequeue pointer */
+ 	xhci_writeq(&ctrl->ir_set->erst_dequeue,
+@@ -585,7 +588,7 @@ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
+ 	/* this is the event ring segment table pointer */
+ 	val_64 = xhci_readq(&ctrl->ir_set->erst_base);
+ 	val_64 &= ERST_PTR_MASK;
+-	val_64 |= virt_to_phys(ctrl->erst.entries) & ~ERST_PTR_MASK;
++	val_64 |= xhci_virt_to_bus(ctrl, ctrl->erst.entries) & ~ERST_PTR_MASK;
+ 
+ 	xhci_writeq(&ctrl->ir_set->erst_base, val_64);
+ 
+@@ -848,7 +851,7 @@ void xhci_setup_addressable_virt_dev(struct xhci_ctrl *ctrl,
+ 	/* EP 0 can handle "burst" sizes of 1, so Max Burst Size field is 0 */
+ 	ep0_ctx->ep_info2 |= cpu_to_le32(MAX_BURST(0) | ERROR_COUNT(3));
+ 
+-	trb_64 = virt_to_phys(virt_dev->eps[0].ring->first_seg->trbs);
++	trb_64 = xhci_virt_to_bus(ctrl, virt_dev->eps[0].ring->first_seg->trbs);
+ 	ep0_ctx->deq = cpu_to_le64(trb_64 | virt_dev->eps[0].ring->cycle_state);
+ 
+ 	/*
+diff --git a/drivers/usb/host/xhci-ring.c b/drivers/usb/host/xhci-ring.c
+index 13065d7ca9..5a6ad383cd 100644
+--- a/drivers/usb/host/xhci-ring.c
++++ b/drivers/usb/host/xhci-ring.c
+@@ -275,10 +275,13 @@ void xhci_queue_command(struct xhci_ctrl *ctrl, u8 *ptr, u32 slot_id,
+ 			u32 ep_index, trb_type cmd)
+ {
+ 	u32 fields[4];
+-	u64 val_64 = virt_to_phys(ptr);
++	u64 val_64 = 0;
+ 
+ 	BUG_ON(prepare_ring(ctrl, ctrl->cmd_ring, EP_STATE_RUNNING));
+ 
++	if (ptr)
++		val_64 = xhci_virt_to_bus(ctrl, ptr);
++
+ 	fields[0] = lower_32_bits(val_64);
+ 	fields[1] = upper_32_bits(val_64);
+ 	fields[2] = 0;
+@@ -401,7 +404,7 @@ void xhci_acknowledge_event(struct xhci_ctrl *ctrl)
+ 
+ 	/* Inform the hardware */
+ 	xhci_writeq(&ctrl->ir_set->erst_dequeue,
+-		    virt_to_phys(ctrl->event_ring->dequeue) | ERST_EHB);
++		    xhci_virt_to_bus(ctrl, ctrl->event_ring->dequeue) | ERST_EHB);
+ }
+ 
+ /**
+@@ -579,7 +582,7 @@ int xhci_bulk_tx(struct usb_device *udev, unsigned long pipe,
+ 	u64 addr;
+ 	int ret;
+ 	u32 trb_fields[4];
+-	u64 val_64 = virt_to_phys(buffer);
++	u64 val_64 = xhci_virt_to_bus(ctrl, buffer);
+ 
+ 	debug("dev=%p, pipe=%lx, buffer=%p, length=%d\n",
+ 		udev, pipe, buffer, length);
+@@ -872,7 +875,7 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
+ 	if (length > 0) {
+ 		if (req->requesttype & USB_DIR_IN)
+ 			field |= TRB_DIR_IN;
+-		buf_64 = virt_to_phys(buffer);
++		buf_64 = xhci_virt_to_bus(ctrl, buffer);
+ 
+ 		trb_fields[0] = lower_32_bits(buf_64);
+ 		trb_fields[1] = upper_32_bits(buf_64);
+diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
+index 7080f8fabe..d27ac01c83 100644
+--- a/drivers/usb/host/xhci.c
++++ b/drivers/usb/host/xhci.c
+@@ -604,7 +604,7 @@ static int xhci_set_configuration(struct usb_device *udev)
+ 		ep_ctx[ep_index] = xhci_get_ep_ctx(ctrl, in_ctx, ep_index);
+ 
+ 		/* Allocate the ep rings */
+-		virt_dev->eps[ep_index].ring = xhci_ring_alloc(1, true);
++		virt_dev->eps[ep_index].ring = xhci_ring_alloc(ctrl, 1, true);
+ 		if (!virt_dev->eps[ep_index].ring)
+ 			return -ENOMEM;
+ 
+@@ -628,7 +628,7 @@ static int xhci_set_configuration(struct usb_device *udev)
+ 			cpu_to_le32(MAX_BURST(max_burst) |
+ 			ERROR_COUNT(err_count));
+ 
+-		trb_64 = virt_to_phys(virt_dev->eps[ep_index].ring->enqueue);
++		trb_64 = xhci_virt_to_bus(ctrl, virt_dev->eps[ep_index].ring->enqueue);
+ 		ep_ctx[ep_index]->deq = cpu_to_le64(trb_64 |
+ 				virt_dev->eps[ep_index].ring->cycle_state);
+ 
+diff --git a/include/usb/xhci.h b/include/usb/xhci.h
+index e1d382369a..57e06087a1 100644
+--- a/include/usb/xhci.h
++++ b/include/usb/xhci.h
+@@ -16,6 +16,7 @@
+ #ifndef HOST_XHCI_H_
+ #define HOST_XHCI_H_
+ 
++#include <phys2bus.h>
+ #include <reset.h>
+ #include <asm/types.h>
+ #include <asm/cache.h>
+@@ -1250,7 +1251,8 @@ int xhci_check_maxpacket(struct usb_device *udev);
+ void xhci_flush_cache(uintptr_t addr, u32 type_len);
+ void xhci_inval_cache(uintptr_t addr, u32 type_len);
+ void xhci_cleanup(struct xhci_ctrl *ctrl);
+-struct xhci_ring *xhci_ring_alloc(unsigned int num_segs, bool link_trbs);
++struct xhci_ring *xhci_ring_alloc(struct xhci_ctrl *ctrl, unsigned int num_segs,
++				  bool link_trbs);
+ int xhci_alloc_virt_device(struct xhci_ctrl *ctrl, unsigned int slot_id);
+ int xhci_mem_init(struct xhci_ctrl *ctrl, struct xhci_hccr *hccr,
+ 		  struct xhci_hcor *hcor);
+@@ -1278,4 +1280,22 @@ extern struct dm_usb_ops xhci_usb_ops;
+ 
+ struct xhci_ctrl *xhci_get_ctrl(struct usb_device *udev);
+ 
++static inline dma_addr_t xhci_virt_to_bus(struct xhci_ctrl *ctrl, void *addr)
++{
++#if CONFIG_IS_ENABLED(DM_USB)
++	return dev_phys_to_bus(ctrl->dev, virt_to_phys(addr));
++#else
++	return phys_to_bus(virt_to_phys(addr));
++#endif
++}
++
++static inline void *xhci_bus_to_virt(struct xhci_ctrl *ctrl, dma_addr_t addr)
++{
++#if CONFIG_IS_ENABLED(DM_USB)
++	return phys_to_virt(dev_bus_to_phys(ctrl->dev, addr));
++#else
++	return phys_to_virt(bus_to_phys(addr));
++#endif
++}
++
+ #endif /* HOST_XHCI_H_ */
+
+From patchwork Thu Nov 19 17:48:22 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+X-Patchwork-Id: 1403202
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4CcRzc5cjwz9s1l
+	for <incoming@patchwork.ozlabs.org>; Fri, 20 Nov 2020 04:50:36 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 4A055825D4;
+	Thu, 19 Nov 2020 18:49:23 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 0FD2E8258E; Thu, 19 Nov 2020 18:49:11 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_NONE,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 3691182573
+ for <u-boot@lists.denx.de>; Thu, 19 Nov 2020 18:49:05 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=suse.de
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=nsaenzjulienne@suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+ by mx2.suse.de (Postfix) with ESMTP id F38DCAD11;
+ Thu, 19 Nov 2020 17:49:04 +0000 (UTC)
+From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+To: u-boot@lists.denx.de, bmeng.cn@gmail.com, sjg@chromium.org, marex@denx.de
+Cc: mbrugger@suse.com, m.szyprowski@samsung.com, s.nawrocki@samsung.com,
+ swarren@wwwdotorg.org, peng.fan@nxp.com,
+ Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Subject: [PATCH 8/8] mmc: Introduce mmc_phys_to_bus()/mmc_bus_to_phys()
+Date: Thu, 19 Nov 2020 18:48:22 +0100
+Message-Id: <20201119174820.7820-9-nsaenzjulienne@suse.de>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+References: <20201119174820.7820-1-nsaenzjulienne@suse.de>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+This will allow us to use DM variants of phys_to_bus()/bus_to_phys()
+when relevant.
+
+Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+---
+ drivers/mmc/sdhci.c |  7 ++++---
+ include/mmc.h       | 10 ++++++++++
+ 2 files changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/mmc/sdhci.c b/drivers/mmc/sdhci.c
+index 0628934312..2086d7cdb1 100644
+--- a/drivers/mmc/sdhci.c
++++ b/drivers/mmc/sdhci.c
+@@ -19,7 +19,6 @@
+ #include <linux/bitops.h>
+ #include <linux/delay.h>
+ #include <linux/dma-mapping.h>
+-#include <phys2bus.h>
+ 
+ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ {
+@@ -103,7 +102,8 @@ static void sdhci_prepare_dma(struct sdhci_host *host, struct mmc_data *data,
+ 					  mmc_get_dma_dir(data));
+ 
+ 	if (host->flags & USE_SDMA) {
+-		sdhci_writel(host, phys_to_bus((ulong)host->start_addr),
++		sdhci_writel(host,
++			     mmc_phys_to_bus(host->mmc, (ulong)host->start_addr),
+ 				SDHCI_DMA_ADDRESS);
+ 	}
+ #if CONFIG_IS_ENABLED(MMC_SDHCI_ADMA)
+@@ -162,7 +162,8 @@ static int sdhci_transfer_data(struct sdhci_host *host, struct mmc_data *data)
+ 				start_addr &=
+ 				~(SDHCI_DEFAULT_BOUNDARY_SIZE - 1);
+ 				start_addr += SDHCI_DEFAULT_BOUNDARY_SIZE;
+-				sdhci_writel(host, phys_to_bus((ulong)start_addr),
++				sdhci_writel(host,
++					     mmc_phys_to_bus(host->mmc, (ulong)start_addr),
+ 					     SDHCI_DMA_ADDRESS);
+ 			}
+ 		}
+diff --git a/include/mmc.h b/include/mmc.h
+index 1d377e0281..805a3b2215 100644
+--- a/include/mmc.h
++++ b/include/mmc.h
+@@ -15,6 +15,7 @@
+ #include <linux/compiler.h>
+ #include <linux/dma-direction.h>
+ #include <part.h>
++#include <phys2bus.h>
+ 
+ struct bd_info;
+ 
+@@ -977,4 +978,13 @@ static inline enum dma_data_direction mmc_get_dma_dir(struct mmc_data *data)
+ 	return data->flags & MMC_DATA_WRITE ? DMA_TO_DEVICE : DMA_FROM_DEVICE;
+ }
+ 
++static inline dma_addr_t mmc_phys_to_bus(struct mmc *mmc, phys_addr_t addr)
++{
++#if CONFIG_IS_ENABLED(DM_MMC)
++	return dev_phys_to_bus(mmc->dev, addr);
++#else
++	return phys_to_bus(addr);
++#endif
++}
++
+ #endif /* _MMC_H_ */
