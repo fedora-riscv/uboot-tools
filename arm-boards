@@ -63,7 +63,6 @@ Linksprite_pcDuino
 Linksprite_pcDuino3
 Linksprite_pcDuino3_Nano
 liteboard
-marsboard
 Marsboard_A10
 Mele_A1000
 Mele_A1000G_quad
@@ -108,10 +107,8 @@ q8_a33_tablet_1024x600
 q8_a33_tablet_800x480
 qemu_arm
 r7-tv-dongle
-riotboard
 rock
 rock-pi-n8-rk3288
-rock2
 rpi_2
 rpi_3_32b
 rpi_4_32b
@@ -125,7 +122,6 @@ tbs_a711
 tinker-rk3288
 tinker-s-rk3288
 udoo
-udoo_neo
 usbarmory
 UTOO_P66
 vexpress_ca15_tc2
