@@ -2,7 +2,7 @@
 
 Name:     uboot-tools
 Version:  2021.01
-Release:  0.1%{?candidate:.%{candidate}}%{?dist}
+Release:  0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -239,6 +239,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Dec 14 2020 Javier Martinez Canillas <javierm@redhat.com> - 2021.01-0.2.rc2
+- Fix a "scan_dev_for_efi" not defined error
+
 * Sun Nov 22 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.01-0.1.rc2
 - Update to 2021.01 RC2
 - Latest Pinebook Pro display patches

@@ -1,4 +1,4 @@
-From 7f91e98f42f620684fc5a1e918e24cfb838a12c5 Mon Sep 17 00:00:00 2001
+From cc3700b5c65494547308df395fe63166ff48a1e3 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Tue, 24 Nov 2020 10:35:48 +0000
 Subject: [PATCH 1/2] distro: load FDT from any partition on boot device
@@ -22,11 +22,11 @@ knows) and SoC/board specific ${fdtfile} (which grub does not know).
 Signed-off-by: Rob Clark <robdclark@gmail.com>
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- include/config_distro_bootcmd.h | 31 ++++++++++++++++++++++---------
- 1 file changed, 22 insertions(+), 9 deletions(-)
+ include/config_distro_bootcmd.h | 33 +++++++++++++++++++++++----------
+ 1 file changed, 23 insertions(+), 10 deletions(-)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index ff29ef5a90..e6a5267159 100644
+index ff29ef5a905..769477cd80e 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
 @@ -142,24 +142,37 @@
@@ -49,6 +49,7 @@ index ff29ef5a90..e6a5267159 100644
 -				"run load_efi_dtb; "                      \
 -			"fi;"                                             \
 -		"done;"                                                   \
+-		"run boot_efi_bootmgr;"                                   \
 +		"part list ${devtype} ${devnum} dtb_devplist; "           \
 +		"env exists dtb_devplist || setenv dtb_devplist "         \
 +			"${distro_bootpart}; "                            \
@@ -65,7 +66,7 @@ index ff29ef5a90..e6a5267159 100644
 +				"fi;"                                     \
 +			"done; "                                          \
 +		"done; "                                                  \
- 		"run boot_efi_bootmgr;"                                   \
++		"run boot_efi_bootmgr\0"                                  \
 +	"scan_dev_for_efi="                                               \
  		"if test -e ${devtype} ${devnum}:${distro_bootpart} "     \
  					"efi/boot/"BOOTEFI_NAME"; then "  \
@@ -77,5 +78,5 @@ index ff29ef5a90..e6a5267159 100644
  		"fi; "                                                    \
  		"setenv efi_fdtfile\0"
 -- 
-2.28.0
+2.29.2
 

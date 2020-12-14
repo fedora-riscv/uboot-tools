@@ -1,4 +1,4 @@
-From 26b8c1e30342515e252ebf779c79b7bbe1d91747 Mon Sep 17 00:00:00 2001
+From d8fcb72d566b0ebca1613555ac13c0798817487e Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
 Date: Tue, 24 Nov 2020 10:37:28 +0000
 Subject: [PATCH 2/2] use Fedora specific EFI path/name
@@ -9,7 +9,7 @@ Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
  1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index e6a5267159..f8c4f58907 100644
+index 769477cd80e..22ce3685758 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
 @@ -92,9 +92,9 @@
@@ -34,7 +34,7 @@ index e6a5267159..f8c4f58907 100644
  			"bootefi ${kernel_addr_r} ${fdt_addr_r};"         \
  		"else "                                                   \
 @@ -169,9 +169,9 @@
- 		"run boot_efi_bootmgr;"                                   \
+		"run boot_efi_bootmgr\0"                                  \
  	"scan_dev_for_efi="                                               \
  		"if test -e ${devtype} ${devnum}:${distro_bootpart} "     \
 -					"efi/boot/"BOOTEFI_NAME"; then "  \
@@ -46,5 +46,5 @@ index e6a5267159..f8c4f58907 100644
  				"echo EFI LOAD FAILED: continuing...; "   \
  		"fi; "                                                    \
 -- 
-2.28.0
+2.29.2
 
