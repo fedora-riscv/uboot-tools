@@ -1,0 +1,222 @@
+From patchwork Wed Nov 18 10:27:17 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Icenowy Zheng <icenowy@aosc.io>
+X-Patchwork-Id: 1402159
+X-Patchwork-Delegate: andre.przywara@arm.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=aosc.io
+Authentication-Results: ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=mymailcheap.com header.i=@mymailcheap.com
+ header.a=rsa-sha256 header.s=default header.b=YYrkSpBD;
+	dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=aosc.io header.i=@aosc.io header.a=rsa-sha256
+ header.s=default header.b=o7lHQ4SZ;
+	dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4CbfCp3G62z9s1l
+	for <incoming@patchwork.ozlabs.org>; Wed, 18 Nov 2020 21:28:22 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 00D6D82304;
+	Wed, 18 Nov 2020 11:28:16 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=aosc.io
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=mymailcheap.com header.i=@mymailcheap.com
+ header.b="YYrkSpBD";
+	dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=aosc.io header.i=@aosc.io header.b="o7lHQ4SZ";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 2E5B282309; Wed, 18 Nov 2020 11:28:11 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.0 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,SPF_HELO_NONE,URIBL_BLOCKED autolearn=ham
+ autolearn_force=no version=3.4.2
+Received: from relay1.mymailcheap.com (relay1.mymailcheap.com
+ [144.217.248.100])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id EC082808F1
+ for <u-boot@lists.denx.de>; Wed, 18 Nov 2020 11:28:05 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=aosc.io
+Authentication-Results: phobos.denx.de; spf=pass smtp.mailfrom=icenowy@aosc.io
+Received: from filter2.mymailcheap.com (filter2.mymailcheap.com
+ [91.134.140.82])
+ by relay1.mymailcheap.com (Postfix) with ESMTPS id 18A423F201;
+ Wed, 18 Nov 2020 10:27:59 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by filter2.mymailcheap.com (Postfix) with ESMTP id 6377C2A7E9;
+ Wed, 18 Nov 2020 11:27:58 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=mymailcheap.com;
+ s=default; t=1605695278;
+ bh=vA5tPn4fjpXJj/OQnRg+m708mrodc5u5TJSDVOSBnHo=;
+ h=From:To:Cc:Subject:Date:From;
+ b=YYrkSpBDGdpkLi16yGwNw7yMTXXW566rTdXX2RSRxCe6FylY99qiYDmZR+PZFqCX0
+ t3yDL0nO6zMKUvJVqZaTwsroyblAKNCaLz1AfCURNqCwohtJcIkDsegRYz9slzT9Qu
+ BQkTT6dosAIQFtAVrc48QBX38eHXMYreqkbHXz5g=
+Received: from filter2.mymailcheap.com ([127.0.0.1])
+ by localhost (filter2.mymailcheap.com [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id eCMZCx2FVDgE; Wed, 18 Nov 2020 11:27:57 +0100 (CET)
+Received: from mail20.mymailcheap.com (mail20.mymailcheap.com [51.83.111.147])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by filter2.mymailcheap.com (Postfix) with ESMTPS;
+ Wed, 18 Nov 2020 11:27:57 +0100 (CET)
+Received: from [213.133.102.83] (ml.mymailcheap.com [213.133.102.83])
+ by mail20.mymailcheap.com (Postfix) with ESMTP id A597A400BE;
+ Wed, 18 Nov 2020 10:27:56 +0000 (UTC)
+Authentication-Results: mail20.mymailcheap.com; dkim=pass (1024-bit key;
+ unprotected) header.d=aosc.io header.i=@aosc.io header.b="o7lHQ4SZ";
+ dkim-atps=neutral
+AI-Spam-Status: Not processed
+Received: from ice-e5v2.lan (unknown [59.41.160.51])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail20.mymailcheap.com (Postfix) with ESMTPSA id 3B979400BE;
+ Wed, 18 Nov 2020 10:27:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=aosc.io; s=default;
+ t=1605695270; bh=vA5tPn4fjpXJj/OQnRg+m708mrodc5u5TJSDVOSBnHo=;
+ h=From:To:Cc:Subject:Date:From;
+ b=o7lHQ4SZ+kcNlSGrF+USzZxRQhtIEcZFQPjvsiu+MiK+TTjArUzo5bRKHH0I4ZcDM
+ a4Ywg6IcctT99QEZGbRIHqhvjH6/Kvj4lWM77Bb0DrlHXfEdOj3LC7KiAF1vVGFfPI
+ 0oTEacf71O2OWPmQBqEH/uaV/IiGI4rZvgWiMPkk=
+From: Icenowy Zheng <icenowy@aosc.io>
+To: Jagan Teki <jagan@amarulasolutions.com>,
+ Andre Przywara <andre.przywara@arm.com>,
+ Hans de Goede <hdegoede@redhat.com>
+Cc: u-boot@lists.denx.de, linux-sunxi@googlegroups.com,
+ Icenowy Zheng <icenowy@aosc.io>
+Subject: [PATCH v3] sunxi: add PineCube board
+Date: Wed, 18 Nov 2020 18:27:17 +0800
+Message-Id: <20201118102717.635129-1-icenowy@aosc.io>
+X-Mailer: git-send-email 2.28.0
+MIME-Version: 1.0
+X-Rspamd-Queue-Id: A597A400BE
+X-Spamd-Result: default: False [4.90 / 20.00]; RCVD_VIA_SMTP_AUTH(0.00)[];
+ ARC_NA(0.00)[]; R_DKIM_ALLOW(0.00)[aosc.io:s=default];
+ RECEIVED_SPAMHAUS_PBL(0.00)[59.41.160.51:received];
+ FROM_HAS_DN(0.00)[]; TO_DN_SOME(0.00)[];
+ R_MISSING_CHARSET(2.50)[]; TO_MATCH_ENVRCPT_ALL(0.00)[];
+ MIME_GOOD(-0.10)[text/plain]; DMARC_NA(0.00)[aosc.io];
+ BROKEN_CONTENT_TYPE(1.50)[]; R_SPF_SOFTFAIL(0.00)[~all];
+ RCPT_COUNT_FIVE(0.00)[6]; ML_SERVERS(-3.10)[213.133.102.83];
+ DKIM_TRACE(0.00)[aosc.io:+]; MID_CONTAINS_FROM(1.00)[];
+ RCVD_NO_TLS_LAST(0.10)[]; FROM_EQ_ENVFROM(0.00)[];
+ MIME_TRACE(0.00)[0:+];
+ ASN(0.00)[asn:24940, ipnet:213.133.96.0/19, country:DE];
+ RCVD_COUNT_TWO(0.00)[2];
+ HFILTER_HELO_BAREIP(3.00)[213.133.102.83,1]
+X-Rspamd-Server: mail20.mymailcheap.com
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+PineCube is an IP camera development kit released by Pine64.
+
+It comes with the following compoents:
+
+- A mainboard with Sochip S3 SoC, a 16MByte SPI Flash, AXP209 PMIC,
+a power-only microUSB connector, a USB Type-A connector, a 10/100Mbps
+Ethernet port and FPC connectors for camera and daughter board.
+- An OV5640-based camera module which is connected to the parallel CSI
+bus of the mainboard.
+- A daughterboard with several buttons, a SD slot, some IR LEDs, a
+microphone and a speaker connector.
+
+As the device tree is synchronized in a previous commit, just add it to
+Makefile, create a new MAINTAINER item and provide a defconfig.
+
+Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
+Reviewed-by: Andre Przywara <andre.przywara@arm.com>
+---
+Changes since v2:
+- Add Makefile reference to DT.
+Changes since v1:
+- Dropped LDO3 quirk.
+
+ arch/arm/dts/Makefile      |  1 +
+ board/sunxi/MAINTAINERS    |  5 +++++
+ configs/pinecube_defconfig | 15 +++++++++++++++
+ 3 files changed, 21 insertions(+)
+ create mode 100644 configs/pinecube_defconfig
+
+diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
+index 7d1a369845..e6993733b0 100644
+--- a/arch/arm/dts/Makefile
++++ b/arch/arm/dts/Makefile
+@@ -587,6 +587,7 @@ dtb-$(CONFIG_MACH_SUN8I_R40) += \
+ 	sun8i-r40-bananapi-m2-ultra.dtb \
+ 	sun8i-v40-bananapi-m2-berry.dtb
+ dtb-$(CONFIG_MACH_SUN8I_V3S) += \
++	sun8i-s3-pinecube.dtb \
+ 	sun8i-v3s-licheepi-zero.dtb
+ dtb-$(CONFIG_MACH_SUN50I_H5) += \
+ 	sun50i-h5-bananapi-m2-plus.dtb \
+diff --git a/board/sunxi/MAINTAINERS b/board/sunxi/MAINTAINERS
+index d3755ae41a..735801ae1d 100644
+--- a/board/sunxi/MAINTAINERS
++++ b/board/sunxi/MAINTAINERS
+@@ -440,6 +440,11 @@ M:	Vasily Khoruzhick <anarsoul@gmail.com>
+ S:	Maintained
+ F:	configs/pinebook_defconfig
+ 
++PINECUBE BOARD:
++M:	Icenowy Zheng <icenowy@aosc.io>
++S:	Maintained
++F:	configs/pinecube_defconfig
++
+ PINE64 BOARDS
+ M:	Andre Przywara <andre.przywara@arm.com>
+ S:	Maintained
+diff --git a/configs/pinecube_defconfig b/configs/pinecube_defconfig
+new file mode 100644
+index 0000000000..a8c404f6b1
+--- /dev/null
++++ b/configs/pinecube_defconfig
+@@ -0,0 +1,15 @@
++CONFIG_ARM=y
++CONFIG_ARCH_SUNXI=y
++CONFIG_SPL=y
++CONFIG_MACH_SUN8I_V3S=y
++CONFIG_SUNXI_DRAM_DDR3_1333=y
++CONFIG_DRAM_CLK=504
++CONFIG_DRAM_ODT_EN=y
++CONFIG_I2C0_ENABLE=y
++CONFIG_DEFAULT_DEVICE_TREE="sun8i-s3-pinecube"
++CONFIG_SPL_I2C_SUPPORT=y
++# CONFIG_NETDEVICES is not set
++CONFIG_AXP209_POWER=y
++CONFIG_AXP_DCDC2_VOLT=1250
++CONFIG_AXP_DCDC3_VOLT=3300
++CONFIG_CONS_INDEX=3
