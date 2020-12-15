@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:     uboot-tools
 Version:  2021.01
-Release:  0.2%{?candidate:.%{candidate}}%{?dist}
+Release:  0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -23,22 +23,19 @@ Patch2:   uefi-use-Fedora-specific-path-name.patch
 # Board fixes and enablement
 # RPi - uses RPI firmware device tree for HAT support
 Patch4:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-Patch5:   rpi-Add-identifier-for-the-new-RPi400.patch
+Patch5:   Raspberry-Pi-400-Compute-Module-4-support.patch
 # Tegra improvements
 Patch6:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
 Patch7:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
 # AllWinner improvements
-Patch8:   AllWinner-UpstreamSync.patch
-Patch9:   AllWinner-PinePhone.patch
 Patch10:  AllWinner-PineTab.patch
 Patch11:  0001-Fixes-for-AllWinner-ethernet-network-interfaces.patch
+Patch12:  sunxi-add-PineCube-board.patch
 # TI fixes
-Patch12:  0001-Fix-BeagleAI-detection.patch
+Patch13:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
-Patch13:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
-Patch14:  rockchip-Move-Bob-specific-bits-to-it-s-specific-u-b.patch
+#Patch14:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
 Patch15:  rk3399-Pinebook-pro-EDP-support.patch
-Patch16:  rockchip-Pinebook-Pro-Fix-USB.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -239,6 +236,11 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Dec 15 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.01-0.3.rc3
+- Update to 2021.01 RC3
+- Latest RPi-400/CM4 support patch
+- Re-enable previously disabled device support
+
 * Mon Dec 14 2020 Javier Martinez Canillas <javierm@redhat.com> - 2021.01-0.2.rc2
 - Fix a "scan_dev_for_efi" not defined error
 

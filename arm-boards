@@ -56,6 +56,7 @@ inet9f_rev03
 inet_q972
 Itead_Ibox_A20
 jesurun_q5
+jetson-tk1
 kc1
 Lamobo_R1
 libretech_all_h3_cc_h2_plus
@@ -63,6 +64,7 @@ Linksprite_pcDuino
 Linksprite_pcDuino3
 Linksprite_pcDuino3_Nano
 liteboard
+marsboard
 Marsboard_A10
 Mele_A1000
 Mele_A1000G_quad
@@ -99,6 +101,8 @@ orangepi_plus2e
 orangepi_r1
 orangepi_zero
 origen
+paz00
+pinecube
 polaroid_mid2809pxe04
 pov_protab2_ips9
 q8_a13_tablet
@@ -107,8 +111,10 @@ q8_a33_tablet_1024x600
 q8_a33_tablet_800x480
 qemu_arm
 r7-tv-dongle
+riotboard
 rock
 rock-pi-n8-rk3288
+rock2
 rpi_2
 rpi_3_32b
 rpi_4_32b
@@ -121,6 +127,9 @@ sunxi_Gemei_G9
 tbs_a711
 tinker-rk3288
 tinker-s-rk3288
+trimslice
+udoo
+udoo_neo
 usbarmory
 UTOO_P66
 vexpress_ca15_tc2
