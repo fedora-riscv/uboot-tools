@@ -34,7 +34,7 @@ Patch12:  sunxi-add-PineCube-board.patch
 # TI fixes
 Patch13:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
-#Patch14:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
+Patch14:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
 Patch15:  rk3399-Pinebook-pro-EDP-support.patch
 
 BuildRequires:  bc
