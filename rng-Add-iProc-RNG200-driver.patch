@@ -1,0 +1,450 @@
+From patchwork Tue Dec 15 09:49:23 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: mbrugger <matthias.bgg@kernel.org>
+X-Patchwork-Id: 1416366
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4CwD58649Dz9s0b
+	for <incoming@patchwork.ozlabs.org>; Tue, 15 Dec 2020 20:49:53 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 4EC6082956;
+	Tue, 15 Dec 2020 10:49:42 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id B1A738295E; Tue, 15 Dec 2020 10:49:40 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-6.9 required=5.0 tests=BAYES_00,RCVD_IN_DNSWL_HI,
+ SPF_HELO_NONE autolearn=ham autolearn_force=no version=3.4.2
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 38FB382955
+ for <u-boot@lists.denx.de>; Tue, 15 Dec 2020 10:49:37 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=matthias.bgg@kernel.org
+From: matthias.bgg@kernel.org
+Authentication-Results: mail.kernel.org;
+ dkim=permerror (bad message/signature format)
+To: sughosh.ganu@linaro.org,
+	xypron.glpk@gmx.de
+Cc: u-boot@lists.denx.de,
+	Matthias Brugger <mbrugger@suse.com>
+Subject: [PATCH v2 1/2] rng: Add iProc RNG200 driver
+Date: Tue, 15 Dec 2020 10:49:23 +0100
+Message-Id: <20201215094924.30072-1-matthias.bgg@kernel.org>
+X-Mailer: git-send-email 2.29.2
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Matthias Brugger <mbrugger@suse.com>
+
+Add support for random number generator RNG200.
+This is for example found on RPi4.
+
+Signed-off-by: Matthias Brugger <mbrugger@suse.com>
+Tested-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+---
+
+Changes in v2: None
+
+ drivers/rng/Kconfig        |   6 ++
+ drivers/rng/Makefile       |   1 +
+ drivers/rng/iproc_rng200.c | 186 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 193 insertions(+)
+ create mode 100644 drivers/rng/iproc_rng200.c
+
+diff --git a/drivers/rng/Kconfig b/drivers/rng/Kconfig
+index 11001c8ae7..94915d45b3 100644
+--- a/drivers/rng/Kconfig
++++ b/drivers/rng/Kconfig
+@@ -46,4 +46,10 @@ config RNG_ROCKCHIP
+ 	  Enable random number generator for rockchip.This driver is
+ 	  support rng module of crypto v1 and crypto v2.
+ 
++config RNG_IPROC200
++	bool "Broadcom iProc RNG200 random number generator"
++	depends on DM_RNG
++	default n
++	help
++	  Enable random number generator for RPI4.
+ endif
+diff --git a/drivers/rng/Makefile b/drivers/rng/Makefile
+index 8953406882..39f7ee3f03 100644
+--- a/drivers/rng/Makefile
++++ b/drivers/rng/Makefile
+@@ -9,3 +9,4 @@ obj-$(CONFIG_RNG_SANDBOX) += sandbox_rng.o
+ obj-$(CONFIG_RNG_MSM) += msm_rng.o
+ obj-$(CONFIG_RNG_STM32MP1) += stm32mp1_rng.o
+ obj-$(CONFIG_RNG_ROCKCHIP) += rockchip_rng.o
++obj-$(CONFIG_RNG_IPROC200) += iproc_rng200.o
+diff --git a/drivers/rng/iproc_rng200.c b/drivers/rng/iproc_rng200.c
+new file mode 100644
+index 0000000000..1063f43953
+--- /dev/null
++++ b/drivers/rng/iproc_rng200.c
+@@ -0,0 +1,186 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Copyright 2020, Matthias Brugger <mbrugger@suse.com>
++ *
++ * Driver for Raspberry Pi hardware random number generator
++ */
++
++#include <common.h>
++#include <dm.h>
++#include <linux/delay.h>
++#include <rng.h>
++#include <asm/io.h>
++
++#define usleep_range(a, b) udelay((b))
++
++#define RNG_CTRL_OFFSET					0x00
++#define RNG_CTRL_RNG_RBGEN_MASK				0x00001FFF
++#define RNG_CTRL_RNG_RBGEN_ENABLE			0x00000001
++#define RNG_CTRL_RNG_RBGEN_DISABLE			0x00000000
++
++#define RNG_SOFT_RESET_OFFSET				0x04
++#define RNG_SOFT_RESET					0x00000001
++
++#define RBG_SOFT_RESET_OFFSET				0x08
++#define RBG_SOFT_RESET					0x00000001
++
++#define RNG_INT_STATUS_OFFSET				0x18
++#define RNG_INT_STATUS_MASTER_FAIL_LOCKOUT_IRQ_MASK	0x80000000
++#define RNG_INT_STATUS_NIST_FAIL_IRQ_MASK		0x00000020
++
++#define RNG_FIFO_DATA_OFFSET				0x20
++
++#define RNG_FIFO_COUNT_OFFSET				0x24
++#define RNG_FIFO_COUNT_RNG_FIFO_COUNT_MASK		0x000000FF
++
++struct iproc_rng200_platdata {
++	fdt_addr_t base;
++};
++
++static void iproc_rng200_enable(struct iproc_rng200_platdata *pdata, bool enable)
++{
++	fdt_addr_t rng_base = pdata->base;
++	u32 val;
++
++	val = readl(rng_base + RNG_CTRL_OFFSET);
++	val &= ~RNG_CTRL_RNG_RBGEN_MASK;
++	if (enable)
++		val |= RNG_CTRL_RNG_RBGEN_ENABLE;
++	else
++		val &= ~RNG_CTRL_RNG_RBGEN_ENABLE;
++
++	writel(val, rng_base + RNG_CTRL_OFFSET);
++
++}
++
++static void iproc_rng200_restart(struct iproc_rng200_platdata *pdata)
++{
++	fdt_addr_t rng_base = pdata->base;
++	u32 val;
++
++	iproc_rng200_enable(pdata, false);
++
++	/* Clear all interrupt status */
++	writel(0xFFFFFFFFUL, rng_base + RNG_INT_STATUS_OFFSET);
++
++	/* Reset RNG and RBG */
++	val = readl(rng_base + RBG_SOFT_RESET_OFFSET);
++	val |= RBG_SOFT_RESET;
++	writel(val, rng_base + RBG_SOFT_RESET_OFFSET);
++
++	val = readl(rng_base + RNG_SOFT_RESET_OFFSET);
++	val |= RNG_SOFT_RESET;
++	writel(val, rng_base + RNG_SOFT_RESET_OFFSET);
++
++	val = readl(rng_base + RNG_SOFT_RESET_OFFSET);
++	val &= ~RNG_SOFT_RESET;
++	writel(val, rng_base + RNG_SOFT_RESET_OFFSET);
++
++	val = readl(rng_base + RBG_SOFT_RESET_OFFSET);
++	val &= ~RBG_SOFT_RESET;
++	writel(val, rng_base + RBG_SOFT_RESET_OFFSET);
++
++	iproc_rng200_enable(pdata, true);
++}
++
++static int iproc_rng200_read(struct udevice *dev, void *data, size_t len)
++{
++	struct iproc_rng200_platdata *priv = dev_get_platdata(dev);
++	char *buf = (char *)data;
++	u32 num_remaining = len;
++	u32 status;
++
++	#define MAX_RESETS_PER_READ	1
++	u32 num_resets = 0;
++
++	while (num_remaining > 0) {
++
++		/* Is RNG sane? If not, reset it. */
++		status = readl(priv->base + RNG_INT_STATUS_OFFSET);
++		if ((status & (RNG_INT_STATUS_MASTER_FAIL_LOCKOUT_IRQ_MASK |
++			RNG_INT_STATUS_NIST_FAIL_IRQ_MASK)) != 0) {
++
++			if (num_resets >= MAX_RESETS_PER_READ)
++				return len - num_remaining;
++
++			iproc_rng200_restart(priv);
++			num_resets++;
++		}
++
++		/* Are there any random numbers available? */
++		if ((readl(priv->base + RNG_FIFO_COUNT_OFFSET) &
++				RNG_FIFO_COUNT_RNG_FIFO_COUNT_MASK) > 0) {
++
++			if (num_remaining >= sizeof(u32)) {
++				/* Buffer has room to store entire word */
++				*(u32 *)buf = readl(priv->base +
++							RNG_FIFO_DATA_OFFSET);
++				buf += sizeof(u32);
++				num_remaining -= sizeof(u32);
++			} else {
++				/* Buffer can only store partial word */
++				u32 rnd_number = readl(priv->base +
++							RNG_FIFO_DATA_OFFSET);
++				memcpy(buf, &rnd_number, num_remaining);
++				buf += num_remaining;
++				num_remaining = 0;
++			}
++
++		} else {
++			/* Can wait, give others chance to run */
++			usleep_range(min(num_remaining * 10, 500U), 500);
++		}
++	}
++
++	return 0;
++}
++
++static int iproc_rng200_probe(struct udevice *dev)
++{
++	struct iproc_rng200_platdata *priv = dev_get_platdata(dev);
++
++	iproc_rng200_enable(priv, true);
++
++	return 0;
++}
++
++static int iproc_rng200_remove(struct udevice *dev)
++{
++	struct iproc_rng200_platdata *priv = dev_get_platdata(dev);
++
++	iproc_rng200_enable(priv, false);
++
++	return 0;
++}
++
++static int iproc_rng200_ofdata_to_platdata(struct udevice *dev)
++{
++	struct iproc_rng200_platdata *pdata = dev_get_platdata(dev);
++
++	pdata->base = dev_read_addr(dev);
++	if (!pdata->base)
++		return -ENODEV;
++
++	return 0;
++}
++
++static const struct dm_rng_ops iproc_rng200_ops = {
++	.read = iproc_rng200_read,
++};
++
++static const struct udevice_id iproc_rng200_rng_match[] = {
++	{ .compatible = "brcm,bcm2711-rng200", },
++	{ .compatible = "brcm,iproc-rng200", },
++	{},
++};
++
++U_BOOT_DRIVER(iproc_rng200_rng) = {
++	.name = "iproc_rng200-rng",
++	.id = UCLASS_RNG,
++	.of_match = iproc_rng200_rng_match,
++	.ops = &iproc_rng200_ops,
++	.probe = iproc_rng200_probe,
++	.remove = iproc_rng200_remove,
++	.platdata_auto_alloc_size = sizeof(struct iproc_rng200_platdata),
++	.ofdata_to_platdata = iproc_rng200_ofdata_to_platdata,
++};
+
+From patchwork Tue Dec 15 09:49:24 2020
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: mbrugger <matthias.bgg@kernel.org>
+X-Patchwork-Id: 1416367
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
+ SHA256)
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4CwD5D4Gf2z9s0b
+	for <incoming@patchwork.ozlabs.org>; Tue, 15 Dec 2020 20:50:08 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id A25E782961;
+	Tue, 15 Dec 2020 10:49:46 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 9EC418295C; Tue, 15 Dec 2020 10:49:41 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-6.9 required=5.0 tests=BAYES_00,RCVD_IN_DNSWL_HI,
+ SPF_HELO_NONE autolearn=ham autolearn_force=no version=3.4.2
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id BCF5682956
+ for <u-boot@lists.denx.de>; Tue, 15 Dec 2020 10:49:38 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=matthias.bgg@kernel.org
+From: matthias.bgg@kernel.org
+Authentication-Results: mail.kernel.org;
+ dkim=permerror (bad message/signature format)
+To: sughosh.ganu@linaro.org,
+	xypron.glpk@gmx.de
+Cc: u-boot@lists.denx.de,
+	Matthias Brugger <mbrugger@suse.com>
+Subject: [PATCH v2 2/2] config: Enable iProc RNG200 driver in RPi4 configs
+Date: Tue, 15 Dec 2020 10:49:24 +0100
+Message-Id: <20201215094924.30072-2-matthias.bgg@kernel.org>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201215094924.30072-1-matthias.bgg@kernel.org>
+References: <20201215094924.30072-1-matthias.bgg@kernel.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.3 at phobos.denx.de
+X-Virus-Status: Clean
+
+From: Matthias Brugger <mbrugger@suse.com>
+
+We find the iProc RNG200 in the Raspberry Pi 4. Add it to all it's
+config so that it can be used.
+
+Signed-off-by: Matthias Brugger <mbrugger@suse.com>
+---
+
+Changes in v2:
+- fix defconfigs using savedefconfig (Heinrich)
+
+ configs/rpi_4_32b_defconfig | 2 ++
+ configs/rpi_4_defconfig     | 2 ++
+ configs/rpi_arm64_defconfig | 2 ++
+ drivers/rng/iproc_rng200.c  | 1 -
+ 4 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/configs/rpi_4_32b_defconfig b/configs/rpi_4_32b_defconfig
+index 5ddd838fd5..4039e46c81 100644
+--- a/configs/rpi_4_32b_defconfig
++++ b/configs/rpi_4_32b_defconfig
+@@ -36,6 +36,8 @@ CONFIG_PCI_BRCMSTB=y
+ CONFIG_PINCTRL=y
+ # CONFIG_PINCTRL_GENERIC is not set
+ CONFIG_DM_RESET=y
++CONFIG_DM_RNG=y
++CONFIG_RNG_IPROC200=y
+ # CONFIG_REQUIRE_SERIAL_CONSOLE is not set
+ CONFIG_USB=y
+ CONFIG_DM_USB=y
+diff --git a/configs/rpi_4_defconfig b/configs/rpi_4_defconfig
+index 2590d0a696..46b6cc3046 100644
+--- a/configs/rpi_4_defconfig
++++ b/configs/rpi_4_defconfig
+@@ -36,6 +36,8 @@ CONFIG_PCI_BRCMSTB=y
+ CONFIG_PINCTRL=y
+ # CONFIG_PINCTRL_GENERIC is not set
+ CONFIG_DM_RESET=y
++CONFIG_DM_RNG=y
++CONFIG_RNG_IPROC200=y
+ # CONFIG_REQUIRE_SERIAL_CONSOLE is not set
+ CONFIG_USB=y
+ CONFIG_DM_USB=y
+diff --git a/configs/rpi_arm64_defconfig b/configs/rpi_arm64_defconfig
+index 2639219a1a..b75144036d 100644
+--- a/configs/rpi_arm64_defconfig
++++ b/configs/rpi_arm64_defconfig
+@@ -33,6 +33,8 @@ CONFIG_PCI_BRCMSTB=y
+ CONFIG_PINCTRL=y
+ # CONFIG_PINCTRL_GENERIC is not set
+ CONFIG_DM_RESET=y
++CONFIG_DM_RNG=y
++CONFIG_RNG_IPROC200=y
+ # CONFIG_REQUIRE_SERIAL_CONSOLE is not set
+ CONFIG_USB=y
+ CONFIG_DM_USB=y
+diff --git a/drivers/rng/iproc_rng200.c b/drivers/rng/iproc_rng200.c
+index 1063f43953..378f6cf48d 100644
+--- a/drivers/rng/iproc_rng200.c
++++ b/drivers/rng/iproc_rng200.c
+@@ -50,7 +50,6 @@ static void iproc_rng200_enable(struct iproc_rng200_platdata *pdata, bool enable
+ 		val &= ~RNG_CTRL_RNG_RBGEN_ENABLE;
+ 
+ 	writel(val, rng_base + RNG_CTRL_OFFSET);
+-
+ }
+ 
+ static void iproc_rng200_restart(struct iproc_rng200_platdata *pdata)

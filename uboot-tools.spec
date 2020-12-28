@@ -25,6 +25,7 @@ Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
 # Board fixes and enablement
 Patch5:   Raspberry-Pi-400-Compute-Module-4-support.patch
+Patch6:   rng-Add-iProc-RNG200-driver.patch
 # AllWinner improvements
 Patch10:  AllWinner-PineTab.patch
 Patch11:  sunxi-add-PineCube-board.patch
