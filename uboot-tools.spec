@@ -1,8 +1,8 @@
-%global candidate rc3
+%global candidate rc4
 
 Name:     uboot-tools
 Version:  2021.01
-Release:  0.3%{?candidate:.%{candidate}}%{?dist}
+Release:  0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -18,19 +18,17 @@ Source4:  aarch64-chromebooks
 Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 # Needed due to issues with shim
 Patch2:   uefi-use-Fedora-specific-path-name.patch
-#Patch3:   rockchip-spl-u-boot-itb-offset.patch
+# RPi - uses RPI firmware device tree for HAT support
+Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+# Ajust the U-Boot offsets in SPL to take less space
+#Patch4:   rockchip-spl-u-boot-itb-offset.patch
 
 # Board fixes and enablement
-# RPi - uses RPI firmware device tree for HAT support
-Patch4:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch5:   Raspberry-Pi-400-Compute-Module-4-support.patch
-# Tegra improvements
-Patch6:   arm-tegra-define-fdtfile-option-for-distro-boot.patch
-Patch7:   arm-add-BOOTENV_EFI_SET_FDTFILE_FALLBACK-for-tegra186-be.patch
 # AllWinner improvements
 Patch10:  AllWinner-PineTab.patch
-Patch11:  0001-Fixes-for-AllWinner-ethernet-network-interfaces.patch
-Patch12:  sunxi-add-PineCube-board.patch
+Patch11:  sunxi-add-PineCube-board.patch
+Patch12:  0001-Fixes-for-AllWinner-ethernet-network-interfaces.patch
 # TI fixes
 Patch13:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
@@ -236,6 +234,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Dec 27 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.01-0.4.rc4
+- Update to 2021.01 RC4
+- Latest RPi-400/CM4 support patch
+
 * Tue Dec 15 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.01-0.3.rc3
 - Update to 2021.01 RC3
 - Latest RPi-400/CM4 support patch
