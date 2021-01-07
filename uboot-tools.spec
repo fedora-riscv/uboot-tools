@@ -1,8 +1,11 @@
 #global candidate rc5
 
+# Set it to "opensbi" (stable) or opensbi-unstable (unstable, git)
+%global opensbi opensbi-unstable
+
 Name:     uboot-tools
 Version:  2020.10
-Release:  2%{?candidate:.%{candidate}}%{?dist}
+Release:  2%{?candidate:.%{candidate}}.0.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -13,6 +16,7 @@ Source2:  arm-chromebooks
 Source3:  aarch64-boards
 Source4:  aarch64-chromebooks
 Source5:  10-devicetree.install
+Source6:  riscv64-boards
 
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
@@ -67,6 +71,9 @@ BuildRequires:  vboot-utils
 %ifarch aarch64
 BuildRequires:  arm-trusted-firmware-armv8
 %endif
+%ifarch riscv64
+BuildRequires:  %{opensbi}
+%endif
 
 Requires:       dtc
 Requires:       systemd
@@ -99,10 +106,20 @@ BuildArch:   noarch
 U-Boot firmware binaries for armv7 boards
 %endif
 
+%ifarch riscv64
+%package     -n uboot-images-riscv64
+Summary:     u-boot bootloader images for riscv64 boards
+Requires:    uboot-tools
+BuildArch:   noarch
+
+%description -n uboot-images-riscv64
+u-boot bootloader binaries for riscv64 boards
+%endif
+
 %prep
 %autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
 
-cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 .
+cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 %SOURCE6 .
 
 %build
 mkdir builds
@@ -112,7 +129,11 @@ mkdir builds
 %{?enable_devtoolset7:%{enable_devtoolset7}}
 %endif
 
-%ifarch aarch64 %{arm}
+%ifarch riscv64
+export OPENSBI=%{_datadir}/%{opensbi}/generic/firmware/fw_dynamic.bin
+%endif
+
+%ifarch aarch64 %{arm} riscv64
 for board in $(cat %{_arch}-boards)
 do
   echo "Building board: $board"
@@ -198,6 +219,19 @@ do
 done
 %endif
 
+%ifarch riscv64
+for board in $(cat %{_arch}-boards)
+do
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+ for file in u-boot.bin u-boot.dtb u-boot.img u-boot-nodtb.bin u-boot.itb u-boot-dtb.img u-boot-initial-env u-boot.its u-boot-spl.bin u-boot-spl-nodtb.bin
+ do
+  if [ -f builds/$(echo $board)/$(echo $file) ]; then
+    install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+  fi
+ done
+done
+%endif
+
 for tool in bmp_logo dumpimage env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr gen_ethaddr_crc img2srec mkenvimage mkimage mksunxiboot ncb proftool sunxi-spl-image-builder ubsha1 xway-swap-bytes
 do
 install -p -m 0755 builds/tools/$tool $RPM_BUILD_ROOT%{_bindir}
@@ -251,7 +285,15 @@ cp -p board/warp7/README builds/docs/README.warp7
 %{_datadir}/uboot/*
 %endif
 
+%ifarch riscv64
+%files -n uboot-images-riscv64
+%{_datadir}/uboot/*
+%endif
+
 %changelog
+* Wed Jan 06 2021 David Abdurachmanov <david.abdurachmanov@sifive.com> - 2020.10-2.0.riscv64
+- Add support for riscv64
+
 * Wed Oct 28 08:21:56 GMT 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2020.10-2
 - Fix kernel installs for non EBBR systems
 - Fix for wired networks on some Allwinner devices
