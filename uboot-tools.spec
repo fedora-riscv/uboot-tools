@@ -5,7 +5,7 @@
 
 Name:     uboot-tools
 Version:  2020.10
-Release:  2%{?candidate:.%{candidate}}.1.riscv64%{?dist}
+Release:  2%{?candidate:.%{candidate}}.2.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -162,6 +162,7 @@ do
   # End ATF
   make $(echo $board)_defconfig O=builds/$(echo $board)/
   %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board)/
+  make u-boot-initial-env O=builds/$(echo $board)/
 done
 
 %endif
@@ -222,9 +223,8 @@ done
 %ifarch riscv64
 for board in $(cat %{_arch}-boards)
 do
-find builds/$(echo $board)/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
- for file in u-boot.bin u-boot.dtb u-boot.img u-boot-nodtb.bin u-boot.itb u-boot-dtb.img u-boot-initial-env u-boot.its u-boot-spl.bin u-boot-spl-nodtb.bin
+ for file in u-boot.bin u-boot.dtb u-boot.img u-boot-nodtb.bin u-boot-dtb.bin u-boot.itb u-boot-dtb.img u-boot.its spl/u-boot-spl.bin spl/u-boot-spl-nodtb.bin spl/u-boot-spl.dtb spl/u-boot-spl-dtb.bin u-boot-initial-env
  do
   if [ -f builds/$(echo $board)/$(echo $file) ]; then
     install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
@@ -292,6 +292,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Jan 07 2021 David Abdurachmanov <david.abdurachmanov@sifive.com> - 2020.10-2.2.riscv64
+- Include more binaries (e.g. SPL)
+- Generate u-boot-initial-env files
+
 * Wed Jan 06 2021 David Abdurachmanov <david.abdurachmanov@sifive.com> - 2020.10-2.0.riscv64
 - Add support for riscv64
 
