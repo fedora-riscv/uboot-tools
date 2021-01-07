@@ -5,7 +5,7 @@
 
 Name:     uboot-tools
 Version:  2020.10
-Release:  2%{?candidate:.%{candidate}}.4.riscv64%{?dist}
+Release:  2%{?candidate:.%{candidate}}.5.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -43,6 +43,13 @@ Patch13:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
 Patch14:  rk3399-Pinebook-pro-EDP-support.patch
 Patch15:  rk3399-reset-display-hack.patch
 Patch16:  rockchip-Rock960-Fix-up-USB-support.patch
+
+# RISC-V (riscv64) patches
+# Add support for loading Image.{gz,xz,..} kernels with booti command
+Patch20:  riscv-compressed-booti.patch
+
+# Set max CPUs to 32 (same as Linux)
+Patch21:  riscv-set-nrcpus-32.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -291,6 +298,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Jan 07 2021 David Abdurachmanov <david.abdurachmanov@sifive.com> - 2020.10-2.5.riscv64
+- Increase max CPU to 32 (same as Linux)
+- Add compressed Image.{gz,xz,..} kernel support for booti command
+
 * Thu Jan 07 2021 David Abdurachmanov <david.abdurachmanov@sifive.com> - 2020.10-2.4.riscv64
 - Remove u-boot-initial-env
 

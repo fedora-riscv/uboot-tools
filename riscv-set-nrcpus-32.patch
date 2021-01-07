@@ -1,0 +1,36 @@
+diff --git a/configs/qemu-riscv64_defconfig b/configs/qemu-riscv64_defconfig
+index daf5d655..aa79abc1 100644
+--- a/configs/qemu-riscv64_defconfig
++++ b/configs/qemu-riscv64_defconfig
+@@ -13,3 +13,4 @@ CONFIG_CMD_NVEDIT_EFI=y
+ CONFIG_OF_PRIOR_STAGE=y
+ CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_DM_MTD=y
++CONFIG_NR_CPUS=32
+diff --git a/configs/qemu-riscv64_smode_defconfig b/configs/qemu-riscv64_smode_defconfig
+index 0000564e..459011a2 100644
+--- a/configs/qemu-riscv64_smode_defconfig
++++ b/configs/qemu-riscv64_smode_defconfig
+@@ -14,3 +14,4 @@ CONFIG_CMD_NVEDIT_EFI=y
+ CONFIG_OF_PRIOR_STAGE=y
+ CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_DM_MTD=y
++CONFIG_NR_CPUS=32
+diff --git a/configs/qemu-riscv64_spl_defconfig b/configs/qemu-riscv64_spl_defconfig
+index 897adf6a..56a84832 100644
+--- a/configs/qemu-riscv64_spl_defconfig
++++ b/configs/qemu-riscv64_spl_defconfig
+@@ -14,3 +14,4 @@ CONFIG_DISPLAY_BOARDINFO=y
+ CONFIG_OF_PRIOR_STAGE=y
+ CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_DM_MTD=y
++CONFIG_NR_CPUS=32
+diff --git a/configs/sifive_fu540_defconfig b/configs/sifive_fu540_defconfig
+index e4dd2018..5d3ee8da 100644
+--- a/configs/sifive_fu540_defconfig
++++ b/configs/sifive_fu540_defconfig
+@@ -27,3 +27,4 @@ CONFIG_SPL_DM_SEQ_ALIAS=y
+ CONFIG_SPL_CLK=y
+ CONFIG_DM_MTD=y
+ CONFIG_DM_RESET=y
++CONFIG_NR_CPUS=32
