@@ -5,7 +5,7 @@
 
 Name:     uboot-tools
 Version:  2020.10
-Release:  2%{?candidate:.%{candidate}}.2.riscv64%{?dist}
+Release:  2%{?candidate:.%{candidate}}.3.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -162,7 +162,7 @@ do
   # End ATF
   make $(echo $board)_defconfig O=builds/$(echo $board)/
   %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board)/
-  make u-boot-initial-env O=builds/$(echo $board)/
+  %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board)/ u-boot-initial-env
 done
 
 %endif
@@ -292,6 +292,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Jan 07 2021 David Abdurachmanov <david.abdurachmanov@sifive.com> - 2020.10-2.3.riscv64
+- Fix u-boot-initial-env make file
+
 * Thu Jan 07 2021 David Abdurachmanov <david.abdurachmanov@sifive.com> - 2020.10-2.2.riscv64
 - Include more binaries (e.g. SPL)
 - Generate u-boot-initial-env files
