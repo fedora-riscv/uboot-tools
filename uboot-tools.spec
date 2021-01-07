@@ -5,7 +5,7 @@
 
 Name:     uboot-tools
 Version:  2020.10
-Release:  2%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Release:  2%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -222,6 +222,7 @@ done
 %ifarch riscv64
 for board in $(cat %{_arch}-boards)
 do
+find builds/$(echo $board)/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
  for file in u-boot.bin u-boot.dtb u-boot.img u-boot-nodtb.bin u-boot.itb u-boot-dtb.img u-boot-initial-env u-boot.its u-boot-spl.bin u-boot-spl-nodtb.bin
  do
