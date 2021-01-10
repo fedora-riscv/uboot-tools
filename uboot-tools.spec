@@ -1,8 +1,8 @@
-%global candidate rc4
+%global candidate rc5
 
 Name:     uboot-tools
 Version:  2021.01
-Release:  0.4%{?candidate:.%{candidate}}%{?dist}
+Release:  0.5%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -24,8 +24,6 @@ Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 #Patch4:   rockchip-spl-u-boot-itb-offset.patch
 
 # Board fixes and enablement
-Patch5:   Raspberry-Pi-400-Compute-Module-4-support.patch
-Patch6:   rng-Add-iProc-RNG200-driver.patch
 # AllWinner improvements
 Patch10:  AllWinner-PineTab.patch
 Patch11:  sunxi-add-PineCube-board.patch
@@ -35,6 +33,10 @@ Patch13:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
 Patch14:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
 Patch15:  rk3399-Pinebook-pro-EDP-support.patch
+Patch16:  rockchip-Fix-SPI-boot-on-Pinebook-Pro-Puma-and-RK3399-ROC-PC.patch
+# Raspberry Pi improvements
+Patch17:  Raspberry-Pi-400-Compute-Module-4-support.patch
+Patch18:  rng-Add-iProc-RNG200-driver.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -235,6 +237,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Jan  5 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.01-0.5.rc5
+- Update to 2021.01 RC5
+
 * Sun Dec 27 2020 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.01-0.4.rc4
 - Update to 2021.01 RC4
 - Latest RPi-400/CM4 support patch
