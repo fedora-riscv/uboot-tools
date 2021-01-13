@@ -5,7 +5,7 @@
 
 Name:     uboot-tools
 Version:  2020.10
-Release:  2%{?candidate:.%{candidate}}.5.riscv64%{?dist}
+Release:  2%{?candidate:.%{candidate}}.6.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -50,6 +50,10 @@ Patch20:  riscv-compressed-booti.patch
 
 # Set max CPUs to 32 (same as Linux)
 Patch21:  riscv-set-nrcpus-32.patch
+
+# Enable CONFIG_CMD_GPT_RENAME
+# Allows to see full GPT partitions information and modify it
+Patch22:  riscv-CONFIG_CMD_GPT_RENAME.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -298,6 +302,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Jan 13 2021 David Abdurachmanov <david.abdurachmanov@sifive.com> - 2020.10-2.6.riscv64
+- Enable CONFIG_CMD_GPT_RENAME for riscv64
+
 * Thu Jan 07 2021 David Abdurachmanov <david.abdurachmanov@sifive.com> - 2020.10-2.5.riscv64
 - Increase max CPU to 32 (same as Linux)
 - Add compressed Image.{gz,xz,..} kernel support for booti command
