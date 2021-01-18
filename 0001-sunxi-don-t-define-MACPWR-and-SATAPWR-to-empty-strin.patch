@@ -1,0 +1,40 @@
+From 03f91f2db03bf1382608798cd58251ff920d58ef Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Mon, 18 Jan 2021 00:02:53 +0000
+Subject: [PATCH] sunxi: don't define MACPWR and SATAPWR to empty strings
+
+There's checks in board/sunxi/board.c if either MACPWR or SATAPWR are
+defined and they are defined by default to a empty string which means
+on vast majority of AllWinner boards when they're not required the
+code is still run and with SATAPWR we even get an unnecessary 500ms
+delay booting. So let's not define a default for these options so the
+code is only run for boards that need it.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ arch/arm/mach-sunxi/Kconfig | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/arm/mach-sunxi/Kconfig b/arch/arm/mach-sunxi/Kconfig
+index 49ef217f08..a566e10315 100644
+--- a/arch/arm/mach-sunxi/Kconfig
++++ b/arch/arm/mach-sunxi/Kconfig
+@@ -578,7 +578,6 @@ config OLD_SUNXI_KERNEL_COMPAT
+ 
+ config MACPWR
+ 	string "MAC power pin"
+-	default ""
+ 	help
+ 	  Set the pin used to power the MAC. This takes a string in the format
+ 	  understood by sunxi_name_to_gpio, e.g. PH1 for pin 1 of port H.
+@@ -969,7 +968,6 @@ endchoice
+ 
+ config SATAPWR
+ 	string "SATA power pin"
+-	default ""
+ 	help
+ 	  Set the pins used to power the SATA. This takes a string in the
+ 	  format understood by sunxi_name_to_gpio, e.g. PH1 for pin 1 of
+-- 
+2.29.2
+

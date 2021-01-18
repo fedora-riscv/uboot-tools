@@ -34,7 +34,7 @@ index 769477cd80e..22ce3685758 100644
  			"bootefi ${kernel_addr_r} ${fdt_addr_r};"         \
  		"else "                                                   \
 @@ -169,9 +169,9 @@
-		"run boot_efi_bootmgr\0"                                  \
+		"run boot_efi_binary\0"                                   \
  	"scan_dev_for_efi="                                               \
  		"if test -e ${devtype} ${devnum}:${distro_bootpart} "     \
 -					"efi/boot/"BOOTEFI_NAME"; then "  \

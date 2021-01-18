@@ -1,8 +1,8 @@
-%global candidate rc5
+#global candidate rc1
 
 Name:     uboot-tools
 Version:  2021.01
-Release:  0.5%{?candidate:.%{candidate}}%{?dist}
+Release:  1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -28,15 +28,17 @@ Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch10:  AllWinner-PineTab.patch
 Patch11:  sunxi-add-PineCube-board.patch
 Patch12:  0001-Fixes-for-AllWinner-ethernet-network-interfaces.patch
+Patch13:  0001-sunxi-don-t-define-MACPWR-and-SATAPWR-to-empty-strin.patch
 # TI fixes
-Patch13:  0001-Fix-BeagleAI-detection.patch
+Patch14:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
-Patch14:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
-Patch15:  rk3399-Pinebook-pro-EDP-support.patch
-Patch16:  rockchip-Fix-SPI-boot-on-Pinebook-Pro-Puma-and-RK3399-ROC-PC.patch
+Patch15:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
+Patch16:  rk3399-Pinebook-pro-EDP-support.patch
+Patch17:  rockchip-Fix-SPI-boot-on-Pinebook-Pro-Puma-and-RK3399-ROC-PC.patch
 # Raspberry Pi improvements
-Patch17:  Raspberry-Pi-400-Compute-Module-4-support.patch
-Patch18:  rng-Add-iProc-RNG200-driver.patch
+Patch18:  Raspberry-Pi-400-Compute-Module-4-support.patch
+Patch19:  rng-Add-iProc-RNG200-driver.patch
+Patch20:  Raspberry-Pi-4-PCIe-handover.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -237,6 +239,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Jan 11 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.01-1
+- Update to 2021.01 GA
+- Updates for Raspberry Pi 4 Series of devices
+
 * Tue Jan  5 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.01-0.5.rc5
 - Update to 2021.01 RC5
 
