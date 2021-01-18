@@ -113,8 +113,8 @@ qemu_arm
 r7-tv-dongle
 riotboard
 rock
-rock-pi-n8-rk3288
 rock2
+rock-pi-n8-rk3288
 rpi_2
 rpi_3_32b
 rpi_4_32b
@@ -139,5 +139,5 @@ warp
 warp7
 Wexler_TAB7200
 Wits_Pro_A20_DKT
-Yones_Toptech_BS1078_V2
 xilinx_zynq_virt
+Yones_Toptech_BS1078_V2
