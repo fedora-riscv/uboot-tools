@@ -1,8 +1,8 @@
-#global candidate rc1
+%global candidate rc1
 
 Name:     uboot-tools
-Version:  2021.01
-Release:  2%{?candidate:.%{candidate}}%{?dist}
+Version:  2021.04
+Release:  0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -26,19 +26,14 @@ Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 # Board fixes and enablement
 # AllWinner improvements
 Patch10:  AllWinner-PineTab.patch
-Patch11:  sunxi-add-PineCube-board.patch
-Patch12:  0001-Fixes-for-AllWinner-ethernet-network-interfaces.patch
-Patch13:  0001-sunxi-don-t-define-MACPWR-and-SATAPWR-to-empty-strin.patch
 # TI fixes
-Patch14:  0001-Fix-BeagleAI-detection.patch
+Patch11:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
-Patch15:  arm-rk3399-enable-rng-on-rock960-and-firefly3399.patch
-Patch16:  rk3399-Pinebook-pro-EDP-support.patch
-Patch17:  rockchip-Fix-SPI-boot-on-Pinebook-Pro-Puma-and-RK3399-ROC-PC.patch
+Patch12:  rk3399-Pinebook-pro-EDP-support.patch
 # Raspberry Pi improvements
-Patch18:  Raspberry-Pi-400-Compute-Module-4-support.patch
-Patch19:  rng-Add-iProc-RNG200-driver.patch
-Patch20:  Raspberry-Pi-4-PCIe-handover.patch
+Patch13:  Raspberry-Pi-400-Compute-Module-4-support.patch
+Patch14:  Raspberry-Pi-4-PCIe-handover.patch
+Patch15:  rng-Add-iProc-RNG200-driver.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -115,12 +110,12 @@ do
     echo "Board: $board using sun50i_a64"
     cp /usr/share/arm-trusted-firmware/sun50i_a64/* builds/$(echo $board)/
   fi
-  sun50h6=(orangepi_lite2 orangepi_one_plus pine_h64)
+  sun50h6=(beelink_gs1 orangepi_3 orangepi_lite2 orangepi_one_plus orangepi_zero2 pine_h64 tanix_tx6)
   if [[ " ${sun50h6[*]} " == *" $board "* ]]; then
     echo "Board: $board using sun50i_h6"
     cp /usr/share/arm-trusted-firmware/sun50i_h6/* builds/$(echo $board)/
   fi
-  rk3328=(evb-rk3328 rock64-rk3328 rock-pi-e-rk3328 roc-cc-rk3328)
+  rk3328=(evb-rk3328 nanopi-r2s-rk3328 rock64-rk3328 rock-pi-e-rk3328 roc-cc-rk3328)
   if [[ " ${rk3328[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3328"
     cp /usr/share/arm-trusted-firmware/rk3328/* builds/$(echo $board)/
@@ -239,6 +234,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Feb 01 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-0.1.rc1
+- Update to 2021.04 RC1
+- Add new upstream devices
+
 * Wed Jan 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 2021.01-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
 

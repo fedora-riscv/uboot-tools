@@ -1,24 +1,84 @@
-From 110229bb9a802385c73d8861de833feb1a7dadb8 Mon Sep 17 00:00:00 2001
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Wed, 23 Dec 2020 19:55:27 +0100
-Subject: [PATCH 01/13] rpi: Add identifier for the new RPi400
+From 7e0e7e5a6f9cfe9ab36635f6867bbf25a27e70cd Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Mon, 1 Feb 2021 21:34:02 +0000
+Subject: [PATCH] Raspberry Pi 400 Compute Module 4 support
 
-The Raspberry Pi Foundation released the new RPi400 which we want to
-detect, so we can enable Ethernet on it and know the correct device tree
-file name.
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Reviewed-by: Peter Robinson <pbrobinson@gmail.com>
-Tested-by: Peter Robinson <pbrobinson@gmail.com>
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- board/raspberrypi/rpi/rpi.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/sandbox/dts/test.dts          | 21 ++++++++
+ board/raspberrypi/rpi/rpi.c        | 10 ++++
+ common/fdt_support.c               | 73 ++++++++++++++++++++++++++++
+ configs/rpi_4_32b_defconfig        |  1 +
+ configs/rpi_4_defconfig            |  1 +
+ configs/rpi_arm64_defconfig        |  1 +
+ configs/sandbox64_defconfig        |  1 +
+ configs/sandbox_defconfig          |  1 +
+ configs/sandbox_flattree_defconfig |  1 +
+ configs/sandbox_spl_defconfig      |  1 +
+ drivers/core/Kconfig               | 10 ++++
+ drivers/core/device.c              | 41 ++++++++++++++++
+ drivers/core/of_addr.c             | 78 ++++++++++++++++++++++++++++++
+ drivers/core/ofnode.c              |  9 ++++
+ drivers/core/read.c                |  6 +++
+ drivers/mmc/sdhci.c                | 12 +++--
+ drivers/pci/pcie_brcmstb.c         | 12 ++---
+ drivers/usb/host/xhci-mem.c        | 45 +++++++++--------
+ drivers/usb/host/xhci-ring.c       | 13 +++--
+ drivers/usb/host/xhci.c            |  4 +-
+ drivers/video/bcm2835.c            |  1 +
+ include/dm/device.h                | 13 +++++
+ include/dm/of_addr.h               | 17 +++++++
+ include/dm/ofnode.h                | 16 ++++++
+ include/dm/read.h                  | 21 ++++++++
+ include/fdt_support.h              | 14 ++++++
+ include/mmc.h                      |  6 +++
+ include/phys2bus.h                 | 17 +++++++
+ include/usb/xhci.h                 | 20 +++++++-
+ test/dm/Makefile                   |  2 +
+ test/dm/core.c                     | 30 ++++++++++++
+ test/dm/phys2bus.c                 | 37 ++++++++++++++
+ test/dm/read.c                     | 49 +++++++++++++++++++
+ 33 files changed, 543 insertions(+), 41 deletions(-)
+ create mode 100644 test/dm/phys2bus.c
+ create mode 100644 test/dm/read.c
 
+diff --git a/arch/sandbox/dts/test.dts b/arch/sandbox/dts/test.dts
+index e95f4631bf..d4195b45bb 100644
+--- a/arch/sandbox/dts/test.dts
++++ b/arch/sandbox/dts/test.dts
+@@ -350,6 +350,27 @@
+ 		test5-gpios = <&gpio_a 19>;
+ 	};
+ 
++	mmio-bus@0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "denx,u-boot-test-bus";
++		dma-ranges = <0x10000000 0x00000000 0x00040000>;
++
++		subnode@0 {
++			compatible = "denx,u-boot-fdt-test";
++		};
++	};
++
++	mmio-bus@1 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "denx,u-boot-test-bus";
++
++		subnode@0 {
++			compatible = "denx,u-boot-fdt-test";
++		};
++	};
++
+ 	acpi_test1: acpi-test {
+ 		compatible = "denx,u-boot-acpi-test";
+ 		acpi-ssdt-test-data = "ab";
 diff --git a/board/raspberrypi/rpi/rpi.c b/board/raspberrypi/rpi/rpi.c
-index 6b1fa5fc14..b66698e4a9 100644
+index 6b1fa5fc14..abcf41a5a8 100644
 --- a/board/raspberrypi/rpi/rpi.c
 +++ b/board/raspberrypi/rpi/rpi.c
-@@ -157,6 +157,11 @@ static const struct rpi_model rpi_models_new_scheme[] = {
+@@ -157,6 +157,16 @@ static const struct rpi_model rpi_models_new_scheme[] = {
  		DTB_DIR "bcm2711-rpi-4-b.dtb",
  		true,
  	},
@@ -27,38 +87,6 @@ index 6b1fa5fc14..b66698e4a9 100644
 +		DTB_DIR "bcm2711-rpi-400.dtb",
 +		true,
 +	},
- };
- 
- static const struct rpi_model rpi_models_old_scheme[] = {
--- 
-2.29.2
-
-From 0b92c14019915aa7d81fa0b6746b800b037c7977 Mon Sep 17 00:00:00 2001
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Wed, 23 Dec 2020 19:55:28 +0100
-Subject: [PATCH 02/13] rpi: Add identifier for the new CM4
-
-The Raspberry Pi Foundation released the new Compute Module 4 which we
-want to detect, so we can enable Ethernet on it and know the correct
-device tree file name.
-
-Note that this sets the Ethernet option to true since the official CM4
-IO board has an Ethernet port. But that might not be the case when using
-custom ones.
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
----
- board/raspberrypi/rpi/rpi.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/board/raspberrypi/rpi/rpi.c b/board/raspberrypi/rpi/rpi.c
-index b66698e4a9..abcf41a5a8 100644
---- a/board/raspberrypi/rpi/rpi.c
-+++ b/board/raspberrypi/rpi/rpi.c
-@@ -162,6 +162,11 @@ static const struct rpi_model rpi_models_new_scheme[] = {
- 		DTB_DIR "bcm2711-rpi-400.dtb",
- 		true,
- 	},
 +	[0x14] = {
 +		"Compute Module 4",
 +		DTB_DIR "bcm2711-rpi-cm4.dtb",
@@ -67,97 +95,11 @@ index b66698e4a9..abcf41a5a8 100644
  };
  
  static const struct rpi_model rpi_models_old_scheme[] = {
--- 
-2.29.2
-
-From 4fa949f51bad277d64a52c99dde0c90d3114d3b4 Mon Sep 17 00:00:00 2001
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Wed, 23 Dec 2020 19:55:29 +0100
-Subject: [PATCH 03/13] pci: pcie-brcmstb: Fix inbound window configurations
-
-So far we've assumed a fixed configuration for inbound windows as we had
-a single user for this controller. But the controller's DMA constraints
-were improved starting with BCM2711's B1 revision of the SoC, notably
-available in CM4 and Pi400. They allow for wider inbound windows. We can
-now cover the whole address space, whereas before we where limited to
-the lower 3GB.
-
-This information is passed to us through DT's 'dma-ranges' property and
-it's specially important for us to honor it since some interactions with
-the board's co-processor assume we're doing so (specifically the XHCI
-firmware load operation, which is handled by the co-processor after
-u-boot has correctly configured the PCIe controller).
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
----
- drivers/pci/pcie_brcmstb.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/pci/pcie_brcmstb.c b/drivers/pci/pcie_brcmstb.c
-index dade79e9c8..f6e8ad0d0a 100644
---- a/drivers/pci/pcie_brcmstb.c
-+++ b/drivers/pci/pcie_brcmstb.c
-@@ -432,6 +432,7 @@ static int brcm_pcie_probe(struct udevice *dev)
- 	struct pci_controller *hose = dev_get_uclass_priv(ctlr);
- 	struct brcm_pcie *pcie = dev_get_priv(dev);
- 	void __iomem *base = pcie->base;
-+	struct pci_region region;
- 	bool ssc_good = false;
- 	int num_out_wins = 0;
- 	u64 rc_bar2_offset, rc_bar2_size;
-@@ -468,13 +469,10 @@ static int brcm_pcie_probe(struct udevice *dev)
- 			MISC_CTRL_SCB_ACCESS_EN_MASK |
- 			MISC_CTRL_CFG_READ_UR_MODE_MASK |
- 			MISC_CTRL_MAX_BURST_SIZE_128);
--	/*
--	 * TODO: When support for other SoCs than BCM2711 is added we may
--	 * need to use the base address and size(s) provided in the dma-ranges
--	 * property.
--	 */
--	rc_bar2_offset = 0;
--	rc_bar2_size = 0xc0000000;
-+
-+	pci_get_dma_regions(dev, &region, 0);
-+	rc_bar2_offset = region.bus_start - region.phys_start;
-+	rc_bar2_size = 1ULL << fls64(region.size - 1);
- 
- 	tmp = lower_32_bits(rc_bar2_offset);
- 	u32p_replace_bits(&tmp, brcm_pcie_encode_ibar_size(rc_bar2_size),
--- 
-2.29.2
-
-From 68a67ccb7fc417ad321bd916c81e91ca6b0cc276 Mon Sep 17 00:00:00 2001
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Wed, 23 Dec 2020 19:55:30 +0100
-Subject: [PATCH 04/13] dm: Introduce xxx_get_dma_range()
-
-Add the following functions to get a specific device's DMA ranges:
- - dev_get_dma_range()
- - ofnode_get_dma_range()
- - of_get_dma_range()
- - fdt_get_dma_range()
-They are specially useful in oder to be able validate a physical address
-space range into a bus's and to convert addresses from and to address
-spaces.
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Reviewed-by: Simon Glass <sjg@chromium.org>
----
- common/fdt_support.c   | 73 +++++++++++++++++++++++++++++++++++++++
- drivers/core/of_addr.c | 78 ++++++++++++++++++++++++++++++++++++++++++
- drivers/core/ofnode.c  |  9 +++++
- drivers/core/read.c    |  6 ++++
- include/dm/of_addr.h   | 17 +++++++++
- include/dm/ofnode.h    | 16 +++++++++
- include/dm/read.h      | 21 ++++++++++++
- include/fdt_support.h  | 14 ++++++++
- 8 files changed, 234 insertions(+)
-
 diff --git a/common/fdt_support.c b/common/fdt_support.c
-index 5ae75df3c6..bf855d26c8 100644
+index 638eca983e..1a1b408607 100644
 --- a/common/fdt_support.c
 +++ b/common/fdt_support.c
-@@ -1342,6 +1342,79 @@ u64 fdt_translate_dma_address(const void *blob, int node_offset,
+@@ -1344,6 +1344,79 @@ u64 fdt_translate_dma_address(const void *blob, int node_offset,
  	return __of_translate_address(blob, node_offset, in_addr, "dma-ranges");
  }
  
@@ -237,11 +179,175 @@ index 5ae75df3c6..bf855d26c8 100644
  /**
   * fdt_node_offset_by_compat_reg: Find a node that matches compatiable and
   * who's reg property matches a physical cpu address
+diff --git a/configs/rpi_4_32b_defconfig b/configs/rpi_4_32b_defconfig
+index 5ddd838fd5..0a5d3ff8cd 100644
+--- a/configs/rpi_4_32b_defconfig
++++ b/configs/rpi_4_32b_defconfig
+@@ -22,6 +22,7 @@ CONFIG_OF_BOARD=y
+ CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
+ CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
++CONFIG_DM_DMA=y
+ CONFIG_DFU_MMC=y
+ CONFIG_DM_KEYBOARD=y
+ CONFIG_DM_MMC=y
+diff --git a/configs/rpi_4_defconfig b/configs/rpi_4_defconfig
+index 2590d0a696..b61cdc05f1 100644
+--- a/configs/rpi_4_defconfig
++++ b/configs/rpi_4_defconfig
+@@ -22,6 +22,7 @@ CONFIG_OF_BOARD=y
+ CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
+ CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
++CONFIG_DM_DMA=y
+ CONFIG_DFU_MMC=y
+ CONFIG_DM_KEYBOARD=y
+ CONFIG_DM_MMC=y
+diff --git a/configs/rpi_arm64_defconfig b/configs/rpi_arm64_defconfig
+index 2639219a1a..4125a1feba 100644
+--- a/configs/rpi_arm64_defconfig
++++ b/configs/rpi_arm64_defconfig
+@@ -20,6 +20,7 @@ CONFIG_CMD_FS_UUID=y
+ CONFIG_OF_BOARD=y
+ CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
+ CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
++CONFIG_DM_DMA=y
+ CONFIG_DM_KEYBOARD=y
+ CONFIG_DM_MMC=y
+ CONFIG_MMC_SDHCI=y
+diff --git a/configs/sandbox64_defconfig b/configs/sandbox64_defconfig
+index 4e67819559..634c19502c 100644
+--- a/configs/sandbox64_defconfig
++++ b/configs/sandbox64_defconfig
+@@ -94,6 +94,7 @@ CONFIG_ENV_EXT4_DEVICE_AND_PART="0:0"
+ CONFIG_BOOTP_SEND_HOSTNAME=y
+ CONFIG_NETCONSOLE=y
+ CONFIG_IP_DEFRAG=y
++CONFIG_DM_DMA=y
+ CONFIG_REGMAP=y
+ CONFIG_SYSCON=y
+ CONFIG_DEVRES=y
+diff --git a/configs/sandbox_defconfig b/configs/sandbox_defconfig
+index 0c7674efc9..fc1df3114c 100644
+--- a/configs/sandbox_defconfig
++++ b/configs/sandbox_defconfig
+@@ -108,6 +108,7 @@ CONFIG_ENV_EXT4_DEVICE_AND_PART="0:0"
+ CONFIG_BOOTP_SEND_HOSTNAME=y
+ CONFIG_NETCONSOLE=y
+ CONFIG_IP_DEFRAG=y
++CONFIG_DM_DMA=y
+ CONFIG_REGMAP=y
+ CONFIG_SYSCON=y
+ CONFIG_DEVRES=y
+diff --git a/configs/sandbox_flattree_defconfig b/configs/sandbox_flattree_defconfig
+index 96465c56cf..4401f33f0b 100644
+--- a/configs/sandbox_flattree_defconfig
++++ b/configs/sandbox_flattree_defconfig
+@@ -75,6 +75,7 @@ CONFIG_ENV_EXT4_DEVICE_AND_PART="0:0"
+ CONFIG_BOOTP_SEND_HOSTNAME=y
+ CONFIG_NETCONSOLE=y
+ CONFIG_IP_DEFRAG=y
++CONFIG_DM_DMA=y
+ CONFIG_REGMAP=y
+ CONFIG_SYSCON=y
+ CONFIG_DEVRES=y
+diff --git a/configs/sandbox_spl_defconfig b/configs/sandbox_spl_defconfig
+index 61dae34a6a..c0118702a8 100644
+--- a/configs/sandbox_spl_defconfig
++++ b/configs/sandbox_spl_defconfig
+@@ -95,6 +95,7 @@ CONFIG_BOOTP_SEND_HOSTNAME=y
+ CONFIG_NETCONSOLE=y
+ CONFIG_IP_DEFRAG=y
+ CONFIG_SPL_DM=y
++CONFIG_DM_DMA=y
+ CONFIG_REGMAP=y
+ CONFIG_SPL_REGMAP=y
+ CONFIG_SYSCON=y
+diff --git a/drivers/core/Kconfig b/drivers/core/Kconfig
+index dbfe51c6e8..00554af499 100644
+--- a/drivers/core/Kconfig
++++ b/drivers/core/Kconfig
+@@ -129,6 +129,16 @@ config TPL_DM_INLINE_OFNODE
+ 	  This applies to several ofnode functions (see ofnode.h) which are
+ 	  seldom used. Inlining them can help reduce code size.
+ 
++config DM_DMA
++	bool "Support per-device DMA constraints"
++	depends on DM
++	default n
++	help
++	  Enable this to extract per-device DMA constraints, only supported on
++	  device-tree systems for now. This is needed in order translate
++	  addresses on systems where different buses have different views of
++	  the physical address space.
++
+ config REGMAP
+ 	bool "Support register maps"
+ 	depends on DM
+diff --git a/drivers/core/device.c b/drivers/core/device.c
+index 8629df8def..2ce9cbbe11 100644
+--- a/drivers/core/device.c
++++ b/drivers/core/device.c
+@@ -421,6 +421,43 @@ fail:
+ 	return ret;
+ }
+ 
++/**
++ * device_get_dma_constraints() - Populate device's DMA constraints
++ *
++ * Gets a device's DMA constraints from firmware. This information is later
++ * used by drivers to translate physcal addresses to the device's bus address
++ * space. For now only device-tree is supported.
++ *
++ * @dev: Pointer to target device
++ * Return: 0 if OK or if no DMA constraints were found, error otherwise
++ */
++static int device_get_dma_constraints(struct udevice *dev)
++{
++	struct udevice *parent = dev->parent;
++	phys_addr_t cpu = 0;
++	dma_addr_t bus = 0;
++	u64 size = 0;
++	int ret;
++
++	if (!CONFIG_IS_ENABLED(DM_DMA) || !parent || !dev_has_ofnode(parent))
++		return 0;
++
++	/*
++	 * We start parsing for dma-ranges from the device's bus node. This is
++	 * specially important on nested buses.
++	 */
++	ret = dev_get_dma_range(parent, &cpu, &bus, &size);
++	/* Don't return an error if no 'dma-ranges' were found */
++	if (ret && ret != -ENOENT) {
++		dm_warn("%s: failed to get DMA range, %d\n", dev->name, ret);
++		return ret;
++	}
++
++	dev_set_dma_offset(dev, cpu - bus);
++
++	return 0;
++}
++
+ int device_probe(struct udevice *dev)
+ {
+ 	const struct driver *drv;
+@@ -483,6 +520,10 @@ int device_probe(struct udevice *dev)
+ 			goto fail;
+ 	}
+ 
++	ret = device_get_dma_constraints(dev);
++	if (ret)
++		goto fail;
++
+ 	ret = uclass_pre_probe_device(dev);
+ 	if (ret)
+ 		goto fail;
 diff --git a/drivers/core/of_addr.c b/drivers/core/of_addr.c
-index ca34d84922..703bc3e3f5 100644
+index bbe80136ba..5bc6ca1de0 100644
 --- a/drivers/core/of_addr.c
 +++ b/drivers/core/of_addr.c
-@@ -325,6 +325,84 @@ u64 of_translate_dma_address(const struct device_node *dev, const __be32 *in_add
+@@ -318,6 +318,84 @@ u64 of_translate_dma_address(const struct device_node *dev, const __be32 *in_add
  	return __of_translate_address(dev, in_addr, "dma-ranges");
  }
  
@@ -327,10 +433,10 @@ index ca34d84922..703bc3e3f5 100644
  		const __be32 *addrp, u64 size, unsigned int flags,
  		const char *name, struct resource *r)
 diff --git a/drivers/core/ofnode.c b/drivers/core/ofnode.c
-index a68076bf35..15470d4875 100644
+index 7a5f4c0a73..1463c41c6e 100644
 --- a/drivers/core/ofnode.c
 +++ b/drivers/core/ofnode.c
-@@ -911,6 +911,15 @@ u64 ofnode_translate_dma_address(ofnode node, const fdt32_t *in_addr)
+@@ -926,6 +926,15 @@ u64 ofnode_translate_dma_address(ofnode node, const fdt32_t *in_addr)
  		return fdt_translate_dma_address(gd->fdt_blob, ofnode_to_offset(node), in_addr);
  }
  
@@ -347,10 +453,10 @@ index a68076bf35..15470d4875 100644
  {
  	if (ofnode_is_np(node))
 diff --git a/drivers/core/read.c b/drivers/core/read.c
-index 076125824c..0994fbd979 100644
+index 4d9b5dd038..665424b2ff 100644
 --- a/drivers/core/read.c
 +++ b/drivers/core/read.c
-@@ -338,6 +338,12 @@ u64 dev_translate_dma_address(const struct udevice *dev, const fdt32_t *in_addr)
+@@ -340,6 +340,12 @@ u64 dev_translate_dma_address(const struct udevice *dev, const fdt32_t *in_addr)
  	return ofnode_translate_dma_address(dev_ofnode(dev), in_addr);
  }
  
@@ -363,658 +469,85 @@ index 076125824c..0994fbd979 100644
  int dev_read_alias_highest_id(const char *stem)
  {
  	if (of_live_active())
-diff --git a/include/dm/of_addr.h b/include/dm/of_addr.h
-index 3fa1ffce81..ee21d5cf4f 100644
---- a/include/dm/of_addr.h
-+++ b/include/dm/of_addr.h
-@@ -44,6 +44,23 @@ u64 of_translate_address(const struct device_node *no, const __be32 *in_addr);
-  */
- u64 of_translate_dma_address(const struct device_node *no, const __be32 *in_addr);
- 
-+
-+/**
-+ * of_get_dma_range() - get dma-ranges for a specific DT node
-+ *
-+ * Get DMA ranges for a specifc node, this is useful to perform bus->cpu and
-+ * cpu->bus address translations
-+ *
-+ * @param blob		Pointer to device tree blob
-+ * @param node_offset	Node DT offset
-+ * @param cpu		Pointer to variable storing the range's cpu address
-+ * @param bus		Pointer to variable storing the range's bus address
-+ * @param size		Pointer to variable storing the range's size
-+ * @return translated DMA address or OF_BAD_ADDR on error
-+ */
-+int of_get_dma_range(const struct device_node *dev, phys_addr_t *cpu,
-+		     dma_addr_t *bus, u64 *size);
-+
- /**
-  * of_get_address() - obtain an address from a node
-  *
-diff --git a/include/dm/ofnode.h b/include/dm/ofnode.h
-index ced7f6ffb2..dc3dd84d9f 100644
---- a/include/dm/ofnode.h
-+++ b/include/dm/ofnode.h
-@@ -939,6 +939,22 @@ u64 ofnode_translate_address(ofnode node, const fdt32_t *in_addr);
-  */
- u64 ofnode_translate_dma_address(ofnode node, const fdt32_t *in_addr);
- 
-+/**
-+ * ofnode_get_dma_range() - get dma-ranges for a specific DT node
-+ *
-+ * Get DMA ranges for a specifc node, this is useful to perform bus->cpu and
-+ * cpu->bus address translations
-+ *
-+ * @param blob		Pointer to device tree blob
-+ * @param node_offset	Node DT offset
-+ * @param cpu		Pointer to variable storing the range's cpu address
-+ * @param bus		Pointer to variable storing the range's bus address
-+ * @param size		Pointer to variable storing the range's size
-+ * @return translated DMA address or OF_BAD_ADDR on error
-+ */
-+int ofnode_get_dma_range(ofnode node, phys_addr_t *cpu, dma_addr_t *bus,
-+			 u64 *size);
-+
- /**
-  * ofnode_device_is_compatible() - check if the node is compatible with compat
-  *
-diff --git a/include/dm/read.h b/include/dm/read.h
-index 0585eb1228..46e902c57d 100644
---- a/include/dm/read.h
-+++ b/include/dm/read.h
-@@ -664,6 +664,21 @@ u64 dev_translate_address(const struct udevice *dev, const fdt32_t *in_addr);
- u64 dev_translate_dma_address(const struct udevice *dev,
- 			      const fdt32_t *in_addr);
- 
-+/**
-+ * dev_get_dma_range() - Get a device's DMA constraints
-+ *
-+ * Provide the address bases and size of the linear mapping between the CPU and
-+ * a device's BUS address space.
-+ *
-+ * @dev: device giving the context in which to translate the DMA address
-+ * @cpu: base address for CPU's view of memory
-+ * @bus: base address for BUS's view of memory
-+ * @size: size of the address space
-+ * @return 0 if ok, negative on error
-+ */
-+int dev_get_dma_range(const struct udevice *dev, phys_addr_t *cpu,
-+		      dma_addr_t *bus, u64 *size);
-+
- /**
-  * dev_read_alias_highest_id - Get highest alias id for the given stem
-  * @stem:	Alias stem to be examined
-@@ -1004,6 +1019,12 @@ static inline u64 dev_translate_dma_address(const struct udevice *dev,
- 	return ofnode_translate_dma_address(dev_ofnode(dev), in_addr);
- }
- 
-+static inline int dev_get_dma_range(const struct udevice *dev, phys_addr_t *cpu,
-+				    dma_addr_t *bus, u64 *size)
-+{
-+	return ofnode_get_dma_range(dev_ofnode(dev), cpu, bus, size);
-+}
-+
- static inline int dev_read_alias_highest_id(const char *stem)
- {
- 	if (!CONFIG_IS_ENABLED(OF_LIBFDT))
-diff --git a/include/fdt_support.h b/include/fdt_support.h
-index dbbac0fb6a..46eb1dbbb2 100644
---- a/include/fdt_support.h
-+++ b/include/fdt_support.h
-@@ -260,6 +260,20 @@ u64 fdt_translate_address(const void *blob, int node_offset,
- u64 fdt_translate_dma_address(const void *blob, int node_offset,
- 			      const __be32 *in_addr);
- 
-+/**
-+ * Get DMA ranges for a specifc node, this is useful to perform bus->cpu and
-+ * cpu->bus address translations
-+ *
-+ * @param blob		Pointer to device tree blob
-+ * @param node_offset	Node DT offset
-+ * @param cpu		Pointer to variable storing the range's cpu address
-+ * @param bus		Pointer to variable storing the range's bus address
-+ * @param size		Pointer to variable storing the range's size
-+ * @return translated DMA address or OF_BAD_ADDR on error
-+ */
-+int fdt_get_dma_range(const void *blob, int node_offset, phys_addr_t *cpu,
-+		      dma_addr_t *bus, u64 *size);
-+
- int fdt_node_offset_by_compat_reg(void *blob, const char *compat,
- 					phys_addr_t compat_off);
- int fdt_alloc_phandle(void *blob);
--- 
-2.29.2
-
-From ab6897014ee799d5858911aa85d97ded1620f746 Mon Sep 17 00:00:00 2001
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Wed, 23 Dec 2020 19:55:31 +0100
-Subject: [PATCH 05/13] dm: test: Add test case for dev_get_dma_ranges()
-
-Introduce some new nodes in sandbox's test device-tree and dm tests in
-order to validate dev_get_dma_range().
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Reviewed-by: Simon Glass <sjg@chromium.org>
----
- arch/sandbox/dts/test.dts | 17 ++++++++++++++
- test/dm/Makefile          |  1 +
- test/dm/read.c            | 49 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 67 insertions(+)
- create mode 100644 test/dm/read.c
-
-diff --git a/arch/sandbox/dts/test.dts b/arch/sandbox/dts/test.dts
-index f3b766271d..3a3b51f83b 100644
---- a/arch/sandbox/dts/test.dts
-+++ b/arch/sandbox/dts/test.dts
-@@ -292,6 +292,23 @@
- 		test5-gpios = <&gpio_a 19>;
- 	};
- 
-+	mmio-bus@0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "denx,u-boot-test-bus";
-+		dma-ranges = <0x10000000 0x00000000 0x00040000>;
-+
-+		subnode@0 {
-+			compatible = "denx,u-boot-fdt-test";
-+		};
-+	};
-+
-+	mmio-bus@1 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "denx,u-boot-test-bus";
-+	};
-+
- 	acpi_test1: acpi-test {
- 		compatible = "denx,u-boot-acpi-test";
- 		acpi-ssdt-test-data = "ab";
-diff --git a/test/dm/Makefile b/test/dm/Makefile
-index 46e076ed09..5c52d8b6ea 100644
---- a/test/dm/Makefile
-+++ b/test/dm/Makefile
-@@ -15,6 +15,7 @@ obj-$(CONFIG_UT_DM) += test-fdt.o
- obj-$(CONFIG_UT_DM) += test-uclass.o
- 
- obj-$(CONFIG_UT_DM) += core.o
-+obj-$(CONFIG_UT_DM) += read.o
- ifneq ($(CONFIG_SANDBOX),)
- obj-$(CONFIG_ACPIGEN) += acpi.o
- obj-$(CONFIG_ACPIGEN) += acpigen.o
-diff --git a/test/dm/read.c b/test/dm/read.c
-new file mode 100644
-index 0000000000..7768aa2968
---- /dev/null
-+++ b/test/dm/read.c
-@@ -0,0 +1,49 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright (c) 2020 Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-+ */
-+
-+#include <common.h>
-+#include <dm.h>
-+#include <dm/device.h>
-+#include <dm/ofnode.h>
-+#include <dm/root.h>
-+#include <dm/test.h>
-+#include <dm/uclass-internal.h>
-+#include <test/ut.h>
-+
-+static int dm_test_dma_ranges(struct unit_test_state *uts)
-+{
-+	struct udevice *dev;
-+	phys_addr_t cpu;
-+	dma_addr_t bus;
-+	ofnode node;
-+	u64 size;
-+
-+	/* dma-ranges are on the device's node */
-+	node = ofnode_path("/mmio-bus@0");
-+	ut_assert(ofnode_valid(node));
-+	ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_BUS, node, &dev));
-+	ut_assertok(dev_get_dma_range(dev, &cpu, &bus, &size));
-+	ut_asserteq_64(0x40000, size);
-+	ut_asserteq_64(0x0, cpu);
-+	ut_asserteq_64(0x10000000, bus);
-+
-+	/* dma-ranges are on the bus' node */
-+	node = ofnode_path("/mmio-bus@0/subnode@0");
-+	ut_assert(ofnode_valid(node));
-+	ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_FDT, node, &dev));
-+	ut_assertok(dev_get_dma_range(dev, &cpu, &bus, &size));
-+	ut_asserteq_64(0x40000, size);
-+	ut_asserteq_64(0x0, cpu);
-+	ut_asserteq_64(0x10000000, bus);
-+
-+	/* No dma-ranges available */
-+	node = ofnode_path("/mmio-bus@1");
-+	ut_assert(ofnode_valid(node));
-+	ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_BUS, node, &dev));
-+	ut_asserteq(-ENOENT, dev_get_dma_range(dev, &cpu, &bus, &size));
-+
-+	return 0;
-+}
-+DM_TEST(dm_test_dma_ranges, UT_TESTF_SCAN_PDATA | UT_TESTF_SCAN_FDT);
--- 
-2.29.2
-
-From 1ec61488a9757fbe6a92af3a7595a3f3b63fa298 Mon Sep 17 00:00:00 2001
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Wed, 23 Dec 2020 19:55:32 +0100
-Subject: [PATCH 06/13] dm: Introduce DMA constraints into the core device
- model
-
-Calculating the DMA offset between a bus address space and CPU's every
-time we call phys_to_bus() and bus_to_phys() isn't ideal performance
-wise, as it implies traversing the device tree from the device's node up
-to the root. Since this information is static and available before the
-device's initialization, parse it before the probe call an provide the
-DMA offset in 'struct udevice' for the address translation code to use
-it.
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Reviewed-by: Simon Glass <sjg@chromium.org>
----
- drivers/core/Kconfig  | 10 ++++++++++
- drivers/core/device.c | 41 +++++++++++++++++++++++++++++++++++++++++
- include/dm/device.h   | 13 +++++++++++++
- 3 files changed, 64 insertions(+)
-
-diff --git a/drivers/core/Kconfig b/drivers/core/Kconfig
-index ffae6f9795..295cf2dd00 100644
---- a/drivers/core/Kconfig
-+++ b/drivers/core/Kconfig
-@@ -113,6 +113,16 @@ config SPL_DM_SEQ_ALIAS
- 	  numbered devices (e.g. serial0 = &serial0). This feature can be
- 	  disabled if it is not required, to save code space in SPL.
- 
-+config DM_DMA
-+	bool "Support per-device DMA constraints"
-+	depends on DM
-+	default n
-+	help
-+	  Enable this to extract per-device DMA constraints, only supported on
-+	  device-tree systems for now. This is needed in order translate
-+	  addresses on systems where different buses have different views of
-+	  the physical address space.
-+
- config REGMAP
- 	bool "Support register maps"
- 	depends on DM
-diff --git a/drivers/core/device.c b/drivers/core/device.c
-index 4b3dcb3b37..047032a1dd 100644
---- a/drivers/core/device.c
-+++ b/drivers/core/device.c
-@@ -421,6 +421,43 @@ fail:
- 	return ret;
- }
- 
-+/**
-+ * device_get_dma_constraints() - Populate device's DMA constraints
-+ *
-+ * Gets a device's DMA constraints from firmware. This information is later
-+ * used by drivers to translate physcal addresses to the device's bus address
-+ * space. For now only device-tree is supported.
-+ *
-+ * @dev: Pointer to target device
-+ * Return: 0 if OK or if no DMA constraints were found, error otherwise
-+ */
-+static int device_get_dma_constraints(struct udevice *dev)
-+{
-+	struct udevice *parent = dev->parent;
-+	phys_addr_t cpu = 0;
-+	dma_addr_t bus = 0;
-+	u64 size = 0;
-+	int ret;
-+
-+	if (!CONFIG_IS_ENABLED(DM_DMA) || !parent || !dev_of_valid(parent))
-+		return 0;
-+
-+	/*
-+	 * We start parsing for dma-ranges from the device's bus node. This is
-+	 * specially important on nested buses.
-+	 */
-+	ret = dev_get_dma_range(parent, &cpu, &bus, &size);
-+	/* Don't return an error if no 'dma-ranges' were found */
-+	if (ret && ret != -ENOENT) {
-+		dm_warn("%s: failed to get DMA range, %d\n", dev->name, ret);
-+		return ret;
-+	}
-+
-+	dev_set_dma_offset(dev, cpu - bus);
-+
-+	return 0;
-+}
-+
- int device_probe(struct udevice *dev)
- {
- 	const struct driver *drv;
-@@ -482,6 +519,10 @@ int device_probe(struct udevice *dev)
- 			goto fail;
- 	}
- 
-+	ret = device_get_dma_constraints(dev);
-+	if (ret)
-+		goto fail;
-+
- 	ret = uclass_pre_probe_device(dev);
- 	if (ret)
- 		goto fail;
-diff --git a/include/dm/device.h b/include/dm/device.h
-index 5bef484247..b27889af01 100644
---- a/include/dm/device.h
-+++ b/include/dm/device.h
-@@ -138,6 +138,8 @@ enum {
-  *		When CONFIG_DEVRES is enabled, devm_kmalloc() and friends will
-  *		add to this list. Memory so-allocated will be freed
-  *		automatically when the device is removed / unbound
-+ * @dma_offset: Offset between the physical address space (CPU's) and the
-+ *		device's bus address space
-  */
- struct udevice {
- 	const struct driver *driver;
-@@ -161,6 +163,9 @@ struct udevice {
- #ifdef CONFIG_DEVRES
- 	struct list_head devres_head;
- #endif
-+#if CONFIG_IS_ENABLED(DM_DMA)
-+	ulong dma_offset;
-+#endif
- };
- 
- /* Maximum sequence number supported */
-@@ -172,6 +177,14 @@ struct udevice {
- /* Returns non-zero if the device is active (probed and not removed) */
- #define device_active(dev)	((dev)->flags & DM_FLAG_ACTIVATED)
- 
-+#if CONFIG_IS_ENABLED(DM_DMA)
-+#define dev_set_dma_offset(_dev, _offset)	_dev->dma_offset = _offset
-+#define dev_get_dma_offset(_dev)		_dev->dma_offset
-+#else
-+#define dev_set_dma_offset(_dev, _offset)
-+#define dev_get_dma_offset(_dev)		0
-+#endif
-+
- static inline int dev_of_offset(const struct udevice *dev)
- {
- 	return ofnode_to_offset(dev->node);
--- 
-2.29.2
-
-From 78faf21e47d29666ff36d853bbf3bb20508fafce Mon Sep 17 00:00:00 2001
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Wed, 23 Dec 2020 19:55:33 +0100
-Subject: [PATCH 07/13] dm: test: Add test case for dev->dma_offset
-
-Add test to validate dev->dma_offset is properly set on devices.
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Reviewed-by: Simon Glass <sjg@chromium.org>
----
- arch/sandbox/dts/test.dts          |  4 ++++
- configs/sandbox64_defconfig        |  1 +
- configs/sandbox_defconfig          |  1 +
- configs/sandbox_flattree_defconfig |  1 +
- configs/sandbox_spl_defconfig      |  1 +
- test/dm/core.c                     | 30 ++++++++++++++++++++++++++++++
- 6 files changed, 38 insertions(+)
-
-diff --git a/arch/sandbox/dts/test.dts b/arch/sandbox/dts/test.dts
-index 3a3b51f83b..78f0100282 100644
---- a/arch/sandbox/dts/test.dts
-+++ b/arch/sandbox/dts/test.dts
-@@ -307,6 +307,10 @@
- 		#address-cells = <1>;
- 		#size-cells = <1>;
- 		compatible = "denx,u-boot-test-bus";
-+
-+		subnode@0 {
-+			compatible = "denx,u-boot-fdt-test";
-+		};
- 	};
- 
- 	acpi_test1: acpi-test {
-diff --git a/configs/sandbox64_defconfig b/configs/sandbox64_defconfig
-index 5fbbfd7236..2c189a8a00 100644
---- a/configs/sandbox64_defconfig
-+++ b/configs/sandbox64_defconfig
-@@ -94,6 +94,7 @@ CONFIG_ENV_EXT4_DEVICE_AND_PART="0:0"
- CONFIG_BOOTP_SEND_HOSTNAME=y
- CONFIG_NETCONSOLE=y
- CONFIG_IP_DEFRAG=y
-+CONFIG_DM_DMA=y
- CONFIG_REGMAP=y
- CONFIG_SYSCON=y
- CONFIG_DEVRES=y
-diff --git a/configs/sandbox_defconfig b/configs/sandbox_defconfig
-index f1ec701a9f..ac97c16cef 100644
---- a/configs/sandbox_defconfig
-+++ b/configs/sandbox_defconfig
-@@ -108,6 +108,7 @@ CONFIG_ENV_EXT4_DEVICE_AND_PART="0:0"
- CONFIG_BOOTP_SEND_HOSTNAME=y
- CONFIG_NETCONSOLE=y
- CONFIG_IP_DEFRAG=y
-+CONFIG_DM_DMA=y
- CONFIG_REGMAP=y
- CONFIG_SYSCON=y
- CONFIG_DEVRES=y
-diff --git a/configs/sandbox_flattree_defconfig b/configs/sandbox_flattree_defconfig
-index edca7f1808..f5923bf713 100644
---- a/configs/sandbox_flattree_defconfig
-+++ b/configs/sandbox_flattree_defconfig
-@@ -75,6 +75,7 @@ CONFIG_ENV_EXT4_DEVICE_AND_PART="0:0"
- CONFIG_BOOTP_SEND_HOSTNAME=y
- CONFIG_NETCONSOLE=y
- CONFIG_IP_DEFRAG=y
-+CONFIG_DM_DMA=y
- CONFIG_REGMAP=y
- CONFIG_SYSCON=y
- CONFIG_DEVRES=y
-diff --git a/configs/sandbox_spl_defconfig b/configs/sandbox_spl_defconfig
-index 479f0226e3..0a4815770c 100644
---- a/configs/sandbox_spl_defconfig
-+++ b/configs/sandbox_spl_defconfig
-@@ -94,6 +94,7 @@ CONFIG_BOOTP_SEND_HOSTNAME=y
- CONFIG_NETCONSOLE=y
- CONFIG_IP_DEFRAG=y
- CONFIG_SPL_DM=y
-+CONFIG_DM_DMA=y
- CONFIG_REGMAP=y
- CONFIG_SPL_REGMAP=y
- CONFIG_SYSCON=y
-diff --git a/test/dm/core.c b/test/dm/core.c
-index 6f380a574c..8ca49d09ee 100644
---- a/test/dm/core.c
-+++ b/test/dm/core.c
-@@ -1066,3 +1066,33 @@ static int dm_test_inactive_child(struct unit_test_state *uts)
- 	return 0;
- }
- DM_TEST(dm_test_inactive_child, UT_TESTF_SCAN_PDATA);
-+
-+static int dm_test_dma_offset(struct unit_test_state *uts)
-+{
-+       struct udevice *dev;
-+       ofnode node;
-+
-+       /* Make sure the bus's dma-ranges aren't taken into account here */
-+       node = ofnode_path("/mmio-bus@0");
-+       ut_assert(ofnode_valid(node));
-+       ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_BUS, node, &dev));
-+       ut_asserteq_64(0, dev->dma_offset);
-+
-+       /* Device behind a bus with dma-ranges */
-+       node = ofnode_path("/mmio-bus@0/subnode@0");
-+       ut_assert(ofnode_valid(node));
-+       ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_FDT, node, &dev));
-+       ut_asserteq_64(-0x10000000ULL, dev->dma_offset);
-+
-+       /* This one has no dma-ranges */
-+       node = ofnode_path("/mmio-bus@1");
-+       ut_assert(ofnode_valid(node));
-+       ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_BUS, node, &dev));
-+       node = ofnode_path("/mmio-bus@1/subnode@0");
-+       ut_assert(ofnode_valid(node));
-+       ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_FDT, node, &dev));
-+       ut_asserteq_64(0, dev->dma_offset);
-+
-+       return 0;
-+}
-+DM_TEST(dm_test_dma_offset, UT_TESTF_SCAN_PDATA | UT_TESTF_SCAN_FDT);
--- 
-2.29.2
-
-From f77b6417252d77112b63202f3b63b778bc8de117 Mon Sep 17 00:00:00 2001
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Wed, 23 Dec 2020 19:55:34 +0100
-Subject: [PATCH 08/13] dm: Introduce dev_phys_to_bus()/dev_bus_to_phys()
-
-These functions, instead of relying on hard-coded platform-specific
-address translations, make use of the DMA constraints provided by the DM
-core. This allows for per-device translations.
-
-We can't yet get rid of the legacy phys_to_bus()/bus_to_phys()
-implementations as some of its users are not integrated into the
-device model.
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Reviewed-by: Simon Glass <sjg@chromium.org>
-Reviewed-by: Stefan Roese <sr@denx.de>
----
- include/phys2bus.h | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
-
-diff --git a/include/phys2bus.h b/include/phys2bus.h
-index dc9b8e5a25..866b8b51a8 100644
---- a/include/phys2bus.h
-+++ b/include/phys2bus.h
-@@ -21,4 +21,21 @@ static inline unsigned long bus_to_phys(unsigned long bus)
- }
- #endif
- 
-+#if CONFIG_IS_ENABLED(DM)
-+#include <dm/device.h>
-+
-+static inline dma_addr_t dev_phys_to_bus(struct udevice *dev, phys_addr_t phys)
-+{
-+	return phys - dev_get_dma_offset(dev);
-+}
-+
-+static inline phys_addr_t dev_bus_to_phys(struct udevice *dev, dma_addr_t bus)
-+{
-+	return bus + dev_get_dma_offset(dev);
-+}
-+#else
-+#define dev_phys_to_bus(_, _addr)	_addr
-+#define dev_bus_to_phys(_, _addr)	_addr
-+#endif
-+
- #endif
--- 
-2.29.2
-
-From bf9d354942113252ef74c0a6394d71fb52d4325b Mon Sep 17 00:00:00 2001
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Wed, 23 Dec 2020 19:55:35 +0100
-Subject: [PATCH 09/13] dm: test: Add test case for
- dev_phys_to_bus()/dev_bus_to_phys()
-
-By reusing DT nodes already available in sandbox's test DT introduce a
-test to validate dev_phys_to_bus()/dev_bus_to_phys().
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Reviewed-by: Simon Glass <sjg@chromium.org>
----
- test/dm/Makefile   |  1 +
- test/dm/phys2bus.c | 37 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 38 insertions(+)
- create mode 100644 test/dm/phys2bus.c
-
-diff --git a/test/dm/Makefile b/test/dm/Makefile
-index 5c52d8b6ea..ac86abaa88 100644
---- a/test/dm/Makefile
-+++ b/test/dm/Makefile
-@@ -16,6 +16,7 @@ obj-$(CONFIG_UT_DM) += test-uclass.o
- 
- obj-$(CONFIG_UT_DM) += core.o
- obj-$(CONFIG_UT_DM) += read.o
-+obj-$(CONFIG_UT_DM) += phys2bus.o
- ifneq ($(CONFIG_SANDBOX),)
- obj-$(CONFIG_ACPIGEN) += acpi.o
- obj-$(CONFIG_ACPIGEN) += acpigen.o
-diff --git a/test/dm/phys2bus.c b/test/dm/phys2bus.c
-new file mode 100644
-index 0000000000..342f2fa8eb
---- /dev/null
-+++ b/test/dm/phys2bus.c
-@@ -0,0 +1,37 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright (c) 2020 Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-+ */
-+
-+#include <common.h>
-+#include <dm.h>
-+#include <mapmem.h>
+diff --git a/drivers/mmc/sdhci.c b/drivers/mmc/sdhci.c
+index 0628934312..62e4f53b8b 100644
+--- a/drivers/mmc/sdhci.c
++++ b/drivers/mmc/sdhci.c
+@@ -14,12 +14,12 @@
+ #include <log.h>
+ #include <malloc.h>
+ #include <mmc.h>
 +#include <phys2bus.h>
-+#include <dm/device.h>
-+#include <dm/ofnode.h>
-+#include <dm/root.h>
-+#include <dm/test.h>
-+#include <dm/uclass-internal.h>
-+#include <test/ut.h>
+ #include <sdhci.h>
+ #include <asm/cache.h>
+ #include <linux/bitops.h>
+ #include <linux/delay.h>
+ #include <linux/dma-mapping.h>
+-#include <phys2bus.h>
+ 
+ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ {
+@@ -73,6 +73,7 @@ static void sdhci_transfer_pio(struct sdhci_host *host, struct mmc_data *data)
+ static void sdhci_prepare_dma(struct sdhci_host *host, struct mmc_data *data,
+ 			      int *is_aligned, int trans_bytes)
+ {
++	dma_addr_t dma_addr;
+ 	unsigned char ctrl;
+ 	void *buf;
+ 
+@@ -103,8 +104,8 @@ static void sdhci_prepare_dma(struct sdhci_host *host, struct mmc_data *data,
+ 					  mmc_get_dma_dir(data));
+ 
+ 	if (host->flags & USE_SDMA) {
+-		sdhci_writel(host, phys_to_bus((ulong)host->start_addr),
+-				SDHCI_DMA_ADDRESS);
++		dma_addr = dev_phys_to_bus(mmc_to_dev(host->mmc), host->start_addr);
++		sdhci_writel(host, dma_addr, SDHCI_DMA_ADDRESS);
+ 	}
+ #if CONFIG_IS_ENABLED(MMC_SDHCI_ADMA)
+ 	else if (host->flags & (USE_ADMA | USE_ADMA64)) {
+@@ -162,8 +163,9 @@ static int sdhci_transfer_data(struct sdhci_host *host, struct mmc_data *data)
+ 				start_addr &=
+ 				~(SDHCI_DEFAULT_BOUNDARY_SIZE - 1);
+ 				start_addr += SDHCI_DEFAULT_BOUNDARY_SIZE;
+-				sdhci_writel(host, phys_to_bus((ulong)start_addr),
+-					     SDHCI_DMA_ADDRESS);
++				start_addr = dev_phys_to_bus(mmc_to_dev(host->mmc),
++							     start_addr);
++				sdhci_writel(host, start_addr, SDHCI_DMA_ADDRESS);
+ 			}
+ 		}
+ 		if (timeout-- > 0)
+diff --git a/drivers/pci/pcie_brcmstb.c b/drivers/pci/pcie_brcmstb.c
+index dd2a4ef629..bd645d7896 100644
+--- a/drivers/pci/pcie_brcmstb.c
++++ b/drivers/pci/pcie_brcmstb.c
+@@ -432,6 +432,7 @@ static int brcm_pcie_probe(struct udevice *dev)
+ 	struct pci_controller *hose = dev_get_uclass_priv(ctlr);
+ 	struct brcm_pcie *pcie = dev_get_priv(dev);
+ 	void __iomem *base = pcie->base;
++	struct pci_region region;
+ 	bool ssc_good = false;
+ 	int num_out_wins = 0;
+ 	u64 rc_bar2_offset, rc_bar2_size;
+@@ -468,13 +469,10 @@ static int brcm_pcie_probe(struct udevice *dev)
+ 			MISC_CTRL_SCB_ACCESS_EN_MASK |
+ 			MISC_CTRL_CFG_READ_UR_MODE_MASK |
+ 			MISC_CTRL_MAX_BURST_SIZE_128);
+-	/*
+-	 * TODO: When support for other SoCs than BCM2711 is added we may
+-	 * need to use the base address and size(s) provided in the dma-ranges
+-	 * property.
+-	 */
+-	rc_bar2_offset = 0;
+-	rc_bar2_size = 0xc0000000;
 +
-+static int dm_test_phys_to_bus(struct unit_test_state *uts)
-+{
-+	struct udevice *dev;
-+	ofnode node;
-+
-+	node = ofnode_path("/mmio-bus@0");
-+	ut_assert(ofnode_valid(node));
-+	ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_BUS, node, &dev));
-+	/* In this case it should be transparent, no dma-ranges in parent bus */
-+	ut_asserteq_addr((void*)0xfffffULL, (void*)dev_phys_to_bus(dev, 0xfffff));
-+	ut_asserteq_addr((void*)0xfffffULL, (void*)(ulong)dev_bus_to_phys(dev, 0xfffff));
-+
-+	node = ofnode_path("/mmio-bus@0/subnode@0");
-+	ut_assert(ofnode_valid(node));
-+	ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_FDT, node, &dev));
-+	ut_asserteq_addr((void*)0x100fffffULL, (void*)dev_phys_to_bus(dev, 0xfffff));
-+	ut_asserteq_addr((void*)0xfffffULL, (void*)(ulong)dev_bus_to_phys(dev, 0x100fffff));
-+
-+	return 0;
-+}
-+DM_TEST(dm_test_phys_to_bus, UT_TESTF_SCAN_PDATA | UT_TESTF_SCAN_FDT);
--- 
-2.29.2
-
-From 8abe749ff354a369f748c06aa70711bcdea9e61c Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Mon, 28 Dec 2020 21:38:37 +0000
-Subject: [PATCH 10/13] xhci: translate virtual addresses into the bus's
- address space
-
-So far we've been content with passing physical addresses when
-configuring memory addresses into XHCI controllers, but not all
-platforms have buses with transparent mappings. Specifically the
-Raspberry Pi 4 might introduce an offset to memory accesses incoming
-from its PCIe port.
-
-Introduce xhci_virt_to_bus() and xhci_bus_to_virt() to cater with these
-limitations, and make sure we don't break non DM users.
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Reviewed-by: Simon Glass <sjg@chromium.org>
-Reviewed-by: Stefan Roese <sr@denx.de>
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
----
- drivers/usb/host/xhci-mem.c  | 45 +++++++++++++++++++-----------------
- drivers/usb/host/xhci-ring.c | 13 +++++++----
- drivers/usb/host/xhci.c      |  4 ++--
- include/usb/xhci.h           | 20 +++++++++++++++-
- 4 files changed, 53 insertions(+), 29 deletions(-)
-
++	pci_get_dma_regions(dev, &region, 0);
++	rc_bar2_offset = region.bus_start - region.phys_start;
++	rc_bar2_size = 1ULL << fls64(region.size - 1);
+ 
+ 	tmp = lower_32_bits(rc_bar2_offset);
+ 	u32p_replace_bits(&tmp, brcm_pcie_encode_ibar_size(rc_bar2_size),
 diff --git a/drivers/usb/host/xhci-mem.c b/drivers/usb/host/xhci-mem.c
 index b002d6f166..83147d51b5 100644
 --- a/drivers/usb/host/xhci-mem.c
@@ -1258,6 +791,218 @@ index 7080f8fabe..d27ac01c83 100644
  		ep_ctx[ep_index]->deq = cpu_to_le64(trb_64 |
  				virt_dev->eps[ep_index].ring->cycle_state);
  
+diff --git a/drivers/video/bcm2835.c b/drivers/video/bcm2835.c
+index 9326999cd3..c2962932c9 100644
+--- a/drivers/video/bcm2835.c
++++ b/drivers/video/bcm2835.c
+@@ -52,6 +52,7 @@ static int bcm2835_video_probe(struct udevice *dev)
+ 
+ static const struct udevice_id bcm2835_video_ids[] = {
+ 	{ .compatible = "brcm,bcm2835-hdmi" },
++	{ .compatible = "brcm,bcm2711-hdmi0" },
+ 	{ .compatible = "brcm,bcm2708-fb" },
+ 	{ }
+ };
+diff --git a/include/dm/device.h b/include/dm/device.h
+index e665558444..b614ff1a69 100644
+--- a/include/dm/device.h
++++ b/include/dm/device.h
+@@ -148,6 +148,8 @@ enum {
+  *		When CONFIG_DEVRES is enabled, devm_kmalloc() and friends will
+  *		add to this list. Memory so-allocated will be freed
+  *		automatically when the device is removed / unbound
++ * @dma_offset: Offset between the physical address space (CPU's) and the
++ *		device's bus address space
+  */
+ struct udevice {
+ 	const struct driver *driver;
+@@ -172,6 +174,9 @@ struct udevice {
+ #ifdef CONFIG_DEVRES
+ 	struct list_head devres_head;
+ #endif
++#if CONFIG_IS_ENABLED(DM_DMA)
++	ulong dma_offset;
++#endif
+ };
+ 
+ /* Maximum sequence number supported */
+@@ -213,6 +218,14 @@ static inline ofnode dev_ofnode(const struct udevice *dev)
+ /* Returns non-zero if the device is active (probed and not removed) */
+ #define device_active(dev)	(dev_get_flags(dev) & DM_FLAG_ACTIVATED)
+ 
++#if CONFIG_IS_ENABLED(DM_DMA)
++#define dev_set_dma_offset(_dev, _offset)	_dev->dma_offset = _offset
++#define dev_get_dma_offset(_dev)		_dev->dma_offset
++#else
++#define dev_set_dma_offset(_dev, _offset)
++#define dev_get_dma_offset(_dev)		0
++#endif
++
+ static inline int dev_of_offset(const struct udevice *dev)
+ {
+ #if !CONFIG_IS_ENABLED(OF_PLATDATA)
+diff --git a/include/dm/of_addr.h b/include/dm/of_addr.h
+index 3fa1ffce81..ee21d5cf4f 100644
+--- a/include/dm/of_addr.h
++++ b/include/dm/of_addr.h
+@@ -44,6 +44,23 @@ u64 of_translate_address(const struct device_node *no, const __be32 *in_addr);
+  */
+ u64 of_translate_dma_address(const struct device_node *no, const __be32 *in_addr);
+ 
++
++/**
++ * of_get_dma_range() - get dma-ranges for a specific DT node
++ *
++ * Get DMA ranges for a specifc node, this is useful to perform bus->cpu and
++ * cpu->bus address translations
++ *
++ * @param blob		Pointer to device tree blob
++ * @param node_offset	Node DT offset
++ * @param cpu		Pointer to variable storing the range's cpu address
++ * @param bus		Pointer to variable storing the range's bus address
++ * @param size		Pointer to variable storing the range's size
++ * @return translated DMA address or OF_BAD_ADDR on error
++ */
++int of_get_dma_range(const struct device_node *dev, phys_addr_t *cpu,
++		     dma_addr_t *bus, u64 *size);
++
+ /**
+  * of_get_address() - obtain an address from a node
+  *
+diff --git a/include/dm/ofnode.h b/include/dm/ofnode.h
+index 5b088650d3..c4680fbbaa 100644
+--- a/include/dm/ofnode.h
++++ b/include/dm/ofnode.h
+@@ -996,6 +996,22 @@ u64 ofnode_translate_address(ofnode node, const fdt32_t *in_addr);
+  */
+ u64 ofnode_translate_dma_address(ofnode node, const fdt32_t *in_addr);
+ 
++/**
++ * ofnode_get_dma_range() - get dma-ranges for a specific DT node
++ *
++ * Get DMA ranges for a specifc node, this is useful to perform bus->cpu and
++ * cpu->bus address translations
++ *
++ * @param blob		Pointer to device tree blob
++ * @param node_offset	Node DT offset
++ * @param cpu		Pointer to variable storing the range's cpu address
++ * @param bus		Pointer to variable storing the range's bus address
++ * @param size		Pointer to variable storing the range's size
++ * @return translated DMA address or OF_BAD_ADDR on error
++ */
++int ofnode_get_dma_range(ofnode node, phys_addr_t *cpu, dma_addr_t *bus,
++			 u64 *size);
++
+ /**
+  * ofnode_device_is_compatible() - check if the node is compatible with compat
+  *
+diff --git a/include/dm/read.h b/include/dm/read.h
+index 03ba98232a..da3763d245 100644
+--- a/include/dm/read.h
++++ b/include/dm/read.h
+@@ -647,6 +647,21 @@ u64 dev_translate_address(const struct udevice *dev, const fdt32_t *in_addr);
+ u64 dev_translate_dma_address(const struct udevice *dev,
+ 			      const fdt32_t *in_addr);
+ 
++/**
++ * dev_get_dma_range() - Get a device's DMA constraints
++ *
++ * Provide the address bases and size of the linear mapping between the CPU and
++ * a device's BUS address space.
++ *
++ * @dev: device giving the context in which to translate the DMA address
++ * @cpu: base address for CPU's view of memory
++ * @bus: base address for BUS's view of memory
++ * @size: size of the address space
++ * @return 0 if ok, negative on error
++ */
++int dev_get_dma_range(const struct udevice *dev, phys_addr_t *cpu,
++		      dma_addr_t *bus, u64 *size);
++
+ /**
+  * dev_read_alias_highest_id - Get highest alias id for the given stem
+  * @stem:	Alias stem to be examined
+@@ -1004,6 +1019,12 @@ static inline u64 dev_translate_dma_address(const struct udevice *dev,
+ 	return ofnode_translate_dma_address(dev_ofnode(dev), in_addr);
+ }
+ 
++static inline int dev_get_dma_range(const struct udevice *dev, phys_addr_t *cpu,
++				    dma_addr_t *bus, u64 *size)
++{
++	return ofnode_get_dma_range(dev_ofnode(dev), cpu, bus, size);
++}
++
+ static inline int dev_read_alias_highest_id(const char *stem)
+ {
+ 	if (!CONFIG_IS_ENABLED(OF_LIBFDT) || !gd->fdt_blob)
+diff --git a/include/fdt_support.h b/include/fdt_support.h
+index dbbac0fb6a..46eb1dbbb2 100644
+--- a/include/fdt_support.h
++++ b/include/fdt_support.h
+@@ -260,6 +260,20 @@ u64 fdt_translate_address(const void *blob, int node_offset,
+ u64 fdt_translate_dma_address(const void *blob, int node_offset,
+ 			      const __be32 *in_addr);
+ 
++/**
++ * Get DMA ranges for a specifc node, this is useful to perform bus->cpu and
++ * cpu->bus address translations
++ *
++ * @param blob		Pointer to device tree blob
++ * @param node_offset	Node DT offset
++ * @param cpu		Pointer to variable storing the range's cpu address
++ * @param bus		Pointer to variable storing the range's bus address
++ * @param size		Pointer to variable storing the range's size
++ * @return translated DMA address or OF_BAD_ADDR on error
++ */
++int fdt_get_dma_range(const void *blob, int node_offset, phys_addr_t *cpu,
++		      dma_addr_t *bus, u64 *size);
++
+ int fdt_node_offset_by_compat_reg(void *blob, const char *compat,
+ 					phys_addr_t compat_off);
+ int fdt_alloc_phandle(void *blob);
+diff --git a/include/mmc.h b/include/mmc.h
+index 1d377e0281..c12c7a0b5c 100644
+--- a/include/mmc.h
++++ b/include/mmc.h
+@@ -736,6 +736,12 @@ struct mmc {
+ 	u8 hs400_tuning;
+ };
+ 
++#if CONFIG_IS_ENABLED(DM_MMC)
++#define mmc_to_dev(_mmc)	_mmc->dev
++#else
++#define mmc_to_dev(_mmc)	NULL
++#endif
++
+ struct mmc_hwpart_conf {
+ 	struct {
+ 		uint enh_start;	/* in 512-byte sectors */
+diff --git a/include/phys2bus.h b/include/phys2bus.h
+index dc9b8e5a25..866b8b51a8 100644
+--- a/include/phys2bus.h
++++ b/include/phys2bus.h
+@@ -21,4 +21,21 @@ static inline unsigned long bus_to_phys(unsigned long bus)
+ }
+ #endif
+ 
++#if CONFIG_IS_ENABLED(DM)
++#include <dm/device.h>
++
++static inline dma_addr_t dev_phys_to_bus(struct udevice *dev, phys_addr_t phys)
++{
++	return phys - dev_get_dma_offset(dev);
++}
++
++static inline phys_addr_t dev_bus_to_phys(struct udevice *dev, dma_addr_t bus)
++{
++	return bus + dev_get_dma_offset(dev);
++}
++#else
++#define dev_phys_to_bus(_, _addr)	_addr
++#define dev_bus_to_phys(_, _addr)	_addr
++#endif
++
+ #endif
 diff --git a/include/usb/xhci.h b/include/usb/xhci.h
 index e1d382369a..8d95e213b0 100644
 --- a/include/usb/xhci.h
@@ -1308,176 +1053,155 @@ index e1d382369a..8d95e213b0 100644
 +}
 +
  #endif /* HOST_XHCI_H_ */
--- 
-2.29.2
-
-From aa7e82f97e2c74430a3a6979b307cda87fbb4624 Mon Sep 17 00:00:00 2001
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Wed, 23 Dec 2020 19:55:37 +0100
-Subject: [PATCH 11/13] mmc: Introduce mmc_phys_to_bus()/mmc_bus_to_phys()
-
-This will allow us to use DM variants of phys_to_bus()/bus_to_phys()
-when relevant.
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Reviewed-by: Simon Glass <sjg@chromium.org>
----
- drivers/mmc/sdhci.c | 12 +++++++-----
- include/mmc.h       |  6 ++++++
- 2 files changed, 13 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/mmc/sdhci.c b/drivers/mmc/sdhci.c
-index 0628934312..62e4f53b8b 100644
---- a/drivers/mmc/sdhci.c
-+++ b/drivers/mmc/sdhci.c
-@@ -14,12 +14,12 @@
- #include <log.h>
- #include <malloc.h>
- #include <mmc.h>
-+#include <phys2bus.h>
- #include <sdhci.h>
- #include <asm/cache.h>
- #include <linux/bitops.h>
- #include <linux/delay.h>
- #include <linux/dma-mapping.h>
--#include <phys2bus.h>
+diff --git a/test/dm/Makefile b/test/dm/Makefile
+index e70e50f402..6275ec56ea 100644
+--- a/test/dm/Makefile
++++ b/test/dm/Makefile
+@@ -15,6 +15,8 @@ obj-$(CONFIG_UT_DM) += test-fdt.o
+ obj-$(CONFIG_UT_DM) += test-uclass.o
  
- static void sdhci_reset(struct sdhci_host *host, u8 mask)
- {
-@@ -73,6 +73,7 @@ static void sdhci_transfer_pio(struct sdhci_host *host, struct mmc_data *data)
- static void sdhci_prepare_dma(struct sdhci_host *host, struct mmc_data *data,
- 			      int *is_aligned, int trans_bytes)
- {
-+	dma_addr_t dma_addr;
- 	unsigned char ctrl;
- 	void *buf;
- 
-@@ -103,8 +104,8 @@ static void sdhci_prepare_dma(struct sdhci_host *host, struct mmc_data *data,
- 					  mmc_get_dma_dir(data));
- 
- 	if (host->flags & USE_SDMA) {
--		sdhci_writel(host, phys_to_bus((ulong)host->start_addr),
--				SDHCI_DMA_ADDRESS);
-+		dma_addr = dev_phys_to_bus(mmc_to_dev(host->mmc), host->start_addr);
-+		sdhci_writel(host, dma_addr, SDHCI_DMA_ADDRESS);
- 	}
- #if CONFIG_IS_ENABLED(MMC_SDHCI_ADMA)
- 	else if (host->flags & (USE_ADMA | USE_ADMA64)) {
-@@ -162,8 +163,9 @@ static int sdhci_transfer_data(struct sdhci_host *host, struct mmc_data *data)
- 				start_addr &=
- 				~(SDHCI_DEFAULT_BOUNDARY_SIZE - 1);
- 				start_addr += SDHCI_DEFAULT_BOUNDARY_SIZE;
--				sdhci_writel(host, phys_to_bus((ulong)start_addr),
--					     SDHCI_DMA_ADDRESS);
-+				start_addr = dev_phys_to_bus(mmc_to_dev(host->mmc),
-+							     start_addr);
-+				sdhci_writel(host, start_addr, SDHCI_DMA_ADDRESS);
- 			}
- 		}
- 		if (timeout-- > 0)
-diff --git a/include/mmc.h b/include/mmc.h
-index 1d377e0281..c12c7a0b5c 100644
---- a/include/mmc.h
-+++ b/include/mmc.h
-@@ -736,6 +736,12 @@ struct mmc {
- 	u8 hs400_tuning;
- };
- 
-+#if CONFIG_IS_ENABLED(DM_MMC)
-+#define mmc_to_dev(_mmc)	_mmc->dev
-+#else
-+#define mmc_to_dev(_mmc)	NULL
-+#endif
+ obj-$(CONFIG_UT_DM) += core.o
++obj-$(CONFIG_UT_DM) += read.o
++obj-$(CONFIG_UT_DM) += phys2bus.o
+ ifneq ($(CONFIG_SANDBOX),)
+ obj-$(CONFIG_ACPIGEN) += acpi.o
+ obj-$(CONFIG_ACPIGEN) += acpigen.o
+diff --git a/test/dm/core.c b/test/dm/core.c
+index 1f5ca570dc..855449aac2 100644
+--- a/test/dm/core.c
++++ b/test/dm/core.c
+@@ -1085,3 +1085,33 @@ static int dm_test_all_have_seq(struct unit_test_state *uts)
+ 	return 0;
+ }
+ DM_TEST(dm_test_all_have_seq, UT_TESTF_SCAN_PDATA);
 +
- struct mmc_hwpart_conf {
- 	struct {
- 		uint enh_start;	/* in 512-byte sectors */
--- 
-2.29.2
-
-From 8b39240ca809ce7ebf34b2eb707ab5d2cc5f4a20 Mon Sep 17 00:00:00 2001
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Wed, 23 Dec 2020 19:55:38 +0100
-Subject: [PATCH 12/13] configs: rpi4: Enable DM_DMA across all RPi4
- configurations
-
-The DM_DMA option is needed in order to translate physical address into
-bus addresses on a per-device basis.
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Reviewed-by: Simon Glass <sjg@chromium.org>
----
- configs/rpi_4_32b_defconfig | 1 +
- configs/rpi_4_defconfig     | 1 +
- configs/rpi_arm64_defconfig | 1 +
- 3 files changed, 3 insertions(+)
-
-diff --git a/configs/rpi_4_32b_defconfig b/configs/rpi_4_32b_defconfig
-index 5ddd838fd5..0a5d3ff8cd 100644
---- a/configs/rpi_4_32b_defconfig
-+++ b/configs/rpi_4_32b_defconfig
-@@ -22,6 +22,7 @@ CONFIG_OF_BOARD=y
- CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
- CONFIG_SYS_RELOC_GD_ENV_ADDR=y
- CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
-+CONFIG_DM_DMA=y
- CONFIG_DFU_MMC=y
- CONFIG_DM_KEYBOARD=y
- CONFIG_DM_MMC=y
-diff --git a/configs/rpi_4_defconfig b/configs/rpi_4_defconfig
-index 2590d0a696..b61cdc05f1 100644
---- a/configs/rpi_4_defconfig
-+++ b/configs/rpi_4_defconfig
-@@ -22,6 +22,7 @@ CONFIG_OF_BOARD=y
- CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
- CONFIG_SYS_RELOC_GD_ENV_ADDR=y
- CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
-+CONFIG_DM_DMA=y
- CONFIG_DFU_MMC=y
- CONFIG_DM_KEYBOARD=y
- CONFIG_DM_MMC=y
-diff --git a/configs/rpi_arm64_defconfig b/configs/rpi_arm64_defconfig
-index 2639219a1a..4125a1feba 100644
---- a/configs/rpi_arm64_defconfig
-+++ b/configs/rpi_arm64_defconfig
-@@ -20,6 +20,7 @@ CONFIG_CMD_FS_UUID=y
- CONFIG_OF_BOARD=y
- CONFIG_ENV_FAT_DEVICE_AND_PART="0:1"
- CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
-+CONFIG_DM_DMA=y
- CONFIG_DM_KEYBOARD=y
- CONFIG_DM_MMC=y
- CONFIG_MMC_SDHCI=y
--- 
-2.29.2
-
-From d3cde4c05b8da7ef50019b63ac9cc0ecc0630059 Mon Sep 17 00:00:00 2001
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Wed, 23 Dec 2020 19:55:39 +0100
-Subject: [PATCH 13/13] video: arm: rpi: Add brcm,bcm2711-hdmi0 compatible
-
-The 'brcm,bcm2711-hdmi0' compatible string is used on RPi4 instead of
-'brcm,bcm2835-hdmi' since the IP core was upgraded (now called VC6
-instead of VC4). This has no functional change as far as u-boot driver
-is concerned. So simply add the compatible string.
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
----
- drivers/video/bcm2835.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/video/bcm2835.c b/drivers/video/bcm2835.c
-index 0888cb0019..51941c4f53 100644
---- a/drivers/video/bcm2835.c
-+++ b/drivers/video/bcm2835.c
-@@ -52,6 +52,7 @@ static int bcm2835_video_probe(struct udevice *dev)
- 
- static const struct udevice_id bcm2835_video_ids[] = {
- 	{ .compatible = "brcm,bcm2835-hdmi" },
-+	{ .compatible = "brcm,bcm2711-hdmi0" },
- 	{ .compatible = "brcm,bcm2708-fb" },
- 	{ }
- };
++static int dm_test_dma_offset(struct unit_test_state *uts)
++{
++       struct udevice *dev;
++       ofnode node;
++
++       /* Make sure the bus's dma-ranges aren't taken into account here */
++       node = ofnode_path("/mmio-bus@0");
++       ut_assert(ofnode_valid(node));
++       ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_BUS, node, &dev));
++       ut_asserteq_64(0, dev->dma_offset);
++
++       /* Device behind a bus with dma-ranges */
++       node = ofnode_path("/mmio-bus@0/subnode@0");
++       ut_assert(ofnode_valid(node));
++       ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_FDT, node, &dev));
++       ut_asserteq_64(-0x10000000ULL, dev->dma_offset);
++
++       /* This one has no dma-ranges */
++       node = ofnode_path("/mmio-bus@1");
++       ut_assert(ofnode_valid(node));
++       ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_BUS, node, &dev));
++       node = ofnode_path("/mmio-bus@1/subnode@0");
++       ut_assert(ofnode_valid(node));
++       ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_FDT, node, &dev));
++       ut_asserteq_64(0, dev->dma_offset);
++
++       return 0;
++}
++DM_TEST(dm_test_dma_offset, UT_TESTF_SCAN_PDATA | UT_TESTF_SCAN_FDT);
+diff --git a/test/dm/phys2bus.c b/test/dm/phys2bus.c
+new file mode 100644
+index 0000000000..342f2fa8eb
+--- /dev/null
++++ b/test/dm/phys2bus.c
+@@ -0,0 +1,37 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright (c) 2020 Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
++ */
++
++#include <common.h>
++#include <dm.h>
++#include <mapmem.h>
++#include <phys2bus.h>
++#include <dm/device.h>
++#include <dm/ofnode.h>
++#include <dm/root.h>
++#include <dm/test.h>
++#include <dm/uclass-internal.h>
++#include <test/ut.h>
++
++static int dm_test_phys_to_bus(struct unit_test_state *uts)
++{
++	struct udevice *dev;
++	ofnode node;
++
++	node = ofnode_path("/mmio-bus@0");
++	ut_assert(ofnode_valid(node));
++	ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_BUS, node, &dev));
++	/* In this case it should be transparent, no dma-ranges in parent bus */
++	ut_asserteq_addr((void*)0xfffffULL, (void*)dev_phys_to_bus(dev, 0xfffff));
++	ut_asserteq_addr((void*)0xfffffULL, (void*)(ulong)dev_bus_to_phys(dev, 0xfffff));
++
++	node = ofnode_path("/mmio-bus@0/subnode@0");
++	ut_assert(ofnode_valid(node));
++	ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_FDT, node, &dev));
++	ut_asserteq_addr((void*)0x100fffffULL, (void*)dev_phys_to_bus(dev, 0xfffff));
++	ut_asserteq_addr((void*)0xfffffULL, (void*)(ulong)dev_bus_to_phys(dev, 0x100fffff));
++
++	return 0;
++}
++DM_TEST(dm_test_phys_to_bus, UT_TESTF_SCAN_PDATA | UT_TESTF_SCAN_FDT);
+diff --git a/test/dm/read.c b/test/dm/read.c
+new file mode 100644
+index 0000000000..7768aa2968
+--- /dev/null
++++ b/test/dm/read.c
+@@ -0,0 +1,49 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright (c) 2020 Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
++ */
++
++#include <common.h>
++#include <dm.h>
++#include <dm/device.h>
++#include <dm/ofnode.h>
++#include <dm/root.h>
++#include <dm/test.h>
++#include <dm/uclass-internal.h>
++#include <test/ut.h>
++
++static int dm_test_dma_ranges(struct unit_test_state *uts)
++{
++	struct udevice *dev;
++	phys_addr_t cpu;
++	dma_addr_t bus;
++	ofnode node;
++	u64 size;
++
++	/* dma-ranges are on the device's node */
++	node = ofnode_path("/mmio-bus@0");
++	ut_assert(ofnode_valid(node));
++	ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_BUS, node, &dev));
++	ut_assertok(dev_get_dma_range(dev, &cpu, &bus, &size));
++	ut_asserteq_64(0x40000, size);
++	ut_asserteq_64(0x0, cpu);
++	ut_asserteq_64(0x10000000, bus);
++
++	/* dma-ranges are on the bus' node */
++	node = ofnode_path("/mmio-bus@0/subnode@0");
++	ut_assert(ofnode_valid(node));
++	ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_FDT, node, &dev));
++	ut_assertok(dev_get_dma_range(dev, &cpu, &bus, &size));
++	ut_asserteq_64(0x40000, size);
++	ut_asserteq_64(0x0, cpu);
++	ut_asserteq_64(0x10000000, bus);
++
++	/* No dma-ranges available */
++	node = ofnode_path("/mmio-bus@1");
++	ut_assert(ofnode_valid(node));
++	ut_assertok(uclass_get_device_by_ofnode(UCLASS_TEST_BUS, node, &dev));
++	ut_asserteq(-ENOENT, dev_get_dma_range(dev, &cpu, &bus, &size));
++
++	return 0;
++}
++DM_TEST(dm_test_dma_ranges, UT_TESTF_SCAN_PDATA | UT_TESTF_SCAN_FDT);
 -- 
 2.29.2
 

@@ -1,54 +1,16 @@
-From 5e2954fae6081daf8d65ba28dd0edef3527f5d31 Mon Sep 17 00:00:00 2001
+From ced27461c009f208f880fa6bbc34c216e103eca6 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Thu, 14 Jan 2021 17:07:18 +0000
-Subject: [PATCH 1/2] usb: xhci-pci: Add DM_FLAG_OS_PREPARE flag
+Date: Mon, 1 Feb 2021 21:39:36 +0000
+Subject: [PATCH] Raspberry Pi 4 PCIe handover
 
-The PCIe bus the controller is connected to might need to be removed
-prior the handover. Make sure xhci-pci is also removed so as to avoid
-unexpected timeouts or hangs.
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- drivers/usb/host/xhci-pci.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/usb/host/xhci-pci.c b/drivers/usb/host/xhci-pci.c
-index 9fb6d2f763..19f8fb4458 100644
---- a/drivers/usb/host/xhci-pci.c
-+++ b/drivers/usb/host/xhci-pci.c
-@@ -61,7 +61,7 @@ U_BOOT_DRIVER(xhci_pci) = {
- 	.ops	= &xhci_usb_ops,
- 	.platdata_auto_alloc_size = sizeof(struct usb_platdata),
- 	.priv_auto_alloc_size = sizeof(struct xhci_ctrl),
--	.flags	= DM_FLAG_ALLOC_PRIV_DMA,
-+	.flags	= DM_FLAG_OS_PREPARE | DM_FLAG_ALLOC_PRIV_DMA,
- };
- 
- static struct pci_device_id xhci_pci_supported[] = {
--- 
-2.29.2
-
-From 162e817b0196c418bcf5d02cedf2d823f3497321 Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Thu, 14 Jan 2021 17:09:47 +0000
-Subject: [PATCH 2/2] pci: brcmstb: Cleanup controller state before handover
-
-Make sure we handover the PCIe controller in a clean state. Some of the
-devices hanging from the PCIe bus might need to be properly reset
-through #PERST in order for Linux to be able to initialize them.
-
-This is specially important in order to properly initialize Raspberry Pi
-4 B and 400's USB chip.
-
-Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
----
- drivers/pci/pcie_brcmstb.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ drivers/pci/pcie_brcmstb.c  | 19 +++++++++++++++++++
+ drivers/usb/host/xhci-pci.c |  2 +-
+ 2 files changed, 20 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/pci/pcie_brcmstb.c b/drivers/pci/pcie_brcmstb.c
-index f6e8ad0d0a..de824a4d9b 100644
+index bd645d7896..398d7e1849 100644
 --- a/drivers/pci/pcie_brcmstb.c
 +++ b/drivers/pci/pcie_brcmstb.c
 @@ -577,6 +577,24 @@ static int brcm_pcie_probe(struct udevice *dev)
@@ -73,7 +35,7 @@ index f6e8ad0d0a..de824a4d9b 100644
 +	return 0;
 +}
 +
- static int brcm_pcie_ofdata_to_platdata(struct udevice *dev)
+ static int brcm_pcie_of_to_plat(struct udevice *dev)
  {
  	struct brcm_pcie *pcie = dev_get_priv(dev);
 @@ -616,6 +634,7 @@ U_BOOT_DRIVER(pcie_brcm_base) = {
@@ -81,9 +43,22 @@ index f6e8ad0d0a..de824a4d9b 100644
  	.of_match		= brcm_pcie_ids,
  	.probe			= brcm_pcie_probe,
 +	.remove			= brcm_pcie_remove,
- 	.ofdata_to_platdata	= brcm_pcie_ofdata_to_platdata,
- 	.priv_auto_alloc_size	= sizeof(struct brcm_pcie),
+ 	.of_to_plat	= brcm_pcie_of_to_plat,
+ 	.priv_auto	= sizeof(struct brcm_pcie),
  };
+diff --git a/drivers/usb/host/xhci-pci.c b/drivers/usb/host/xhci-pci.c
+index 2b445f21b5..d626929953 100644
+--- a/drivers/usb/host/xhci-pci.c
++++ b/drivers/usb/host/xhci-pci.c
+@@ -61,7 +61,7 @@ U_BOOT_DRIVER(xhci_pci) = {
+ 	.ops	= &xhci_usb_ops,
+ 	.plat_auto	= sizeof(struct usb_plat),
+ 	.priv_auto	= sizeof(struct xhci_ctrl),
+-	.flags	= DM_FLAG_ALLOC_PRIV_DMA,
++	.flags	= DM_FLAG_OS_PREPARE | DM_FLAG_ALLOC_PRIV_DMA,
+ };
+ 
+ static struct pci_device_id xhci_pci_supported[] = {
 -- 
 2.29.2
 

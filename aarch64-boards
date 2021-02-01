@@ -2,6 +2,7 @@ a64-olinuxino
 amarula_a64_relic
 bananapi_m2_plus_h5
 bananapi_m64
+beelink_gs1
 dragonboard410c
 dragonboard820c
 espresso7420
@@ -33,13 +34,16 @@ nanopi-m4-rk3399
 nanopi_neo2
 nanopi-neo4-rk3399
 nanopi_neo_plus2
+nanopi-r2s-rk3328
 odroid-c2
+orangepi_3
 orangepi_lite2
 orangepi_one_plus
 orangepi_pc2
 orangepi_prime
 orangepi-rk3399
 orangepi_win
+orangepi_zero2
 orangepi_zero_plus
 orangepi_zero_plus2
 p212
@@ -69,6 +73,7 @@ rpi_3
 rpi_4
 rpi_arm64
 sopine_baseboard
+tanix_tx6
 teres_i
 turris_mox
 vexpress_aemv8a_juno
