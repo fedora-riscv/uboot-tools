@@ -2,7 +2,7 @@
 
 Name:     uboot-tools
 Version:  2021.04
-Release:  0.1%{?candidate:.%{candidate}}%{?dist}
+Release:  0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -34,6 +34,8 @@ Patch12:  rk3399-Pinebook-pro-EDP-support.patch
 Patch13:  Raspberry-Pi-400-Compute-Module-4-support.patch
 Patch14:  Raspberry-Pi-4-PCIe-handover.patch
 Patch15:  rng-Add-iProc-RNG200-driver.patch
+# Fixes for Allwinner network issues
+Patch16:  0001-arm-dts-allwinner-sync-from-linux-for-RGMII-RX-TX-de.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -234,6 +236,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Feb 10 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-0.2.rc1
+- Fixes for network issues on some Allwinner devices
+
 * Mon Feb 01 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-0.1.rc1
 - Update to 2021.04 RC1
 - Add new upstream devices
