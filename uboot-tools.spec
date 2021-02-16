@@ -1,4 +1,4 @@
-%global candidate rc1
+%global candidate rc2
 
 Name:     uboot-tools
 Version:  2021.04
@@ -20,8 +20,6 @@ Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch2:   uefi-use-Fedora-specific-path-name.patch
 # RPi - uses RPI firmware device tree for HAT support
 Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-# Ajust the U-Boot offsets in SPL to take less space
-#Patch4:   rockchip-spl-u-boot-itb-offset.patch
 
 # Board fixes and enablement
 # AllWinner improvements
@@ -29,7 +27,7 @@ Patch10:  AllWinner-PineTab.patch
 # TI fixes
 Patch11:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
-Patch12:  rk3399-Pinebook-pro-EDP-support.patch
+#Patch12:  rk3399-Pinebook-pro-EDP-support.patch
 # Raspberry Pi improvements
 Patch13:  Raspberry-Pi-400-Compute-Module-4-support.patch
 Patch14:  Raspberry-Pi-4-PCIe-handover.patch
@@ -247,7 +245,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Sun Dec 06 2020 Dennis Gilmore <dennis@ausil.us>
+* Tue Feb 16 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-0.3.rc2
+- Update to 2021.04 RC2
+
+* Mon Feb 15 2021 Dennis Gilmore <dennis@ausil.us>
 - build spi and uart images in addition to mmc for helios4 and clearfog
 
 * Wed Feb 10 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-0.2.rc1

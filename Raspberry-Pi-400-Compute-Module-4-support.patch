@@ -1,6 +1,6 @@
-From 7e0e7e5a6f9cfe9ab36635f6867bbf25a27e70cd Mon Sep 17 00:00:00 2001
+From 253ed902965d9618030f902eb7a66b73e4b99d55 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Mon, 1 Feb 2021 21:34:02 +0000
+Date: Tue, 16 Feb 2021 09:52:03 +0000
 Subject: [PATCH] Raspberry Pi 400 Compute Module 4 support
 
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
@@ -20,10 +20,10 @@ Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
  drivers/core/of_addr.c             | 78 ++++++++++++++++++++++++++++++
  drivers/core/ofnode.c              |  9 ++++
  drivers/core/read.c                |  6 +++
- drivers/mmc/sdhci.c                | 12 +++--
+ drivers/mmc/sdhci.c                | 10 ++--
  drivers/pci/pcie_brcmstb.c         | 12 ++---
  drivers/usb/host/xhci-mem.c        | 45 +++++++++--------
- drivers/usb/host/xhci-ring.c       | 13 +++--
+ drivers/usb/host/xhci-ring.c       | 15 +++---
  drivers/usb/host/xhci.c            |  4 +-
  drivers/video/bcm2835.c            |  1 +
  include/dm/device.h                | 13 +++++
@@ -285,10 +285,10 @@ index dbfe51c6e8..00554af499 100644
  	bool "Support register maps"
  	depends on DM
 diff --git a/drivers/core/device.c b/drivers/core/device.c
-index 8629df8def..2ce9cbbe11 100644
+index 82a0098960..625134921d 100644
 --- a/drivers/core/device.c
 +++ b/drivers/core/device.c
-@@ -421,6 +421,43 @@ fail:
+@@ -422,6 +422,43 @@ fail:
  	return ret;
  }
  
@@ -332,7 +332,7 @@ index 8629df8def..2ce9cbbe11 100644
  int device_probe(struct udevice *dev)
  {
  	const struct driver *drv;
-@@ -483,6 +520,10 @@ int device_probe(struct udevice *dev)
+@@ -484,6 +521,10 @@ int device_probe(struct udevice *dev)
  			goto fail;
  	}
  
@@ -433,10 +433,10 @@ index bbe80136ba..5bc6ca1de0 100644
  		const __be32 *addrp, u64 size, unsigned int flags,
  		const char *name, struct resource *r)
 diff --git a/drivers/core/ofnode.c b/drivers/core/ofnode.c
-index 7a5f4c0a73..1463c41c6e 100644
+index 26c9d04056..fa0bd2a9c4 100644
 --- a/drivers/core/ofnode.c
 +++ b/drivers/core/ofnode.c
-@@ -926,6 +926,15 @@ u64 ofnode_translate_dma_address(ofnode node, const fdt32_t *in_addr)
+@@ -927,6 +927,15 @@ u64 ofnode_translate_dma_address(ofnode node, const fdt32_t *in_addr)
  		return fdt_translate_dma_address(gd->fdt_blob, ofnode_to_offset(node), in_addr);
  }
  
@@ -453,10 +453,10 @@ index 7a5f4c0a73..1463c41c6e 100644
  {
  	if (ofnode_is_np(node))
 diff --git a/drivers/core/read.c b/drivers/core/read.c
-index 4d9b5dd038..665424b2ff 100644
+index 14fd1214d6..4307ca4579 100644
 --- a/drivers/core/read.c
 +++ b/drivers/core/read.c
-@@ -340,6 +340,12 @@ u64 dev_translate_dma_address(const struct udevice *dev, const fdt32_t *in_addr)
+@@ -341,6 +341,12 @@ u64 dev_translate_dma_address(const struct udevice *dev, const fdt32_t *in_addr)
  	return ofnode_translate_dma_address(dev_ofnode(dev), in_addr);
  }
  
@@ -470,24 +470,10 @@ index 4d9b5dd038..665424b2ff 100644
  {
  	if (of_live_active())
 diff --git a/drivers/mmc/sdhci.c b/drivers/mmc/sdhci.c
-index 0628934312..62e4f53b8b 100644
+index ed0dc17325..5f18d472bd 100644
 --- a/drivers/mmc/sdhci.c
 +++ b/drivers/mmc/sdhci.c
-@@ -14,12 +14,12 @@
- #include <log.h>
- #include <malloc.h>
- #include <mmc.h>
-+#include <phys2bus.h>
- #include <sdhci.h>
- #include <asm/cache.h>
- #include <linux/bitops.h>
- #include <linux/delay.h>
- #include <linux/dma-mapping.h>
--#include <phys2bus.h>
- 
- static void sdhci_reset(struct sdhci_host *host, u8 mask)
- {
-@@ -73,6 +73,7 @@ static void sdhci_transfer_pio(struct sdhci_host *host, struct mmc_data *data)
+@@ -74,6 +74,7 @@ static void sdhci_transfer_pio(struct sdhci_host *host, struct mmc_data *data)
  static void sdhci_prepare_dma(struct sdhci_host *host, struct mmc_data *data,
  			      int *is_aligned, int trans_bytes)
  {
@@ -495,7 +481,7 @@ index 0628934312..62e4f53b8b 100644
  	unsigned char ctrl;
  	void *buf;
  
-@@ -103,8 +104,8 @@ static void sdhci_prepare_dma(struct sdhci_host *host, struct mmc_data *data,
+@@ -104,8 +105,8 @@ static void sdhci_prepare_dma(struct sdhci_host *host, struct mmc_data *data,
  					  mmc_get_dma_dir(data));
  
  	if (host->flags & USE_SDMA) {
@@ -506,7 +492,7 @@ index 0628934312..62e4f53b8b 100644
  	}
  #if CONFIG_IS_ENABLED(MMC_SDHCI_ADMA)
  	else if (host->flags & (USE_ADMA | USE_ADMA64)) {
-@@ -162,8 +163,9 @@ static int sdhci_transfer_data(struct sdhci_host *host, struct mmc_data *data)
+@@ -163,8 +164,9 @@ static int sdhci_transfer_data(struct sdhci_host *host, struct mmc_data *data)
  				start_addr &=
  				~(SDHCI_DEFAULT_BOUNDARY_SIZE - 1);
  				start_addr += SDHCI_DEFAULT_BOUNDARY_SIZE;
@@ -715,7 +701,7 @@ index b002d6f166..83147d51b5 100644
  
  	/*
 diff --git a/drivers/usb/host/xhci-ring.c b/drivers/usb/host/xhci-ring.c
-index d708fc928b..6b31ad4398 100644
+index d6c47d579b..bd69a19995 100644
 --- a/drivers/usb/host/xhci-ring.c
 +++ b/drivers/usb/host/xhci-ring.c
 @@ -275,10 +275,13 @@ void xhci_queue_command(struct xhci_ctrl *ctrl, u8 *ptr, u32 slot_id,
@@ -751,15 +737,17 @@ index d708fc928b..6b31ad4398 100644
  	void *last_transfer_trb_addr;
  	int available_length;
  
-@@ -723,7 +726,7 @@ again:
+@@ -723,8 +726,8 @@ again:
  		return -ETIMEDOUT;
  	}
  
--	if ((uintptr_t)(le64_to_cpu(event->trans_event.buffer))
+-	if ((uintptr_t)(le64_to_cpu(event->trans_event.buffer)) !=
+-	    (uintptr_t)virt_to_phys(last_transfer_trb_addr)) {
 +	if ((uintptr_t)(le64_to_cpu(xhci_bus_to_virt(ctrl, event->trans_event.buffer)))
- 			!= (uintptr_t)last_transfer_trb_addr) {
++	     != (uintptr_t)virt_to_phys(last_transfer_trb_addr)) {
  		available_length -=
  			(int)EVENT_TRB_LEN(le32_to_cpu(event->trans_event.transfer_len));
+ 		xhci_acknowledge_event(ctrl);
 @@ -884,7 +887,7 @@ int xhci_ctrl_tx(struct usb_device *udev, unsigned long pipe,
  	if (length > 0) {
  		if (req->requesttype & USB_DIR_IN)
@@ -804,10 +792,10 @@ index 9326999cd3..c2962932c9 100644
  	{ }
  };
 diff --git a/include/dm/device.h b/include/dm/device.h
-index e665558444..b614ff1a69 100644
+index 28533ce0b6..bb9faa0ed9 100644
 --- a/include/dm/device.h
 +++ b/include/dm/device.h
-@@ -148,6 +148,8 @@ enum {
+@@ -159,6 +159,8 @@ enum {
   *		When CONFIG_DEVRES is enabled, devm_kmalloc() and friends will
   *		add to this list. Memory so-allocated will be freed
   *		automatically when the device is removed / unbound
@@ -816,7 +804,7 @@ index e665558444..b614ff1a69 100644
   */
  struct udevice {
  	const struct driver *driver;
-@@ -172,6 +174,9 @@ struct udevice {
+@@ -183,6 +185,9 @@ struct udevice {
  #ifdef CONFIG_DEVRES
  	struct list_head devres_head;
  #endif
@@ -826,7 +814,7 @@ index e665558444..b614ff1a69 100644
  };
  
  /* Maximum sequence number supported */
-@@ -213,6 +218,14 @@ static inline ofnode dev_ofnode(const struct udevice *dev)
+@@ -224,6 +229,14 @@ static inline ofnode dev_ofnode(const struct udevice *dev)
  /* Returns non-zero if the device is active (probed and not removed) */
  #define device_active(dev)	(dev_get_flags(dev) & DM_FLAG_ACTIVATED)
  
@@ -870,10 +858,10 @@ index 3fa1ffce81..ee21d5cf4f 100644
   * of_get_address() - obtain an address from a node
   *
 diff --git a/include/dm/ofnode.h b/include/dm/ofnode.h
-index 5b088650d3..c4680fbbaa 100644
+index 5318d65035..2c0597c407 100644
 --- a/include/dm/ofnode.h
 +++ b/include/dm/ofnode.h
-@@ -996,6 +996,22 @@ u64 ofnode_translate_address(ofnode node, const fdt32_t *in_addr);
+@@ -998,6 +998,22 @@ u64 ofnode_translate_address(ofnode node, const fdt32_t *in_addr);
   */
  u64 ofnode_translate_dma_address(ofnode node, const fdt32_t *in_addr);
  
@@ -897,7 +885,7 @@ index 5b088650d3..c4680fbbaa 100644
   * ofnode_device_is_compatible() - check if the node is compatible with compat
   *
 diff --git a/include/dm/read.h b/include/dm/read.h
-index 03ba98232a..da3763d245 100644
+index 97575bcad0..5bf3405614 100644
 --- a/include/dm/read.h
 +++ b/include/dm/read.h
 @@ -647,6 +647,21 @@ u64 dev_translate_address(const struct udevice *dev, const fdt32_t *in_addr);
@@ -922,7 +910,7 @@ index 03ba98232a..da3763d245 100644
  /**
   * dev_read_alias_highest_id - Get highest alias id for the given stem
   * @stem:	Alias stem to be examined
-@@ -1004,6 +1019,12 @@ static inline u64 dev_translate_dma_address(const struct udevice *dev,
+@@ -1005,6 +1020,12 @@ static inline u64 dev_translate_dma_address(const struct udevice *dev,
  	return ofnode_translate_dma_address(dev_ofnode(dev), in_addr);
  }
  
@@ -1067,10 +1055,10 @@ index e70e50f402..6275ec56ea 100644
  obj-$(CONFIG_ACPIGEN) += acpi.o
  obj-$(CONFIG_ACPIGEN) += acpigen.o
 diff --git a/test/dm/core.c b/test/dm/core.c
-index 1f5ca570dc..855449aac2 100644
+index ce31d86c7d..35ca689d64 100644
 --- a/test/dm/core.c
 +++ b/test/dm/core.c
-@@ -1085,3 +1085,33 @@ static int dm_test_all_have_seq(struct unit_test_state *uts)
+@@ -1180,3 +1180,33 @@ static int dm_test_all_have_seq(struct unit_test_state *uts)
  	return 0;
  }
  DM_TEST(dm_test_all_have_seq, UT_TESTF_SCAN_PDATA);
