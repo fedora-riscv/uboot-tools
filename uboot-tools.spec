@@ -2,7 +2,7 @@
 
 Name:     uboot-tools
 Version:  2021.04
-Release:  0.2%{?candidate:.%{candidate}}%{?dist}
+Release:  0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -130,6 +130,18 @@ do
   # End ATF
   make $(echo $board)_defconfig O=builds/$(echo $board)/
   %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board)/
+  # build spi, and uart images for mvebu boards
+  mvebu=(clearfog helios4)
+  if [[ "  ${mvebu[*]} " == *" $board "* ]]; then
+    for target in spi uart
+    do
+      echo "Board: $board Target: $target"
+      sed -i -e '/CONFIG_MVEBU_SPL_BOOT_DEVICE_/d' configs/$(echo $board)_defconfig
+      echo CONFIG_MVEBU_SPL_BOOT_DEVICE_${target^^}=y >> configs/$(echo $board)_defconfig
+      make $(echo $board)_defconfig O=builds/$(echo $board-$target)/
+      %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board-$target)/
+    done
+  fi
 done
 
 %endif
@@ -144,7 +156,7 @@ mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
 
 %ifarch aarch64
-for board in $(cat %{_arch}-boards)
+for board in $(ls builds)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
  for file in u-boot.bin u-boot.dtb u-boot.img u-boot-dtb.img u-boot.itb u-boot-sunxi-with-spl.bin u-boot-rockchip.bin idbloader.img spl/boot.bin spl/sunxi-spl.bin
@@ -157,7 +169,7 @@ done
 %endif
 
 %ifarch %{arm}
-for board in $(cat %{_arch}-boards)
+for board in $(ls builds)
 do
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
  for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/*spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-spl.kwb u-boot-rockchip.bin u-boot-sunxi-with-spl.bin spl/boot.bin
@@ -170,7 +182,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
 done
 
 # Bit of a hack to remove binaries we don't use as they're large
-for board in $(cat %{_arch}-boards)
+for board in $(ls builds)
 do
   if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-sunxi-with-spl.bin ]; then
     rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.*
@@ -184,10 +196,14 @@ do
   if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.imx ]; then
     rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.bin
   fi
+  if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-spl.kwb ]; then
+    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.*
+    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-spl.bin
+  fi
 done
 %endif
 
-for tool in bmp_logo dumpimage env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr gen_ethaddr_crc img2srec mkenvimage mkimage mksunxiboot ncb proftool sunxi-spl-image-builder ubsha1 xway-swap-bytes
+for tool in bmp_logo dumpimage env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr gen_ethaddr_crc img2srec mkenvimage mkimage mksunxiboot ncb proftool sunxi-spl-image-builder ubsha1 xway-swap-bytes kwboot
 do
 install -p -m 0755 builds/tools/$tool $RPM_BUILD_ROOT%{_bindir}
 done
@@ -198,9 +214,8 @@ install -p -m 0755 builds/tools/env/fw_printenv $RPM_BUILD_ROOT%{_bindir}
 
 install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
 
-# Copy sone useful docs over
+# Copy some useful docs over
 mkdir -p builds/docs
-cp -p board/hisilicon/hikey/README builds/docs/README.hikey
 cp -p board/hisilicon/hikey/README builds/docs/README.hikey
 cp -p board/Marvell/db-88f6820-gp/README builds/docs/README.mvebu-db-88f6820
 cp -p board/rockchip/evb_rk3399/README builds/docs/README.evb_rk3399
@@ -236,6 +251,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Dec 06 2020 Dennis Gilmore <dennis@ausil.us> - 2021.04-0.3.rc1
+- build spi and uart images in addition to mmc for helios4 and clearfog
+
 * Wed Feb 10 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-0.2.rc1
 - Fixes for network issues on some Allwinner devices
 
