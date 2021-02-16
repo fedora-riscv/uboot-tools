@@ -150,19 +150,18 @@ done
 %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" tools-all O=builds/
 
 %install
-mkdir -p $RPM_BUILD_ROOT%{_bindir}
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}
-mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/
+mkdir -p %{buildroot}%{_bindir}
+mkdir -p %{buildroot}%{_mandir}/man1
+mkdir -p %{buildroot}%{_datadir}/uboot/
 
 %ifarch aarch64
 for board in $(ls builds)
 do
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+ mkdir -p %{buildroot}%{_datadir}/uboot/$(echo $board)/
  for file in u-boot.bin u-boot.dtb u-boot.img u-boot-dtb.img u-boot.itb u-boot-sunxi-with-spl.bin u-boot-rockchip.bin idbloader.img spl/boot.bin spl/sunxi-spl.bin
  do
   if [ -f builds/$(echo $board)/$(echo $file) ]; then
-    install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+    install -p -m 0644 builds/$(echo $board)/$(echo $file) %{buildroot}%{_datadir}/uboot/$(echo $board)/
   fi
  done
 done
@@ -171,11 +170,11 @@ done
 %ifarch %{arm}
 for board in $(ls builds)
 do
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+ mkdir -p %{buildroot}%{_datadir}/uboot/$(echo $board)/
  for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/*spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-spl.kwb u-boot-rockchip.bin u-boot-sunxi-with-spl.bin spl/boot.bin
  do
   if [ -f builds/$(echo $board)/$(echo $file) ]; then
-    install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
+    install -p -m 0644 builds/$(echo $board)/$(echo $file) %{buildroot}%{_datadir}/uboot/$(echo $board)/
   fi
  done
 
@@ -184,35 +183,33 @@ done
 # Bit of a hack to remove binaries we don't use as they're large
 for board in $(ls builds)
 do
-  if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-sunxi-with-spl.bin ]; then
-    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.*
+  if [ -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot-sunxi-with-spl.bin ]; then
+    rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot.*
   fi
-  if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/MLO ]; then
-    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.bin
+  if [ -f %{buildroot}%{_datadir}/uboot/$(echo $board)/MLO ]; then
+    rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot.bin
   fi
-  if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/SPL ]; then
-    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.bin
+  if [ -f %{buildroot}%{_datadir}/uboot/$(echo $board)/SPL ]; then
+    rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot.bin
   fi
-  if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.imx ]; then
-    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.bin
+  if [ -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot.imx ]; then
+    rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot.bin
   fi
-  if [ -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-spl.kwb ]; then
-    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot.*
-    rm -f $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/u-boot-spl.bin
+  if [ -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot-spl.kwb ]; then
+    rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot.*
+    rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot-spl.bin
   fi
 done
 %endif
 
 for tool in bmp_logo dumpimage env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr gen_ethaddr_crc img2srec mkenvimage mkimage mksunxiboot ncb proftool sunxi-spl-image-builder ubsha1 xway-swap-bytes kwboot
 do
-install -p -m 0755 builds/tools/$tool $RPM_BUILD_ROOT%{_bindir}
+install -p -m 0755 builds/tools/$tool %{buildroot}%{_bindir}
 done
-install -p -m 0644 doc/mkimage.1 $RPM_BUILD_ROOT%{_mandir}/man1
+install -p -m 0644 doc/mkimage.1 %{buildroot}%{_mandir}/man1
 
-install -p -m 0755 builds/tools/env/fw_printenv $RPM_BUILD_ROOT%{_bindir}
-( cd $RPM_BUILD_ROOT%{_bindir}; ln -sf fw_printenv fw_setenv )
-
-install -p -m 0644 tools/env/fw_env.config $RPM_BUILD_ROOT%{_sysconfdir}
+install -p -m 0755 builds/tools/env/fw_printenv %{buildroot}%{_bindir}
+( cd %{buildroot}%{_bindir}; ln -sf fw_printenv fw_setenv )
 
 # Copy some useful docs over
 mkdir -p builds/docs
@@ -238,7 +235,6 @@ cp -p board/warp7/README builds/docs/README.warp7
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
 %dir %{_datadir}/uboot/
-%config(noreplace) %{_sysconfdir}/fw_env.config
 
 %ifarch aarch64
 %files -n uboot-images-armv8
@@ -251,7 +247,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Sun Dec 06 2020 Dennis Gilmore <dennis@ausil.us> - 2021.04-0.3.rc1
+* Sun Dec 06 2020 Dennis Gilmore <dennis@ausil.us>
 - build spi and uart images in addition to mmc for helios4 and clearfog
 
 * Wed Feb 10 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-0.2.rc1
