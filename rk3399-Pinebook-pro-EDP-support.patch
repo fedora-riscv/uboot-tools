@@ -1,64 +1,97 @@
-From b90e9d3eeded9b10be1076ccbf2a3fac55cf3e74 Mon Sep 17 00:00:00 2001
-From: Peter Robinson <pbrobinson@gmail.com>
-Date: Mon, 1 Feb 2021 21:14:44 +0000
-Subject: [PATCH] rk3399 Pinebook pro EDP support
+From patchwork Fri Mar  5 10:27:46 2021
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
+X-Patchwork-Id: 1447757
+X-Patchwork-Delegate: agust@denx.de
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4DsPKq3YGqz9sRR
+	for <incoming@patchwork.ozlabs.org>; Fri,  5 Mar 2021 21:36:31 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 18DC78269D;
+	Fri,  5 Mar 2021 11:35:59 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 4DDC182036; Fri,  5 Mar 2021 11:35:50 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE
+ autolearn=ham autolearn_force=no version=3.4.2
+Received: from lechat.rtp-net.org (lechat.rtp-net.org
+ [IPv6:2001:bc8:3430:1000::c0f:fee])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id D4F2882036
+ for <u-boot@lists.denx.de>; Fri,  5 Mar 2021 11:35:43 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
+Received: by lechat.rtp-net.org (Postfix, from userid 1000)
+ id 123CD18069A; Fri,  5 Mar 2021 11:35:41 +0100 (CET)
+Message-ID: <20210305103307.004041703@rtp-net.org>
+User-Agent: quilt/0.66
+Date: Fri, 05 Mar 2021 11:27:46 +0100
+From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Peter Robinson <pbrobinson@gmail.com>,
+ Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
+ Arnaud Patard <arnaud.patard@rtp-net.org>
+Subject: [patch v4 1/9] rockchip: video: vop: Use endpoint compatible string
+ to find VOP mode
+References: <20210305102745.078091129@rtp-net.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.4 at phobos.denx.de
+X-Virus-Status: Clean
 
-Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
----
- arch/arm/dts/rk3399-pinebook-pro-u-boot.dtsi  |   4 +
- .../include/asm/arch-rockchip/edp_rk3288.h    |   9 +-
- .../include/asm/arch-rockchip/vop_rk3288.h    |  15 +--
- drivers/pwm/rk_pwm.c                          |   2 +-
- drivers/video/rockchip/rk_edp.c               | 103 +++++++++++++++---
- drivers/video/rockchip/rk_vop.c               |  86 ++++++++++++++-
- 6 files changed, 177 insertions(+), 42 deletions(-)
+The current code is using an hard coded enum and the of node reg value of
+endpoint to find out if the endpoint is mipi/hdmi/lvds/edp/dp. The order
+is different between rk3288, rk3399 vop little, rk3399 vop big.
 
-diff --git a/arch/arm/dts/rk3399-pinebook-pro-u-boot.dtsi b/arch/arm/dts/rk3399-pinebook-pro-u-boot.dtsi
-index 1eafb40ce3..2d87bea933 100644
---- a/arch/arm/dts/rk3399-pinebook-pro-u-boot.dtsi
-+++ b/arch/arm/dts/rk3399-pinebook-pro-u-boot.dtsi
-@@ -16,6 +16,10 @@
- 	};
- };
- 
-+&edp {
-+	rockchip,panel = <&edp_panel>;
-+};
-+
- &i2c0 {
- 	u-boot,dm-pre-reloc;
- };
-diff --git a/arch/arm/include/asm/arch-rockchip/edp_rk3288.h b/arch/arm/include/asm/arch-rockchip/edp_rk3288.h
-index 94e5bb674f..9559813e52 100644
---- a/arch/arm/include/asm/arch-rockchip/edp_rk3288.h
-+++ b/arch/arm/include/asm/arch-rockchip/edp_rk3288.h
-@@ -232,8 +232,9 @@ check_member(rk3288_edp, pll_reg_5, 0xa00);
- #define PD_CH0					(0x1 << 0)
- 
- /* pll_reg_1 */
--#define REF_CLK_24M				(0x1 << 1)
--#define REF_CLK_27M				(0x0 << 1)
-+#define REF_CLK_24M				(0x1 << 0)
-+#define REF_CLK_27M				(0x0 << 0)
-+#define REF_CLK_MASK				(0x1 << 0)
- 
- /* line_map */
- #define LANE3_MAP_LOGIC_LANE_0			(0x0 << 6)
-@@ -296,7 +297,9 @@ check_member(rk3288_edp, pll_reg_5, 0xa00);
- 
- /* int_ctl */
- #define SOFT_INT_CTRL				(0x1 << 2)
--#define INT_POL					(0x1 << 0)
-+#define INT_POL1				(0x1 << 1)
-+#define INT_POL0				(0x1 << 0)
-+#define INT_POL					(INT_POL0 | INT_POL1)
- 
- /* sys_ctl_1 */
- #define DET_STA					(0x1 << 2)
-diff --git a/arch/arm/include/asm/arch-rockchip/vop_rk3288.h b/arch/arm/include/asm/arch-rockchip/vop_rk3288.h
-index 52446e97c6..49a7141437 100644
---- a/arch/arm/include/asm/arch-rockchip/vop_rk3288.h
-+++ b/arch/arm/include/asm/arch-rockchip/vop_rk3288.h
+A possible solution would be to make sure that the rk3288.dtsi and 
+rk3399.dtsi files have "expected" reg value or an other solution is
+to find the kind of endpoint by comparing the endpoint compatible value.
+
+This patch is implementing the more flexible second solution.
+
+Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Peter Robinson <pbrobinson@gmail.com>
+
+Index: u-boot/arch/arm/include/asm/arch-rockchip/vop_rk3288.h
+===================================================================
+--- u-boot.orig/arch/arm/include/asm/arch-rockchip/vop_rk3288.h
++++ u-boot/arch/arm/include/asm/arch-rockchip/vop_rk3288.h
 @@ -85,26 +85,13 @@ enum {
  	LB_RGB_1280X8 = 0x5
  };
@@ -87,35 +120,148 @@ index 52446e97c6..49a7141437 100644
  
  /* VOP_VERSION_INFO */
  #define M_FPGA_VERSION (0xffff << 16)
-diff --git a/drivers/pwm/rk_pwm.c b/drivers/pwm/rk_pwm.c
-index a64fc4a052..d4b9ebe528 100644
---- a/drivers/pwm/rk_pwm.c
-+++ b/drivers/pwm/rk_pwm.c
-@@ -146,7 +146,7 @@ static int rk_pwm_probe(struct udevice *dev)
- 	priv->data = (struct rockchip_pwm_data *)dev_get_driver_data(dev);
+Index: u-boot/drivers/video/rockchip/rk_vop.c
+===================================================================
+--- u-boot.orig/drivers/video/rockchip/rk_vop.c
++++ u-boot/drivers/video/rockchip/rk_vop.c
+@@ -236,12 +236,11 @@ static int rk_display_init(struct udevic
+ 	struct clk clk;
+ 	enum video_log2_bpp l2bpp;
+ 	ofnode remote;
++	const char *compat;
  
- 	if (priv->data->supports_polarity)
--		priv->conf_polarity = PWM_DUTY_POSTIVE | PWM_INACTIVE_POSTIVE;
-+		priv->conf_polarity = PWM_DUTY_POSTIVE | PWM_INACTIVE_NEGATIVE;
+ 	debug("%s(%s, %lu, %s)\n", __func__,
+ 	      dev_read_name(dev), fbbase, ofnode_get_name(ep_node));
  
- 	return 0;
- }
-diff --git a/drivers/video/rockchip/rk_edp.c b/drivers/video/rockchip/rk_edp.c
-index 0be60e169e..0ddf5e02d6 100644
---- a/drivers/video/rockchip/rk_edp.c
-+++ b/drivers/video/rockchip/rk_edp.c
-@@ -8,20 +8,21 @@
- #include <clk.h>
- #include <display.h>
- #include <dm.h>
-+#include <dm/device_compat.h>
- #include <edid.h>
- #include <log.h>
- #include <malloc.h>
- #include <panel.h>
- #include <regmap.h>
-+#include <reset.h>
- #include <syscon.h>
+-	vop_id = ofnode_read_s32_default(ep_node, "reg", -1);
+-	debug("vop_id=%d\n", vop_id);
+ 	ret = ofnode_read_u32(ep_node, "remote-endpoint", &remote_phandle);
+ 	if (ret)
+ 		return ret;
+@@ -283,6 +282,28 @@ static int rk_display_init(struct udevic
+ 		if (disp)
+ 			break;
+ 	};
++	compat = ofnode_get_property(remote, "compatible", NULL);
++	if (!compat) {
++		debug("%s(%s): Failed to find compatible property\n",
++		      __func__, dev_read_name(dev));
++		return -EINVAL;
++	}
++	if (strstr(compat, "edp")) {
++		vop_id = VOP_MODE_EDP;
++	} else if (strstr(compat, "mipi")) {
++		vop_id = VOP_MODE_MIPI;
++	} else if (strstr(compat, "hdmi")) {
++		vop_id = VOP_MODE_HDMI;
++	} else if (strstr(compat, "cdn-dp")) {
++		vop_id = VOP_MODE_DP;
++	} else if (strstr(compat, "lvds")) {
++		vop_id = VOP_MODE_LVDS;
++	} else {
++		debug("%s(%s): Failed to find vop mode for %s\n",
++		      __func__, dev_read_name(dev), compat);
++		return -EINVAL;
++	}
++	debug("vop_id=%d\n", vop_id);
+ 
+ 	disp_uc_plat = dev_get_uclass_plat(disp);
+ 	debug("Found device '%s', disp_uc_priv=%p\n", disp->name, disp_uc_plat);
+
+From patchwork Fri Mar  5 10:27:47 2021
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
+X-Patchwork-Id: 1447760
+X-Patchwork-Delegate: agust@denx.de
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4DsPLV0lZ1z9sRR
+	for <incoming@patchwork.ozlabs.org>; Fri,  5 Mar 2021 21:37:06 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id D622682774;
+	Fri,  5 Mar 2021 11:36:10 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id CF09E8206F; Fri,  5 Mar 2021 11:35:51 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE
+ autolearn=ham autolearn_force=no version=3.4.2
+Received: from lechat.rtp-net.org (lechat.rtp-net.org
+ [IPv6:2001:bc8:3430:1000::c0f:fee])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 02E608204B
+ for <u-boot@lists.denx.de>; Fri,  5 Mar 2021 11:35:43 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
+Received: by lechat.rtp-net.org (Postfix, from userid 1000)
+ id 2D11018084F; Fri,  5 Mar 2021 11:35:41 +0100 (CET)
+Message-ID: <20210305103307.057540339@rtp-net.org>
+User-Agent: quilt/0.66
+Date: Fri, 05 Mar 2021 11:27:47 +0100
+From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Peter Robinson <pbrobinson@gmail.com>,
+ Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
+ Arnaud Patard <arnaud.patard@rtp-net.org>
+Subject: [patch v4 2/9] rockchip: video: edp: Add rk3399 support
+References: <20210305102745.078091129@rtp-net.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.4 at phobos.denx.de
+X-Virus-Status: Clean
+
+According to linux commit "drm/rockchip: analogix_dp: add rk3399 eDP
+support" (82872e42bb1501dd9e60ca430f4bae45a469aa64), rk3288 and rk3399
+eDP IPs are nearly the same, the difference is in the grf register
+(SOC_CON6 versus SOC_CON20). So, change the code to use the right
+register on each IP.
+
+The clocks don't seem to be the same, the eDP clock is not at index 1
+on rk3399, so don't try changing the clock at index 1 to rate 0 on
+rk3399.
+
+Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Peter Robinson <pbrobinson@gmail.com>
+
+Index: u-boot/drivers/video/rockchip/rk_edp.c
+===================================================================
+--- u-boot.orig/drivers/video/rockchip/rk_edp.c
++++ u-boot/drivers/video/rockchip/rk_edp.c
+@@ -17,11 +17,10 @@
  #include <asm/gpio.h>
  #include <asm/io.h>
  #include <asm/arch-rockchip/clock.h>
@@ -129,7 +275,7 @@ index 0be60e169e..0ddf5e02d6 100644
  
  #define MAX_CR_LOOP 5
  #define MAX_EQ_LOOP 5
-@@ -37,18 +38,42 @@ static const char * const pre_emph_names[] = {
+@@ -37,18 +36,42 @@ static const char * const pre_emph_names
  #define DP_VOLTAGE_MAX         DP_TRAIN_VOLTAGE_SWING_1200
  #define DP_PRE_EMPHASIS_MAX    DP_TRAIN_PRE_EMPHASIS_9_5
  
@@ -175,49 +321,27 @@ index 0be60e169e..0ddf5e02d6 100644
  
  	writel(LDO_OUTPUT_V_SEL_145 | KVCO_DEFALUT | CHG_PUMP_CUR_SEL_5US |
  	       V2L_CUR_SEL_1MA, &regs->pll_reg_2);
-@@ -1029,6 +1054,9 @@ static int rk_edp_probe(struct udevice *dev)
+@@ -1029,6 +1052,8 @@ static int rk_edp_probe(struct udevice *
  	struct display_plat *uc_plat = dev_get_uclass_plat(dev);
  	struct rk_edp_priv *priv = dev_get_priv(dev);
  	struct rk3288_edp *regs = priv->regs;
 +	struct rockchip_dp_data *edp_data = (struct rockchip_dp_data *)dev_get_driver_data(dev);
-+	struct reset_ctl dp_rst;
 +
  	struct clk clk;
  	int ret;
  
-@@ -1040,19 +1068,39 @@ static int rk_edp_probe(struct udevice *dev)
- 		return ret;
- 	}
- 
--	int vop_id = uc_plat->source_id;
--	debug("%s, uc_plat=%p, vop_id=%u\n", __func__, uc_plat, vop_id);
-+	ret = reset_get_by_name(dev, "dp", &dp_rst);
-+	if (ret) {
-+		dev_err(dev, "failed to get dp reset (ret=%d)\n", ret);
-+		return ret;
-+	}
+@@ -1043,16 +1068,17 @@ static int rk_edp_probe(struct udevice *
+ 	int vop_id = uc_plat->source_id;
+ 	debug("%s, uc_plat=%p, vop_id=%u\n", __func__, uc_plat, vop_id);
  
 -	ret = clk_get_by_index(dev, 1, &clk);
 -	if (ret >= 0) {
 -		ret = clk_set_rate(&clk, 0);
 -		clk_free(&clk);
-+	ret = reset_assert(&dp_rst);
-+	if (ret) {
-+		dev_err(dev, "failed to assert dp reset (ret=%d)\n", ret);
-+		return ret;
- 	}
-+	udelay(20);
-+
-+	ret = reset_deassert(&dp_rst);
- 	if (ret) {
+-	}
+-	if (ret) {
 -		debug("%s: Failed to set EDP clock: ret=%d\n", __func__, ret);
-+		dev_err(dev, "failed to deassert dp reset (ret=%d)\n", ret);
- 		return ret;
- 	}
- 
-+	int vop_id = uc_plat->source_id;
-+	debug("%s, uc_plat=%p, vop_id=%u\n", __func__, uc_plat, vop_id);
-+
+-		return ret;
 +	if (edp_data->chip_type == RK3288_DP) {
 +		ret = clk_get_by_index(dev, 1, &clk);
 +		if (ret >= 0) {
@@ -228,11 +352,12 @@ index 0be60e169e..0ddf5e02d6 100644
 +			debug("%s: Failed to set EDP clock: ret=%d\n", __func__, ret);
 +			return ret;
 +		}
-+	}
+ 	}
+-
  	ret = clk_get_by_index(uc_plat->src_dev, 0, &clk);
  	if (ret >= 0) {
  		ret = clk_set_rate(&clk, 192000000);
-@@ -1065,15 +1113,17 @@ static int rk_edp_probe(struct udevice *dev)
+@@ -1065,15 +1091,17 @@ static int rk_edp_probe(struct udevice *
  	}
  
  	/* grf_edp_ref_clk_sel: from internal 24MHz or 27MHz clock */
@@ -254,7 +379,7 @@ index 0be60e169e..0ddf5e02d6 100644
  	rk_edp_init_interrupt(regs);
  	rk_edp_enable_sw_function(regs);
  	ret = rk_edp_init_analog_func(regs);
-@@ -1089,8 +1139,25 @@ static const struct dm_display_ops dp_rockchip_ops = {
+@@ -1089,8 +1117,25 @@ static const struct dm_display_ops dp_ro
  	.enable = rk_edp_enable,
  };
  
@@ -281,10 +406,749 @@ index 0be60e169e..0ddf5e02d6 100644
  	{ }
  };
  
-diff --git a/drivers/video/rockchip/rk_vop.c b/drivers/video/rockchip/rk_vop.c
-index fcb393b906..0fabbf7e30 100644
---- a/drivers/video/rockchip/rk_vop.c
-+++ b/drivers/video/rockchip/rk_vop.c
+Index: u-boot/arch/arm/include/asm/arch-rockchip/edp_rk3288.h
+===================================================================
+--- u-boot.orig/arch/arm/include/asm/arch-rockchip/edp_rk3288.h
++++ u-boot/arch/arm/include/asm/arch-rockchip/edp_rk3288.h
+@@ -232,8 +232,9 @@ check_member(rk3288_edp, pll_reg_5, 0xa0
+ #define PD_CH0					(0x1 << 0)
+ 
+ /* pll_reg_1 */
+-#define REF_CLK_24M				(0x1 << 1)
+-#define REF_CLK_27M				(0x0 << 1)
++#define REF_CLK_24M				(0x1 << 0)
++#define REF_CLK_27M				(0x0 << 0)
++#define REF_CLK_MASK				(0x1 << 0)
+ 
+ /* line_map */
+ #define LANE3_MAP_LOGIC_LANE_0			(0x0 << 6)
+
+From patchwork Fri Mar  5 10:27:48 2021
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
+X-Patchwork-Id: 1447758
+X-Patchwork-Delegate: agust@denx.de
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4DsPL32w8Bz9sRR
+	for <incoming@patchwork.ozlabs.org>; Fri,  5 Mar 2021 21:36:43 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 44C1D82082;
+	Fri,  5 Mar 2021 11:36:04 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 5F86A8204C; Fri,  5 Mar 2021 11:35:51 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE
+ autolearn=ham autolearn_force=no version=3.4.2
+Received: from lechat.rtp-net.org (lechat.rtp-net.org
+ [IPv6:2001:bc8:3430:1000::c0f:fee])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 1AEBD825C6
+ for <u-boot@lists.denx.de>; Fri,  5 Mar 2021 11:35:44 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
+Received: by lechat.rtp-net.org (Postfix, from userid 1000)
+ id 3E0CC180475; Fri,  5 Mar 2021 11:35:41 +0100 (CET)
+Message-ID: <20210305103307.112947687@rtp-net.org>
+User-Agent: quilt/0.66
+Date: Fri, 05 Mar 2021 11:27:48 +0100
+From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Peter Robinson <pbrobinson@gmail.com>,
+ Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
+ Arnaud Patard <arnaud.patard@rtp-net.org>
+Subject: [patch v4 3/9] Rockchip: video: edp: Change interrupt polarity
+ configuration
+References: <20210305102745.078091129@rtp-net.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.4 at phobos.denx.de
+X-Virus-Status: Clean
+
+The linux code is setting polarity configuration to 3 but
+uboot code is setting it to 1. Change the configuration to match the
+linux configuration
+
+Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Peter Robinson <pbrobinson@gmail.com>
+
+Index: u-boot/arch/arm/include/asm/arch-rockchip/edp_rk3288.h
+===================================================================
+--- u-boot.orig/arch/arm/include/asm/arch-rockchip/edp_rk3288.h
++++ u-boot/arch/arm/include/asm/arch-rockchip/edp_rk3288.h
+@@ -297,7 +297,9 @@ check_member(rk3288_edp, pll_reg_5, 0xa0
+ 
+ /* int_ctl */
+ #define SOFT_INT_CTRL				(0x1 << 2)
+-#define INT_POL					(0x1 << 0)
++#define INT_POL1				(0x1 << 1)
++#define INT_POL0				(0x1 << 0)
++#define INT_POL					(INT_POL0 | INT_POL1)
+ 
+ /* sys_ctl_1 */
+ #define DET_STA					(0x1 << 2)
+
+From patchwork Fri Mar  5 10:27:49 2021
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
+X-Patchwork-Id: 1447759
+X-Patchwork-Delegate: agust@denx.de
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4DsPLH1GRYz9sRR
+	for <incoming@patchwork.ozlabs.org>; Fri,  5 Mar 2021 21:36:55 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 96D31826F3;
+	Fri,  5 Mar 2021 11:36:07 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 1A41B82036; Fri,  5 Mar 2021 11:35:51 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE
+ autolearn=ham autolearn_force=no version=3.4.2
+Received: from lechat.rtp-net.org (lechat.rtp-net.org [51.15.165.164])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 09C178204C
+ for <u-boot@lists.denx.de>; Fri,  5 Mar 2021 11:35:44 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
+Received: by lechat.rtp-net.org (Postfix, from userid 1000)
+ id 61DE01808B6; Fri,  5 Mar 2021 11:35:41 +0100 (CET)
+Message-ID: <20210305103307.175518624@rtp-net.org>
+User-Agent: quilt/0.66
+Date: Fri, 05 Mar 2021 11:27:49 +0100
+From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Peter Robinson <pbrobinson@gmail.com>,
+ Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
+ Arnaud Patard <arnaud.patard@rtp-net.org>
+Subject: [patch v4 4/9] Rockchip: video: vop: Reserve efi fb memory
+References: <20210305102745.078091129@rtp-net.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.4 at phobos.denx.de
+X-Virus-Status: Clean
+
+When booting with EFI and graphics, the memory used for framebuffer
+has to be reserved, otherwise it may leads to kernel memory
+overwrite.
+
+Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Peter Robinson <pbrobinson@gmail.com>
+
+Index: u-boot/drivers/video/rockchip/rk_vop.c
+===================================================================
+--- u-boot.orig/drivers/video/rockchip/rk_vop.c
++++ u-boot/drivers/video/rockchip/rk_vop.c
+@@ -21,6 +21,8 @@
+ #include <asm/arch-rockchip/vop_rk3288.h>
+ #include <dm/device-internal.h>
+ #include <dm/uclass-internal.h>
++#include <efi.h>
++#include <efi_loader.h>
+ #include <linux/bitops.h>
+ #include <linux/err.h>
+ #include <power/regulator.h>
+@@ -395,6 +397,11 @@ int rk_vop_probe(struct udevice *dev)
+ 	if (!(gd->flags & GD_FLG_RELOC))
+ 		return 0;
+ 
++#if defined(CONFIG_EFI_LOADER)
++	debug("Adding to EFI map %d @ %lx\n", plat->size, plat->base);
++	efi_add_memory_map(plat->base, plat->size, EFI_RESERVED_MEMORY_TYPE);
++#endif
++
+ 	priv->regs = (struct rk3288_vop *)dev_read_addr(dev);
+ 
+ 	/*
+
+From patchwork Fri Mar  5 10:27:50 2021
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
+X-Patchwork-Id: 1447756
+X-Patchwork-Delegate: agust@denx.de
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4DsPKd3f7rz9sRR
+	for <incoming@patchwork.ozlabs.org>; Fri,  5 Mar 2021 21:36:21 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 470D882070;
+	Fri,  5 Mar 2021 11:35:56 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 5AAD48204A; Fri,  5 Mar 2021 11:35:49 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE
+ autolearn=ham autolearn_force=no version=3.4.2
+Received: from lechat.rtp-net.org (lechat.rtp-net.org [51.15.165.164])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id DCB148204A
+ for <u-boot@lists.denx.de>; Fri,  5 Mar 2021 11:35:43 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
+Received: by lechat.rtp-net.org (Postfix, from userid 1000)
+ id 71166180A1E; Fri,  5 Mar 2021 11:35:41 +0100 (CET)
+Message-ID: <20210305103307.228214963@rtp-net.org>
+User-Agent: quilt/0.66
+Date: Fri, 05 Mar 2021 11:27:50 +0100
+From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Peter Robinson <pbrobinson@gmail.com>,
+ Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
+ Arnaud Patard <arnaud.patard@rtp-net.org>
+Subject: [patch v4 5/9] rockchip: Pinebook Pro: Enable edp
+References: <20210305102745.078091129@rtp-net.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.4 at phobos.denx.de
+X-Virus-Status: Clean
+
+- uboot rockchip edp code is looking for a rockchip,panel property
+  for the edp dts node, so add it.
+
+Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Peter Robinson <pbrobinson@gmail.com>
+
+Index: u-boot/arch/arm/dts/rk3399-pinebook-pro-u-boot.dtsi
+===================================================================
+--- u-boot.orig/arch/arm/dts/rk3399-pinebook-pro-u-boot.dtsi
++++ u-boot/arch/arm/dts/rk3399-pinebook-pro-u-boot.dtsi
+@@ -16,6 +16,10 @@
+ 	};
+ };
+ 
++&edp {
++	rockchip,panel = <&edp_panel>;
++};
++
+ &i2c0 {
+ 	u-boot,dm-pre-reloc;
+ };
+
+From patchwork Fri Mar  5 10:27:51 2021
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
+X-Patchwork-Id: 1447754
+X-Patchwork-Delegate: agust@denx.de
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest
+ SHA256)
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4DsPKR1d2Fz9sRR
+	for <incoming@patchwork.ozlabs.org>; Fri,  5 Mar 2021 21:36:11 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 12B478204C;
+	Fri,  5 Mar 2021 11:35:53 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 447228206F; Fri,  5 Mar 2021 11:35:47 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE
+ autolearn=ham autolearn_force=no version=3.4.2
+Received: from lechat.rtp-net.org (lechat.rtp-net.org [51.15.165.164])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id B778881C7C
+ for <u-boot@lists.denx.de>; Fri,  5 Mar 2021 11:35:43 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
+Received: by lechat.rtp-net.org (Postfix, from userid 1000)
+ id C0DB4180A22; Fri,  5 Mar 2021 11:35:41 +0100 (CET)
+Message-ID: <20210305103307.290295328@rtp-net.org>
+User-Agent: quilt/0.66
+Date: Fri, 05 Mar 2021 11:27:51 +0100
+From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Peter Robinson <pbrobinson@gmail.com>,
+ Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
+ Arnaud Patard <arnaud.patard@rtp-net.org>
+Subject: [patch v4 6/9] rockchip: pwm: Fix default polarity
+References: <20210305102745.078091129@rtp-net.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.4 at phobos.denx.de
+X-Virus-Status: Clean
+
+In the code, the default polarity is set to positive/positive,
+which is neither normal polarity or inverted polarity. It's
+only the hardware default. This leads to booting linux with
+wrong polarity setting.
+
+Update the code to use PWM_DUTY_POSTIVE | PWM_INACTIVE_NEGATIVE
+by default instead.
+
+Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Peter Robinson <pbrobinson@gmail.com>
+
+Index: u-boot/drivers/pwm/rk_pwm.c
+===================================================================
+--- u-boot.orig/drivers/pwm/rk_pwm.c
++++ u-boot/drivers/pwm/rk_pwm.c
+@@ -147,7 +147,7 @@ static int rk_pwm_probe(struct udevice *
+ 	priv->data = (struct rockchip_pwm_data *)dev_get_driver_data(dev);
+ 
+ 	if (priv->data->supports_polarity)
+-		priv->conf_polarity = PWM_DUTY_POSTIVE | PWM_INACTIVE_POSTIVE;
++		priv->conf_polarity = PWM_DUTY_POSTIVE | PWM_INACTIVE_NEGATIVE;
+ 
+ 	return 0;
+ }
+
+From patchwork Fri Mar  5 10:27:52 2021
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
+X-Patchwork-Id: 1447761
+X-Patchwork-Delegate: agust@denx.de
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4DsPLk2Jx9z9sRR
+	for <incoming@patchwork.ozlabs.org>; Fri,  5 Mar 2021 21:37:18 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 95200827A5;
+	Fri,  5 Mar 2021 11:36:13 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 948DB8204A; Fri,  5 Mar 2021 11:35:53 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE
+ autolearn=ham autolearn_force=no version=3.4.2
+Received: from lechat.rtp-net.org (lechat.rtp-net.org [51.15.165.164])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 353198204D
+ for <u-boot@lists.denx.de>; Fri,  5 Mar 2021 11:35:44 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
+Received: by lechat.rtp-net.org (Postfix, from userid 1000)
+ id E7A2D180ACE; Fri,  5 Mar 2021 11:35:41 +0100 (CET)
+Message-ID: <20210305103307.342131644@rtp-net.org>
+User-Agent: quilt/0.66
+Date: Fri, 05 Mar 2021 11:27:52 +0100
+From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Peter Robinson <pbrobinson@gmail.com>,
+ Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
+ Arnaud Patard <arnaud.patard@rtp-net.org>
+Subject: [patch v4 7/9] rockchip: video: vop: Fix format of fbbase in debug
+ string
+References: <20210305102745.078091129@rtp-net.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.4 at phobos.denx.de
+X-Virus-Status: Clean
+
+The debug string printing the device name, framebuffer address and of node
+is using %lu as format for the framebuffer address, which is not so nice.
+Change it to %lx.
+
+Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Peter Robinson <pbrobinson@gmail.com>
+
+Index: u-boot/drivers/video/rockchip/rk_vop.c
+===================================================================
+--- u-boot.orig/drivers/video/rockchip/rk_vop.c
++++ u-boot/drivers/video/rockchip/rk_vop.c
+@@ -240,7 +240,7 @@ static int rk_display_init(struct udevic
+ 	ofnode remote;
+ 	const char *compat;
+ 
+-	debug("%s(%s, %lu, %s)\n", __func__,
++	debug("%s(%s, 0x%lx, %s)\n", __func__,
+ 	      dev_read_name(dev), fbbase, ofnode_get_name(ep_node));
+ 
+ 	ret = ofnode_read_u32(ep_node, "remote-endpoint", &remote_phandle);
+
+From patchwork Fri Mar  5 10:27:53 2021
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
+X-Patchwork-Id: 1447762
+X-Patchwork-Delegate: agust@denx.de
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4DsPLx35qQz9sRR
+	for <incoming@patchwork.ozlabs.org>; Fri,  5 Mar 2021 21:37:29 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id CA1E082785;
+	Fri,  5 Mar 2021 11:36:16 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 67A538204A; Fri,  5 Mar 2021 11:35:54 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE
+ autolearn=ham autolearn_force=no version=3.4.2
+Received: from lechat.rtp-net.org (lechat.rtp-net.org [51.15.165.164])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 4B7598236C
+ for <u-boot@lists.denx.de>; Fri,  5 Mar 2021 11:35:44 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
+Received: by lechat.rtp-net.org (Postfix, from userid 1000)
+ id F37E5180A23; Fri,  5 Mar 2021 11:35:41 +0100 (CET)
+Message-ID: <20210305103307.395781510@rtp-net.org>
+User-Agent: quilt/0.66
+Date: Fri, 05 Mar 2021 11:27:53 +0100
+From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Peter Robinson <pbrobinson@gmail.com>,
+ Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
+ Arnaud Patard <arnaud.patard@rtp-net.org>
+Subject: [patch v4 8/9] rockchip: video: edp: Add missing reset support
+References: <20210305102745.078091129@rtp-net.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.4 at phobos.denx.de
+X-Virus-Status: Clean
+
+In order to ensure that the eDP registers are in correct state,
+add missing support for the eDP reset lines found in the device-tree.
+
+
+Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Peter Robinson <pbrobinson@gmail.com>
+
+Index: u-boot/drivers/video/rockchip/rk_edp.c
+===================================================================
+--- u-boot.orig/drivers/video/rockchip/rk_edp.c
++++ u-boot/drivers/video/rockchip/rk_edp.c
+@@ -8,11 +8,13 @@
+ #include <clk.h>
+ #include <display.h>
+ #include <dm.h>
++#include <dm/device_compat.h>
+ #include <edid.h>
+ #include <log.h>
+ #include <malloc.h>
+ #include <panel.h>
+ #include <regmap.h>
++#include <reset.h>
+ #include <syscon.h>
+ #include <asm/gpio.h>
+ #include <asm/io.h>
+@@ -1053,6 +1055,7 @@ static int rk_edp_probe(struct udevice *
+ 	struct rk_edp_priv *priv = dev_get_priv(dev);
+ 	struct rk3288_edp *regs = priv->regs;
+ 	struct rockchip_dp_data *edp_data = (struct rockchip_dp_data *)dev_get_driver_data(dev);
++	struct reset_ctl dp_rst;
+ 
+ 	struct clk clk;
+ 	int ret;
+@@ -1065,6 +1068,25 @@ static int rk_edp_probe(struct udevice *
+ 		return ret;
+ 	}
+ 
++	ret = reset_get_by_name(dev, "dp", &dp_rst);
++	if (ret) {
++		dev_err(dev, "failed to get dp reset (ret=%d)\n", ret);
++		return ret;
++	}
++
++	ret = reset_assert(&dp_rst);
++	if (ret) {
++		dev_err(dev, "failed to assert dp reset (ret=%d)\n", ret);
++		return ret;
++	}
++	udelay(20);
++
++	ret = reset_deassert(&dp_rst);
++	if (ret) {
++		dev_err(dev, "failed to deassert dp reset (ret=%d)\n", ret);
++		return ret;
++	}
++
+ 	int vop_id = uc_plat->source_id;
+ 	debug("%s, uc_plat=%p, vop_id=%u\n", __func__, uc_plat, vop_id);
+ 
+
+From patchwork Fri Mar  5 10:27:54 2021
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: "Arnaud Patard (Rtp)" <arnaud.patard@rtp-net.org>
+X-Patchwork-Id: 1447763
+X-Patchwork-Delegate: agust@denx.de
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4DsPM76BCrz9sRR
+	for <incoming@patchwork.ozlabs.org>; Fri,  5 Mar 2021 21:37:39 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 67BC2827B1;
+	Fri,  5 Mar 2021 11:36:20 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=fail (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id DF2998206F; Fri,  5 Mar 2021 11:35:55 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.9 required=5.0 tests=BAYES_00,SPF_HELO_NONE
+ autolearn=ham autolearn_force=no version=3.4.2
+Received: from lechat.rtp-net.org (lechat.rtp-net.org [51.15.165.164])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 4C91882070
+ for <u-boot@lists.denx.de>; Fri,  5 Mar 2021 11:35:44 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=rtp-net.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=arnaud.patard@rtp-net.org
+Received: by lechat.rtp-net.org (Postfix, from userid 1000)
+ id 329B7180B08; Fri,  5 Mar 2021 11:35:42 +0100 (CET)
+Message-ID: <20210305103307.447309277@rtp-net.org>
+User-Agent: quilt/0.66
+Date: Fri, 05 Mar 2021 11:27:54 +0100
+From: Arnaud Patard (Rtp) <arnaud.patard@rtp-net.org>
+To: u-boot@lists.denx.de
+Cc: Kever Yang <kever.yang@rock-chips.com>,
+ Anatolij Gustschin <agust@denx.de>,
+ Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ Peter Robinson <pbrobinson@gmail.com>,
+ Samuel Dionne-Riel <samuel@dionne-riel.com>,
+ Alper Nebi Yasak <alpernebiyasak@gmail.com>,
+ Arnaud Patard <arnaud.patard@rtp-net.org>
+Subject: [patch v4 9/9] rockchip: video: vop: Add reset support
+References: <20210305102745.078091129@rtp-net.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.102.4 at phobos.denx.de
+X-Virus-Status: Clean
+
+In order to ensure that the VOP registers are in correct state,
+add missing support for the VOP reset lines found in the device-tree
+
+Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
+Tested-by: Peter Robinson <pbrobinson@gmail.com>
+
+Index: u-boot/drivers/video/rockchip/rk_vop.c
+===================================================================
+--- u-boot.orig/drivers/video/rockchip/rk_vop.c
++++ u-boot/drivers/video/rockchip/rk_vop.c
 @@ -8,9 +8,11 @@
  #include <clk.h>
  #include <display.h>
@@ -296,17 +1160,8 @@ index fcb393b906..0fabbf7e30 100644
 +#include <reset.h>
  #include <syscon.h>
  #include <video.h>
- #include <asm/gpio.h>
-@@ -20,6 +22,8 @@
- #include <asm/arch-rockchip/vop_rk3288.h>
- #include <dm/device-internal.h>
- #include <dm/uclass-internal.h>
-+#include <efi.h>
-+#include <efi_loader.h>
- #include <linux/bitops.h>
- #include <linux/err.h>
- #include <power/regulator.h>
-@@ -34,14 +38,16 @@ enum vop_pol {
+ #include <asm/global_data.h>
+@@ -37,14 +39,16 @@ enum vop_pol {
  	DCLK_INVERT    = 3
  };
  
@@ -325,7 +1180,7 @@ index fcb393b906..0fabbf7e30 100644
  
  	writel(V_ACT_WIDTH(hactive - 1) | V_ACT_HEIGHT(vactive - 1),
  	       &regs->win0_act_info);
-@@ -89,6 +95,18 @@ static void rkvop_enable(struct rk3288_vop *regs, ulong fbbase,
+@@ -92,6 +96,18 @@ static void rkvop_enable(struct rk3288_v
  
  	writel(fbbase, &regs->win0_yrgb_mst);
  	writel(0x01, &regs->reg_cfg_done); /* enable reg config */
@@ -344,52 +1199,15 @@ index fcb393b906..0fabbf7e30 100644
  }
  
  static void rkvop_set_pin_polarity(struct udevice *dev,
-@@ -235,12 +253,12 @@ static int rk_display_init(struct udevice *dev, ulong fbbase, ofnode ep_node)
- 	struct clk clk;
+@@ -239,6 +255,7 @@ static int rk_display_init(struct udevic
  	enum video_log2_bpp l2bpp;
  	ofnode remote;
-+	const char *compat;
+ 	const char *compat;
 +	struct reset_ctl dclk_rst;
  
--	debug("%s(%s, %lu, %s)\n", __func__,
-+	debug("%s(%s, %lx, %s)\n", __func__,
+ 	debug("%s(%s, 0x%lx, %s)\n", __func__,
  	      dev_read_name(dev), fbbase, ofnode_get_name(ep_node));
- 
--	vop_id = ofnode_read_s32_default(ep_node, "reg", -1);
--	debug("vop_id=%d\n", vop_id);
- 	ret = ofnode_read_u32(ep_node, "remote-endpoint", &remote_phandle);
- 	if (ret)
- 		return ret;
-@@ -282,6 +300,28 @@ static int rk_display_init(struct udevice *dev, ulong fbbase, ofnode ep_node)
- 		if (disp)
- 			break;
- 	};
-+	compat = ofnode_get_property(remote, "compatible", NULL);
-+	if (!compat) {
-+		debug("%s(%s): Failed to find compatible property\n",
-+		      __func__, dev_read_name(dev));
-+		return -EINVAL;
-+	}
-+	if (strstr(compat, "edp")) {
-+		vop_id = VOP_MODE_EDP;
-+	} else if (strstr(compat, "mipi")) {
-+		vop_id = VOP_MODE_MIPI;
-+	} else if (strstr(compat, "hdmi")) {
-+		vop_id = VOP_MODE_HDMI;
-+	} else if (strstr(compat, "cdn-dp")) {
-+		vop_id = VOP_MODE_DP;
-+	} else if (strstr(compat, "lvds")) {
-+		vop_id = VOP_MODE_LVDS;
-+	} else {
-+		debug("%s(%s): Failed to find vop mode for %s\n",
-+		      __func__, dev_read_name(dev), compat);
-+		return -EINVAL;
-+	}
-+	debug("vop_id=%d\n", vop_id);
- 
- 	disp_uc_plat = dev_get_uclass_plat(disp);
- 	debug("Found device '%s', disp_uc_priv=%p\n", disp->name, disp_uc_plat);
-@@ -331,7 +371,14 @@ static int rk_display_init(struct udevice *dev, ulong fbbase, ofnode ep_node)
+@@ -355,7 +372,14 @@ static int rk_display_init(struct udevic
  	}
  
  	rkvop_mode_set(dev, &timing, vop_id);
@@ -405,7 +1223,7 @@ index fcb393b906..0fabbf7e30 100644
  
  	ret = display_enable(disp, 1 << l2bpp, &timing);
  	if (ret)
-@@ -368,11 +415,38 @@ int rk_vop_probe(struct udevice *dev)
+@@ -392,11 +416,31 @@ int rk_vop_probe(struct udevice *dev)
  	struct rk_vop_priv *priv = dev_get_priv(dev);
  	int ret = 0;
  	ofnode port, node;
@@ -434,16 +1252,6 @@ index fcb393b906..0fabbf7e30 100644
 +		return ret;
 +	}
 +
-+	plat->base = gd->bd->bi_dram[0].start + gd->bd->bi_dram[0].size - plat->size;
-+
-+#if defined(CONFIG_EFI_LOADER)
-+	debug("Adding to EFI map %d @ %lx\n", plat->size, plat->base);
-+	efi_add_memory_map(plat->base, plat->size, EFI_RESERVED_MEMORY_TYPE);
-+#endif
-+
- 	priv->regs = (struct rk3288_vop *)dev_read_addr(dev);
- 
- 	/*
--- 
-2.29.2
-
+ #if defined(CONFIG_EFI_LOADER)
+ 	debug("Adding to EFI map %d @ %lx\n", plat->size, plat->base);
+ 	efi_add_memory_map(plat->base, plat->size, EFI_RESERVED_MEMORY_TYPE);
