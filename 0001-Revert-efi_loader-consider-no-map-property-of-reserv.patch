@@ -1,0 +1,82 @@
+From 62f3f85e50692b2685d1056a041d1dbb9e16f2a4 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Sat, 13 Mar 2021 14:42:29 +0000
+Subject: [PATCH] Revert: efi_loader: consider no-map property of reserved
+ memory
+
+This basically reverts 4cbb2930bd8c, but not directly as it's moved
+about since. The patch breaks SMP on the Raspberry Pi 3 (original 3B
+and 3B+) so on Linux only one CPU core comes online. I'm not exactly
+sure why but a bisect idendified the patch and sure enough a revert
+fixes the issue.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ lib/efi_loader/efi_dt_fixup.c | 33 ++++++---------------------------
+ 1 file changed, 6 insertions(+), 27 deletions(-)
+
+diff --git a/lib/efi_loader/efi_dt_fixup.c b/lib/efi_loader/efi_dt_fixup.c
+index a4529ee3ef..87630f7857 100644
+--- a/lib/efi_loader/efi_dt_fixup.c
++++ b/lib/efi_loader/efi_dt_fixup.c
+@@ -13,29 +13,13 @@
+ 
+ const efi_guid_t efi_guid_dt_fixup_protocol = EFI_DT_FIXUP_PROTOCOL_GUID;
+ 
+-/**
+- * efi_reserve_memory() - add reserved memory to memory map
+- *
+- * @addr:	start address of the reserved memory range
+- * @size:	size of the reserved memory range
+- * @nomap:	indicates that the memory range shall not be accessed by the
+- *		UEFI payload
+- */
+-static void efi_reserve_memory(u64 addr, u64 size, bool nomap)
++static void efi_reserve_memory(u64 addr, u64 size)
+ {
+-	int type;
+-	efi_uintn_t ret;
+-
+ 	/* Convert from sandbox address space. */
+ 	addr = (uintptr_t)map_sysmem(addr, 0);
++	if (efi_add_memory_map(addr, size,
++				EFI_RESERVED_MEMORY_TYPE) != EFI_SUCCESS)
+ 
+-	if (nomap)
+-		type = EFI_RESERVED_MEMORY_TYPE;
+-	else
+-		type = EFI_BOOT_SERVICES_DATA;
+-
+-	ret = efi_add_memory_map(addr, size, type);
+-	if (ret != EFI_SUCCESS)
+ 		log_err("Reserved memory mapping failed addr %llx size %llx\n",
+ 			addr, size);
+ }
+@@ -61,7 +45,7 @@ void efi_carve_out_dt_rsv(void *fdt)
+ 	for (i = 0; i < nr_rsv; i++) {
+ 		if (fdt_get_mem_rsv(fdt, i, &addr, &size) != 0)
+ 			continue;
+-		efi_reserve_memory(addr, size, false);
++		efi_reserve_memory(addr, size);
+ 	}
+ 
+ 	/* process reserved-memory */
+@@ -81,13 +65,8 @@ void efi_carve_out_dt_rsv(void *fdt)
+ 			 * a size instead of a reg property.
+ 			 */
+ 			if (fdt_addr != FDT_ADDR_T_NONE &&
+-			    fdtdec_get_is_enabled(fdt, subnode)) {
+-				bool nomap;
+-
+-				nomap = !!fdt_getprop(fdt, subnode, "no-map",
+-						      NULL);
+-				efi_reserve_memory(fdt_addr, fdt_size, nomap);
+-			}
++			    fdtdec_get_is_enabled(fdt, subnode))
++				efi_reserve_memory(fdt_addr, fdt_size);
+ 			subnode = fdt_next_subnode(fdt, subnode);
+ 		}
+ 	}
+-- 
+2.30.2
+
