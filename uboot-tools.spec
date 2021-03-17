@@ -1,8 +1,8 @@
-%global candidate rc3
+%global candidate rc4
 
 Name:     uboot-tools
 Version:  2021.04
-Release:  0.5%{?candidate:.%{candidate}}%{?dist}
+Release:  0.6%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -22,7 +22,7 @@ Patch2:   uefi-use-Fedora-specific-path-name.patch
 Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
 # Board fixes and enablement
-Patch9:   0001-Revert-efi_loader-consider-no-map-property-of-reserv.patch
+Patch9:   0001-efi_loader-fix-memory-type-for-memory-reservation-bl.patch
 # AllWinner improvements
 Patch10:  AllWinner-PineTab.patch
 # TI fixes
@@ -243,6 +243,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Mar 17 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-0.6.rc4
+- Update to 2021.04 RC4
+- Move to upstream fix for SMP on RPi3B and RPi3B+
+
 * Sat Mar 13 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-0.5.rc3
 - Fix for SMP on RPi3B and RPi3B+
 - Initial support for Pinephone 3Gb edition

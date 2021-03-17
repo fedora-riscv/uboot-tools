@@ -1,0 +1,38 @@
+From ca1e8231dcf89b78c6860239281bbe36e7a63341 Mon Sep 17 00:00:00 2001
+From: Mark Kettenis <kettenis@openbsd.org>
+Date: Sun, 14 Mar 2021 20:04:24 +0100
+Subject: [PATCH] efi_loader: fix memory type for memory reservation block
+
+The devicetree specification clearly states that:
+
+  As with the /reserved-memory node, when booting via UEFI
+  entries in the Memory Reservation Block must also be listed
+  in the system memory map obtained via the GetMemoryMap() toi
+  protect against allocations by UEFI applications. The memory
+  reservation block entries should be listed with type
+  EfiReservedMemoryType.
+
+This restores the behaviour that was changed by commit 4cbb2930bd8c
+("efi_loader: consider no-map property of reserved memory").
+
+Signed-off-by: Mark Kettenis <kettenis@openbsd.org>
+---
+ lib/efi_loader/efi_dt_fixup.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/efi_loader/efi_dt_fixup.c b/lib/efi_loader/efi_dt_fixup.c
+index a4529ee3ef..b6fe5d2e5a 100644
+--- a/lib/efi_loader/efi_dt_fixup.c
++++ b/lib/efi_loader/efi_dt_fixup.c
+@@ -61,7 +61,7 @@ void efi_carve_out_dt_rsv(void *fdt)
+ 	for (i = 0; i < nr_rsv; i++) {
+ 		if (fdt_get_mem_rsv(fdt, i, &addr, &size) != 0)
+ 			continue;
+-		efi_reserve_memory(addr, size, false);
++		efi_reserve_memory(addr, size, true);
+ 	}
+ 
+ 	/* process reserved-memory */
+-- 
+2.30.2
+
