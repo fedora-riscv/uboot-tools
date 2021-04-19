@@ -1,8 +1,8 @@
-%global candidate rc4
+#global candidate rc1
 
 Name:     uboot-tools
 Version:  2021.04
-Release:  0.6%{?candidate:.%{candidate}}%{?dist}
+Release:  1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -22,16 +22,17 @@ Patch2:   uefi-use-Fedora-specific-path-name.patch
 Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
 # Board fixes and enablement
-Patch9:   0001-efi_loader-fix-memory-type-for-memory-reservation-bl.patch
 # AllWinner improvements
 Patch10:  AllWinner-PineTab.patch
 # TI fixes
 Patch11:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
 Patch12:  rk3399-Pinebook-pro-EDP-support.patch
+Patch13:  phy-rockchip-inno-usb2-fix-hang-when-multiple-controllers-exit.patch
+Patch14:  rockchip-fix-mmc-numbering.patch
 # Fixes for Allwinner network issues
-Patch13:  0001-arm-dts-allwinner-sync-from-linux-for-RGMII-RX-TX-de.patch
-Patch14:  sunxi-support-asymmetric-dual-rank-DRAM-on-A64.patch
+Patch15:  0001-arm-dts-allwinner-sync-from-linux-for-RGMII-RX-TX-de.patch
+Patch16:  sunxi-support-asymmetric-dual-rank-DRAM-on-A64.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -97,11 +98,15 @@ mkdir builds
 %{?enable_devtoolset7:%{enable_devtoolset7}}
 %endif
 
+%make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" tools-only_defconfig O=builds/
+%make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" tools-all O=builds/
+
 %ifarch aarch64 %{arm}
 for board in $(cat %{_arch}-boards)
 do
   echo "Building board: $board"
   mkdir builds/$(echo $board)/
+
   # ATF selection, needs improving, suggestions of ATF SoC to Board matrix welcome
   sun50i=(a64-olinuxino amarula_a64_relic bananapi_m2_plus_h5 bananapi_m64 libretech_all_h3_cc_h5 nanopi_a64 nanopi_neo2 nanopi_neo_plus2 orangepi_pc2 orangepi_prime orangepi_win orangepi_zero_plus orangepi_zero_plus2 pine64-lts pine64_plus pinebook pinephone pinetab sopine_baseboard teres_i)
   if [[ " ${sun50i[*]} " == *" $board "* ]]; then
@@ -124,10 +129,18 @@ do
     cp /usr/share/arm-trusted-firmware/rk3399/* builds/$(echo $board)/
   fi
   # End ATF
+
   make $(echo $board)_defconfig O=builds/$(echo $board)/
   %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board)/
+
+  # build spi images for rockchip boards with SPI flash
+  rkspi=(evb-rk3399 khadas-edge-captain-rk3399 khadas-edge-rk3399 khadas-edge-v-rk3399 nanopc-t4-rk3399 pinebook-pro-rk3399 rockpro64-rk3399)
+  if [[ " ${rkspi[*]} " == *" $board "* ]]; then
+    echo "Board: $board with SPI flash"
+    builds/$(echo $board)/tools/mkimage -n rk3399 -T rkspi -d builds/$(echo $board)/tpl/u-boot-tpl.bin:builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/idbloader.spi
+  fi
   # build spi, and uart images for mvebu boards
-  mvebu=(clearfog helios4)
+  mvebu=(clearfog helios4 turris_omnia)
   if [[ "  ${mvebu[*]} " == *" $board "* ]]; then
     for target in spi uart
     do
@@ -142,9 +155,6 @@ done
 
 %endif
 
-%make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" tools-only_defconfig O=builds/
-%make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" tools-all O=builds/
-
 %install
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_mandir}/man1
@@ -154,7 +164,7 @@ mkdir -p %{buildroot}%{_datadir}/uboot/
 for board in $(ls builds)
 do
  mkdir -p %{buildroot}%{_datadir}/uboot/$(echo $board)/
- for file in u-boot.bin u-boot.dtb u-boot.img u-boot-dtb.img u-boot.itb u-boot-sunxi-with-spl.bin u-boot-rockchip.bin idbloader.img spl/boot.bin spl/sunxi-spl.bin
+ for file in u-boot.bin u-boot.dtb u-boot.img u-boot-dtb.img u-boot.itb u-boot-sunxi-with-spl.bin u-boot-rockchip.bin idbloader.img idbloader.spi spl/boot.bin spl/sunxi-spl.bin
  do
   if [ -f builds/$(echo $board)/$(echo $file) ]; then
     install -p -m 0644 builds/$(echo $board)/$(echo $file) %{buildroot}%{_datadir}/uboot/$(echo $board)/
@@ -173,14 +183,16 @@ do
     install -p -m 0644 builds/$(echo $board)/$(echo $file) %{buildroot}%{_datadir}/uboot/$(echo $board)/
   fi
  done
-
 done
+%endif
 
 # Bit of a hack to remove binaries we don't use as they're large
+%ifarch aarch64 %{arm}
 for board in $(ls builds)
 do
+  rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot.dtb
   if [ -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot-sunxi-with-spl.bin ]; then
-    rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot.*
+    rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot{,-dtb}.*
   fi
   if [ -f %{buildroot}%{_datadir}/uboot/$(echo $board)/MLO ]; then
     rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot.bin
@@ -194,6 +206,10 @@ do
   if [ -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot-spl.kwb ]; then
     rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot.*
     rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot-spl.bin
+  fi
+  if [ -f %{buildroot}%{_datadir}/uboot/$(echo $board)/idbloader.img ]; then
+    rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot.bin
+    rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot{,-dtb}.img
   fi
 done
 %endif
@@ -243,6 +259,13 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Apr 18 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-1
+- Update to 2021.04 GA
+- Fix DTB load check (rhbz 1946278)
+- Build Rockchip SPI support as idbloader.spi
+- Fixes for Rockchip devices
+- Build Turris Omnia for MMC/SPI/UART
+
 * Wed Mar 17 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-0.6.rc4
 - Update to 2021.04 RC4
 - Move to upstream fix for SMP on RPi3B and RPi3B+
