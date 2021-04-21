@@ -1,0 +1,55 @@
+From 5cb853e7f78391595a0e3b01ef5dd877e169463b Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Wed, 21 Apr 2021 16:03:07 +0100
+Subject: [PATCH] Revert "usb: kbd: destroy device after console is stopped"
+
+This reverts commit eb5fd9e46c11ea41430d9c5bcc81d4583424216e.
+---
+ common/usb_kbd.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/common/usb_kbd.c b/common/usb_kbd.c
+index afad260d3d..515f37136f 100644
+--- a/common/usb_kbd.c
++++ b/common/usb_kbd.c
+@@ -622,12 +622,12 @@ int usb_kbd_deregister(int force)
+ 	if (dev) {
+ 		usb_kbd_dev = (struct usb_device *)dev->priv;
+ 		data = usb_kbd_dev->privptr;
++		if (stdio_deregister_dev(dev, force) != 0)
++			return 1;
+ #if CONFIG_IS_ENABLED(CONSOLE_MUX)
+-		if (iomux_replace_device(stdin, DEVNAME, force ? "nulldev" : ""))
++		if (iomux_doenv(stdin, env_get("stdin")) != 0)
+ 			return 1;
+ #endif
+-		if (stdio_deregister_dev(dev, force) != 0)
+-			return 1;
+ #ifdef CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE
+ 		destroy_int_queue(usb_kbd_dev, data->intq);
+ #endif
+@@ -665,16 +665,16 @@ static int usb_kbd_remove(struct udevice *dev)
+ 		goto err;
+ 	}
+ 	data = udev->privptr;
++	if (stdio_deregister_dev(sdev, true)) {
++		ret = -EPERM;
++		goto err;
++	}
+ #if CONFIG_IS_ENABLED(CONSOLE_MUX)
+-	if (iomux_replace_device(stdin, DEVNAME, "nulldev")) {
++	if (iomux_doenv(stdin, env_get("stdin"))) {
+ 		ret = -ENOLINK;
+ 		goto err;
+ 	}
+ #endif
+-	if (stdio_deregister_dev(sdev, true)) {
+-		ret = -EPERM;
+-		goto err;
+-	}
+ #ifdef CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE
+ 	destroy_int_queue(udev, data->intq);
+ #endif
+-- 
+2.31.1
+
