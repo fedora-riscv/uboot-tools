@@ -5,7 +5,7 @@
 
 Name:     uboot-tools
 Version:  2020.10
-Release:  2%{?candidate:.%{candidate}}.6.riscv64%{?dist}
+Release:  2%{?candidate:.%{candidate}}.7.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -302,6 +302,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Apr 21 2021 David Abdurachmanov <david.abdurachmanov@gmail.com> - 2020.10-2.7.riscv64
+- Rebuild for a new OpenSBI
+
 * Wed Jan 13 2021 David Abdurachmanov <david.abdurachmanov@sifive.com> - 2020.10-2.6.riscv64
 - Enable CONFIG_CMD_GPT_RENAME for riscv64
 
