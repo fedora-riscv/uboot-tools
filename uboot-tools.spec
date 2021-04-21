@@ -2,7 +2,7 @@
 
 Name:     uboot-tools
 Version:  2021.04
-Release:  1%{?candidate:.%{candidate}}%{?dist}
+Release:  2%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -21,6 +21,8 @@ Patch2:   uefi-use-Fedora-specific-path-name.patch
 # RPi - uses RPI firmware device tree for HAT support
 Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
+# Revert an upstream regression
+Patch9:   Revert-usb-kbd-destroy-device-after-console-is-stopp.patch
 # Board fixes and enablement
 # AllWinner improvements
 Patch10:  AllWinner-PineTab.patch
@@ -259,6 +261,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Apr 21 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-2
+- Revert keyboard console regression change (rhbz 1946278)
+
 * Sun Apr 18 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-1
 - Update to 2021.04 GA
 - Fix DTB load check (rhbz 1946278)
