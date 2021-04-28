@@ -2,7 +2,7 @@
 
 Name:     uboot-tools
 Version:  2021.04
-Release:  2%{?candidate:.%{candidate}}%{?dist}
+Release:  3%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -16,13 +16,13 @@ Source4:  aarch64-chromebooks
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
 Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
-# Needed due to issues with shim
-Patch2:   uefi-use-Fedora-specific-path-name.patch
+# https://lists.denx.de/pipermail/u-boot/2021-April/448260.html
+Patch2:   efi_loader-loosen-buffer-parameter-check-in-efi_file_read_int.patch
 # RPi - uses RPI firmware device tree for HAT support
 Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
 # Revert an upstream regression
-Patch9:   Revert-usb-kbd-destroy-device-after-console-is-stopp.patch
+Patch9:   IOMUX-Fix-buffer-overflow-in-iomux_replace_device.patch
 # Board fixes and enablement
 # AllWinner improvements
 Patch10:  AllWinner-PineTab.patch
@@ -261,6 +261,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Apr 28 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-3
+- Upstream fix for console regression (rhbz 1946278)
+- Fix for fallback.efi crash (rhbz 1733817)
+
 * Wed Apr 21 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-2
 - Revert keyboard console regression change (rhbz 1946278)
 
