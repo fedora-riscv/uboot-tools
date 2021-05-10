@@ -1,8 +1,8 @@
-#global candidate rc1
+%global candidate rc2
 
 Name:     uboot-tools
-Version:  2021.04
-Release:  3%{?candidate:.%{candidate}}%{?dist}
+Version:  2021.07
+Release:  0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -21,20 +21,14 @@ Patch2:   efi_loader-loosen-buffer-parameter-check-in-efi_file_read_int.patch
 # RPi - uses RPI firmware device tree for HAT support
 Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
-# Revert an upstream regression
-Patch9:   IOMUX-Fix-buffer-overflow-in-iomux_replace_device.patch
 # Board fixes and enablement
 # AllWinner improvements
 Patch10:  AllWinner-PineTab.patch
 # TI fixes
 Patch11:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
-Patch12:  rk3399-Pinebook-pro-EDP-support.patch
-Patch13:  phy-rockchip-inno-usb2-fix-hang-when-multiple-controllers-exit.patch
-Patch14:  rockchip-fix-mmc-numbering.patch
-# Fixes for Allwinner network issues
-Patch15:  0001-arm-dts-allwinner-sync-from-linux-for-RGMII-RX-TX-de.patch
-Patch16:  sunxi-support-asymmetric-dual-rank-DRAM-on-A64.patch
+Patch12:  phy-rockchip-inno-usb2-fix-hang-when-multiple-controllers-exit.patch
+Patch13:  rockchip-fix-mmc-numbering.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -261,6 +255,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon May 10 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.07-0.1.rc2
+- Update to 2021.07 RC2
+
 * Wed Apr 28 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.04-3
 - Upstream fix for console regression (rhbz 1946278)
 - Fix for fallback.efi crash (rhbz 1733817)

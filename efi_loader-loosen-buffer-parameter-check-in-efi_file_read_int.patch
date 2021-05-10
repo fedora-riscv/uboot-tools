@@ -4,6 +4,7 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Patchwork-Submitter: "Peng Fan (OSS)" <peng.fan@oss.nxp.com>
 X-Patchwork-Id: 1471143
+X-Patchwork-Delegate: xypron.glpk@gmx.de
 Return-Path: <u-boot-bounces@lists.denx.de>
 X-Original-To: incoming@patchwork.ozlabs.org
 Delivered-To: patchwork-incoming@bilbo.ozlabs.org
@@ -187,6 +188,8 @@ Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>
 Cc: Stefan Sørensen <stefan.sorensen@spectralink.com>
 Tested-by: Peter Robinson <pbrobinson@gmail.com>
 Signed-off-by: Peng Fan <peng.fan@nxp.com>
+Reviewed-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Tested-by: Michal Simek <michal.simek@xilinx.com>
 ---
 
 V2:
