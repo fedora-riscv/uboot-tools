@@ -2,7 +2,7 @@
 
 Name:     uboot-tools
 Version:  2021.07
-Release:  0.1%{?candidate:.%{candidate}}%{?dist}
+Release:  0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -255,6 +255,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu May 13 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.07-0.2.rc2
+- Build against new ATF 2.5-rc1
+
 * Mon May 10 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.07-0.1.rc2
 - Update to 2021.07 RC2
 
