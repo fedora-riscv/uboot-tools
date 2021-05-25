@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:     uboot-tools
 Version:  2021.07
-Release:  0.2%{?candidate:.%{candidate}}%{?dist}
+Release:  0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -16,10 +16,8 @@ Source4:  aarch64-chromebooks
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
 Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
-# https://lists.denx.de/pipermail/u-boot/2021-April/448260.html
-Patch2:   efi_loader-loosen-buffer-parameter-check-in-efi_file_read_int.patch
 # RPi - uses RPI firmware device tree for HAT support
-Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+Patch2:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 
 # Board fixes and enablement
 # AllWinner improvements
@@ -255,6 +253,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue May 25 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.07-0.3.rc3
+- Update to 2021.07 RC3
+- Build against ATF 2.5 GA
+
 * Thu May 13 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.07-0.2.rc2
 - Build against new ATF 2.5-rc1
 
