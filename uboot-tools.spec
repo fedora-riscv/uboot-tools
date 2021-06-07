@@ -1,8 +1,8 @@
-%global candidate rc3
+%global candidate rc4
 
 Name:     uboot-tools
 Version:  2021.07
-Release:  0.4%{?candidate:.%{candidate}}%{?dist}
+Release:  0.5%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -28,7 +28,6 @@ Patch11:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
 Patch12:  phy-rockchip-inno-usb2-fix-hang-when-multiple-controllers-exit.patch
 Patch13:  rockchip-fix-mmc-numbering.patch
-Patch14:  sunxi-fix-mmc0.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -255,6 +254,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Jun 07 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.07-0.5.rc4
+- Update to 2021.07 RC4
+
 * Sat Jun 05 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.07-0.4.rc3
 - Fix AllWinner devices booting from mSD/MMC
 
