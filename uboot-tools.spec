@@ -1,8 +1,8 @@
-%global candidate rc4
+%global candidate rc5
 
 Name:     uboot-tools
 Version:  2021.07
-Release:  0.5%{?candidate:.%{candidate}}%{?dist}
+Release:  0.6%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -129,7 +129,7 @@ do
   %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board)/
 
   # build spi images for rockchip boards with SPI flash
-  rkspi=(evb-rk3399 khadas-edge-captain-rk3399 khadas-edge-rk3399 khadas-edge-v-rk3399 nanopc-t4-rk3399 pinebook-pro-rk3399 rockpro64-rk3399)
+  rkspi=(evb-rk3399 khadas-edge-captain-rk3399 khadas-edge-rk3399 khadas-edge-v-rk3399 nanopc-t4-rk3399 pinebook-pro-rk3399 rockpro64-rk3399 roc-pc-mezzanine-rk3399 roc-pc-rk3399)
   if [[ " ${rkspi[*]} " == *" $board "* ]]; then
     echo "Board: $board with SPI flash"
     builds/$(echo $board)/tools/mkimage -n rk3399 -T rkspi -d builds/$(echo $board)/tpl/u-boot-tpl.bin:builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/idbloader.spi
@@ -254,6 +254,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Jun 28 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.07-0.6.rc5
+- Update to 2021.07 RC5
+- Build SPI fash images for ROC-PC-RK3399
+
 * Mon Jun 07 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.07-0.5.rc4
 - Update to 2021.07 RC4
 
