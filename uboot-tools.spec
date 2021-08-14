@@ -1,8 +1,8 @@
-#global candidate rc0
+%global candidate rc1
 
 Name:     uboot-tools
-Version:  2021.07
-Release:  2%{?candidate:.%{candidate}}%{?dist}
+Version:  2021.10
+Release:  0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -33,6 +33,7 @@ Patch14:  0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
 BuildRequires:  bc
 BuildRequires:  dtc
 BuildRequires:  make
+BuildRequires:  perl-interpreter
 # Requirements for building on el7
 %if 0%{?rhel} == 7
 BuildRequires:  devtoolset-7-build
@@ -136,7 +137,7 @@ do
     builds/$(echo $board)/tools/mkimage -n rk3399 -T rkspi -d builds/$(echo $board)/tpl/u-boot-tpl.bin:builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/idbloader.spi
   fi
   # build spi, and uart images for mvebu boards
-  mvebu=(clearfog helios4 turris_omnia)
+  # mvebu=(clearfog helios4 turris_omnia)
   if [[ "  ${mvebu[*]} " == *" $board "* ]]; then
     for target in spi uart
     do
@@ -255,6 +256,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Aug 08 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-0.1.rc1
+- Update to 2021.10 RC1
+
 * Thu Jul 22 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.07-2
 - Fix regression for Rockchip devices running firmware from SPI flash
 
