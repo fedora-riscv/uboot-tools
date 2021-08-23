@@ -2,7 +2,7 @@
 
 Name:     uboot-tools
 Version:  2021.10
-Release:  0.2%{?candidate:.%{candidate}}%{?dist}
+Release:  0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -27,6 +27,7 @@ Patch10:  AllWinner-PineTab.patch
 Patch11:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
 Patch12:  phy-rockchip-inno-usb2-fix-hang-when-multiple-controllers-exit.patch
+Patch13:  0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -254,6 +255,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Aug 23 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-0.3.rc2
+- Fix for rockchip SPI
+
 * Mon Aug 16 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-0.2.rc2
 - Update to 2021.10 RC2
 
