@@ -29,6 +29,7 @@ Patch11:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
 Patch12:  phy-rockchip-inno-usb2-fix-hang-when-multiple-controllers-exit.patch
 Patch13:  0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
+Patch14:  0001-enable-hs400-and-sdma-support.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
