@@ -1,14 +1,14 @@
-%global candidate rc2
+%global candidate rc3
 
 Name:     uboot-tools
 Version:  2021.10
-Release:  0.4%{?candidate:.%{candidate}}%{?dist}
+Release:  0.5%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
 
 ExcludeArch: s390x
-Source0:  ftp://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
+Source0:  https://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:  arm-boards
 Source2:  arm-chromebooks
 Source3:  aarch64-boards
@@ -256,6 +256,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Aug 30 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-0.5.rc3
+- Update to 2021.10 RC3
+
 * Tue Aug 24 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-0.4.rc2
 - Fix for Raspberry Pi firmware properties
 
