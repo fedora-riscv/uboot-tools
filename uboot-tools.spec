@@ -100,6 +100,9 @@ mkdir builds
 %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" tools-only_defconfig O=builds/
 %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" tools-all O=builds/
 
+# U-Boot device firmwares don't currently support LTO
+%define _lto_cflags %{nil}
+
 %ifarch aarch64 %{arm}
 for board in $(cat %{_arch}-boards)
 do
