@@ -23,6 +23,7 @@ Patch2:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch3:   rpi-Copy-properties-from-firmware-dtb-to-the-loaded-dtb.patch
 Patch4:   rpi-fallback-to-max-clock-for-mmc.patch
 Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
+Patch6:   ARM-bcm283x-change-the-virtual-address-of-the-XHCI-PCI-device-base.patch
 # AllWinner improvements
 Patch10:  AllWinner-PineTab.patch
 # TI fixes

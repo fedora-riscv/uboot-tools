@@ -1,0 +1,203 @@
+From patchwork Thu Jun 17 09:22:03 2021
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Marek Szyprowski <m.szyprowski@samsung.com>
+X-Patchwork-Id: 1493284
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+	dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256
+ header.s=mail20170921 header.b=S423zQBA;
+	dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by ozlabs.org (Postfix) with ESMTPS id 4G5GmF2YYPz9s1l
+	for <incoming@patchwork.ozlabs.org>; Thu, 17 Jun 2021 19:22:21 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 380E981E1C;
+	Thu, 17 Jun 2021 11:22:15 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="S423zQBA";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 066B882024; Thu, 17 Jun 2021 11:22:14 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.2 required=5.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+ DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,RCVD_IN_MSPIKE_H3,
+ RCVD_IN_MSPIKE_WL,SPF_HELO_PASS autolearn=ham autolearn_force=no
+ version=3.4.2
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
+ [210.118.77.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 791718020E
+ for <u-boot@lists.denx.de>; Thu, 17 Jun 2021 11:22:09 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=m.szyprowski@samsung.com
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+ by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20210617092208euoutp02306cccdadbd0a0fa3e360e9b40c870e4~JVDVFtPo90470104701euoutp02N
+ for <u-boot@lists.denx.de>; Thu, 17 Jun 2021 09:22:08 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com
+ 20210617092208euoutp02306cccdadbd0a0fa3e360e9b40c870e4~JVDVFtPo90470104701euoutp02N
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+ s=mail20170921; t=1623921728;
+ bh=g6sGWmD8hHxoWJS92fMYWdZG8PUB5T7hF5BCApkjjtQ=;
+ h=From:To:Cc:Subject:Date:References:From;
+ b=S423zQBAD3CJixEJMLt4LIue0UknKK6dcTJTYm0QESnzOGnr8JSiTSWbI42vYfeEr
+ uPY3rg88YpmiNYbY2UtEBDu9k20/SxO3xqChy69dH5g2tu3FlkC+Y9+355chFE9zhR
+ YtgdD6ME6PXoo6ju6YGnhtM4h3d1wOCBgZ8DRNHg=
+Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+ 20210617092207eucas1p254ca42a27f671fd370b24d43d77bced7~JVDUqibou0517905179eucas1p28;
+ Thu, 17 Jun 2021 09:22:07 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+ eusmges3new.samsung.com (EUCPMTA) with SMTP id 97.82.09439.F341BC06; Thu, 17
+ Jun 2021 10:22:07 +0100 (BST)
+Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+ 20210617092207eucas1p2fba39144e5d4890a23ba70f794a25b79~JVDULHlNB0517805178eucas1p2x;
+ Thu, 17 Jun 2021 09:22:07 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+ eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
+ 20210617092207eusmtrp1b3838c7f35a29ad48395199a93d03d9f~JVDUKaS5h2885128851eusmtrp1P;
+ Thu, 17 Jun 2021 09:22:07 +0000 (GMT)
+X-AuditID: cbfec7f5-c03ff700000024df-38-60cb143fddfe
+Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
+ eusmgms1.samsung.com (EUCPMTA) with SMTP id 8C.31.08705.F341BC06; Thu, 17
+ Jun 2021 10:22:07 +0100 (BST)
+Received: from AMDC2765.digital.local (unknown [106.120.51.73]) by
+ eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+ 20210617092206eusmtip2389e23cf1a3074d360ad1974f6ed1b53~JVDTufYcj1280412804eusmtip2z;
+ Thu, 17 Jun 2021 09:22:06 +0000 (GMT)
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+To: u-boot@lists.denx.de
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Matthias Brugger
+ <mbrugger@suse.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Nicolas
+ Saenz Julienne <nsaenzjulienne@suse.de>, Jaehoon Chung
+ <jh80.chung@samsung.com>, Bartlomiej Zolnierkiewicz
+ <b.zolnierkie@samsung.com>
+Subject: [PATCH] ARM: bcm283x: change the virtual address of the XHCI PCI
+ device base
+Date: Thu, 17 Jun 2021 11:22:03 +0200
+Message-Id: <20210617092203.19825-1-m.szyprowski@samsung.com>
+X-Mailer: git-send-email 2.17.1
+X-Brightmail-Tracker: 
+ H4sIAAAAAAAAA+NgFrrDIsWRmVeSWpSXmKPExsWy7djPc7r2IqcTDB40GFtsnLGe1eLGrzZW
+ i7VH7rJbLJj8hNVi26zlbBaH37SzWrzd28nuwO5x9s4ORo++LasYPdZvucrisfl0dQBLFJdN
+ SmpOZllqkb5dAlfG+eermQqO8lT09y5naWC8xtXFyMkhIWAi0X/mMEsXIxeHkMAKRol9356w
+ dzFyADlfGCVuhkHEPzNKNNycywLT8G/nNkaIxHJGiaWdm1ghHKCGffe+sYNUsQkYSnS97WID
+ sUUEJCR+9V8F62AWmMkk0dw5kRUkISwQLvH7/2xGEJtFQFWib/cHsAZeAVuJl+e62SDWyUus
+ 3nCAGaRZQuAnu8Si7/sYIRIuEo+6V0LZwhKvjm9hh7BlJE5P7mGBaGhmlHh4bi07hNPDKHG5
+ aQZUh7XEnXO/2EA+ZRbQlFi/Sx/ElBBwlJg7gR/C5JO48VYQpJgZyJy0bTozRJhXoqNNCGKG
+ msSs4+vgth68cIkZwvaQuPd4Pdj5QgKxEkcOfWScwCg3C2HVAkbGVYziqaXFuempxcZ5qeV6
+ xYm5xaV56XrJ+bmbGIEJ4PS/4193MK549VHvECMTB+MhRgkOZiURXt3iEwlCvCmJlVWpRfnx
+ RaU5qcWHGKU5WJTEeXdtXRMvJJCeWJKanZpakFoEk2Xi4JRqYBJge2bX53WWz1Lf4MPq4pKd
+ L2Z7TUp3VDv2fwfHf6Y2rg5e979vjNICyxdMeW+qc0OHOVT8Q+3kj7qOC66fOsy4xb61uH4h
+ 951lnRF8exoM9TeGJ715tqduV6XnjaXVPyYtMn03k3MLb92nXs2vNxpuFebsiS62yarPnZ9d
+ ZPBOU0yvpoR307TFV/niSsVfeYrt4A/k1bB+WKXxd382MxdrGIvDrJUsCSsW7NglYTjXcVbO
+ 1bzaJ8lfWv7511UuqNvpJJ+093bvgWOlqbeVfjW2v3j+fP79PKeNgUle3dO622YUq2S4Cyh/
+ DZbd7mC8SedY8eZZfxdGrozhnGFmGj9nwTKzJQWb562Rl/9prMRSnJFoqMVcVJwIAFvDw65v
+ AwAA
+X-Brightmail-Tracker: 
+ H4sIAAAAAAAAA+NgFtrCLMWRmVeSWpSXmKPExsVy+t/xe7r2IqcTDNb0CFlsnLGe1eLGrzZW
+ i7VH7rJbLJj8hNVi26zlbBaH37SzWrzd28nuwO5x9s4ORo++LasYPdZvucrisfl0dQBLlJ5N
+ UX5pSapCRn5xia1StKGFkZ6hpYWekYmlnqGxeayVkamSvp1NSmpOZllqkb5dgl7G+eermQqO
+ 8lT09y5naWC8xtXFyMkhIWAi8W/nNsYuRi4OIYGljBJP/q5gh0jISJyc1sAKYQtL/LnWxQZR
+ 9IlRYs/8y2AJNgFDia63IAlODhEBCYlf/VfBJjELzGaSeL7iLhNIQlggVOL5jHVgDSwCqhJ9
+ uz+ANfAK2Eq8PNfNBrFBXmL1hgPMExh5FjAyrGIUSS0tzk3PLTbUK07MLS7NS9dLzs/dxAgM
+ vm3Hfm7ewTjv1Ue9Q4xMHIyHGCU4mJVEeHWLTyQI8aYkVlalFuXHF5XmpBYfYjQF2jeRWUo0
+ OR8Y/nkl8YZmBqaGJmaWBqaWZsZK4rxb566JFxJITyxJzU5NLUgtgulj4uCUamAyvS18MHIp
+ 7+EpilHuXy7d3MPzPnfRlSWnFr5+m5lzNSx03owzNw51LmK5Hv4vJ6nPlaHi3Ma1ZubH/23N
+ uHX0nlWi8bL9jxzLqptsE0+y961tVtRKuvD/QGJR1+3NeoUWKW7rH9pz89YdcnimPGWf7Jb/
+ fVnJZ6tdbPuu3nv29sWhteIKixdUX1rlHzUtVfyN0ILXawqfTJU7/SR/jtrSjMpvufKfZKb+
+ 3b1sW2hkU2aN9VuDk+52mbFrb3P/1LzhsN309FfG24tY3TjtzFaLf35WI6rUZiAa8lNEtFJE
+ 1a9l8zLRs3wbm574XwmsP111UPfxm4q0yHKuE6GbZm1T/LfpzOkcP6Yg1r+3Vmy8osRSnJFo
+ qMVcVJwIAKDUsMjHAgAA
+X-CMS-MailID: 20210617092207eucas1p2fba39144e5d4890a23ba70f794a25b79
+X-Msg-Generator: CA
+X-RootMTR: 20210617092207eucas1p2fba39144e5d4890a23ba70f794a25b79
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20210617092207eucas1p2fba39144e5d4890a23ba70f794a25b79
+References: 
+ <CGME20210617092207eucas1p2fba39144e5d4890a23ba70f794a25b79@eucas1p2.samsung.com>
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+Move the XHCI PCI device base up in the virtual address space. This fixes
+initialization failure observed with newer Raspberry Pi firmware, later
+than 63b1922311 ("firmware: arm_loader: Update armstubs with those from
+PR 117). It looks that chosing 0xff800000 as the XHCI PCI device base
+conflicts with the updated ARM/VideoCore firmware.
+
+This also requires to reduce the size of the mapped PCI device region
+from 8MiB to 4MiB to fit into 32bit address space. This is still enough
+for the XHCI PCI device.
+
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Reviewed-by: Jaehoon Chung <jh80.chung@samsung.com>
+Reviewed-by: Nicolas Saenz Julienne <nsaenz@kernel.org>
+Tested-by: Stefan Agner <stefan@agner.ch>
+---
+This fixes the issue observed on ARM 32bit after upgrading the RPi4
+firmware files, described some time ago here:
+https://lists.denx.de/pipermail/u-boot/2021-February/442317.html
+---
+ arch/arm/mach-bcm283x/init.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-bcm283x/init.c b/arch/arm/mach-bcm283x/init.c
+index 49027ce0a2..9803499985 100644
+--- a/arch/arm/mach-bcm283x/init.c
++++ b/arch/arm/mach-bcm283x/init.c
+@@ -14,7 +14,7 @@
+ #include <asm/global_data.h>
+ 
+ #define BCM2711_RPI4_PCIE_XHCI_MMIO_PHYS	0x600000000UL
+-#define BCM2711_RPI4_PCIE_XHCI_MMIO_SIZE	0x800000UL
++#define BCM2711_RPI4_PCIE_XHCI_MMIO_SIZE	0x400000UL
+ 
+ #ifdef CONFIG_ARM64
+ #include <asm/armv8/mmu.h>
+@@ -148,7 +148,7 @@ int mach_cpu_init(void)
+ 
+ #ifdef CONFIG_ARMV7_LPAE
+ #ifdef CONFIG_TARGET_RPI_4_32B
+-#define BCM2711_RPI4_PCIE_XHCI_MMIO_VIRT	0xff800000UL
++#define BCM2711_RPI4_PCIE_XHCI_MMIO_VIRT	0xffc00000UL
+ #include <addr_map.h>
+ #include <asm/system.h>
+ 
