@@ -1,8 +1,8 @@
-%global candidate rc3
+%global candidate rc4
 
 Name:     uboot-tools
 Version:  2021.10
-Release:  0.5%{?candidate:.%{candidate}}%{?dist}
+Release:  0.6%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -17,11 +17,12 @@ Source4:  aarch64-chromebooks
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
 Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+# Board fixes and enablement
 # RPi - uses RPI firmware device tree for HAT support
 Patch2:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch3:   rpi-Copy-properties-from-firmware-dtb-to-the-loaded-dtb.patch
-
-# Board fixes and enablement
+Patch4:   rpi-fallback-to-max-clock-for-mmc.patch
+Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
 # AllWinner improvements
 Patch10:  AllWinner-PineTab.patch
 # TI fixes
@@ -257,6 +258,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Sep 15 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-0.6.rc4
+- Update to 2021.10 RC4
+- Proposed fix for RPi MMC clock issue
+
 * Mon Aug 30 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-0.5.rc3
 - Update to 2021.10 RC3
 
