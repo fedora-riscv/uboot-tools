@@ -74,6 +74,9 @@ BuildRequires:  vboot-utils
 %ifarch aarch64
 BuildRequires:  arm-trusted-firmware-armv8
 %endif
+%ifarch riscv64
+BuildRequires:  %{opensbi}
+%endif
 Requires:       dtc
 
 %description
@@ -87,9 +90,6 @@ BuildArch:   noarch
 
 %description -n uboot-images-armv8
 U-Boot firmware binaries for aarch64 boards
-%endif
-%ifarch riscv64
-BuildRequires:  %{opensbi}
 %endif
 
 %ifarch %{arm}
