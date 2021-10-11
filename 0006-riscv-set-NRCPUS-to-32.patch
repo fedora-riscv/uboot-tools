@@ -1,67 +1,62 @@
-From d51fba4178a64d77d20880bd20c05b3b9cd11c10 Mon Sep 17 00:00:00 2001
+From 51fd1cf2a83f39b1c786b79a476b5e2efaa4aa81 Mon Sep 17 00:00:00 2001
 From: David Abdurachmanov <david.abdurachmanov@gmail.com>
-Date: Fri, 8 Oct 2021 11:58:16 +0000
-Subject: [PATCH 9/9] riscv: add CONFIG_CMD_GPT_RENAME
+Date: Fri, 8 Oct 2021 11:54:54 +0000
+Subject: [PATCH 6/7] riscv: set NRCPUS to 32
 
 Signed-off-by: David Abdurachmanov <david.abdurachmanov@gmail.com>
 ---
- configs/qemu-riscv64_defconfig       | 2 ++
- configs/qemu-riscv64_smode_defconfig | 2 ++
- configs/qemu-riscv64_spl_defconfig   | 2 ++
- configs/sifive_unleashed_defconfig   | 2 ++
- configs/sifive_unmatched_defconfig   | 2 ++
- 5 files changed, 10 insertions(+)
+ configs/qemu-riscv64_defconfig       | 1 +
+ configs/qemu-riscv64_smode_defconfig | 1 +
+ configs/qemu-riscv64_spl_defconfig   | 1 +
+ configs/sifive_unleashed_defconfig   | 1 +
+ configs/sifive_unmatched_defconfig   | 1 +
+ 5 files changed, 5 insertions(+)
 
 diff --git a/configs/qemu-riscv64_defconfig b/configs/qemu-riscv64_defconfig
-index aa79abc1..625e7295 100644
+index daf5d655..aa79abc1 100644
 --- a/configs/qemu-riscv64_defconfig
 +++ b/configs/qemu-riscv64_defconfig
-@@ -14,3 +14,5 @@ CONFIG_OF_PRIOR_STAGE=y
+@@ -13,3 +13,4 @@ CONFIG_CMD_NVEDIT_EFI=y
+ CONFIG_OF_PRIOR_STAGE=y
  CONFIG_SYS_RELOC_GD_ENV_ADDR=y
  CONFIG_DM_MTD=y
- CONFIG_NR_CPUS=32
-+CONFIG_CMD_GPT=y
-+CONFIG_CMD_GPT_RENAME=y
++CONFIG_NR_CPUS=32
 diff --git a/configs/qemu-riscv64_smode_defconfig b/configs/qemu-riscv64_smode_defconfig
-index ebe35d4c..fde8c0f5 100644
+index 4a6416e2..ebe35d4c 100644
 --- a/configs/qemu-riscv64_smode_defconfig
 +++ b/configs/qemu-riscv64_smode_defconfig
-@@ -17,3 +17,5 @@ CONFIG_OF_PRIOR_STAGE=y
+@@ -16,3 +16,4 @@ CONFIG_CMD_NVEDIT_EFI=y
+ CONFIG_OF_PRIOR_STAGE=y
  CONFIG_SYS_RELOC_GD_ENV_ADDR=y
  CONFIG_DM_MTD=y
- CONFIG_NR_CPUS=32
-+CONFIG_CMD_GPT=y
-+CONFIG_CMD_GPT_RENAME=y
++CONFIG_NR_CPUS=32
 diff --git a/configs/qemu-riscv64_spl_defconfig b/configs/qemu-riscv64_spl_defconfig
-index 8d08d50c..8795edee 100644
+index 429d4d81..8d08d50c 100644
 --- a/configs/qemu-riscv64_spl_defconfig
 +++ b/configs/qemu-riscv64_spl_defconfig
-@@ -17,3 +17,5 @@ CONFIG_OF_PRIOR_STAGE=y
+@@ -16,3 +16,4 @@ CONFIG_CMD_SBI=y
+ CONFIG_OF_PRIOR_STAGE=y
  CONFIG_SYS_RELOC_GD_ENV_ADDR=y
  CONFIG_DM_MTD=y
- CONFIG_NR_CPUS=32
-+CONFIG_CMD_GPT=y
-+CONFIG_CMD_GPT_RENAME=y
++CONFIG_NR_CPUS=32
 diff --git a/configs/sifive_unleashed_defconfig b/configs/sifive_unleashed_defconfig
-index d0c53888..8e40eead 100644
+index fd686dfa..d0c53888 100644
 --- a/configs/sifive_unleashed_defconfig
 +++ b/configs/sifive_unleashed_defconfig
-@@ -29,3 +29,5 @@ CONFIG_SPL_CLK=y
+@@ -28,3 +28,4 @@ CONFIG_SPL_DM_SEQ_ALIAS=y
+ CONFIG_SPL_CLK=y
  CONFIG_DM_MTD=y
  CONFIG_DM_RESET=y
- CONFIG_NR_CPUS=32
-+CONFIG_CMD_GPT=y
-+CONFIG_CMD_GPT_RENAME=y
++CONFIG_NR_CPUS=32
 diff --git a/configs/sifive_unmatched_defconfig b/configs/sifive_unmatched_defconfig
-index c3f247fd..513c58a4 100644
+index 1dde98e0..ebaa945e 100644
 --- a/configs/sifive_unmatched_defconfig
 +++ b/configs/sifive_unmatched_defconfig
-@@ -44,3 +44,5 @@ CONFIG_USB_XHCI_HCD=y
+@@ -42,3 +42,4 @@ CONFIG_DM_SCSI=y
+ CONFIG_USB=y
+ CONFIG_USB_XHCI_HCD=y
  CONFIG_USB_XHCI_PCI=y
- CONFIG_BOARD_EARLY_INIT_F=y
- CONFIG_NR_CPUS=32
-+CONFIG_CMD_GPT=y
-+CONFIG_CMD_GPT_RENAME=y
++CONFIG_NR_CPUS=32
 -- 
 2.32.0
 

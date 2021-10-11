@@ -37,14 +37,12 @@ Patch14:  0001-enable-hs400-and-sdma-support.patch
 
 # RISC-V (riscv64) patches
 Patch40: 0001-riscv-SiFive-Unleashed-booti-compressed-kernel-suppo.patch
-#Patch41: 0002-riscv-SiFive-Unmatched-initilize-PWM.patch
-#Patch42: 0003-riscv-SiFive-Unmatched-set-LED-to-purple.patch
-Patch43: 0004-riscv-SiFive-Unmatched-set-85C-as-the-limit.patch
-Patch44: 0005-riscv-sifive-unmatched-leave-128MiB-for-ramdisk.patch
-Patch45: 0006-riscv-sifive-unmatched-disable-FDT-and-initrd-reloca.patch
-Patch46: 0007-riscv-add-compressed-kernel-support-for-qemu-riscv.patch
-Patch47: 0008-riscv-set-NRCPUS-to-32.patch
-Patch48: 0009-riscv-add-CONFIG_CMD_GPT_RENAME.patch
+Patch41: 0002-riscv-SiFive-Unmatched-set-85C-as-the-limit.patch
+Patch42: 0003-riscv-sifive-unmatched-leave-128MiB-for-ramdisk.patch
+Patch43: 0004-riscv-sifive-unmatched-disable-FDT-and-initrd-reloca.patch
+Patch44: 0005-riscv-add-compressed-kernel-support-for-qemu-riscv.patch
+Patch45: 0006-riscv-set-NRCPUS-to-32.patch
+Patch46: 0007-riscv-add-CONFIG_CMD_GPT_RENAME.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc

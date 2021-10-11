@@ -1,7 +1,7 @@
-From 009845162b7f450d8ed3ffbbfffc828f362273a1 Mon Sep 17 00:00:00 2001
+From 5a334103bbd44f7577ff19d2d9a4e184175d7724 Mon Sep 17 00:00:00 2001
 From: David Abdurachmanov <david.abdurachmanov@sifive.com>
 Date: Mon, 13 Sep 2021 03:15:35 -0700
-Subject: [PATCH 5/9] riscv: sifive: unmatched: leave 128MiB for ramdisk
+Subject: [PATCH 3/7] riscv: sifive: unmatched: leave 128MiB for ramdisk
 
 The current configuration only allows 125MiB, but the max allowed size should
 be 128MiB.

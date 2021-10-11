@@ -1,7 +1,7 @@
-From 664e08aa6f8d989fd9ca4c1c7a2109736f0fd5ac Mon Sep 17 00:00:00 2001
+From c29c7b09b2c66b3601bcd08f522fccdbb8dde474 Mon Sep 17 00:00:00 2001
 From: David Abdurachmanov <david.abdurachmanov@gmail.com>
 Date: Fri, 8 Oct 2021 11:30:49 +0000
-Subject: [PATCH 1/9] riscv: SiFive Unleashed booti compressed kernel support
+Subject: [PATCH 1/7] riscv: SiFive Unleashed booti compressed kernel support
 
 Signed-off-by: David Abdurachmanov <david.abdurachmanov@gmail.com>
 ---

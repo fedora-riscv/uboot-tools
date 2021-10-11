@@ -1,7 +1,7 @@
-From 2cb1bcadbe813abf10c4eccc0faf98feeaba064a Mon Sep 17 00:00:00 2001
+From f85c3a2877b9ed884e0d2565d4ea11f071211ea6 Mon Sep 17 00:00:00 2001
 From: Vincent Chen <vincent.chen@sifive.com>
 Date: Fri, 8 Oct 2021 11:48:06 +0000
-Subject: [PATCH 4/9] riscv: SiFive Unmatched set 85C as the limit
+Subject: [PATCH 2/7] riscv: SiFive Unmatched set 85C as the limit
 
 Origin patch:
 https://github.com/sifive/meta-sifive/blob/2021.09/recipes-bsp/u-boot/files/riscv64/0013-board-sifive-spl-Set-remote-thermal-of-TMP451-to-85-.patch
@@ -17,7 +17,7 @@ Signed-off-by: David Abdurachmanov <david.abdurachmanov@gmail.com>
  4 files changed, 43 insertions(+)
 
 diff --git a/board/sifive/unmatched/spl.c b/board/sifive/unmatched/spl.c
-index 3c3b22de..c7b65b9f 100644
+index d5663274..0d56792a 100644
 --- a/board/sifive/unmatched/spl.c
 +++ b/board/sifive/unmatched/spl.c
 @@ -10,6 +10,8 @@
@@ -57,9 +57,9 @@ index 3c3b22de..c7b65b9f 100644
  static inline int spl_reset_device_by_gpio(const char *label, int pin, int low_width)
  {
  	int ret;
-@@ -91,6 +114,12 @@ int spl_board_init_f(void)
- 
- 	pwm_device_init();
+@@ -89,6 +112,12 @@ int spl_board_init_f(void)
+ 		goto end;
+ 	}
  
 +	ret = init_tmp451_remote_therm_limit();
 +	if (ret) {

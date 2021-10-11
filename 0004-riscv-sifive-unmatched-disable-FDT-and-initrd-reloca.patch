@@ -1,7 +1,7 @@
-From 0bce0ec557d222de6b75c9af5c9020ae5244cddd Mon Sep 17 00:00:00 2001
+From c7bf5ac2e954ed19db605b475c9905cb399e1cc9 Mon Sep 17 00:00:00 2001
 From: David Abdurachmanov <david.abdurachmanov@sifive.com>
 Date: Mon, 13 Sep 2021 03:22:32 -0700
-Subject: [PATCH 6/9] riscv: sifive: unmatched: disable FDT and initrd
+Subject: [PATCH 4/7] riscv: sifive: unmatched: disable FDT and initrd
  relocation
 
 Same as on SiFive Unleashed we need to disable fdt and initrd relocation. Tom
