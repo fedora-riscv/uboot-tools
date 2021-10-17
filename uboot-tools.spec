@@ -2,7 +2,7 @@
 
 Name:     uboot-tools
 Version:  2021.10
-Release:  1%{?candidate:.%{candidate}}%{?dist}
+Release:  2%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -30,6 +30,8 @@ Patch11:  0001-Fix-BeagleAI-detection.patch
 Patch12:  phy-rockchip-inno-usb2-fix-hang-when-multiple-controllers-exit.patch
 Patch13:  0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
 Patch14:  0001-enable-hs400-and-sdma-support.patch
+Patch15:  0001-Revert-mmc-rockchip_sdhci-Add-support-for-RK3568.patch
+Patch16:  0002-Revert-mmc-rockchip_sdhci-add-phy-and-clock-config-f.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -124,7 +126,7 @@ do
     echo "Board: $board using rk3328"
     cp /usr/share/arm-trusted-firmware/rk3328/* builds/$(echo $board)/
   fi
-  rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 khadas-edge-captain-rk3399 khadas-edge-rk3399 khadas-edge-v-rk3399 nanopc-t4-rk3399 nanopi-m4-2gb-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 orangepi-rk3399 pinebook-pro-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4c-rk3399 rock-pi-4-rk3399 rock-pi-n10-rk3399pro rockpro64-rk3399 roc-pc-mezzanine-rk3399 roc-pc-rk3399)
+  rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 khadas-edge-captain-rk3399 khadas-edge-rk3399 khadas-edge-v-rk3399 leez-rk3399 nanopc-t4-rk3399 nanopi-m4-2gb-rk3399 nanopi-m4b-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 nanopi-r4s-rk3399 orangepi-rk3399 pinebook-pro-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4c-rk3399 rock-pi-4-rk3399 rock-pi-n10-rk3399pro rockpro64-rk3399 roc-pc-mezzanine-rk3399 roc-pc-rk3399)
   if [[ " ${rk3399[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3399"
     cp /usr/share/arm-trusted-firmware/rk3399/* builds/$(echo $board)/
@@ -260,6 +262,10 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Oct 14 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-2
+- Fix booting from MMC for Rockchip 3399 (rhbz #2014182)
+- Enable new rk3399 devices (Leez, NanoPi-M4B, NanoPi-4S, NanoPi-T4) (rhbz #2009126)
+
 * Mon Oct 04 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-1
 - Update to 2021.10
 
