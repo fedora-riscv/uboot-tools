@@ -18,6 +18,7 @@ khadas-vim
 khadas-vim2
 khadas-vim3
 khadas-vim3l
+leez-rk3399
 libretech-ac
 libretech_all_h3_cc_h5
 libretech_all_h3_it_h5
@@ -29,11 +30,13 @@ nanopc-t4-rk3399
 nanopi_a64
 nanopi-k2
 nanopi-m4-2gb-rk3399
+nanopi-m4b-rk3399
 nanopi-m4-rk3399
 nanopi_neo2
 nanopi-neo4-rk3399
 nanopi_neo_plus2
 nanopi-r2s-rk3328
+nanopi-r4s-rk3399
 odroid-c2
 orangepi_3
 orangepi_lite2
