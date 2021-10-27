@@ -10,9 +10,7 @@ URL:      http://www.denx.de/wiki/U-Boot
 ExcludeArch: s390x
 Source0:  https://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:  arm-boards
-Source2:  arm-chromebooks
-Source3:  aarch64-boards
-Source4:  aarch64-chromebooks
+Source2:  aarch64-boards
 
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
@@ -85,7 +83,7 @@ U-Boot firmware binaries for armv7 boards
 %prep
 %autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
 
-cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 .
+cp %SOURCE1 %SOURCE2 .
 
 %build
 mkdir builds
@@ -242,8 +240,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %files
 %doc README doc/README.kwbimage doc/README.distro doc/README.gpt
 %doc doc/README.odroid doc/README.rockchip doc/develop/uefi doc/uImage.FIT doc/arch/arm64.rst
-%doc doc/chromium builds/docs/*
-%doc doc/board/amlogic/ doc/board/rockchip/
+%doc builds/docs/* doc/board/amlogic/ doc/board/rockchip/
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
 %dir %{_datadir}/uboot/
