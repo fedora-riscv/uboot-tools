@@ -55,9 +55,6 @@ BuildRequires:  flex bison
 BuildRequires:  openssl-devel
 BuildRequires:  SDL-devel
 BuildRequires:  swig
-%ifarch %{arm} aarch64
-BuildRequires:  vboot-utils
-%endif
 %ifarch aarch64
 BuildRequires:  arm-trusted-firmware-armv8
 %endif
