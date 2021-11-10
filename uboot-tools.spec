@@ -5,7 +5,7 @@
 
 Name:     uboot-tools
 Version:  2020.10
-Release:  2%{?candidate:.%{candidate}}.7.riscv64%{?dist}
+Release:  2%{?candidate:.%{candidate}}.7.riscv64%{?dist}.rvre0
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -302,6 +302,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Nov 10 2021 David Abdurachmanov <david.abdurachmanov@gmail.com> - 2020.10-2.7.riscv64.rvre0
+- Rebuilt for Fedora RISCV, no changes
+
 * Wed Apr 21 2021 David Abdurachmanov <david.abdurachmanov@gmail.com> - 2020.10-2.7.riscv64
 - Rebuild for a new OpenSBI
 
