@@ -5,7 +5,7 @@
 
 Name:     uboot-tools
 Version:  2021.10
-Release:  1%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Release:  1%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -308,6 +308,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Thu Nov 11 2021 David Abdurachmanov <david.abdurachmanov@gmail.com> - 2021.10-1.1.riscv64
+- Rebuild for a new OpenSBI
+
 * Fri Oct 07 2021 David Abdurachmanov <david.abdurachmanov@gmail.com> - 2021.10-1.0.riscv64
 - Add support for riscv64
 
