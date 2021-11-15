@@ -1,0 +1,115 @@
+From patchwork Mon Nov  1 04:43:47 2021
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Yifeng Zhao <yifeng.zhao@rock-chips.com>
+X-Patchwork-Id: 1548950
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4HjL646Yhcz9sS8
+	for <incoming@patchwork.ozlabs.org>; Mon,  1 Nov 2021 15:44:12 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 6212783389;
+	Mon,  1 Nov 2021 05:44:06 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=none (p=none dis=none) header.from=rock-chips.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 26A6483395; Mon,  1 Nov 2021 05:44:05 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.4 required=5.0 tests=BAYES_00,RCVD_IN_SORBS_WEB,
+ SPF_HELO_NONE,T_SPF_PERMERROR autolearn=no autolearn_force=no
+ version=3.4.2
+Received: from lucky1.263xmail.com (lucky1.263xmail.com [211.157.147.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 04D7B83383
+ for <u-boot@lists.denx.de>; Mon,  1 Nov 2021 05:43:59 +0100 (CET)
+Authentication-Results: phobos.denx.de; dmarc=none (p=none dis=none)
+ header.from=rock-chips.com
+Authentication-Results: phobos.denx.de;
+ spf=fail smtp.mailfrom=yifeng.zhao@rock-chips.com
+Received: from localhost (unknown [192.168.167.16])
+ by lucky1.263xmail.com (Postfix) with ESMTP id 1B96CD124A;
+ Mon,  1 Nov 2021 12:43:55 +0800 (CST)
+X-MAIL-GRAY: 0
+X-MAIL-DELIVERY: 1
+X-ADDR-CHECKED4: 1
+X-SKE-CHECKED: 1
+X-ANTISPAM-LEVEL: 2
+Received: from localhost.localdomain (unknown [58.22.7.114])
+ by smtp.263.net (postfix) whith ESMTP id
+ P5172T139932542678784S1635741828952225_;
+ Mon, 01 Nov 2021 12:43:55 +0800 (CST)
+X-IP-DOMAINF: 1
+X-RL-SENDER: yifeng.zhao@rock-chips.com
+X-SENDER: zyf@rock-chips.com
+X-LOGIN-NAME: yifeng.zhao@rock-chips.com
+X-FST-TO: kever.yang@rock-chips.com
+X-RCPT-COUNT: 7
+X-LOCAL-RCPT-COUNT: 2
+X-SENDER-IP: 58.22.7.114
+X-ATTACHMENT-NUM: 0
+X-UNIQUE-TAG: <8beb59827f65d556787d36e0068aa9cb>
+X-System-Flag: 0
+From: Yifeng Zhao <yifeng.zhao@rock-chips.com>
+To: Kever Yang <kever.yang@rock-chips.com>
+Cc: sjg <sjg@chromium.org>, Peter Robinson <pbrobinson@gmail.com>,
+ Philipp Tomsich <philipp.tomsich@theobroma-systems.com>,
+ u-boot@lists.denx.de, Jack Mitchell <ml@embed.me.uk>,
+ Yifeng Zhao <yifeng.zhao@rock-chips.com>
+Subject: [PATCH] dts: rockchip: rk3399: enable emmc phy for spl
+Date: Mon,  1 Nov 2021 12:43:47 +0800
+Message-Id: <20211101044347.17822-1-yifeng.zhao@rock-chips.com>
+X-Mailer: git-send-email 2.17.1
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.2 at phobos.denx.de
+X-Virus-Status: Clean
+
+adapting commit ac804143cf ("mmc: rockchip_sdhci: add phy and clock
+config for rk3399") to fix the issue "Not found emmc phy device".
+
+Signed-off-by: Yifeng Zhao <yifeng.zhao@rock-chips.com>
+---
+
+ arch/arm/dts/rk3399-u-boot.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm/dts/rk3399-u-boot.dtsi b/arch/arm/dts/rk3399-u-boot.dtsi
+index 73922c328a..716b9a433a 100644
+--- a/arch/arm/dts/rk3399-u-boot.dtsi
++++ b/arch/arm/dts/rk3399-u-boot.dtsi
+@@ -88,6 +88,10 @@
+ 	u-boot,dm-pre-reloc;
+ };
+ 
++&emmc_phy {
++	u-boot,dm-pre-reloc;
++};
++
+ &grf {
+ 	u-boot,dm-pre-reloc;
+ };

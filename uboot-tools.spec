@@ -2,7 +2,7 @@
 
 Name:     uboot-tools
 Version:  2021.10
-Release:  2%{?candidate:.%{candidate}}%{?dist}
+Release:  3%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -10,9 +10,7 @@ URL:      http://www.denx.de/wiki/U-Boot
 ExcludeArch: s390x
 Source0:  https://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:  arm-boards
-Source2:  arm-chromebooks
-Source3:  aarch64-boards
-Source4:  aarch64-chromebooks
+Source2:  aarch64-boards
 
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
@@ -30,8 +28,7 @@ Patch11:  0001-Fix-BeagleAI-detection.patch
 Patch12:  phy-rockchip-inno-usb2-fix-hang-when-multiple-controllers-exit.patch
 Patch13:  0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
 Patch14:  0001-enable-hs400-and-sdma-support.patch
-Patch15:  0001-Revert-mmc-rockchip_sdhci-Add-support-for-RK3568.patch
-Patch16:  0002-Revert-mmc-rockchip_sdhci-add-phy-and-clock-config-f.patch
+Patch15:  dts-rockchip-rk3399-enable-emmc-phy-for-spl.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -55,9 +52,6 @@ BuildRequires:  flex bison
 BuildRequires:  openssl-devel
 BuildRequires:  SDL-devel
 BuildRequires:  swig
-%ifarch %{arm} aarch64
-BuildRequires:  vboot-utils
-%endif
 %ifarch aarch64
 BuildRequires:  arm-trusted-firmware-armv8
 %endif
@@ -88,7 +82,7 @@ U-Boot firmware binaries for armv7 boards
 %prep
 %autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
 
-cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 .
+cp %SOURCE1 %SOURCE2 .
 
 %build
 mkdir builds
@@ -245,8 +239,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %files
 %doc README doc/README.kwbimage doc/README.distro doc/README.gpt
 %doc doc/README.odroid doc/README.rockchip doc/develop/uefi doc/uImage.FIT doc/arch/arm64.rst
-%doc doc/chromium builds/docs/*
-%doc doc/board/amlogic/ doc/board/rockchip/
+%doc builds/docs/* doc/board/amlogic/ doc/board/rockchip/
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
 %dir %{_datadir}/uboot/
@@ -262,6 +255,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Nov 15 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-3
+- Fixes for rk3399 devices
+
 * Thu Oct 14 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-2
 - Fix booting from MMC for Rockchip 3399 (rhbz #2014182)
 - Enable new rk3399 devices (Leez, NanoPi-M4B, NanoPi-4S, NanoPi-T4) (rhbz #2009126)
