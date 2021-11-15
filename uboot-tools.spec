@@ -227,7 +227,6 @@ cp -p board/solidrun/clearfog/README builds/docs/README.clearfog
 cp -p board/solidrun/mx6cuboxi/README builds/docs/README.mx6cuboxi
 cp -p board/sunxi/README.sunxi64 builds/docs/README.sunxi64
 cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
-cp -p board/ti/am335x/README builds/docs/README.am335x
 cp -p board/ti/omap5_uevm/README builds/docs/README.omap5_uevm
 cp -p board/udoo/README builds/docs/README.udoo
 cp -p board/wandboard/README builds/docs/README.wandboard
@@ -235,9 +234,9 @@ cp -p board/warp/README builds/docs/README.warp
 cp -p board/warp7/README builds/docs/README.warp7
 
 %files
-%doc README doc/README.kwbimage doc/README.distro doc/README.gpt
+%doc README doc/README.kwbimage doc/develop/distro.rst doc/README.gpt
 %doc doc/README.odroid doc/README.rockchip doc/develop/uefi doc/uImage.FIT doc/arch/arm64.rst
-%doc builds/docs/* doc/board/amlogic/ doc/board/rockchip/
+%doc builds/docs/* doc/board/amlogic/ doc/board/rockchip/ doc/board/ti/am335x_evm.rst
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
 %dir %{_datadir}/uboot/
