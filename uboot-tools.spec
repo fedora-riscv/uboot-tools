@@ -1,8 +1,8 @@
-#global candidate rc5
+%global candidate rc2
 
 Name:     uboot-tools
-Version:  2021.10
-Release:  3%{?candidate:.%{candidate}}%{?dist}
+Version:  2022.01
+Release:  0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -20,8 +20,6 @@ Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch2:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch3:   rpi-fallback-to-max-clock-for-mmc.patch
 Patch4:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
-# AllWinner improvements
-Patch10:  AllWinner-PineTab.patch
 # TI fixes
 Patch11:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
@@ -255,6 +253,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Nov 15 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.01-0.1.rc2
+- Update to 2022.01 RC2
+
 * Mon Nov 15 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-3
 - Fixes for rk3399 devices
 
