@@ -1,8 +1,8 @@
-%global candidate rc2
+%global candidate rc4
 
 Name:     uboot-tools
 Version:  2022.01
-Release:  0.1%{?candidate:.%{candidate}}%{?dist}
+Release:  0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -15,18 +15,16 @@ Source2:  aarch64-boards
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
 Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+
 # Board fixes and enablement
 # RPi - uses RPI firmware device tree for HAT support
 Patch2:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch3:   rpi-fallback-to-max-clock-for-mmc.patch
 Patch4:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
-# TI fixes
-Patch11:  0001-Fix-BeagleAI-detection.patch
 # Rockchips improvements
-Patch12:  phy-rockchip-inno-usb2-fix-hang-when-multiple-controllers-exit.patch
-Patch13:  0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
-Patch14:  0001-enable-hs400-and-sdma-support.patch
-Patch15:  dts-rockchip-rk3399-enable-emmc-phy-for-spl.patch
+Patch5:  phy-rockchip-inno-usb2-fix-hang-when-multiple-controllers-exit.patch
+Patch6:  dts-rockchip-rk3399-enable-emmc-phy-for-spl.patch
+Patch7:  0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -252,6 +250,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Dec 20 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.01-0.2.rc4
+- Update to 2022.01 RC4
+
 * Mon Nov 15 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.01-0.1.rc2
 - Update to 2022.01 RC2
 
