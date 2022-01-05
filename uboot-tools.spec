@@ -2,7 +2,7 @@
 
 Name:     uboot-tools
 Version:  2022.01
-Release:  0.2%{?candidate:.%{candidate}}%{?dist}
+Release:  0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -17,14 +17,15 @@ Source2:  aarch64-boards
 Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 
 # Board fixes and enablement
+Patch2:   v2-console-usb-kbd-Limit-poll-frequency-to-improve-performance.patch
 # RPi - uses RPI firmware device tree for HAT support
-Patch2:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-Patch3:   rpi-fallback-to-max-clock-for-mmc.patch
-Patch4:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
+Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+Patch4:   rpi-fallback-to-max-clock-for-mmc.patch
+Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
 # Rockchips improvements
-Patch5:  phy-rockchip-inno-usb2-fix-hang-when-multiple-controllers-exit.patch
-Patch6:  dts-rockchip-rk3399-enable-emmc-phy-for-spl.patch
-Patch7:  0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
+Patch6:   v3-phy-Track-power-on-and-init-counts-in-uclass.patch
+Patch7:   dts-rockchip-rk3399-enable-emmc-phy-for-spl.patch
+Patch8:   0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -250,6 +251,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Jan 05 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.01-0.3.rc4
+- Upstream fixes for PHY and UEFI
+
 * Mon Dec 20 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.01-0.2.rc4
 - Update to 2022.01 RC4
 
