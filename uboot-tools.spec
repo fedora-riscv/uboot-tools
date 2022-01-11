@@ -1,8 +1,8 @@
-%global candidate rc4
+#global candidate rc4
 
 Name:     uboot-tools
 Version:  2022.01
-Release:  0.3%{?candidate:.%{candidate}}%{?dist}
+Release:  1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -26,6 +26,7 @@ Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
 Patch6:   v3-phy-Track-power-on-and-init-counts-in-uclass.patch
 Patch7:   dts-rockchip-rk3399-enable-emmc-phy-for-spl.patch
 Patch8:   0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
+Patch9:   0001-udoo_neo-Move-to-DM-for-REGUALTOR-PMIC-I2C-drivers.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -251,6 +252,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Jan 10 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.01-1
+- Update to 2022.01
+
 * Wed Jan 05 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.01-0.3.rc4
 - Upstream fixes for PHY and UEFI
 
