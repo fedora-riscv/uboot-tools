@@ -1,8 +1,8 @@
-#global candidate rc4
+%global candidate rc1
 
 Name:     uboot-tools
-Version:  2022.01
-Release:  2%{?candidate:.%{candidate}}%{?dist}
+Version:  2022.04
+Release:  0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -23,10 +23,8 @@ Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch4:   rpi-fallback-to-max-clock-for-mmc.patch
 Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
 # Rockchips improvements
-Patch6:   v3-phy-Track-power-on-and-init-counts-in-uclass.patch
-Patch7:   dts-rockchip-rk3399-enable-emmc-phy-for-spl.patch
 Patch8:   0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
-Patch9:   0001-udoo_neo-Move-to-DM-for-REGUALTOR-PMIC-I2C-drivers.patch
+# Patch9:   0001-udoo_neo-Move-to-DM-for-REGUALTOR-PMIC-I2C-drivers.patch
 
 BuildRequires:  bc
 BuildRequires:  dtc
@@ -252,6 +250,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Wed Feb 02 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.04-0.1.rc1
+- Update to 2022.04 RC1
+
 * Sat Jan 22 2022 Fedora Release Engineering <releng@fedoraproject.org> - 2022.01-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
