@@ -46,6 +46,7 @@ BuildRequires:  python3-libfdt
 BuildRequires:  flex bison
 BuildRequires:  openssl-devel
 BuildRequires:  SDL-devel
+BuildRequires:  libuuid-devel
 BuildRequires:  swig
 %ifarch aarch64
 BuildRequires:  arm-trusted-firmware-armv8
