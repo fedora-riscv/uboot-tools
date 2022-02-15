@@ -1,8 +1,8 @@
-%global candidate rc1
+%global candidate rc2
 
 Name:     uboot-tools
 Version:  2022.04
-Release:  0.1%{?candidate:.%{candidate}}%{?dist}
+Release:  0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -17,7 +17,6 @@ Source2:  aarch64-boards
 Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 
 # Board fixes and enablement
-Patch2:   v2-console-usb-kbd-Limit-poll-frequency-to-improve-performance.patch
 # RPi - uses RPI firmware device tree for HAT support
 Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch4:   rpi-fallback-to-max-clock-for-mmc.patch
@@ -250,6 +249,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Tue Feb 15 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.04-0.2.rc2
+- Update to 2022.04 RC2
+
 * Wed Feb 02 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.04-0.1.rc1
 - Update to 2022.04 RC1
 
