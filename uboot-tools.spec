@@ -1,4 +1,5 @@
 %global candidate rc3
+%bcond_without toolsonly
 
 Name:     uboot-tools
 Version:  2022.04
@@ -27,28 +28,19 @@ Patch9:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
 # Patch9:   0001-udoo_neo-Move-to-DM-for-REGUALTOR-PMIC-I2C-drivers.patch
 
 BuildRequires:  bc
+BuildRequires:  bison
 BuildRequires:  dtc
-BuildRequires:  make
-BuildRequires:  perl-interpreter
-# Requirements for building on el7
-%if 0%{?rhel} == 7
-BuildRequires:  devtoolset-7-build
-BuildRequires:  devtoolset-7-binutils
-BuildRequires:  devtoolset-7-gcc
-BuildRequires:  python2-devel
-BuildRequires:  python2-setuptools
-BuildRequires:  python2-libfdt
-%else
+BuildRequires:  flex
 BuildRequires:  gcc
+BuildRequires:  gnutls-devel
+BuildRequires:  libuuid-devel
+BuildRequires:  make
+BuildRequires:  openssl-devel
+BuildRequires:  perl-interpreter
 BuildRequires:  python3-devel
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-libfdt
-%endif
-BuildRequires:  flex bison
-BuildRequires:  openssl-devel
 BuildRequires:  SDL-devel
-BuildRequires:  libuuid-devel
-BuildRequires:  gnutls-devel
 BuildRequires:  swig
 %ifarch aarch64
 BuildRequires:  arm-trusted-firmware-armv8
@@ -59,6 +51,7 @@ Requires:       dtc
 This package contains a few U-Boot utilities - mkimage for creating boot images
 and fw_printenv/fw_setenv for manipulating the boot environment variables.
 
+%if %{with toolsonly}
 %ifarch aarch64
 %package     -n uboot-images-armv8
 Summary:     U-Boot firmware images for aarch64 boards
@@ -76,6 +69,7 @@ BuildArch:   noarch
 %description -n uboot-images-armv7
 U-Boot firmware binaries for armv7 boards
 %endif
+%endif
 
 %prep
 %autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
@@ -85,14 +79,10 @@ cp %SOURCE1 %SOURCE2 .
 %build
 mkdir builds
 
-%if 0%{?rhel} == 7
-#Enabling DTS for .el7
-%{?enable_devtoolset7:%{enable_devtoolset7}}
-%endif
-
 %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" tools-only_defconfig O=builds/
 %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" tools-all O=builds/
 
+%if %{with toolsonly}
 # U-Boot device firmwares don't currently support LTO
 %define _lto_cflags %{nil}
 
@@ -149,12 +139,14 @@ do
 done
 
 %endif
+%endif
 
 %install
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_mandir}/man1
 mkdir -p %{buildroot}%{_datadir}/uboot/
 
+%if %{with toolsonly}
 %ifarch aarch64
 for board in $(ls builds)
 do
@@ -208,6 +200,7 @@ do
   fi
 done
 %endif
+%endif
 
 for tool in bmp_logo dumpimage env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr gen_ethaddr_crc img2srec mkenvimage mkimage mksunxiboot ncb proftool sunxi-spl-image-builder ubsha1 xway-swap-bytes kwboot
 do
@@ -241,6 +234,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %{_mandir}/man1/mkimage.1*
 %dir %{_datadir}/uboot/
 
+%if %{with toolsonly}
 %ifarch aarch64
 %files -n uboot-images-armv8
 %{_datadir}/uboot/*
@@ -249,6 +243,7 @@ cp -p board/warp7/README builds/docs/README.warp7
 %ifarch %{arm}
 %files -n uboot-images-armv7
 %{_datadir}/uboot/*
+%endif
 %endif
 
 %changelog
