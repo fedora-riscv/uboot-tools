@@ -7,7 +7,7 @@
 
 Name:     uboot-tools
 Version:  2022.10
-Release:  0.2%{?candidate:.%{candidate}}%{?dist}
+Release:  0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -142,6 +142,9 @@ do
   fi
  done
 done
+
+# For Apple M1 we also need the nodtb variant
+install -p -m 0644 builds/apple_m1/u-boot-nodtb.bin %{buildroot}%{_datadir}/uboot/apple_m1/u-boot-nodtb.bin
 %endif
 
 # Bit of a hack to remove binaries we don't use as they're large
@@ -205,6 +208,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Mon Aug 22 2022 Davide Cavalca <dcavalca@fedoraproject.org> - 2022.10-0.3.rc1
+- Install nodtb variant for Apple M1 (rhbz#2068958)
+
 * Tue Aug 16 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-0.2.rc1
 - Fix for DT property propogation via firmware
 
