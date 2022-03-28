@@ -1,9 +1,9 @@
-%global candidate rc3
+%global candidate rc5
 %bcond_without toolsonly
 
 Name:     uboot-tools
 Version:  2022.04
-Release:  0.3%{?candidate:.%{candidate}}%{?dist}
+Release:  0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -247,6 +247,9 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Mon Mar 28 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.04-0.4.rc5
+- Update to 2022.04 RC5
+
 * Tue Mar 08 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.04-0.3.rc3
 - Update to 2022.04 RC3
 - Enable new Rockchip devices
