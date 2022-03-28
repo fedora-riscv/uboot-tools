@@ -35,6 +35,7 @@ BuildRequires:  gcc
 BuildRequires:  gnutls-devel
 BuildRequires:  libuuid-devel
 BuildRequires:  make
+BuildRequires:  ncurses-devel
 BuildRequires:  openssl-devel
 BuildRequires:  perl-interpreter
 BuildRequires:  python3-devel
