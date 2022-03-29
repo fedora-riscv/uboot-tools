@@ -25,7 +25,6 @@ Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
 # Rockchips improvements
 Patch8:   0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
 Patch9:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
-# Patch9:   0001-udoo_neo-Move-to-DM-for-REGUALTOR-PMIC-I2C-drivers.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
