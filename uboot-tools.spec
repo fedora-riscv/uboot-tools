@@ -10,8 +10,7 @@ URL:      http://www.denx.de/wiki/U-Boot
 
 ExcludeArch: s390x
 Source0:  https://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
-Source1:  arm-boards
-Source2:  aarch64-boards
+Source1:  aarch64-boards
 
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
@@ -60,21 +59,12 @@ BuildArch:   noarch
 %description -n uboot-images-armv8
 U-Boot firmware binaries for aarch64 boards
 %endif
-
-%ifarch %{arm}
-%package     -n uboot-images-armv7
-Summary:     U-Boot firmware images for armv7 boards
-BuildArch:   noarch
-
-%description -n uboot-images-armv7
-U-Boot firmware binaries for armv7 boards
-%endif
 %endif
 
 %prep
 %autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
 
-cp %SOURCE1 %SOURCE2 .
+cp %SOURCE1 .
 
 %build
 mkdir builds
@@ -86,7 +76,7 @@ mkdir builds
 # U-Boot device firmwares don't currently support LTO
 %define _lto_cflags %{nil}
 
-%ifarch aarch64 %{arm}
+%ifarch aarch64
 for board in $(cat %{_arch}-boards)
 do
   echo "Building board: $board"
@@ -124,18 +114,6 @@ do
     echo "Board: $board with SPI flash"
     builds/$(echo $board)/tools/mkimage -n rk3399 -T rkspi -d builds/$(echo $board)/tpl/u-boot-tpl.bin:builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/idbloader.spi
   fi
-  # build spi, and uart images for mvebu boards
-  # mvebu=(clearfog helios4 turris_omnia)
-  if [[ "  ${mvebu[*]} " == *" $board "* ]]; then
-    for target in spi uart
-    do
-      echo "Board: $board Target: $target"
-      sed -i -e '/CONFIG_MVEBU_SPL_BOOT_DEVICE_/d' configs/$(echo $board)_defconfig
-      echo CONFIG_MVEBU_SPL_BOOT_DEVICE_${target^^}=y >> configs/$(echo $board)_defconfig
-      make $(echo $board)_defconfig O=builds/$(echo $board-$target)/
-      %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board-$target)/
-    done
-  fi
 done
 
 %endif
@@ -160,21 +138,8 @@ do
 done
 %endif
 
-%ifarch %{arm}
-for board in $(ls builds)
-do
- mkdir -p %{buildroot}%{_datadir}/uboot/$(echo $board)/
- for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/*spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-spl.kwb u-boot-rockchip.bin u-boot-sunxi-with-spl.bin spl/boot.bin
- do
-  if [ -f builds/$(echo $board)/$(echo $file) ]; then
-    install -p -m 0644 builds/$(echo $board)/$(echo $file) %{buildroot}%{_datadir}/uboot/$(echo $board)/
-  fi
- done
-done
-%endif
-
 # Bit of a hack to remove binaries we don't use as they're large
-%ifarch aarch64 %{arm}
+%ifarch aarch64
 for board in $(ls builds)
 do
   rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot.dtb
@@ -214,22 +179,14 @@ install -p -m 0755 builds/tools/env/fw_printenv %{buildroot}%{_bindir}
 # Copy some useful docs over
 mkdir -p builds/docs
 cp -p board/hisilicon/hikey/README builds/docs/README.hikey
-cp -p board/Marvell/db-88f6820-gp/README builds/docs/README.mvebu-db-88f6820
 cp -p board/rockchip/evb_rk3399/README builds/docs/README.evb_rk3399
-cp -p board/solidrun/clearfog/README builds/docs/README.clearfog
-cp -p board/solidrun/mx6cuboxi/README builds/docs/README.mx6cuboxi
 cp -p board/sunxi/README.sunxi64 builds/docs/README.sunxi64
 cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
-cp -p board/ti/omap5_uevm/README builds/docs/README.omap5_uevm
-cp -p board/udoo/README builds/docs/README.udoo
-cp -p board/wandboard/README builds/docs/README.wandboard
-cp -p board/warp/README builds/docs/README.warp
-cp -p board/warp7/README builds/docs/README.warp7
 
 %files
-%doc README doc/README.kwbimage doc/develop/distro.rst doc/README.gpt
-%doc doc/README.odroid doc/README.rockchip doc/develop/uefi doc/uImage.FIT doc/arch/arm64.rst
-%doc builds/docs/* doc/board/amlogic/ doc/board/rockchip/ doc/board/ti/am335x_evm.rst
+%doc README doc/develop/distro.rst doc/README.gpt
+%doc doc/README.rockchip doc/develop/uefi doc/uImage.FIT doc/arch/arm64.rst
+%doc builds/docs/* doc/board/amlogic/ doc/board/rockchip/
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
 %dir %{_datadir}/uboot/
@@ -237,11 +194,6 @@ cp -p board/warp7/README builds/docs/README.warp7
 %if %{with toolsonly}
 %ifarch aarch64
 %files -n uboot-images-armv8
-%{_datadir}/uboot/*
-%endif
-
-%ifarch %{arm}
-%files -n uboot-images-armv7
 %{_datadir}/uboot/*
 %endif
 %endif
