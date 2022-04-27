@@ -2,7 +2,7 @@
 %bcond_without toolsonly
 
 Name:     uboot-tools
-Version:  2022.04
+Version:  2022.07
 Release:  0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
@@ -199,7 +199,7 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
-* Tue Apr 26 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.04-0.1.rc1
+* Tue Apr 26 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.07-0.1.rc1
 - Update to 2022.07 RC1
 
 * Mon Apr 04 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.04-1
