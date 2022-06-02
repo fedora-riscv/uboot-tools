@@ -1,39 +1,33 @@
-#global candidate rc5
+%global candidate rc3
+%bcond_without toolsonly
 
 # Set it to "opensbi" (stable) or opensbi-unstable (unstable, git)
 %global opensbi opensbi-unstable
 
 Name:     uboot-tools
-Version:  2021.10
-Release:  1%{?candidate:.%{candidate}}.1.riscv64%{?dist}
+Version:  2022.07
+Release:  0.3%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
 
 ExcludeArch: s390x
 Source0:  https://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
-Source1:  arm-boards
-Source2:  arm-chromebooks
-Source3:  aarch64-boards
-Source4:  aarch64-chromebooks
-Source5:  riscv64-boards
+Source1:  aarch64-boards
+Source2:  riscv64-boards
 
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
 Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+
 # Board fixes and enablement
 # RPi - uses RPI firmware device tree for HAT support
-Patch2:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-Patch3:   rpi-fallback-to-max-clock-for-mmc.patch
-Patch4:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
-# AllWinner improvements
-Patch10:  AllWinner-PineTab.patch
-# TI fixes
-Patch11:  0001-Fix-BeagleAI-detection.patch
+Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
+Patch4:   rpi-fallback-to-max-clock-for-mmc.patch
+Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
 # Rockchips improvements
-Patch12:  phy-rockchip-inno-usb2-fix-hang-when-multiple-controllers-exit.patch
-Patch13:  0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
-Patch14:  0001-enable-hs400-and-sdma-support.patch
+Patch8:   0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
+Patch9:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
 
 # RISC-V (riscv64) patches
 Patch40: 0001-riscv-SiFive-Unleashed-booti-compressed-kernel-suppo.patch
@@ -45,30 +39,21 @@ Patch45: 0006-riscv-set-NRCPUS-to-32.patch
 Patch46: 0007-riscv-add-CONFIG_CMD_GPT_RENAME.patch
 
 BuildRequires:  bc
+BuildRequires:  bison
 BuildRequires:  dtc
-BuildRequires:  make
-BuildRequires:  perl-interpreter
-# Requirements for building on el7
-%if 0%{?rhel} == 7
-BuildRequires:  devtoolset-7-build
-BuildRequires:  devtoolset-7-binutils
-BuildRequires:  devtoolset-7-gcc
-BuildRequires:  python2-devel
-BuildRequires:  python2-setuptools
-BuildRequires:  python2-libfdt
-%else
+BuildRequires:  flex
 BuildRequires:  gcc
+BuildRequires:  gnutls-devel
+BuildRequires:  libuuid-devel
+BuildRequires:  make
+BuildRequires:  ncurses-devel
+BuildRequires:  openssl-devel
+BuildRequires:  perl-interpreter
 BuildRequires:  python3-devel
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-libfdt
-%endif
-BuildRequires:  flex bison
-BuildRequires:  openssl-devel
 BuildRequires:  SDL-devel
 BuildRequires:  swig
-%ifarch %{arm} aarch64
-BuildRequires:  vboot-utils
-%endif
 %ifarch aarch64
 BuildRequires:  arm-trusted-firmware-armv8
 %endif
@@ -81,6 +66,7 @@ Requires:       dtc
 This package contains a few U-Boot utilities - mkimage for creating boot images
 and fw_printenv/fw_setenv for manipulating the boot environment variables.
 
+%if %{with toolsonly}
 %ifarch aarch64
 %package     -n uboot-images-armv8
 Summary:     U-Boot firmware images for aarch64 boards
@@ -89,14 +75,6 @@ BuildArch:   noarch
 %description -n uboot-images-armv8
 U-Boot firmware binaries for aarch64 boards
 %endif
-
-%ifarch %{arm}
-%package     -n uboot-images-armv7
-Summary:     U-Boot firmware images for armv7 boards
-BuildArch:   noarch
-
-%description -n uboot-images-armv7
-U-Boot firmware binaries for armv7 boards
 %endif
 
 %ifarch riscv64
@@ -112,19 +90,15 @@ u-boot bootloader binaries for riscv64 boards
 %prep
 %autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
 
-cp %SOURCE1 %SOURCE2 %SOURCE3 %SOURCE4 %SOURCE5 .
+cp %SOURCE1 %SOURCE2 .
 
 %build
 mkdir builds
 
-%if 0%{?rhel} == 7
-#Enabling DTS for .el7
-%{?enable_devtoolset7:%{enable_devtoolset7}}
-%endif
-
 %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" tools-only_defconfig O=builds/
 %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" tools-all O=builds/
 
+%if %{with toolsonly}
 # U-Boot device firmwares don't currently support LTO
 %define _lto_cflags %{nil}
 
@@ -132,7 +106,7 @@ mkdir builds
 export OPENSBI=%{_datadir}/%{opensbi}/generic/firmware/fw_dynamic.bin
 %endif
 
-%ifarch aarch64 %{arm} riscv64
+%ifarch aarch64 riscv64
 for board in $(cat %{_arch}-boards)
 do
   echo "Building board: $board"
@@ -154,7 +128,7 @@ do
     echo "Board: $board using rk3328"
     cp /usr/share/arm-trusted-firmware/rk3328/* builds/$(echo $board)/
   fi
-  rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 khadas-edge-captain-rk3399 khadas-edge-rk3399 khadas-edge-v-rk3399 nanopc-t4-rk3399 nanopi-m4-2gb-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 orangepi-rk3399 pinebook-pro-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4c-rk3399 rock-pi-4-rk3399 rock-pi-n10-rk3399pro rockpro64-rk3399 roc-pc-mezzanine-rk3399 roc-pc-rk3399)
+  rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 khadas-edge-captain-rk3399 khadas-edge-rk3399 khadas-edge-v-rk3399 leez-rk3399 nanopc-t4-rk3399 nanopi-m4-2gb-rk3399 nanopi-m4b-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 nanopi-r4s-rk3399 orangepi-rk3399 pinebook-pro-rk3399 pinephone-pro-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4c-rk3399 rock-pi-4-rk3399 rock-pi-n10-rk3399pro rockpro64-rk3399 roc-pc-mezzanine-rk3399 roc-pc-rk3399)
   if [[ " ${rk3399[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3399"
     cp /usr/share/arm-trusted-firmware/rk3399/* builds/$(echo $board)/
@@ -165,25 +139,14 @@ do
   %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board)/
 
   # build spi images for rockchip boards with SPI flash
-  rkspi=(evb-rk3399 khadas-edge-captain-rk3399 khadas-edge-rk3399 khadas-edge-v-rk3399 nanopc-t4-rk3399 pinebook-pro-rk3399 rockpro64-rk3399 roc-pc-mezzanine-rk3399 roc-pc-rk3399)
+  rkspi=(evb-rk3399 khadas-edge-captain-rk3399 khadas-edge-rk3399 khadas-edge-v-rk3399 nanopc-t4-rk3399 pinebook-pro-rk3399 pinephone-pro-rk3399 rockpro64-rk3399 roc-pc-mezzanine-rk3399 roc-pc-rk3399)
   if [[ " ${rkspi[*]} " == *" $board "* ]]; then
     echo "Board: $board with SPI flash"
     builds/$(echo $board)/tools/mkimage -n rk3399 -T rkspi -d builds/$(echo $board)/tpl/u-boot-tpl.bin:builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/idbloader.spi
   fi
-  # build spi, and uart images for mvebu boards
-  # mvebu=(clearfog helios4 turris_omnia)
-  if [[ "  ${mvebu[*]} " == *" $board "* ]]; then
-    for target in spi uart
-    do
-      echo "Board: $board Target: $target"
-      sed -i -e '/CONFIG_MVEBU_SPL_BOOT_DEVICE_/d' configs/$(echo $board)_defconfig
-      echo CONFIG_MVEBU_SPL_BOOT_DEVICE_${target^^}=y >> configs/$(echo $board)_defconfig
-      make $(echo $board)_defconfig O=builds/$(echo $board-$target)/
-      %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board-$target)/
-    done
-  fi
 done
 
+%endif
 %endif
 
 %install
@@ -191,6 +154,7 @@ mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_mandir}/man1
 mkdir -p %{buildroot}%{_datadir}/uboot/
 
+%if %{with toolsonly}
 %ifarch aarch64
 for board in $(ls builds)
 do
@@ -204,21 +168,8 @@ do
 done
 %endif
 
-%ifarch %{arm}
-for board in $(ls builds)
-do
- mkdir -p %{buildroot}%{_datadir}/uboot/$(echo $board)/
- for file in MLO SPL spl/arndale-spl.bin spl/origen-spl.bin spl/*spl.bin u-boot.bin u-boot.dtb u-boot-dtb-tegra.bin u-boot.img u-boot.imx u-boot-spl.kwb u-boot-rockchip.bin u-boot-sunxi-with-spl.bin spl/boot.bin
- do
-  if [ -f builds/$(echo $board)/$(echo $file) ]; then
-    install -p -m 0644 builds/$(echo $board)/$(echo $file) %{buildroot}%{_datadir}/uboot/$(echo $board)/
-  fi
- done
-done
-%endif
-
 # Bit of a hack to remove binaries we don't use as they're large
-%ifarch aarch64 %{arm}
+%ifarch aarch64
 for board in $(ls builds)
 do
   rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot.dtb
@@ -243,6 +194,7 @@ do
     rm -f %{buildroot}%{_datadir}/uboot/$(echo $board)/u-boot{,-dtb}.img
   fi
 done
+%endif
 %endif
 
 %ifarch riscv64
@@ -270,36 +222,23 @@ install -p -m 0755 builds/tools/env/fw_printenv %{buildroot}%{_bindir}
 # Copy some useful docs over
 mkdir -p builds/docs
 cp -p board/hisilicon/hikey/README builds/docs/README.hikey
-cp -p board/Marvell/db-88f6820-gp/README builds/docs/README.mvebu-db-88f6820
 cp -p board/rockchip/evb_rk3399/README builds/docs/README.evb_rk3399
-cp -p board/solidrun/clearfog/README builds/docs/README.clearfog
-cp -p board/solidrun/mx6cuboxi/README builds/docs/README.mx6cuboxi
 cp -p board/sunxi/README.sunxi64 builds/docs/README.sunxi64
 cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
-cp -p board/ti/am335x/README builds/docs/README.am335x
-cp -p board/ti/omap5_uevm/README builds/docs/README.omap5_uevm
-cp -p board/udoo/README builds/docs/README.udoo
-cp -p board/wandboard/README builds/docs/README.wandboard
-cp -p board/warp/README builds/docs/README.warp
-cp -p board/warp7/README builds/docs/README.warp7
 
 %files
-%doc README doc/README.kwbimage doc/README.distro doc/README.gpt
-%doc doc/README.odroid doc/README.rockchip doc/develop/uefi doc/uImage.FIT doc/arch/arm64.rst
-%doc doc/chromium builds/docs/*
-%doc doc/board/amlogic/ doc/board/rockchip/
+%doc README doc/develop/distro.rst doc/README.gpt
+%doc doc/README.rockchip doc/develop/uefi doc/uImage.FIT doc/arch/arm64.rst
+%doc builds/docs/* doc/board/amlogic/ doc/board/rockchip/
 %{_bindir}/*
 %{_mandir}/man1/mkimage.1*
 %dir %{_datadir}/uboot/
 
+%if %{with toolsonly}
 %ifarch aarch64
 %files -n uboot-images-armv8
 %{_datadir}/uboot/*
 %endif
-
-%ifarch %{arm}
-%files -n uboot-images-armv7
-%{_datadir}/uboot/*
 %endif
 
 %ifarch riscv64
@@ -308,11 +247,55 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
-* Thu Nov 11 2021 David Abdurachmanov <david.abdurachmanov@gmail.com> - 2021.10-1.1.riscv64
-- Rebuild for a new OpenSBI
+* Thu Jun 02 2022 David Abdurachmanov <davidlt@rivosinc.com> - 2022.07-0.3.rc3.1.riscv64
+- Rebuild for riscv64
 
-* Fri Oct 07 2021 David Abdurachmanov <david.abdurachmanov@gmail.com> - 2021.10-1.0.riscv64
-- Add support for riscv64
+* Wed May 25 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.07-0.3.rc3
+- Update to 2022.07 RC3
+
+* Sat May 14 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.07-0.2.rc2
+- Update to 2022.07 RC2
+
+* Tue Apr 26 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.07-0.1.rc1
+- Update to 2022.07 RC1
+
+* Mon Apr 04 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.04-1
+- Update to 2022.04 GA
+
+* Mon Mar 28 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.04-0.4.rc5
+- Update to 2022.04 RC5
+
+* Tue Mar 08 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.04-0.3.rc3
+- Update to 2022.04 RC3
+- Enable new Rockchip devices
+
+* Tue Feb 15 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.04-0.2.rc2
+- Update to 2022.04 RC2
+
+* Wed Feb 02 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.04-0.1.rc1
+- Update to 2022.04 RC1
+
+* Sat Jan 22 2022 Fedora Release Engineering <releng@fedoraproject.org> - 2022.01-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
+
+* Mon Jan 10 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.01-1
+- Update to 2022.01
+
+* Wed Jan 05 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.01-0.3.rc4
+- Upstream fixes for PHY and UEFI
+
+* Mon Dec 20 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.01-0.2.rc4
+- Update to 2022.01 RC4
+
+* Mon Nov 15 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.01-0.1.rc2
+- Update to 2022.01 RC2
+
+* Mon Nov 15 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-3
+- Fixes for rk3399 devices
+
+* Thu Oct 14 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-2
+- Fix booting from MMC for Rockchip 3399 (rhbz #2014182)
+- Enable new rk3399 devices (Leez, NanoPi-M4B, NanoPi-4S, NanoPi-T4) (rhbz #2009126)
 
 * Mon Oct 04 2021 Peter Robinson <pbrobinson@fedoraproject.org> - 2021.10-1
 - Update to 2021.10
