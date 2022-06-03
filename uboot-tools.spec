@@ -30,13 +30,12 @@ Patch8:   0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
 Patch9:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
 
 # RISC-V (riscv64) patches
-Patch40: 0001-riscv-SiFive-Unleashed-booti-compressed-kernel-suppo.patch
-Patch41: 0002-riscv-SiFive-Unmatched-set-85C-as-the-limit.patch
-Patch42: 0003-riscv-sifive-unmatched-leave-128MiB-for-ramdisk.patch
+Patch40: 0001-riscv-sifive-unmatched-Adjust-for-big-ramdisk-image.patch
+Patch41: 0002-riscv-sifive-unleashed-Set-kernel_comp_addr_r-for-co.patch
+Patch42: 0003-riscv-qemu-Set-kernel_comp_addr_r-for-compressed-ker.patch
 Patch43: 0004-riscv-sifive-unmatched-disable-FDT-and-initrd-reloca.patch
-Patch44: 0005-riscv-add-compressed-kernel-support-for-qemu-riscv.patch
-Patch45: 0006-riscv-set-NRCPUS-to-32.patch
-Patch46: 0007-riscv-add-CONFIG_CMD_GPT_RENAME.patch
+Patch44: 0005-board-sifive-spl-Initialized-the-PWM-setting-in-the-.patch
+Patch45: 0006-board-sifive-spl-Set-remote-thermal-of-TMP451-to-85-.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
