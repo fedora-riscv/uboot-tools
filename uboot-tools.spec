@@ -3,7 +3,7 @@
 
 Name:     uboot-tools
 Version:  2022.04
-Release:  1%{?candidate:.%{candidate}}%{?dist}
+Release:  2%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -23,8 +23,10 @@ Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch4:   rpi-fallback-to-max-clock-for-mmc.patch
 Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
 # Rockchips improvements
-Patch8:   0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
-Patch9:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
+Patch7:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
+Patch8:   rockchip-pbp-fixes.patch
+Patch10:  CVE-2022-30767.patch
+Patch11:  zlib-Port-fix-for-CVE-2018-25032-to-U-Boot.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
@@ -247,6 +249,11 @@ cp -p board/warp7/README builds/docs/README.warp7
 %endif
 
 %changelog
+* Sun Jun 12 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.04-2
+- Fixes for Pine64 Pinebook Pro
+- Fix for CVE-2022-30767 (NFSv2)
+- Fix for CVE-2018-25032 (zlib)
+
 * Mon Apr 04 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.04-1
 - Update to 2022.04 GA
 
