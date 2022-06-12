@@ -63,3 +63,74 @@ index e6f7a8469a3..b0c3527fab0 100644
 -- 
 2.36.1
 
+From 8bca90472e0d71e5344711b6f5fe8dc95e19af5a Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Sun, 12 Jun 2022 15:12:47 +0100
+Subject: [PATCH] rockchip: pinebook-pro: sync PBP dtb to 5.18
+
+Sync the pinebook pro to upstream 5.18, in particular this brings
+brings in a fix so the DP is disabled so Linux will actually boot.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ arch/arm/dts/rk3399-pinebook-pro.dts | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/arch/arm/dts/rk3399-pinebook-pro.dts b/arch/arm/dts/rk3399-pinebook-pro.dts
+index 2b5f001ff4a..d6b68d77d63 100644
+--- a/arch/arm/dts/rk3399-pinebook-pro.dts
++++ b/arch/arm/dts/rk3399-pinebook-pro.dts
+@@ -17,6 +17,7 @@
+ / {
+ 	model = "Pine64 Pinebook Pro";
+ 	compatible = "pine64,pinebook-pro", "rockchip,rk3399";
++	chassis-type = "laptop";
+ 
+ 	aliases {
+ 		mmc0 = &sdio0;
+@@ -242,12 +243,12 @@
+ 	vdd_log: vdd-log {
+ 		compatible = "pwm-regulator";
+ 		pwms = <&pwm2 0 25000 1>;
++		pwm-supply = <&vcc_sysin>;
+ 		regulator-name = "vdd_log";
+ 		regulator-always-on;
+ 		regulator-boot-on;
+ 		regulator-min-microvolt = <800000>;
+ 		regulator-max-microvolt = <1400000>;
+-		vin-supply = <&vcc_sysin>;
+ 
+ 		regulator-state-mem {
+ 			regulator-on-in-suspend;
+@@ -385,10 +386,6 @@
+ 	};
+ };
+ 
+-&cdn_dp {
+-	status = "okay";
+-};
+-
+ &cpu_b0 {
+ 	cpu-supply = <&vdd_cpu_b>;
+ };
+@@ -475,8 +472,6 @@
+ 		vcc10-supply = <&vcc_sysin>;
+ 		vcc11-supply = <&vcc_sysin>;
+ 		vcc12-supply = <&vcc3v3_sys>;
+-		vcc13-supply = <&vcc_sysin>;
+-		vcc14-supply = <&vcc_sysin>;
+ 
+ 		regulators {
+ 			/* rk3399 center logic supply */
+@@ -711,7 +706,7 @@
+ 
+ 		connector {
+ 			compatible = "usb-c-connector";
+-			data-role = "host";
++			data-role = "dual";
+ 			label = "USB-C";
+ 			op-sink-microwatt = <1000000>;
+ 			power-role = "dual";
+-- 
+2.36.1
+
