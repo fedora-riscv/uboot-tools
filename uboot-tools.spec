@@ -1,4 +1,4 @@
-%global candidate rc3
+%global candidate rc4
 %bcond_without toolsonly
 
 # Set it to "opensbi" (stable) or opensbi-unstable (unstable, git)
@@ -6,7 +6,7 @@
 
 Name:     uboot-tools
 Version:  2022.07
-Release:  0.3%{?candidate:.%{candidate}}.1.riscv64%{?dist}
+Release:  0.4%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -26,8 +26,8 @@ Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch4:   rpi-fallback-to-max-clock-for-mmc.patch
 Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
 # Rockchips improvements
-Patch8:   0001-Revert-spi-spi-uclass-Add-support-to-manually-reloca.patch
-Patch9:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
+Patch7:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
+Patch8:   rockchip-general-fixes.patch
 
 # RISC-V (riscv64) patches
 Patch40: 0001-riscv-sifive-unmatched-Adjust-for-big-ramdisk-image.patch
@@ -138,6 +138,11 @@ do
   %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board)/
 
   # build spi images for rockchip boards with SPI flash
+  rkspi=(rock64-rk3328)
+  if [[ " ${rkspi[*]} " == *" $board "* ]]; then
+    echo "Board: $board with SPI flash"
+    builds/$(echo $board)/tools/mkimage -n rk3328 -T rkspi -d builds/$(echo $board)/tpl/u-boot-tpl.bin:builds/$(echo $board)/spl/u-boot-spl.bin builds/$(echo $board)/idbloader.spi
+  fi
   rkspi=(evb-rk3399 khadas-edge-captain-rk3399 khadas-edge-rk3399 khadas-edge-v-rk3399 nanopc-t4-rk3399 pinebook-pro-rk3399 pinephone-pro-rk3399 rockpro64-rk3399 roc-pc-mezzanine-rk3399 roc-pc-rk3399)
   if [[ " ${rkspi[*]} " == *" $board "* ]]; then
     echo "Board: $board with SPI flash"
@@ -246,8 +251,12 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
-* Thu Jun 02 2022 David Abdurachmanov <davidlt@rivosinc.com> - 2022.07-0.3.rc3.1.riscv64
+* Thu Jun 13 2022 David Abdurachmanov <davidlt@rivosinc.com> - 2022.07-0.4.rc4.1.riscv64
 - Rebuild for riscv64
+
+* Sun Jun 12 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.07-0.4.rc4
+- Update to 2022.07 RC4
+- Some minor Rockchips device fixes
 
 * Wed May 25 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.07-0.3.rc3
 - Update to 2022.07 RC3

@@ -1,0 +1,136 @@
+From 2d9350c50a9659cc2a247cdea07f0eacffa3cb32 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Sun, 12 Jun 2022 14:44:44 +0100
+Subject: [PATCH] rockchip: pinebook-pro: minor SPI flash fixes
+
+Set a default offset for environment so it doesn't write it to
+unexpected locations, drop unneeded mtd config option.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ configs/pinebook-pro-rk3399_defconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configs/pinebook-pro-rk3399_defconfig b/configs/pinebook-pro-rk3399_defconfig
+index 8ca1d0708f9..aaa52c6ea70 100644
+--- a/configs/pinebook-pro-rk3399_defconfig
++++ b/configs/pinebook-pro-rk3399_defconfig
+@@ -5,6 +5,7 @@ CONFIG_ARCH_ROCKCHIP=y
+ CONFIG_SYS_TEXT_BASE=0x00200000
+ CONFIG_NR_DRAM_BANKS=1
+ CONFIG_ENV_SIZE=0x8000
++CONFIG_ENV_OFFSET=0x3F8000
+ CONFIG_DEFAULT_DEVICE_TREE="rk3399-pinebook-pro"
+ CONFIG_ROCKCHIP_RK3399=y
+ CONFIG_TARGET_PINEBOOK_PRO_RK3399=y
+@@ -22,7 +23,6 @@ CONFIG_MISC_INIT_R=y
+ # CONFIG_SPL_RAW_IMAGE_SUPPORT is not set
+ CONFIG_SPL_STACK_R=y
+ CONFIG_SPL_STACK_R_MALLOC_SIMPLE_LEN=0x10000
+-CONFIG_SPL_MTD_SUPPORT=y
+ CONFIG_SPL_SPI_LOAD=y
+ CONFIG_TPL=y
+ CONFIG_CMD_BOOTZ=y
+-- 
+2.36.1
+
+From 27ba8e2f904063aec5196f86dd0332bf58a60259 Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Sun, 12 Jun 2022 14:50:42 +0100
+Subject: [PATCH] rockchip: rockpro64: enable leds
+
+The Rockpro64 has some GPIO leds so let's enable them so the
+user gets some output in early boot.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ configs/rockpro64-rk3399_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/configs/rockpro64-rk3399_defconfig b/configs/rockpro64-rk3399_defconfig
+index e6f7a8469a3..b0c3527fab0 100644
+--- a/configs/rockpro64-rk3399_defconfig
++++ b/configs/rockpro64-rk3399_defconfig
+@@ -42,6 +42,8 @@ CONFIG_AHCI_PCI=y
+ CONFIG_SATA_SIL=y
+ CONFIG_ROCKCHIP_GPIO=y
+ CONFIG_SYS_I2C_ROCKCHIP=y
++CONFIG_LED=y
++CONFIG_LED_GPIO=y
+ CONFIG_MISC=y
+ CONFIG_ROCKCHIP_EFUSE=y
+ CONFIG_MMC_DW=y
+-- 
+2.36.1
+
+From 8bca90472e0d71e5344711b6f5fe8dc95e19af5a Mon Sep 17 00:00:00 2001
+From: Peter Robinson <pbrobinson@gmail.com>
+Date: Sun, 12 Jun 2022 15:12:47 +0100
+Subject: [PATCH] rockchip: pinebook-pro: sync PBP dtb to 5.18
+
+Sync the pinebook pro to upstream 5.18, in particular this brings
+brings in a fix so the DP is disabled so Linux will actually boot.
+
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ arch/arm/dts/rk3399-pinebook-pro.dts | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/arch/arm/dts/rk3399-pinebook-pro.dts b/arch/arm/dts/rk3399-pinebook-pro.dts
+index 2b5f001ff4a..d6b68d77d63 100644
+--- a/arch/arm/dts/rk3399-pinebook-pro.dts
++++ b/arch/arm/dts/rk3399-pinebook-pro.dts
+@@ -17,6 +17,7 @@
+ / {
+ 	model = "Pine64 Pinebook Pro";
+ 	compatible = "pine64,pinebook-pro", "rockchip,rk3399";
++	chassis-type = "laptop";
+ 
+ 	aliases {
+ 		mmc0 = &sdio0;
+@@ -242,12 +243,12 @@
+ 	vdd_log: vdd-log {
+ 		compatible = "pwm-regulator";
+ 		pwms = <&pwm2 0 25000 1>;
++		pwm-supply = <&vcc_sysin>;
+ 		regulator-name = "vdd_log";
+ 		regulator-always-on;
+ 		regulator-boot-on;
+ 		regulator-min-microvolt = <800000>;
+ 		regulator-max-microvolt = <1400000>;
+-		vin-supply = <&vcc_sysin>;
+ 
+ 		regulator-state-mem {
+ 			regulator-on-in-suspend;
+@@ -385,10 +386,6 @@
+ 	};
+ };
+ 
+-&cdn_dp {
+-	status = "okay";
+-};
+-
+ &cpu_b0 {
+ 	cpu-supply = <&vdd_cpu_b>;
+ };
+@@ -475,8 +472,6 @@
+ 		vcc10-supply = <&vcc_sysin>;
+ 		vcc11-supply = <&vcc_sysin>;
+ 		vcc12-supply = <&vcc3v3_sys>;
+-		vcc13-supply = <&vcc_sysin>;
+-		vcc14-supply = <&vcc_sysin>;
+ 
+ 		regulators {
+ 			/* rk3399 center logic supply */
+@@ -711,7 +706,7 @@
+ 
+ 		connector {
+ 			compatible = "usb-c-connector";
+-			data-role = "host";
++			data-role = "dual";
+ 			label = "USB-C";
+ 			op-sink-microwatt = <1000000>;
+ 			power-role = "dual";
+-- 
+2.36.1
+
