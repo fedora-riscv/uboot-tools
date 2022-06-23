@@ -6,7 +6,7 @@
 
 Name:     uboot-tools
 Version:  2022.07
-Release:  0.4%{?candidate:.%{candidate}}.1.riscv64%{?dist}
+Release:  0.4%{?candidate:.%{candidate}}.2.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -248,6 +248,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Thu Jun 23 2022 David Abdurachmanov <davidlt@rivosinc.com> - 2022.07-0.4.rc4.2.riscv64
+- Rebuild for riscv64 (new OpenSBI)
+
 * Thu Jun 13 2022 David Abdurachmanov <davidlt@rivosinc.com> - 2022.07-0.4.rc4.1.riscv64
 - Rebuild for riscv64
 
