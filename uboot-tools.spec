@@ -33,6 +33,7 @@ Patch8:   rockchip-general-fixes.patch
 Patch43: 0004-riscv-sifive-unmatched-disable-FDT-and-initrd-reloca.patch
 Patch44: 0005-board-sifive-spl-Initialized-the-PWM-setting-in-the-.patch
 Patch45: 0006-board-sifive-spl-Set-remote-thermal-of-TMP451-to-85-.patch
+Patch46: 0001-Enable-sbi-command-and-SBI-reset.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
