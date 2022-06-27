@@ -1,4 +1,4 @@
-%global candidate rc4
+%global candidate rc5
 %bcond_without toolsonly
 
 # Set it to "opensbi" (stable) or opensbi-unstable (unstable, git)
@@ -6,7 +6,7 @@
 
 Name:     uboot-tools
 Version:  2022.07
-Release:  0.4%{?candidate:.%{candidate}}.2.riscv64%{?dist}
+Release:  0.5%{?candidate:.%{candidate}}.0.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -249,11 +249,11 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
-* Thu Jun 23 2022 David Abdurachmanov <davidlt@rivosinc.com> - 2022.07-0.4.rc4.2.riscv64
-- Rebuild for riscv64 (new OpenSBI)
+* Mon Jun 27 2022 David Abdurachmanov <davidlt@rivosinc.com> - 2022.07-0.5.rc5.0.riscv64
+- Enable riscv64
 
-* Thu Jun 13 2022 David Abdurachmanov <davidlt@rivosinc.com> - 2022.07-0.4.rc4.1.riscv64
-- Rebuild for riscv64
+* Mon Jun 20 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.07-0.5.rc5
+- Update to 2022.07 RC5
 
 * Sun Jun 12 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.07-0.4.rc4
 - Update to 2022.07 RC4
