@@ -6,7 +6,7 @@
 
 Name:     uboot-tools
 Version:  2022.07
-Release:  0.5%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Release:  0.5%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -33,7 +33,7 @@ Patch8:   rockchip-general-fixes.patch
 Patch43: 0004-riscv-sifive-unmatched-disable-FDT-and-initrd-reloca.patch
 Patch44: 0005-board-sifive-spl-Initialized-the-PWM-setting-in-the-.patch
 Patch45: 0006-board-sifive-spl-Set-remote-thermal-of-TMP451-to-85-.patch
-Patch46: 0001-Enable-sbi-command-and-SBI-reset.patch
+Patch46: 0001-Enable-sbi-command-and-SBI-sysreset.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
@@ -249,6 +249,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Wed Jun 29 2022 David Abdurachmanov <davidlt@rivosinc.com> - 2022.07-0.5.rc5.1.riscv64
+- Enable SBI command and SBI sysreset (reset and poweroff commands)
+
 * Mon Jun 27 2022 David Abdurachmanov <davidlt@rivosinc.com> - 2022.07-0.5.rc5.0.riscv64
 - Enable riscv64
 
