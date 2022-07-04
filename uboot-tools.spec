@@ -1,9 +1,9 @@
-%global candidate rc5
+%global candidate rc6
 %bcond_without toolsonly
 
 Name:     uboot-tools
 Version:  2022.07
-Release:  0.5%{?candidate:.%{candidate}}%{?dist}
+Release:  0.6%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -23,7 +23,6 @@ Patch4:   rpi-fallback-to-max-clock-for-mmc.patch
 Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
 # Rockchips improvements
 Patch7:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
-Patch8:   rockchip-general-fixes.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
@@ -204,6 +203,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Mon Jul 04 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.07-0.6.rc6
+- Update to 2022.07 RC6
+
 * Mon Jun 20 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.07-0.5.rc5
 - Update to 2022.07 RC5
 
