@@ -1,9 +1,9 @@
-%global candidate rc6
+#global candidate rc0
 %bcond_without toolsonly
 
 Name:     uboot-tools
 Version:  2022.07
-Release:  0.6%{?candidate:.%{candidate}}%{?dist}
+Release:  1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -203,6 +203,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Sun Jul 17 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.07-1
+- Update to 2022.07 GA
+
 * Mon Jul 04 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.07-0.6.rc6
 - Update to 2022.07 RC6
 
