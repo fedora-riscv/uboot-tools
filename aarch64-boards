@@ -6,6 +6,7 @@ bananapi_m64
 beelink_gs1
 dragonboard410c
 dragonboard820c
+dragonboard845c
 evb-rk3328
 evb-rk3399
 ficus-rk3399
@@ -58,7 +59,6 @@ pine64-lts
 pine64_plus
 pinebook
 pinebook-pro-rk3399
-pinephone-pro-rk3399
 pine_h64
 pinephone
 pinetab

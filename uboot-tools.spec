@@ -1,9 +1,13 @@
-#global candidate rc0
+%global candidate rc1
+%if !0%{?rhel}
 %bcond_without toolsonly
+%else
+%bcond_with toolsonly
+%endif
 
 Name:     uboot-tools
-Version:  2022.07
-Release:  2%{?candidate:.%{candidate}}%{?dist}
+Version:  2022.10
+Release:  0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -72,9 +76,6 @@ mkdir builds
 %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" tools-all O=builds/
 
 %if %{with toolsonly}
-# U-Boot device firmwares don't currently support LTO
-%define _lto_cflags %{nil}
-
 %ifarch aarch64
 for board in $(cat %{_arch}-boards)
 do
@@ -203,6 +204,10 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Thu Jul 28 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-0.1.rc1
+- Update to 2022.10 RC1
+- Enable LTO for firmware builds
+
 * Sat Jul 23 2022 Fedora Release Engineering <releng@fedoraproject.org> - 2022.07-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
 
