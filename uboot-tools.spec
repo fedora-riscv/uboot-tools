@@ -7,7 +7,7 @@
 
 Name:     uboot-tools
 Version:  2022.10
-Release:  0.1%{?candidate:.%{candidate}}%{?dist}
+Release:  0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -25,6 +25,7 @@ Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
 Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch4:   rpi-fallback-to-max-clock-for-mmc.patch
 Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
+Patch6:   rpi-Copy-properties-from-firmware-DT-to-loaded-DT.patch
 # Rockchips improvements
 Patch7:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
 
@@ -204,6 +205,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Tue Aug 16 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-0.2.rc1
+- Fix for DT property propogation via firmware
+
 * Thu Jul 28 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-0.1.rc1
 - Update to 2022.10 RC1
 - Enable LTO for firmware builds
