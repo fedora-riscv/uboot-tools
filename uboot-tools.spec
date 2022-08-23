@@ -1,4 +1,4 @@
-%global candidate rc1
+%global candidate rc3
 %if !0%{?rhel}
 %bcond_without toolsonly
 %else
@@ -7,7 +7,7 @@
 
 Name:     uboot-tools
 Version:  2022.10
-Release:  0.3%{?candidate:.%{candidate}}%{?dist}
+Release:  0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -208,6 +208,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Tue Aug 23 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-0.4.rc3
+- Update to 2022.10 RC3
+
 * Mon Aug 22 2022 Davide Cavalca <dcavalca@fedoraproject.org> - 2022.10-0.3.rc1
 - Install nodtb variant for Apple M1 (rhbz#2068958)
 
