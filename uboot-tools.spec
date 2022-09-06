@@ -1,4 +1,4 @@
-%global candidate rc3
+%global candidate rc4
 %if !0%{?rhel}
 %bcond_without toolsonly
 %else
@@ -7,7 +7,7 @@
 
 Name:     uboot-tools
 Version:  2022.10
-Release:  0.4%{?candidate:.%{candidate}}%{?dist}
+Release:  0.5%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -19,6 +19,7 @@ Source1:  aarch64-boards
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
 Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+Patch2:   smbios-test-dmi.patch
 
 # Board fixes and enablement
 # RPi - uses RPI firmware device tree for HAT support
@@ -28,6 +29,7 @@ Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
 Patch6:   rpi-Copy-properties-from-firmware-DT-to-loaded-DT.patch
 # Rockchips improvements
 Patch7:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
+Patch8:   0001-Revert-power-pmic-rk8xx-Support-sysreset-shutdown-me.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
@@ -208,6 +210,10 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Tue Sep 06 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-0.5.rc4
+- Update to 2022.10 RC4
+- Fix for booting Rockchip devices from NVME
+
 * Tue Aug 23 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-0.4.rc3
 - Update to 2022.10 RC3
 
