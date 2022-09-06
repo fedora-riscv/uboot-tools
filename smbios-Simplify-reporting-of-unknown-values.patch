@@ -1,0 +1,544 @@
+From patchwork Tue Sep  6 13:44:25 2022
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+X-Patchwork-Id: 1674857
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=wUY2RcfH;
+	dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-384))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4MMRT72TCPz1yhd
+	for <incoming@patchwork.ozlabs.org>; Tue,  6 Sep 2022 23:44:43 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 498F2849CE;
+	Tue,  6 Sep 2022 15:44:39 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="wUY2RcfH";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id A8842849CF; Tue,  6 Sep 2022 15:44:37 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,SPF_HELO_NONE,SPF_PASS,
+ T_SCC_BODY_TEXT_LINE autolearn=ham autolearn_force=no version=3.4.2
+Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com
+ [IPv6:2a00:1450:4864:20::52d])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 403A5849AA
+ for <u-boot@lists.denx.de>; Tue,  6 Sep 2022 15:44:35 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=ilias.apalodimas@linaro.org
+Received: by mail-ed1-x52d.google.com with SMTP id x73so8243364ede.10
+ for <u-boot@lists.denx.de>; Tue, 06 Sep 2022 06:44:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date;
+ bh=YBbhuTYZcGSI4FSsstTIADofj6ZEC8vsTpd/U8gWDlU=;
+ b=wUY2RcfHqhMQ1dgd2my7jtmfsgHjAF8xFa3HnTkB/tUGQL/oQyls7ODcVui/VImHlf
+ Ah33xwYqK1nwEuoS8HqkWcksTr48pKf/EikkkBbHif0XnfS4oySI3RHo7WW6Yi8HQUoP
+ tbuQ3LPSYgo+62HaqTYVoJ2g6jc1qiEFe/+y6hR2BfmyKd0g/SxwLS9P1QuQosdhX+uO
+ DKWWukFYFV06Nn7x/3oiyoXq33VAWatgQBv/sPC7dBgh/EpnobDpI8NhNhJAkFIcAUrU
+ B91PBwNRtB1Lsf+Eo3WjLtQbinL3h/VvogRSvZEoKCmHY5dbTYB8G1uNzksnK6QecIRu
+ q9qA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-message-state:from:to:cc:subject:date;
+ bh=YBbhuTYZcGSI4FSsstTIADofj6ZEC8vsTpd/U8gWDlU=;
+ b=KfQ/P0sYI7szdfgs6GA5oPXctzQ8yfxjRs7PgVHFg7jl09SeFl3jpKzaMGbC7GlEgM
+ JXt2VP6w9TndL/D71cR8w9BObY2mZJoLRP/s25LpSU6izkisnuueyGeqKegGEfGE+4B3
+ 9xaG/EUlPZmHlAem6bOf9Dl6lE5WkT6SnTDopwODIbcTAWlIa8Gjtw9XBaaa8iRnVuTn
+ S3IwY9R7DLaSFBQXTVHmAYnhCc2b5XCRKlSNwmDE65+LqvOdAu3MTbA5/YyL9pEPjHi9
+ 4q0ZQksAE0olpQQwxyjHrvz7h7ktSuJoesa/A4dX3PEbzSbBmPI1CGtPy27/luAUCH3F
+ e8Vw==
+X-Gm-Message-State: ACgBeo2YRons+T+T1+BdP4+uyEFge3LrQ/gS2VYwuVZg325XGZ8HVnXH
+ Lq8no+qriMaFPrto6+L889ufiYLHsm+dZQ==
+X-Google-Smtp-Source: 
+ AA6agR6coLdFIB45xwZJzpltd9Qfi6bEAn6J22G77ibwSDNyt1L1YbxRL9dlK4pmf9A6n2RN31Ug2w==
+X-Received: by 2002:aa7:c84f:0:b0:446:2bfb:5a63 with SMTP id
+ g15-20020aa7c84f000000b004462bfb5a63mr17498596edt.172.1662471874779;
+ Tue, 06 Sep 2022 06:44:34 -0700 (PDT)
+Received: from localhost.localdomain ([46.103.15.185])
+ by smtp.gmail.com with ESMTPSA id
+ p23-20020a056402501700b0043ba7df7a42sm8473330eda.26.2022.09.06.06.44.33
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 06 Sep 2022 06:44:34 -0700 (PDT)
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+To: u-boot@lists.denx.de
+Cc: trini@konsulko.com, sjg@chromium.org, heinrich.schuchardt@canonical.com,
+ pbrobinson@gmail.com, Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Subject: [PATCH 1/2] smbios: Simplify reporting of unknown values
+Date: Tue,  6 Sep 2022 16:44:25 +0300
+Message-Id: <20220906134426.53748-1-ilias.apalodimas@linaro.org>
+X-Mailer: git-send-email 2.37.2
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.6 at phobos.denx.de
+X-Virus-Status: Clean
+
+If a value is not valid during the DT or SYSINFO parsing,  we explicitly
+set that to "Unknown Product" and "Unknown" for the product and
+manufacturer respectively.  It's cleaner if we move the checks insisde
+smbios_add_string() and always report "Unknown" regardless of the missing
+field.
+
+pre-patch dmidecode
+<snip>
+Handle 0x0001, DMI type 1, 27 bytes
+System Information
+        Manufacturer: Unknown
+        Product Name: Unknown Product
+        Version: Not Specified
+        Serial Number: Not Specified
+        UUID: Not Settable
+        Wake-up Type: Reserved
+        SKU Number: Not Specified
+        Family: Not Specified
+
+Handle 0x0002, DMI type 2, 14 bytes
+Base Board Information
+        Manufacturer: Unknown
+        Product Name: Unknown Product
+        Version: Not Specified
+        Serial Number: Not Specified
+        Asset Tag: Not Specified
+        Features:
+                Board is a hosting board
+        Location In Chassis: Not Specified
+        Chassis Handle: 0x0000
+        Type: Motherboard
+<snip>
+
+post-patch dmidecode:
+
+Handle 0x0001, DMI type 1, 27 bytes
+System Information
+        Manufacturer: Unknown
+        Product Name: Unknown
+        Version: Unknown
+        Serial Number: Unknown
+        UUID: Not Settable
+        Wake-up Type: Reserved
+        SKU Number: Unknown
+        Family: Unknown
+
+Handle 0x0002, DMI type 2, 14 bytes
+Base Board Information
+        Manufacturer: Unknown
+        Product Name: Unknown
+        Version: Unknown
+        Serial Number: Not Specified
+        Asset Tag: Unknown
+        Features:
+                Board is a hosting board
+        Location In Chassis: Not Specified
+        Chassis Handle: 0x0000
+        Type: Motherboard
+
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+---
+ lib/smbios.c | 17 +++--------------
+ 1 file changed, 3 insertions(+), 14 deletions(-)
+
+diff --git a/lib/smbios.c b/lib/smbios.c
+index d7f4999e8b2a..fcc8686993ef 100644
+--- a/lib/smbios.c
++++ b/lib/smbios.c
+@@ -102,7 +102,7 @@ static int smbios_add_string(struct smbios_ctx *ctx, const char *str)
+ 	int i = 1;
+ 	char *p = ctx->eos;
+ 
+-	if (!*str)
++	if (!str || !*str)
+ 		str = "Unknown";
+ 
+ 	for (;;) {
+@@ -151,8 +151,7 @@ static int smbios_add_prop_si(struct smbios_ctx *ctx, const char *prop,
+ 		const char *str;
+ 
+ 		str = ofnode_read_string(ctx->node, prop);
+-		if (str)
+-			return smbios_add_string(ctx, str);
++		return smbios_add_string(ctx, str);
+ 	}
+ 
+ 	return 0;
+@@ -231,7 +230,7 @@ static int smbios_write_type0(ulong *current, int handle,
+ 	t->vendor = smbios_add_string(ctx, "U-Boot");
+ 
+ 	t->bios_ver = smbios_add_prop(ctx, "version");
+-	if (!t->bios_ver)
++	if (!strcmp(ctx->last_str, "Unknown"))
+ 		t->bios_ver = smbios_add_string(ctx, PLAIN_VERSION);
+ 	if (t->bios_ver)
+ 		gd->smbios_version = ctx->last_str;
+@@ -281,11 +280,7 @@ static int smbios_write_type1(ulong *current, int handle,
+ 	fill_smbios_header(t, SMBIOS_SYSTEM_INFORMATION, len, handle);
+ 	smbios_set_eos(ctx, t->eos);
+ 	t->manufacturer = smbios_add_prop(ctx, "manufacturer");
+-	if (!t->manufacturer)
+-		t->manufacturer = smbios_add_string(ctx, "Unknown");
+ 	t->product_name = smbios_add_prop(ctx, "product");
+-	if (!t->product_name)
+-		t->product_name = smbios_add_string(ctx, "Unknown Product");
+ 	t->version = smbios_add_prop_si(ctx, "version",
+ 					SYSINFO_ID_SMBIOS_SYSTEM_VERSION);
+ 	if (serial_str) {
+@@ -315,11 +310,7 @@ static int smbios_write_type2(ulong *current, int handle,
+ 	fill_smbios_header(t, SMBIOS_BOARD_INFORMATION, len, handle);
+ 	smbios_set_eos(ctx, t->eos);
+ 	t->manufacturer = smbios_add_prop(ctx, "manufacturer");
+-	if (!t->manufacturer)
+-		t->manufacturer = smbios_add_string(ctx, "Unknown");
+ 	t->product_name = smbios_add_prop(ctx, "product");
+-	if (!t->product_name)
+-		t->product_name = smbios_add_string(ctx, "Unknown Product");
+ 	t->version = smbios_add_prop_si(ctx, "version",
+ 					SYSINFO_ID_SMBIOS_BASEBOARD_VERSION);
+ 	t->asset_tag_number = smbios_add_prop(ctx, "asset-tag");
+@@ -344,8 +335,6 @@ static int smbios_write_type3(ulong *current, int handle,
+ 	fill_smbios_header(t, SMBIOS_SYSTEM_ENCLOSURE, len, handle);
+ 	smbios_set_eos(ctx, t->eos);
+ 	t->manufacturer = smbios_add_prop(ctx, "manufacturer");
+-	if (!t->manufacturer)
+-		t->manufacturer = smbios_add_string(ctx, "Unknown");
+ 	t->chassis_type = SMBIOS_ENCLOSURE_DESKTOP;
+ 	t->bootup_state = SMBIOS_STATE_SAFE;
+ 	t->power_supply_state = SMBIOS_STATE_SAFE;
+
+From patchwork Tue Sep  6 13:44:26 2022
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+X-Patchwork-Id: 1674858
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256
+ header.s=google header.b=wBCOiKYw;
+	dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-384))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4MMRTM5pHRz1yhk
+	for <incoming@patchwork.ozlabs.org>; Tue,  6 Sep 2022 23:44:55 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 3639F849EA;
+	Tue,  6 Sep 2022 15:44:53 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="wBCOiKYw";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id E57FC84A1A; Tue,  6 Sep 2022 15:44:51 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,SPF_HELO_NONE,SPF_PASS,
+ T_SCC_BODY_TEXT_LINE autolearn=ham autolearn_force=no version=3.4.2
+Received: from mail-ed1-x52f.google.com (mail-ed1-x52f.google.com
+ [IPv6:2a00:1450:4864:20::52f])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 60CD0849AA
+ for <u-boot@lists.denx.de>; Tue,  6 Sep 2022 15:44:49 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=ilias.apalodimas@linaro.org
+Received: by mail-ed1-x52f.google.com with SMTP id z21so5172669edi.1
+ for <u-boot@lists.denx.de>; Tue, 06 Sep 2022 06:44:49 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
+ bh=KsGBN7dLy4q3TeQQmsDywPtn2m3V5eSK1ppBgO8D3xg=;
+ b=wBCOiKYwM4mGDZUo6l68tblLVt57cCnO0dlzFPj9+m6cwKXe3agxiM3w4t9T5c822i
+ vHmFd2F08bUrX81t/h4PDzg0mngbB9Rc9o4i3td1G9Zw6NdmogU7T7gEUyKKcTc80AWl
+ QbbYgxulWB5Eg2dTQ3tlb2xmb5BU1/X0zl/rOC6l89urohdQtpIJ4XgFlijFlBgxh8XD
+ aHytniLKGTLlVdJAIobcF9aM/ihpO7LPTDZ4SPCBt4t9+UWGW7vuTPDPDkCRiaaFestv
+ 9P32ZrGj43CH92zBQtpgZICS0UhzD3oYWJkwsmFbfxddgY5VD5SQi69VzD1CfFOvTGgX
+ 5HBg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date;
+ bh=KsGBN7dLy4q3TeQQmsDywPtn2m3V5eSK1ppBgO8D3xg=;
+ b=h1yL2aMN8ooI48PrqxwSNjw+MAj6qGtRMJjV8AWmRfv7nVQ97I/cXbauy/NItVEWP0
+ eO4WFqVMQO+xyGn1S5w0MXYGVbEpVNxf0gwM7n7Ad+K2E2PDHyu6glGTvcqCW11gPGOJ
+ uNDyo6pu7OtmOBso2OaL5eMGhw66ZGqQbzlQtO0mhqJf1RtQ9fRduRZrfTzAR9wIrM4Y
+ qR3iK6b4O97tu0W0SctGf3rCNzI2bDv/zBKRvfSJ6q7s4DhLDxBJyQjySBo0Ee6UIwKc
+ 5q8zldycF/JfIbqzlJe6DaeoeDbzJ7qLBPvDmxQ7owSV9ftEa8lh/IIdPn13uDL2Bxjz
+ WLbg==
+X-Gm-Message-State: ACgBeo0DsGDn9dDw7GQ5K44iwyXJqKH0pM3NWFxuDlmBNzKLyzH8SEzb
+ 03ImCopxuD/6oyVtH7ygeEl2Cc6GlNzVNQ==
+X-Google-Smtp-Source: 
+ AA6agR6kpp8KIkqO+/pui5Dy7mRTrk+S2U0k99eVOJv3PGkIDZ8H0oqIBypOwW5nogFds0FAjF4TXg==
+X-Received: by 2002:a05:6402:f18:b0:44d:9a45:394 with SMTP id
+ i24-20020a0564020f1800b0044d9a450394mr12375719eda.138.1662471889015;
+ Tue, 06 Sep 2022 06:44:49 -0700 (PDT)
+Received: from localhost.localdomain ([46.103.15.185])
+ by smtp.gmail.com with ESMTPSA id
+ p23-20020a056402501700b0043ba7df7a42sm8473330eda.26.2022.09.06.06.44.48
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 06 Sep 2022 06:44:48 -0700 (PDT)
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+To: u-boot@lists.denx.de
+Cc: trini@konsulko.com, sjg@chromium.org, heinrich.schuchardt@canonical.com,
+ pbrobinson@gmail.com, Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Subject: [PATCH 2/2] smbios: Fallback to the default DT if sysinfo nodes are
+ missing
+Date: Tue,  6 Sep 2022 16:44:26 +0300
+Message-Id: <20220906134426.53748-2-ilias.apalodimas@linaro.org>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20220906134426.53748-1-ilias.apalodimas@linaro.org>
+References: <20220906134426.53748-1-ilias.apalodimas@linaro.org>
+MIME-Version: 1.0
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.6 at phobos.denx.de
+X-Virus-Status: Clean
+
+In order to fill in the SMBIOS tables U-Boot currently relies on a
+"u-boot,sysinfo-smbios" compatible node.  This is fine for the boards
+that already include such nodes.  However with some recent EFI changes,
+the majority of boards can boot up distros, which usually rely on
+things like dmidecode etc for their reporting.  For boards that
+lack this special node the SMBIOS output looks like:
+
+System Information
+        Manufacturer: Unknown
+        Product Name: Unknown
+        Version: Unknown
+        Serial Number: Unknown
+        UUID: Not Settable
+        Wake-up Type: Reserved
+        SKU Number: Unknown
+        Family: Unknown
+
+This looks problematic since most of the info are "Unknown".  The DT spec
+specifies standard properties containing relevant information like
+'model' and 'compatible' for which the suggested format is
+<manufacturer,model>.  So let's add a last resort to our current
+smbios parsing.  If none of the sysinfo properties are found,  we can
+scan the root node for 'model' and 'compatible'.
+
+pre-patch dmidecode:
+<snip>
+Handle 0x0001, DMI type 1, 27 bytes
+System Information
+        Manufacturer: Unknown
+        Product Name: Unknown
+        Version: Unknown
+        Serial Number: Unknown
+        UUID: Not Settable
+        Wake-up Type: Reserved
+        SKU Number: Unknown
+        Family: Unknown
+
+Handle 0x0002, DMI type 2, 14 bytes
+Base Board Information
+        Manufacturer: Unknown
+        Product Name: Unknown
+        Version: Unknown
+        Serial Number: Not Specified
+        Asset Tag: Unknown
+        Features:
+                Board is a hosting board
+        Location In Chassis: Not Specified
+        Chassis Handle: 0x0000
+        Type: Motherboard
+
+Handle 0x0003, DMI type 3, 21 bytes
+Chassis Information
+        Manufacturer: Unknown
+        Type: Desktop
+        Lock: Not Present
+        Version: Not Specified
+        Serial Number: Not Specified
+        Asset Tag: Not Specified
+        Boot-up State: Safe
+        Power Supply State: Safe
+        Thermal State: Safe
+        Security Status: None
+        OEM Information: 0x00000000
+        Height: Unspecified
+        Number Of Power Cords: Unspecified
+        Contained Elements: 0
+<snip>
+
+post-pastch dmidecode:
+<snip>
+Handle 0x0001, DMI type 1, 27 bytes
+System Information
+        Manufacturer: socionext,developer-box
+        Product Name: Socionext Developer Box
+        Version: Unknown
+        Serial Number: Unknown
+        UUID: Not Settable
+        Wake-up Type: Reserved
+        SKU Number: Unknown
+        Family: Unknown
+
+Handle 0x0002, DMI type 2, 14 bytes
+Base Board Information
+        Manufacturer: socionext,developer-box
+        Product Name: Socionext Developer Box
+        Version: Unknown
+        Serial Number: Not Specified
+        Asset Tag: Unknown
+        Features:
+                Board is a hosting board
+        Location In Chassis: Not Specified
+        Chassis Handle: 0x0000
+        Type: Motherboard
+
+Handle 0x0003, DMI type 3, 21 bytes
+Chassis Information
+        Manufacturer: socionext,developer-box
+        Type: Desktop
+        Lock: Not Present
+        Version: Not Specified
+        Serial Number: Not Specified
+        Asset Tag: Not Specified
+        Boot-up State: Safe
+        Power Supply State: Safe
+        Thermal State: Safe
+        Security Status: None
+        OEM Information: 0x00000000
+        Height: Unspecified
+        Number Of Power Cords: Unspecified
+        Contained Elements: 0
+<snip>
+
+Signed-off-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+---
+ lib/smbios.c | 41 +++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 39 insertions(+), 2 deletions(-)
+
+diff --git a/lib/smbios.c b/lib/smbios.c
+index fcc8686993ef..f2eb961f514b 100644
+--- a/lib/smbios.c
++++ b/lib/smbios.c
+@@ -43,6 +43,20 @@
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
++/**
++ * struct sysifno_to_dt - Mapping of sysinfo strings to DT
++ *
++ * @sysinfo_str: sysinfo string
++ * @dt_str: DT string
++ */
++static const struct {
++	const char *sysinfo_str;
++	const char *dt_str;
++} sysifno_to_dt[] = {
++	{ .sysinfo_str = "product", .dt_str = "model" },
++	{ .sysinfo_str = "manufacturer", .dt_str = "compatible" },
++};
++
+ /**
+  * struct smbios_ctx - context for writing SMBIOS tables
+  *
+@@ -87,6 +101,18 @@ struct smbios_write_method {
+ 	const char *subnode_name;
+ };
+ 
++static const char *convert_sysinfo_to_dt(const char *sysinfo_str)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(sysifno_to_dt); i++) {
++		if (!strcmp(sysinfo_str, sysifno_to_dt[i].sysinfo_str))
++			return sysifno_to_dt[i].dt_str;
++	}
++
++	return NULL;
++}
++
+ /**
+  * smbios_add_string() - add a string to the string area
+  *
+@@ -148,9 +174,20 @@ static int smbios_add_prop_si(struct smbios_ctx *ctx, const char *prop,
+ 			return smbios_add_string(ctx, val);
+ 	}
+ 	if (IS_ENABLED(CONFIG_OF_CONTROL)) {
+-		const char *str;
++		const char *str = NULL;
+ 
+-		str = ofnode_read_string(ctx->node, prop);
++		/*
++		 * If the node is not valid fallback and try the entire DT
++		 * so we can at least fill in maufacturer and board type
++		 */
++		if (!ofnode_valid(ctx->node)) {
++			const char *nprop = convert_sysinfo_to_dt(prop);
++
++			if (nprop)
++				str = ofnode_read_string(ofnode_root(), nprop);
++		} else {
++			str = ofnode_read_string(ctx->node, prop);
++		}
+ 		return smbios_add_string(ctx, str);
+ 	}
+ 

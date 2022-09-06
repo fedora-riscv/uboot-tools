@@ -7,7 +7,7 @@
 
 Name:     uboot-tools
 Version:  2022.10
-Release:  0.5%{?candidate:.%{candidate}}%{?dist}
+Release:  0.6%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -19,7 +19,7 @@ Source1:  aarch64-boards
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
 Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
-Patch2:   smbios-test-dmi.patch
+Patch2:   smbios-Simplify-reporting-of-unknown-values.patch
 
 # Board fixes and enablement
 # RPi - uses RPI firmware device tree for HAT support
@@ -210,6 +210,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Tue Sep 06 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-0.6.rc4
+- Update SMBIOS patch
+
 * Tue Sep 06 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-0.5.rc4
 - Update to 2022.10 RC4
 - Fix for booting Rockchip devices from NVME
