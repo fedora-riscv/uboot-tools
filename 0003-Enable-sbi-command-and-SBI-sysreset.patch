@@ -1,0 +1,68 @@
+From 9fba4e75ae1b09bd9d58bf09b3dab02d25f85b30 Mon Sep 17 00:00:00 2001
+From: David Abdurachmanov <davidlt@rivosinc.com>
+Date: Thu, 17 Nov 2022 13:16:58 +0200
+Subject: [PATCH 3/3] Enable "sbi" command and SBI sysreset
+
+Signed-off-by: David Abdurachmanov <davidlt@rivosinc.com>
+---
+ configs/qemu-riscv64_defconfig       | 5 +++++
+ configs/qemu-riscv64_smode_defconfig | 5 +++++
+ configs/sifive_unleashed_defconfig   | 5 +++++
+ configs/sifive_unmatched_defconfig   | 5 +++++
+ 4 files changed, 20 insertions(+)
+
+diff --git a/configs/qemu-riscv64_defconfig b/configs/qemu-riscv64_defconfig
+index d5eae95c..611d5eb3 100644
+--- a/configs/qemu-riscv64_defconfig
++++ b/configs/qemu-riscv64_defconfig
+@@ -21,3 +21,8 @@ CONFIG_CMD_NVEDIT_EFI=y
+ CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_DM_MTD=y
+ CONFIG_SYS_MAX_FLASH_BANKS=2
++CONFIG_CMD_SBI=y
++CONFIG_SYSRESET=y
++CONFIG_SYSRESET_SBI=y
++CONFIG_CMD_POWEROFF=y
++CONFIG_SYSRESET_CMD_POWEROFF=y
+diff --git a/configs/qemu-riscv64_smode_defconfig b/configs/qemu-riscv64_smode_defconfig
+index 1cb06b4b..26f9f632 100644
+--- a/configs/qemu-riscv64_smode_defconfig
++++ b/configs/qemu-riscv64_smode_defconfig
+@@ -24,3 +24,8 @@ CONFIG_CMD_NVEDIT_EFI=y
+ CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_DM_MTD=y
+ CONFIG_SYS_MAX_FLASH_BANKS=2
++CONFIG_CMD_SBI=y
++CONFIG_SYSRESET=y
++CONFIG_SYSRESET_SBI=y
++CONFIG_CMD_POWEROFF=y
++CONFIG_SYSRESET_CMD_POWEROFF=y
+diff --git a/configs/sifive_unleashed_defconfig b/configs/sifive_unleashed_defconfig
+index 99faabaa..e85877bc 100644
+--- a/configs/sifive_unleashed_defconfig
++++ b/configs/sifive_unleashed_defconfig
+@@ -40,3 +40,8 @@ CONFIG_SPL_DM_SEQ_ALIAS=y
+ CONFIG_SPL_CLK=y
+ CONFIG_DM_MTD=y
+ CONFIG_DM_RESET=y
++CONFIG_CMD_SBI=y
++CONFIG_SYSRESET=y
++CONFIG_SYSRESET_SBI=y
++CONFIG_CMD_POWEROFF=y
++CONFIG_SYSRESET_CMD_POWEROFF=y
+diff --git a/configs/sifive_unmatched_defconfig b/configs/sifive_unmatched_defconfig
+index c390af26..4dd545fa 100644
+--- a/configs/sifive_unmatched_defconfig
++++ b/configs/sifive_unmatched_defconfig
+@@ -62,3 +62,8 @@ CONFIG_DM_SCSI=y
+ CONFIG_USB=y
+ CONFIG_USB_XHCI_HCD=y
+ CONFIG_USB_XHCI_PCI=y
++CONFIG_CMD_SBI=y
++CONFIG_SYSRESET=y
++CONFIG_SYSRESET_SBI=y
++CONFIG_CMD_POWEROFF=y
++CONFIG_SYSRESET_CMD_POWEROFF=y
+-- 
+2.37.3
+
