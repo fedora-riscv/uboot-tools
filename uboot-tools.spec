@@ -77,6 +77,16 @@ BuildArch:   noarch
 %description -n uboot-images-armv8
 U-Boot firmware binaries for aarch64 boards
 %endif
+
+%ifarch riscv64
+%package     -n uboot-images-riscv64
+Summary:     u-boot bootloader images for riscv64 boards
+Requires:    uboot-tools
+BuildArch:   noarch
+
+%description -n uboot-images-riscv64
+u-boot bootloader binaries for riscv64 boards
+%endif
 %endif
 
 %prep
