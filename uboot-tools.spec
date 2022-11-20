@@ -92,7 +92,7 @@ u-boot bootloader binaries for riscv64 boards
 %prep
 %autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
 
-cp %SOURCE1 .
+cp %SOURCE1 %SOURCE2 .
 
 %build
 mkdir builds
