@@ -39,6 +39,7 @@ Patch8:   0001-Revert-power-pmic-rk8xx-Support-sysreset-shutdown-me.patch
 Patch20:  0001-board-sifive-spl-Initialized-the-PWM-setting-in-the-.patch
 Patch21:  0002-board-sifive-spl-Set-remote-thermal-of-TMP451-to-85-.patch
 Patch22:  0003-Enable-sbi-command-and-SBI-sysreset.patch
+Patch23:  1dde977518f13824b847e23275001191139bc384.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
