@@ -10,7 +10,7 @@
 
 Name:     uboot-tools
 Version:  2022.10
-Release:  1%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Release:  1%{?candidate:.%{candidate}}.1.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -254,6 +254,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Sun Nov 20 2022 David Abdurachmanov <davidlt@rivosinc.com> - 2022.10-1.1.riscv64
+- Actually build riscv64 binaries
+
 * Thu Nov 17 2022 David Abdurachmanov <davidlt@rivosinc.com> - 2022.10-1.0.riscv64
 - Add support for riscv64
 
