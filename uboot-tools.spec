@@ -30,6 +30,7 @@ Patch6:   rpi-Copy-properties-from-firmware-DT-to-loaded-DT.patch
 # Rockchips improvements
 Patch7:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
 Patch8:   0001-Revert-power-pmic-rk8xx-Support-sysreset-shutdown-me.patch
+Patch9:   0001-add-VIDEO_LOGO-to-tools-only-to-build-bmp_logo.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
@@ -180,7 +181,7 @@ done
 %endif
 %endif
 
-for tool in bmp_logo dumpimage env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr gen_ethaddr_crc img2srec mkenvimage mkimage mksunxiboot ncb proftool sunxi-spl-image-builder ubsha1 xway-swap-bytes kwboot
+for tool in bmp_logo dumpimage env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr gen_ethaddr_crc ifwitool img2srec kwboot mkeficapsule mkenvimage mkimage mksunxiboot ncb proftool sunxi-spl-image-builder ubsha1 xway-swap-bytes
 do
 install -p -m 0755 builds/tools/$tool %{buildroot}%{_bindir}
 done
