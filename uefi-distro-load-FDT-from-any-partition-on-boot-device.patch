@@ -67,7 +67,7 @@ index fcb319a20ae..e71004fad9c 100644
 +						"${devnum}:${dtb_devp} "  \
 +						"${prefix}${efi_fdtfile};"\
 +					"run load_efi_dtb; "              \
-+					BOOTENV_RUN_EXTENSION_APPLY
++					BOOTENV_RUN_EXTENSION_APPLY       \
 +				"fi;"                                     \
 +			"done; "                                          \
 +		"done; "                                                  \
