@@ -1,13 +1,13 @@
-#global candidate rc1
-%if !0%{?rhel}
-%bcond_without toolsonly
-%else
+%global candidate rc2
+%if 0%{?rhel}
 %bcond_with toolsonly
+%else
+%bcond_without toolsonly
 %endif
 
 Name:     uboot-tools
-Version:  2022.10
-Release:  1%{?candidate:.%{candidate}}%{?dist}
+Version:  2023.01
+Release:  0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -47,8 +47,10 @@ BuildRequires:  python3-setuptools
 BuildRequires:  python3-libfdt
 BuildRequires:  SDL-devel
 BuildRequires:  swig
+%if %{with toolsonly}
 %ifarch aarch64
 BuildRequires:  arm-trusted-firmware-armv8
+%endif
 %endif
 Requires:       dtc
 
@@ -210,6 +212,10 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Thu Nov 24 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.01-0.1.rc2
+- Update to U-Boot 2023.01 RC2
+- Update Pinephone Pro patches
+
 * Mon Oct 10 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-1
 - Update to 2022.10 GA
 
