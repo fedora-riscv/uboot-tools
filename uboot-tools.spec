@@ -1,4 +1,4 @@
-%global candidate rc2
+%global candidate rc3
 %if 0%{?rhel}
 %bcond_with toolsonly
 %else
@@ -7,7 +7,7 @@
 
 Name:     uboot-tools
 Version:  2023.01
-Release:  0.1%{?candidate:.%{candidate}}%{?dist}
+Release:  0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -29,8 +29,7 @@ Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
 Patch6:   rpi-Copy-properties-from-firmware-DT-to-loaded-DT.patch
 # Rockchips improvements
 Patch7:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
-Patch8:   0001-Revert-power-pmic-rk8xx-Support-sysreset-shutdown-me.patch
-Patch9:   0001-add-VIDEO_LOGO-to-tools-only-to-build-bmp_logo.patch
+Patch8:   rockchip-Pinebook-Pro-Do-not-initialize-i2c-before-relocation.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
@@ -213,6 +212,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Mon Dec 05 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.01-0.2.rc3
+- Update to 2023.01 RC3
+
 * Thu Nov 24 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.01-0.1.rc2
 - Update to U-Boot 2023.01 RC2
 - Update Pinephone Pro patches
