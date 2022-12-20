@@ -1,4 +1,4 @@
-%global candidate rc3
+%global candidate rc4
 %if 0%{?rhel}
 %bcond_with toolsonly
 %else
@@ -7,7 +7,7 @@
 
 Name:     uboot-tools
 Version:  2023.01
-Release:  0.2%{?candidate:.%{candidate}}%{?dist}
+Release:  0.3%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -110,8 +110,8 @@ do
   fi
   # End ATF
 
-  make $(echo $board)_defconfig O=builds/$(echo $board)/
-  %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board)/
+  BINMAN_ALLOW_MISSING=1 make $(echo $board)_defconfig O=builds/$(echo $board)/
+  BINMAN_ALLOW_MISSING=1 %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board)/
 
   # build spi images for rockchip boards with SPI flash
   rkspi=(rock64-rk3328)
@@ -212,6 +212,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Tue Dec 20 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.01-0.3.rc4
+- Update to 2023.01 RC4
+
 * Mon Dec 05 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.01-0.2.rc3
 - Update to 2023.01 RC3
 
