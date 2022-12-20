@@ -44,7 +44,7 @@ BuildRequires:  perl-interpreter
 BuildRequires:  python3-devel
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-libfdt
-BuildRequires:  SDL-devel
+BuildRequires:  SDL2-devel
 BuildRequires:  swig
 %if %{with toolsonly}
 %ifarch aarch64
