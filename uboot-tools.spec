@@ -29,7 +29,6 @@ Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
 Patch6:   rpi-Copy-properties-from-firmware-DT-to-loaded-DT.patch
 # Rockchips improvements
 Patch7:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
-Patch8:   rockchip-Pinebook-Pro-Do-not-initialize-i2c-before-relocation.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
