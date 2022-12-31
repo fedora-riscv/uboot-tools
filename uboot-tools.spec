@@ -7,7 +7,7 @@
 
 Name:     uboot-tools
 Version:  2023.01
-Release:  0.3%{?candidate:.%{candidate}}%{?dist}
+Release:  0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -211,6 +211,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Sat Dec 31 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.01-0.4.rc4
+- Update PinePhone Pro to latest rev
+
 * Tue Dec 20 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.01-0.3.rc4
 - Update to 2023.01 RC4
 
