@@ -1,0 +1,296 @@
+From patchwork Wed Aug 10 12:39:26 2022
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Antoine Mazeas <antoine@karthanis.net>
+X-Patchwork-Id: 1665242
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: bilbo.ozlabs.org;
+	dkim=pass (1024-bit key;
+ unprotected) header.d=karthanis.net header.i=@karthanis.net
+ header.a=rsa-sha256 header.s=20191114 header.b=mcrC/rnn;
+	dkim-atps=neutral
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4M2qkM6g8Vz9ryY
+	for <incoming@patchwork.ozlabs.org>; Wed, 10 Aug 2022 22:58:35 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id CB5EF842A3;
+	Wed, 10 Aug 2022 14:58:11 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=karthanis.net
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (1024-bit key;
+ unprotected) header.d=karthanis.net header.i=@karthanis.net
+ header.b="mcrC/rnn";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 4FB14841DC; Wed, 10 Aug 2022 14:40:46 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,SPF_HELO_NONE,SPF_PASS,
+ T_SCC_BODY_TEXT_LINE autolearn=ham autolearn_force=no version=3.4.2
+Received: from smtp-42a9.mail.infomaniak.ch (smtp-42a9.mail.infomaniak.ch
+ [IPv6:2001:1600:3:17::42a9])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id CCC6784084
+ for <u-boot@lists.denx.de>; Wed, 10 Aug 2022 14:40:43 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=karthanis.net
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=antoine@karthanis.net
+Received: from smtp-3-0001.mail.infomaniak.ch (unknown [10.4.36.108])
+ by smtp-2-3000.mail.infomaniak.ch (Postfix) with ESMTPS id 4M2qKl3S6GzMqbyx;
+ Wed, 10 Aug 2022 14:40:43 +0200 (CEST)
+Received: from localhost.localdomain (unknown [88.168.170.86])
+ by smtp-3-0001.mail.infomaniak.ch (Postfix) with ESMTPA id 4M2qKk6qXKzlnSD1;
+ Wed, 10 Aug 2022 14:40:42 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=karthanis.net;
+ s=20191114; t=1660135243;
+ bh=YF4GTVv5pqqW0OMrNZFlf0WHnELr1KiKKA02ok/znf4=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=mcrC/rnnUv3FXlrllL2s9lLTjUEnTuLbiINuyrIQWr2HG3AmCcD11F7n0AypUdePp
+ 2XfG1PnZalJa2v3m6/DUWsz6B/cqmYo31h/6HpFeJ4g2i1pEZar7cC+9oScmbjJptV
+ w2oDsFHzyK2oWHUMGFJ4N6bboD8kq3z4WLaH2vrQ=
+From: Antoine Mazeas <antoine@karthanis.net>
+To: u-boot@lists.denx.de
+Cc: Antoine Mazeas <antoine@karthanis.net>,
+ Sjoerd Simons <sjoerd@collabora.com>
+Subject: [PATCH 1/2] rpi: Copy properties from firmware dtb to the loaded dtb
+Date: Wed, 10 Aug 2022 14:39:26 +0200
+Message-Id: <20220810123927.2567677-2-antoine@karthanis.net>
+X-Mailer: git-send-email 2.37.1
+In-Reply-To: <20220810123927.2567677-1-antoine@karthanis.net>
+References: <20220810123927.2567677-1-antoine@karthanis.net>
+MIME-Version: 1.0
+X-Mailman-Approved-At: Wed, 10 Aug 2022 14:58:03 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.6 at phobos.denx.de
+X-Virus-Status: Clean
+
+The RPI firmware adjusts several property values in the dtb it passes
+to u-boot depending on the board/SoC revision. Inherit some of these
+when u-boot loads a dtb itself. Specificaly copy:
+
+* /model: The firmware provides a more specific string
+* /memreserve: The firmware defines a reserved range, better keep it
+* emmc2bus and pcie0 dma-ranges: The C0T revision of the bcm2711 Soc (as
+  present on rpi 400 and some rpi 4B boards) has different values for
+  these then the B0T revision. So these need to be adjusted to boot on
+  these boards
+* blconfig: The firmware defines the memory area where the blconfig
+  stored. Copy those over so it can be enabled.
+* /chosen/kaslr-seed: The firmware generates a kaslr seed, take advantage
+  of that.
+
+Signed-off-by: Sjoerd Simons <sjoerd@collabora.com>
+---
+ board/raspberrypi/rpi/rpi.c | 48 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
+
+diff --git a/board/raspberrypi/rpi/rpi.c b/board/raspberrypi/rpi/rpi.c
+index 17b8108cc8..28b6f52506 100644
+--- a/board/raspberrypi/rpi/rpi.c
++++ b/board/raspberrypi/rpi/rpi.c
+@@ -504,10 +504,58 @@ void *board_fdt_blob_setup(int *err)
+ 	return (void *)fw_dtb_pointer;
+ }
+ 
++int copy_property(void *dst, void *src, char *path, char *property)
++{
++	int dst_offset, src_offset;
++	const fdt32_t *prop;
++	int len;
++
++	src_offset = fdt_path_offset(src, path);
++	dst_offset = fdt_path_offset(dst, path);
++
++	if (src_offset < 0 || dst_offset < 0)
++		return -1;
++
++	prop = fdt_getprop(src, src_offset, property, &len);
++	if (!prop)
++		return -1;
++
++	return fdt_setprop(dst, dst_offset, property, prop, len);
++}
++
++/* Copy tweaks from the firmware dtb to the loaded dtb */
++void  update_fdt_from_fw(void *fdt, void *fw_fdt)
++{
++	/* Using dtb from firmware directly; leave it alone */
++	if (fdt == fw_fdt)
++		return;
++
++	/* The firmware provides a more precie model; so copy that */
++	copy_property(fdt, fw_fdt, "/", "model");
++
++	/* memory reserve as suggested by the firmware */
++	copy_property(fdt, fw_fdt, "/", "memreserve");
++
++	/* Adjust dma-ranges for the SD card and PCI bus as they can depend on
++	 * the SoC revision
++	 */
++	copy_property(fdt, fw_fdt, "emmc2bus", "dma-ranges");
++	copy_property(fdt, fw_fdt, "pcie0", "dma-ranges");
++
++	/* Bootloader configuration template exposes as nvmem */
++	if (copy_property(fdt, fw_fdt, "blconfig", "reg") == 0)
++		copy_property(fdt, fw_fdt, "blconfig", "status");
++
++	/* kernel address randomisation seed as provided by the firmware */
++	copy_property(fdt, fw_fdt, "/chosen", "kaslr-seed");
++}
++
+ int ft_board_setup(void *blob, struct bd_info *bd)
+ {
+ 	int node;
+ 
++	update_fdt_from_fw(blob, (void *)fw_dtb_pointer);
++
+ 	node = fdt_node_offset_by_compatible(blob, -1, "simple-framebuffer");
+ 	if (node < 0)
+ 		fdt_simplefb_add_node(blob);
+
+From patchwork Wed Aug 10 12:39:27 2022
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Antoine Mazeas <antoine@karthanis.net>
+X-Patchwork-Id: 1665243
+X-Patchwork-Delegate: matthias.bgg@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@bilbo.ozlabs.org
+Authentication-Results: bilbo.ozlabs.org;
+	dkim=pass (1024-bit key;
+ unprotected) header.d=karthanis.net header.i=@karthanis.net
+ header.a=rsa-sha256 header.s=20191114 header.b=3Vltv92i;
+	dkim-atps=neutral
+Authentication-Results: ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by bilbo.ozlabs.org (Postfix) with ESMTPS id 4M2qkb5v6sz9ryY
+	for <incoming@patchwork.ozlabs.org>; Wed, 10 Aug 2022 22:58:47 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 2E6C784564;
+	Wed, 10 Aug 2022 14:58:17 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=karthanis.net
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (1024-bit key;
+ unprotected) header.d=karthanis.net header.i=@karthanis.net
+ header.b="3Vltv92i";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 274CF8415B; Wed, 10 Aug 2022 14:40:48 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,SPF_HELO_NONE,SPF_PASS,
+ T_SCC_BODY_TEXT_LINE autolearn=ham autolearn_force=no version=3.4.2
+Received: from smtp-42a9.mail.infomaniak.ch (smtp-42a9.mail.infomaniak.ch
+ [84.16.66.169])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id DAC58841A4
+ for <u-boot@lists.denx.de>; Wed, 10 Aug 2022 14:40:45 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=karthanis.net
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=antoine@karthanis.net
+Received: from smtp-3-0001.mail.infomaniak.ch (unknown [10.4.36.108])
+ by smtp-2-3000.mail.infomaniak.ch (Postfix) with ESMTPS id 4M2qKn4VzjzMqnFS;
+ Wed, 10 Aug 2022 14:40:45 +0200 (CEST)
+Received: from localhost.localdomain (unknown [88.168.170.86])
+ by smtp-3-0001.mail.infomaniak.ch (Postfix) with ESMTPA id 4M2qKn1TBqzlnSCc;
+ Wed, 10 Aug 2022 14:40:45 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=karthanis.net;
+ s=20191114; t=1660135245;
+ bh=f61vvBG7E2UozLHxeE7zghMr3kXQzBW+5PpzEyEGYJU=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=3Vltv92i/KGKD06qHi+zyrqGwfJWUvdwHMojKKH7OqswhScJTxhUbGq6MnPrCqWsn
+ QgB117zr++vQSy1jxV2vZIFLxMC3j8AZb4l3ktmU7FiPp7AUB6AqAzv+tUrYeS3nz4
+ LQ0mJS4s1jk1k0WWAK3/WGdOyUAo8ZWw5oiBHUvk=
+From: Antoine Mazeas <antoine@karthanis.net>
+To: u-boot@lists.denx.de
+Cc: Antoine Mazeas <antoine@karthanis.net>
+Subject: [PATCH 2/2] rpi: Copy eth PHY address from fw DT to loaded DT
+Date: Wed, 10 Aug 2022 14:39:27 +0200
+Message-Id: <20220810123927.2567677-3-antoine@karthanis.net>
+X-Mailer: git-send-email 2.37.1
+In-Reply-To: <20220810123927.2567677-1-antoine@karthanis.net>
+References: <20220810123927.2567677-1-antoine@karthanis.net>
+MIME-Version: 1.0
+X-Mailman-Approved-At: Wed, 10 Aug 2022 14:58:03 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.6 at phobos.denx.de
+X-Virus-Status: Clean
+
+Some Raspberry Pi 400 boards, specifically rev 1.1, have a different address for the ethernet PHY device than what is provided by the kernel DTB. The correct address is provided by the firmware, so we should carry it over into the loaded device tree so that ethernet works on such boards.
+
+Signed-off-by: Antoine Mazeas <antoine@karthanis.net>
+---
+ board/raspberrypi/rpi/rpi.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/board/raspberrypi/rpi/rpi.c b/board/raspberrypi/rpi/rpi.c
+index 28b6f52506..793fd1aa30 100644
+--- a/board/raspberrypi/rpi/rpi.c
++++ b/board/raspberrypi/rpi/rpi.c
+@@ -548,6 +548,9 @@ void  update_fdt_from_fw(void *fdt, void *fw_fdt)
+ 
+ 	/* kernel address randomisation seed as provided by the firmware */
+ 	copy_property(fdt, fw_fdt, "/chosen", "kaslr-seed");
++
++	/* address of the PHY device as provided by the firmware  */
++	copy_property(fdt, fw_fdt, "ethernet0/mdio@e14/ethernet-phy@1", "reg");
+ }
+ 
+ int ft_board_setup(void *blob, struct bd_info *bd)

@@ -1,6 +1,6 @@
-From fd3434c754b3b8dddb345352a2434b6b8445343a Mon Sep 17 00:00:00 2001
+From 4306c538d4a00dd1aa46c55c3c4005c2b0bf7cd5 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Sun, 18 Apr 2021 14:05:45 +0100
+Date: Thu, 24 Nov 2022 12:57:55 +0000
 Subject: [PATCH] distro: load FDT from any partition on boot device
 
 In the EFI_LOADER boot path, we were only checking the FAT partition
@@ -22,14 +22,14 @@ knows) and SoC/board specific ${fdtfile} (which grub does not know).
 Signed-off-by: Rob Clark <robdclark@gmail.com>
 Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
 ---
- include/config_distro_bootcmd.h | 35 ++++++++++++++++++++++-----------
- 1 file changed, 23 insertions(+), 12 deletions(-)
+ include/config_distro_bootcmd.h | 37 +++++++++++++++++++++------------
+ 1 file changed, 24 insertions(+), 13 deletions(-)
 
 diff --git a/include/config_distro_bootcmd.h b/include/config_distro_bootcmd.h
-index 2627c2a6a5..eadd1080b3 100644
+index fcb319a20ae..e71004fad9c 100644
 --- a/include/config_distro_bootcmd.h
 +++ b/include/config_distro_bootcmd.h
-@@ -148,26 +148,37 @@
+@@ -155,28 +155,39 @@
  		"fi\0"                                                    \
  	\
  	"load_efi_dtb="                                                   \
@@ -44,11 +44,13 @@ index 2627c2a6a5..eadd1080b3 100644
 +	"scan_dev_for_dtb="                                               \
  		"setenv efi_fdtfile ${fdtfile}; "                         \
  		BOOTENV_EFI_SET_FDTFILE_FALLBACK                          \
+ 		BOOTENV_RUN_EXTENSION_INIT                                \
 -		"for prefix in ${efi_dtb_prefixes}; do "                  \
 -			"if test -e ${devtype} "                          \
 -					"${devnum}:${distro_bootpart} "   \
 -					"${prefix}${efi_fdtfile}; then "  \
 -				"run load_efi_dtb; "                      \
+-				BOOTENV_RUN_EXTENSION_APPLY               \
 -			"fi;"                                             \
 -		"done;"                                                   \
 -		"run boot_efi_bootmgr;"                                   \
@@ -65,6 +67,7 @@ index 2627c2a6a5..eadd1080b3 100644
 +						"${devnum}:${dtb_devp} "  \
 +						"${prefix}${efi_fdtfile};"\
 +					"run load_efi_dtb; "              \
++					BOOTENV_RUN_EXTENSION_APPLY       \
 +				"fi;"                                     \
 +			"done; "                                          \
 +		"done; "                                                  \
@@ -80,5 +83,5 @@ index 2627c2a6a5..eadd1080b3 100644
  		"fi; "                                                    \
  		"setenv efi_fdtfile\0"
 -- 
-2.31.1
+2.38.1
 

@@ -1,12 +1,13 @@
-%global candidate rc6
+#global candidate rc4
+%if 0%{?rhel}
+%bcond_with toolsonly
+%else
 %bcond_without toolsonly
-
-# Set it to "opensbi" (stable) or opensbi-unstable (unstable, git)
-%global opensbi opensbi-unstable
+%endif
 
 Name:     uboot-tools
-Version:  2022.07
-Release:  0.6%{?candidate:.%{candidate}}.0.riscv64%{?dist}
+Version:  2023.01
+Release:  2%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -14,25 +15,20 @@ URL:      http://www.denx.de/wiki/U-Boot
 ExcludeArch: s390x
 Source0:  https://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:  aarch64-boards
-Source2:  riscv64-boards
 
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
 Patch1:   uefi-distro-load-FDT-from-any-partition-on-boot-device.patch
+Patch2:   smbios-Simplify-reporting-of-unknown-values.patch
 
 # Board fixes and enablement
 # RPi - uses RPI firmware device tree for HAT support
 Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 Patch4:   rpi-fallback-to-max-clock-for-mmc.patch
 Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
+Patch6:   rpi-Copy-properties-from-firmware-DT-to-loaded-DT.patch
 # Rockchips improvements
 Patch7:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
-
-# RISC-V (riscv64) patches
-Patch43: 0004-riscv-sifive-unmatched-disable-FDT-and-initrd-reloca.patch
-Patch44: 0005-board-sifive-spl-Initialized-the-PWM-setting-in-the-.patch
-Patch45: 0006-board-sifive-spl-Set-remote-thermal-of-TMP451-to-85-.patch
-Patch46: 0001-Enable-sbi-command-and-SBI-sysreset.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
@@ -48,13 +44,12 @@ BuildRequires:  perl-interpreter
 BuildRequires:  python3-devel
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-libfdt
-BuildRequires:  SDL-devel
+BuildRequires:  SDL2-devel
 BuildRequires:  swig
+%if %{with toolsonly}
 %ifarch aarch64
 BuildRequires:  arm-trusted-firmware-armv8
 %endif
-%ifarch riscv64
-BuildRequires:  %{opensbi}
 %endif
 Requires:       dtc
 
@@ -73,20 +68,10 @@ U-Boot firmware binaries for aarch64 boards
 %endif
 %endif
 
-%ifarch riscv64
-%package     -n uboot-images-riscv64
-Summary:     u-boot bootloader images for riscv64 boards
-Requires:    uboot-tools
-BuildArch:   noarch
-
-%description -n uboot-images-riscv64
-u-boot bootloader binaries for riscv64 boards
-%endif
-
 %prep
 %autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
 
-cp %SOURCE1 %SOURCE2 .
+cp %SOURCE1 .
 
 %build
 mkdir builds
@@ -95,14 +80,7 @@ mkdir builds
 %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" tools-all O=builds/
 
 %if %{with toolsonly}
-# U-Boot device firmwares don't currently support LTO
-%define _lto_cflags %{nil}
-
-%ifarch riscv64
-export OPENSBI=%{_datadir}/%{opensbi}/generic/firmware/fw_dynamic.bin
-%endif
-
-%ifarch aarch64 riscv64
+%ifarch aarch64
 for board in $(cat %{_arch}-boards)
 do
   echo "Building board: $board"
@@ -131,8 +109,8 @@ do
   fi
   # End ATF
 
-  make $(echo $board)_defconfig O=builds/$(echo $board)/
-  %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board)/
+  BINMAN_ALLOW_MISSING=1 make $(echo $board)_defconfig O=builds/$(echo $board)/
+  BINMAN_ALLOW_MISSING=1 %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/$(echo $board)/
 
   # build spi images for rockchip boards with SPI flash
   rkspi=(rock64-rk3328)
@@ -167,6 +145,9 @@ do
   fi
  done
 done
+
+# For Apple M1 we also need the nodtb variant
+install -p -m 0644 builds/apple_m1/u-boot-nodtb.bin %{buildroot}%{_datadir}/uboot/apple_m1/u-boot-nodtb.bin
 %endif
 
 # Bit of a hack to remove binaries we don't use as they're large
@@ -198,20 +179,7 @@ done
 %endif
 %endif
 
-%ifarch riscv64
-for board in $(cat %{_arch}-boards)
-do
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
- for file in u-boot.bin u-boot.dtb u-boot.img u-boot-nodtb.bin u-boot-dtb.bin u-boot.itb u-boot-dtb.img u-boot.its spl/u-boot-spl.bin spl/u-boot-spl-nodtb.bin spl/u-boot-spl.dtb spl/u-boot-spl-dtb.bin
- do
-  if [ -f builds/$(echo $board)/$(echo $file) ]; then
-    install -p -m 0644 builds/$(echo $board)/$(echo $file) $RPM_BUILD_ROOT%{_datadir}/uboot/$(echo $board)/
-  fi
- done
-done
-%endif
-
-for tool in bmp_logo dumpimage env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr gen_ethaddr_crc img2srec mkenvimage mkimage mksunxiboot ncb proftool sunxi-spl-image-builder ubsha1 xway-swap-bytes kwboot
+for tool in bmp_logo dumpimage env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr gen_ethaddr_crc ifwitool img2srec kwboot mkeficapsule mkenvimage mkimage mksunxiboot ncb proftool sunxi-spl-image-builder ubsha1 xway-swap-bytes
 do
 install -p -m 0755 builds/tools/$tool %{buildroot}%{_bindir}
 done
@@ -242,14 +210,54 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 %endif
 
-%ifarch riscv64
-%files -n uboot-images-riscv64
-%{_datadir}/uboot/*
-%endif
-
 %changelog
-* Mon Jul 04 2022 David Abdurachmanov <davidlt@rivosinc.com> - 2022.07-0.6.rc6.0.riscv64
-- Enable riscv64
+* Sat Jan 21 2023 Fedora Release Engineering <releng@fedoraproject.org> - 2023.01-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_38_Mass_Rebuild
+
+* Wed Jan 18 2023 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.01-1
+- Update to 2023.01 GA
+
+* Sat Dec 31 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.01-0.4.rc4
+- Update PinePhone Pro to latest rev
+
+* Tue Dec 20 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.01-0.3.rc4
+- Update to 2023.01 RC4
+
+* Mon Dec 05 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.01-0.2.rc3
+- Update to 2023.01 RC3
+
+* Thu Nov 24 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.01-0.1.rc2
+- Update to U-Boot 2023.01 RC2
+- Update Pinephone Pro patches
+
+* Mon Oct 10 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-1
+- Update to 2022.10 GA
+
+* Tue Sep 06 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-0.6.rc4
+- Update SMBIOS patch
+
+* Tue Sep 06 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-0.5.rc4
+- Update to 2022.10 RC4
+- Fix for booting Rockchip devices from NVME
+
+* Tue Aug 23 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-0.4.rc3
+- Update to 2022.10 RC3
+
+* Mon Aug 22 2022 Davide Cavalca <dcavalca@fedoraproject.org> - 2022.10-0.3.rc1
+- Install nodtb variant for Apple M1 (rhbz#2068958)
+
+* Tue Aug 16 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-0.2.rc1
+- Fix for DT property propogation via firmware
+
+* Thu Jul 28 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.10-0.1.rc1
+- Update to 2022.10 RC1
+- Enable LTO for firmware builds
+
+* Sat Jul 23 2022 Fedora Release Engineering <releng@fedoraproject.org> - 2022.07-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
+
+* Sun Jul 17 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.07-1
+- Update to 2022.07 GA
 
 * Mon Jul 04 2022 Peter Robinson <pbrobinson@fedoraproject.org> - 2022.07-0.6.rc6
 - Update to 2022.07 RC6
