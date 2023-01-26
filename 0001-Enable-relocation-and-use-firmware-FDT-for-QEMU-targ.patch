@@ -1,0 +1,48 @@
+From cdd5f60df368a8befdb36809f8fce7e7c3e760fa Mon Sep 17 00:00:00 2001
+From: David Abdurachmanov <davidlt@rivosinc.com>
+Date: Thu, 26 Jan 2023 18:28:07 +0200
+Subject: [PATCH] Enable relocation and use firmware FDT for QEMU targets
+
+Signed-off-by: David Abdurachmanov <davidlt@rivosinc.com>
+---
+ configs/qemu-riscv64_defconfig     | 2 ++
+ configs/qemu-riscv64_spl_defconfig | 2 ++
+ include/configs/qemu-riscv.h       | 2 --
+ 3 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/configs/qemu-riscv64_defconfig b/configs/qemu-riscv64_defconfig
+index 611d5eb3..b55e521b 100644
+--- a/configs/qemu-riscv64_defconfig
++++ b/configs/qemu-riscv64_defconfig
+@@ -26,3 +26,5 @@ CONFIG_SYSRESET=y
+ CONFIG_SYSRESET_SBI=y
+ CONFIG_CMD_POWEROFF=y
+ CONFIG_SYSRESET_CMD_POWEROFF=y
++CONFIG_USE_PREBOOT=y
++CONFIG_PREBOOT="cp.l ${fdtcontroladdr} ${fdt_addr_r} 0x20000;"
+diff --git a/configs/qemu-riscv64_spl_defconfig b/configs/qemu-riscv64_spl_defconfig
+index 68b16f0a..9e9f5b13 100644
+--- a/configs/qemu-riscv64_spl_defconfig
++++ b/configs/qemu-riscv64_spl_defconfig
+@@ -26,3 +26,5 @@ CONFIG_SYS_RELOC_GD_ENV_ADDR=y
+ CONFIG_DM_MTD=y
+ CONFIG_SYS_MAX_FLASH_BANKS=2
+ # CONFIG_BINMAN_FDT is not set
++CONFIG_USE_PREBOOT=y
++CONFIG_PREBOOT="cp.l ${fdtcontroladdr} ${fdt_addr_r} 0x20000;"
+diff --git a/include/configs/qemu-riscv.h b/include/configs/qemu-riscv.h
+index d81e5d6c..e392dbb0 100644
+--- a/include/configs/qemu-riscv.h
++++ b/include/configs/qemu-riscv.h
+@@ -37,8 +37,6 @@
+ 	"qemu "
+ 
+ #define CONFIG_EXTRA_ENV_SETTINGS \
+-	"fdt_high=0xffffffffffffffff\0" \
+-	"initrd_high=0xffffffffffffffff\0" \
+ 	"kernel_addr_r=0x84000000\0" \
+ 	"kernel_comp_addr_r=0x88000000\0" \
+ 	"kernel_comp_size=0x4000000\0" \
+-- 
+2.37.1
+

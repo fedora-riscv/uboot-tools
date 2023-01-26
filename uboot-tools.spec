@@ -10,7 +10,7 @@
 
 Name:     uboot-tools
 Version:  2023.01
-Release:  2%{?candidate:.%{candidate}}.2.riscv64%{?dist}
+Release:  2%{?candidate:.%{candidate}}.3.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -38,7 +38,7 @@ Patch7:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
 Patch20:  0001-board-sifive-spl-Initialized-the-PWM-setting-in-the-.patch
 Patch21:  0002-board-sifive-spl-Set-remote-thermal-of-TMP451-to-85-.patch
 Patch22:  0003-Enable-sbi-command-and-SBI-sysreset.patch
-Patch23:  0001-Use-QEMU-provided-DTB-on-QEMU-targets.patch
+Patch23:  0001-Enable-relocation-and-use-firmware-FDT-for-QEMU-targ.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
@@ -256,6 +256,10 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Thu Jan 26 2023 David Abdurachmanov <davidlt@rivosinc.com> - 2023.01-2.3.riscv64
+- Enable FDT and initrd relocation for QEMU targets (riscv64)
+- Copy FDT from fdtcontroladdr (firmware) to fdt_addr_r for QEMU targets (riscv64)
+
 * Thu Jan 26 2023 David Abdurachmanov <davidlt@rivosinc.com> - 2023.01-2.2.riscv64
 - Load DTB from firmware on QEMU targets (riscv64)
 
