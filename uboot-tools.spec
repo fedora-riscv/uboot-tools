@@ -10,7 +10,7 @@
 
 Name:     uboot-tools
 Version:  2023.01
-Release:  2%{?candidate:.%{candidate}}.1.riscv64%{?dist}
+Release:  2%{?candidate:.%{candidate}}.2.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -38,6 +38,7 @@ Patch7:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
 Patch20:  0001-board-sifive-spl-Initialized-the-PWM-setting-in-the-.patch
 Patch21:  0002-board-sifive-spl-Set-remote-thermal-of-TMP451-to-85-.patch
 Patch22:  0003-Enable-sbi-command-and-SBI-sysreset.patch
+Patch23:  0001-Use-QEMU-provided-DTB-on-QEMU-targets.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
@@ -255,10 +256,13 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Thu Jan 26 2023 David Abdurachmanov <davidlt@rivosinc.com> - 2023.01-2.2.riscv64
+- Load DTB from firmware on QEMU targets (riscv64)
+
 * Thu Jan 26 2023 David Abdurachmanov <davidlt@rivosinc.com> - 2023.01-2.1.riscv64
 - Rebuild with OpenSBI v1.2
 
-* Tue Jan 25 2023 David Abdurachmanov <davidlt@rivosinc.com> - 2023.01-2.0.riscv64
+* Wed Jan 25 2023 David Abdurachmanov <davidlt@rivosinc.com> - 2023.01-2.0.riscv64
 - Add support for riscv64
 
 * Sat Jan 21 2023 Fedora Release Engineering <releng@fedoraproject.org> - 2023.01-2
