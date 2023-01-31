@@ -1,4 +1,4 @@
-#global candidate rc4
+%global candidate rc1
 %if 0%{?rhel}
 %bcond_with toolsonly
 %else
@@ -6,8 +6,8 @@
 %endif
 
 Name:     uboot-tools
-Version:  2023.01
-Release:  2%{?candidate:.%{candidate}}%{?dist}
+Version:  2023.04
+Release:  0.1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -179,7 +179,7 @@ done
 %endif
 %endif
 
-for tool in bmp_logo dumpimage env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr gen_ethaddr_crc ifwitool img2srec kwboot mkeficapsule mkenvimage mkimage mksunxiboot ncb proftool sunxi-spl-image-builder ubsha1 xway-swap-bytes
+for tool in dumpimage env/fw_printenv fit_check_sign fit_info gdb/gdbcont gdb/gdbsend gen_eth_addr gen_ethaddr_crc ifwitool img2srec kwboot mkeficapsule mkenvimage mkimage mksunxiboot ncb proftool sunxi-spl-image-builder ubsha1 xway-swap-bytes
 do
 install -p -m 0755 builds/tools/$tool %{buildroot}%{_bindir}
 done
@@ -211,6 +211,10 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Tue Jan 31 2023 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.04-0.1.rc1
+- Update to 2023.04 RC1
+- Drop bmp_logo tool
+
 * Sat Jan 21 2023 Fedora Release Engineering <releng@fedoraproject.org> - 2023.01-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_38_Mass_Rebuild
 
