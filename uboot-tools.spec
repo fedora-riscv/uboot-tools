@@ -10,7 +10,7 @@
 
 Name:     uboot-tools
 Version:  2023.01
-Release:  2%{?candidate:.%{candidate}}.3.riscv64%{?dist}
+Release:  2%{?candidate:.%{candidate}}.4.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -39,6 +39,7 @@ Patch20:  0001-board-sifive-spl-Initialized-the-PWM-setting-in-the-.patch
 Patch21:  0002-board-sifive-spl-Set-remote-thermal-of-TMP451-to-85-.patch
 Patch22:  0003-Enable-sbi-command-and-SBI-sysreset.patch
 Patch23:  0001-Enable-relocation-and-use-firmware-FDT-for-QEMU-targ.patch
+Patch24:  0001-NR_CPUS-32-for-qemu-riscv64.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
@@ -256,6 +257,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Wed Feb 01 2023 David Abdurachmanov <davidlt@rivosinc.com> - 2023.01-2.4.riscv64
+- Set NR_CPUS=32 for qemu riscv64 targets
+
 * Thu Jan 26 2023 David Abdurachmanov <davidlt@rivosinc.com> - 2023.01-2.3.riscv64
 - Enable FDT and initrd relocation for QEMU targets (riscv64)
 - Copy FDT from fdtcontroladdr (firmware) to fdt_addr_r for QEMU targets (riscv64)
