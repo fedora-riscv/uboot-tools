@@ -1,4 +1,4 @@
-%global candidate rc1
+%global candidate rc2
 %if 0%{?rhel}
 %bcond_with toolsonly
 %else
@@ -7,7 +7,7 @@
 
 Name:     uboot-tools
 Version:  2023.04
-Release:  0.1%{?candidate:.%{candidate}}%{?dist}
+Release:  0.2%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -211,6 +211,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Fri Feb 17 2023 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.04-0.2.rc2
+- Update to 2023.04 RC2
+
 * Tue Jan 31 2023 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.04-0.1.rc1
 - Update to 2023.04 RC1
 - Drop bmp_logo tool
