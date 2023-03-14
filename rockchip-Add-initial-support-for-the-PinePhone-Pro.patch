@@ -1,6 +1,6 @@
-From a23687b77c1e0b5be7f0443e5fba9d9bb7514b6b Mon Sep 17 00:00:00 2001
+From 72400858605c085cf94a6cf5599269c8c39e3e72 Mon Sep 17 00:00:00 2001
 From: Peter Robinson <pbrobinson@gmail.com>
-Date: Sun, 1 Jan 2023 02:11:29 +0000
+Date: Tue, 14 Mar 2023 12:30:36 +0000
 Subject: [PATCH] rockchip: pinephone pro: add initial display support
 
 Add proposed upstream DT patches for display, disable edp,
@@ -206,12 +206,12 @@ index 04403a76238..d0609d1b534 100644
 +	status = "okay";
 +};
 diff --git a/configs/pinephone-pro-rk3399_defconfig b/configs/pinephone-pro-rk3399_defconfig
-index eb979f6c051..25941abc93a 100644
+index 54f9b90536c..1982131c805 100644
 --- a/configs/pinephone-pro-rk3399_defconfig
 +++ b/configs/pinephone-pro-rk3399_defconfig
-@@ -99,6 +99,7 @@ CONFIG_USB_ETHER_RTL8152=y
- CONFIG_DISPLAY=y
+@@ -96,6 +96,7 @@ CONFIG_USB_ETHER_RTL8152=y
  CONFIG_VIDEO=y
+ CONFIG_DISPLAY=y
  CONFIG_VIDEO_ROCKCHIP=y
 -CONFIG_DISPLAY_ROCKCHIP_EDP=y
 +CONFIG_DISPLAY_ROCKCHIP_MIPI=y
@@ -232,5 +232,5 @@ index 211faf8fa89..7866e5266d2 100644
  #define FCLK_CM0S			190
  
 -- 
-2.39.1
+2.39.2
 
