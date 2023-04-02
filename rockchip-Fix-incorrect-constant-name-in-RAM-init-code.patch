@@ -1,0 +1,136 @@
+From patchwork Thu Mar 30 21:51:14 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: David Sebek <dasebek@gmail.com>
+X-Patchwork-Id: 1763526
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256
+ header.s=20210112 header.b=Ur2Foz7G;
+	dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-384))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4PnccK6Hkyz1yY8
+	for <incoming@patchwork.ozlabs.org>; Fri, 31 Mar 2023 08:53:21 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 504A385F3F;
+	Thu, 30 Mar 2023 23:53:19 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Ur2Foz7G";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id D179285F40; Thu, 30 Mar 2023 23:52:42 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,FREEMAIL_FROM,SPF_HELO_NONE,
+ SPF_PASS autolearn=ham autolearn_force=no version=3.4.2
+Received: from mail-qv1-xf36.google.com (mail-qv1-xf36.google.com
+ [IPv6:2607:f8b0:4864:20::f36])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 2033985F3F
+ for <u-boot@lists.denx.de>; Thu, 30 Mar 2023 23:52:38 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=dasebek@gmail.com
+Received: by mail-qv1-xf36.google.com with SMTP id kr22so1200478qvb.5
+ for <u-boot@lists.denx.de>; Thu, 30 Mar 2023 14:52:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20210112; t=1680213157;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to;
+ bh=WlhaDeGiQSnfOs2/9s0KCU263BnBJ6NBdaytsU9sg7g=;
+ b=Ur2Foz7G2I7plUDBFoUSZnvUqm1qe6isgeZchzTJizjuyScb9aIr+l4Y7kNOOQGdc/
+ i8jKZkeikuONySQd2OO0XRKZNsG/OFDotB5PuxnuzojmdEHLUeXPR4vVr2U7w1evC0FV
+ WsRdQjKNHExVuqC6pCdfDypiLeHxlI3xjzZAX1ZdZ3vL1HpjEdOz5F+LkX4/q2n+k8hQ
+ 6kj71uph8Vc1tfmdNLxaVOCuSLjBjtKSvwQwndqfZhp55MBSwZOBC7E79tzprByA+2jm
+ gPusk25eDFTS4KdF99vyViFflzZcdCOd/3aivHFm22w8656KQMnTYqdcg+FVhbWCvXMB
+ boWw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112; t=1680213157;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=WlhaDeGiQSnfOs2/9s0KCU263BnBJ6NBdaytsU9sg7g=;
+ b=ju+uXKxSg4L6GOqfy8tiSrBoKUIlAScW/CP1ukEGXtEXfQBiFwcqNzCc3Sj6j9Bdg1
+ oLjqUkd0VXXt/hSpdFlSPOP8eqY9tHRLv8BJkRjlIuuCJDRNEAUUEeQhs9Q3EqltT1r7
+ IPyM/TrkpuUWbr0PYVKQy2MUFTM1BK1UnqrJ9nKdQ21P+IbMhFz3LkTGbR0mIyW3aBws
+ Lafp9pABfuq4IomjoHD04o2f3M499dxlzmeSWM5VM4G6Jn/fDhvUZQhKU/vOdJVICUBM
+ eTp2laeeQo3dU45NqTZAuHRExqWvXVfhRPCOjVhv4NGd1ZhXTyJlw58Sq8t1kogMaZYZ
+ Ig8g==
+X-Gm-Message-State: AAQBX9dHjWPG3k4IU3/uooZuMWlvPPp07Gf3iAuGftQx7/rI9tIH2/9E
+ 2RpZKACqRmNgqLHljBDY0Ikog6vfLUjUCQ==
+X-Google-Smtp-Source: 
+ AKy350ZwCjCcvTc/JU/KbyOydxFmq/ZQNkIyCK/MsKcufgGLOKBKj9hxPMBrRLLgXzD6BdzMNiAVSA==
+X-Received: by 2002:ad4:5c6b:0:b0:5ce:7b40:8999 with SMTP id
+ i11-20020ad45c6b000000b005ce7b408999mr45081108qvh.22.1680213156729;
+ Thu, 30 Mar 2023 14:52:36 -0700 (PDT)
+Received: from pc4.lan ([2605:a601:a620:5c00::d89])
+ by smtp.gmail.com with ESMTPSA id
+ k5-20020a0cebc5000000b005dd8b9345d3sm129269qvq.107.2023.03.30.14.52.36
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 30 Mar 2023 14:52:36 -0700 (PDT)
+From: David Sebek <dasebek@gmail.com>
+To: u-boot@lists.denx.de
+Cc: jagan@amarulasolutions.com, kever.yang@rock-chips.com,
+ David Sebek <dasebek@gmail.com>
+Subject: [PATCH 1/1] rockchip: Fix incorrect constant name in RAM init code
+Date: Thu, 30 Mar 2023 17:51:14 -0400
+Message-Id: <20230330215114.248481-1-dasebek@gmail.com>
+X-Mailer: git-send-email 2.40.0
+MIME-Version: 1.0
+X-Mailman-Approved-At: Thu, 30 Mar 2023 23:53:17 +0200
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+A condition in the rk3399 RAM initialization code used the old
+CONFIG_RAM_RK3399_LPDDR4 constant name. This commit changes the
+condition to use the correct CONFIG_RAM_ROCKCHIP_LPDDR4 constant.
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+ drivers/ram/rockchip/sdram_rk3399.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/ram/rockchip/sdram_rk3399.c b/drivers/ram/rockchip/sdram_rk3399.c
+index b1fea04e84..963a05c244 100644
+--- a/drivers/ram/rockchip/sdram_rk3399.c
++++ b/drivers/ram/rockchip/sdram_rk3399.c
+@@ -2954,7 +2954,7 @@ static int sdram_init(struct dram_info *dram,
+ 		params->ch[ch].cap_info.rank = rank;
+ 	}
+ 
+-#if defined(CONFIG_RAM_RK3399_LPDDR4)
++#if defined(CONFIG_RAM_ROCKCHIP_LPDDR4)
+ 	/* LPDDR4 needs to be trained at 400MHz */
+ 	lpddr4_set_rate(dram, params, 0);
+ 	params->base.ddr_freq = dfs_cfgs_lpddr4[0].base.ddr_freq / MHz;

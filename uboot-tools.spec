@@ -1,4 +1,4 @@
-%global candidate rc4
+%global candidate rc5
 %if 0%{?rhel}
 %bcond_with toolsonly
 %else
@@ -7,7 +7,7 @@
 
 Name:     uboot-tools
 Version:  2023.04
-Release:  0.3%{?candidate:.%{candidate}}%{?dist}
+Release:  0.4%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -24,12 +24,9 @@ Patch2:   smbios-Simplify-reporting-of-unknown-values.patch
 # Board fixes and enablement
 # RPi - uses RPI firmware device tree for HAT support
 Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
-Patch4:   rpi-fallback-to-max-clock-for-mmc.patch
-Patch5:   rpi-bcm2835_sdhost-firmware-managed-clock.patch
-Patch6:   rpi-Copy-properties-from-firmware-DT-to-loaded-DT.patch
-Patch7:   rpi-Update-the-RPi-Zero-2W-DT-filename.patch
 # Rockchips improvements
-Patch8:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
+Patch5:   rockchip-Fix-incorrect-constant-name-in-RAM-init-code.patch
+Patch6:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
@@ -50,6 +47,7 @@ BuildRequires:  swig
 %if %{with toolsonly}
 %ifarch aarch64
 BuildRequires:  arm-trusted-firmware-armv8
+BuildRequires:  python3-pyelftools
 %endif
 %endif
 Requires:       dtc
@@ -107,6 +105,7 @@ do
   if [[ " ${rk3399[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3399"
     cp /usr/share/arm-trusted-firmware/rk3399/* builds/$(echo $board)/
+    cp builds/$(echo $board)/bl31.elf builds/$(echo $board)/atf-bl31
   fi
   # End ATF
 
@@ -212,6 +211,11 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Tue Mar 28 2023 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.04-0.4.rc5
+- Update to 2023.04 RC5
+- Drop upstreamed patches
+- Rockchip boot fixes
+
 * Tue Mar 14 2023 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.04-0.3.rc4
 - Update to 2023.04 RC4
 
