@@ -1,4 +1,4 @@
-%global candidate rc5
+#global candidate rc0
 %if 0%{?rhel}
 %bcond_with toolsonly
 %else
@@ -7,7 +7,7 @@
 
 Name:     uboot-tools
 Version:  2023.04
-Release:  0.4%{?candidate:.%{candidate}}%{?dist}
+Release:  1%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -25,7 +25,6 @@ Patch2:   smbios-Simplify-reporting-of-unknown-values.patch
 # RPi - uses RPI firmware device tree for HAT support
 Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 # Rockchips improvements
-Patch5:   rockchip-Fix-incorrect-constant-name-in-RAM-init-code.patch
 Patch6:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
 
 BuildRequires:  bc
@@ -99,7 +98,7 @@ do
   rk3328=(evb-rk3328 nanopi-r2s-rk3328 rock64-rk3328 rock-pi-e-rk3328 roc-cc-rk3328)
   if [[ " ${rk3328[*]} " == *" $board "* ]]; then
     echo "Board: $board using rk3328"
-    cp /usr/share/arm-trusted-firmware/rk3328/* builds/$(echo $board)/
+    cp /usr/share/arm-trusted-firmware/rk3328/bl31.elf builds/$(echo $board)/atf-bl31
   fi
   rk3399=(evb-rk3399 ficus-rk3399 firefly-rk3399 khadas-edge-captain-rk3399 khadas-edge-rk3399 khadas-edge-v-rk3399 leez-rk3399 nanopc-t4-rk3399 nanopi-m4-2gb-rk3399 nanopi-m4b-rk3399 nanopi-m4-rk3399 nanopi-neo4-rk3399 nanopi-r4s-rk3399 orangepi-rk3399 pinebook-pro-rk3399 pinephone-pro-rk3399 puma-rk3399 rock960-rk3399 rock-pi-4c-rk3399 rock-pi-4-rk3399 rock-pi-n10-rk3399pro rockpro64-rk3399 roc-pc-mezzanine-rk3399 roc-pc-rk3399)
   if [[ " ${rk3399[*]} " == *" $board "* ]]; then
@@ -211,6 +210,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Tue Apr 04 2023 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.04-1
+- Update to 2023.04 GA
+
 * Tue Mar 28 2023 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.04-0.4.rc5
 - Update to 2023.04 RC5
 - Drop upstreamed patches
