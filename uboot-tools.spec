@@ -5,9 +5,12 @@
 %bcond_without toolsonly
 %endif
 
+# Set it to "opensbi" (stable) or opensbi-unstable (unstable, git)
+%global opensbi opensbi-unstable
+
 Name:     uboot-tools
 Version:  2023.04
-Release:  1%{?candidate:.%{candidate}}%{?dist}
+Release:  1%{?candidate:.%{candidate}}.0.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -15,6 +18,7 @@ URL:      http://www.denx.de/wiki/U-Boot
 ExcludeArch: s390x
 Source0:  https://ftp.denx.de/pub/u-boot/u-boot-%{version}%{?candidate:-%{candidate}}.tar.bz2
 Source1:  aarch64-boards
+Source2:  riscv64-boards
 
 # Fedoraisms patches
 # Needed to find DT on boot partition that's not the first partition
@@ -26,6 +30,11 @@ Patch2:   smbios-Simplify-reporting-of-unknown-values.patch
 Patch3:   rpi-Enable-using-the-DT-provided-by-the-Raspberry-Pi.patch
 # Rockchips improvements
 Patch6:   rockchip-Add-initial-support-for-the-PinePhone-Pro.patch
+
+# RISC-V (riscv64) patches
+Patch20:  0001-Improve-riscv-defconfigs.patch
+Patch21:  0002-board-sifive-spl-Initialized-the-PWM-setting-in-the-.patch
+Patch22:  0003-board-sifive-spl-Set-remote-thermal-of-TMP451-to-85-.patch
 
 BuildRequires:  bc
 BuildRequires:  bison
@@ -50,6 +59,9 @@ BuildRequires:  python3-pyelftools
 %endif
 %endif
 Requires:       dtc
+%ifarch riscv64
+BuildRequires:  %{opensbi}
+%endif
 
 %description
 This package contains a few U-Boot utilities - mkimage for creating boot images
@@ -64,12 +76,22 @@ BuildArch:   noarch
 %description -n uboot-images-armv8
 U-Boot firmware binaries for aarch64 boards
 %endif
+
+%ifarch riscv64
+%package     -n uboot-images-riscv64
+Summary:     u-boot bootloader images for riscv64 boards
+Requires:    uboot-tools
+BuildArch:   noarch
+
+%description -n uboot-images-riscv64
+u-boot bootloader binaries for riscv64 boards
+%endif
 %endif
 
 %prep
 %autosetup -p1 -n u-boot-%{version}%{?candidate:-%{candidate}}
 
-cp %SOURCE1 .
+cp %SOURCE1 %SOURCE2 .
 
 %build
 mkdir builds
@@ -78,7 +100,11 @@ mkdir builds
 %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" tools-all O=builds/
 
 %if %{with toolsonly}
-%ifarch aarch64
+%ifarch riscv64
+export OPENSBI=%{_datadir}/%{opensbi}/generic/firmware/fw_dynamic.bin
+%endif
+
+%ifarch aarch64 riscv64
 for board in $(cat %{_arch}-boards)
 do
   echo "Building board: $board"
@@ -149,6 +175,19 @@ done
 install -p -m 0644 builds/apple_m1/u-boot-nodtb.bin %{buildroot}%{_datadir}/uboot/apple_m1/u-boot-nodtb.bin
 %endif
 
+%ifarch riscv64
+for board in $(ls builds)
+do
+mkdir -p %{buildroot}%{_datadir}/uboot/$(echo $board)/
+ for file in u-boot.bin u-boot.dtb u-boot.img u-boot-nodtb.bin u-boot-dtb.bin u-boot.itb u-boot-dtb.img u-boot.its spl/u-boot-spl.bin spl/u-boot-spl-nodtb.bin spl/u-boot-spl.dtb spl/u-boot-spl-dtb.bin
+ do
+  if [ -f builds/$(echo $board)/$(echo $file) ]; then
+    install -p -m 0644 builds/$(echo $board)/$(echo $file) %{buildroot}%{_datadir}/uboot/$(echo $board)/
+  fi
+ done
+done
+%endif
+
 # Bit of a hack to remove binaries we don't use as they're large
 %ifarch aarch64
 for board in $(ls builds)
@@ -207,9 +246,17 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %files -n uboot-images-armv8
 %{_datadir}/uboot/*
 %endif
+
+%ifarch riscv64
+%files -n uboot-images-riscv64
+%{_datadir}/uboot/*
+%endif
 %endif
 
 %changelog
+* Wed May 03 2023 David Abdurachmanov <davidlt@rivosinc.com> - 2023.04-1.0.riscv64
+- Add support for riscv64
+
 * Tue Apr 04 2023 Peter Robinson <pbrobinson@fedoraproject.org> - 2023.04-1
 - Update to 2023.04 GA
 
