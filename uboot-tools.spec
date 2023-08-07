@@ -10,7 +10,7 @@
 
 Name:     uboot-tools
 Version:  2023.04
-Release:  1%{?candidate:.%{candidate}}.3.riscv64%{?dist}
+Release:  1%{?candidate:.%{candidate}}.4.riscv64%{?dist}
 Summary:  U-Boot utilities
 License:  GPLv2+ BSD LGPL-2.1+ LGPL-2.0+
 URL:      http://www.denx.de/wiki/U-Boot
@@ -254,6 +254,9 @@ cp -p board/sunxi/README.nand builds/docs/README.sunxi-nand
 %endif
 
 %changelog
+* Mon Aug 07 2023 David Abdurachmanov <davidlt@rivosinc.com> - 2023.04-1.4.riscv64
+- Rebuild for a new OpenSBI (v1.3-45-g94197a8)
+
 * Tue Aug 01 2023 David Abdurachmanov <davidlt@rivosinc.com> - 2023.04-1.3.riscv64
 - Rebuild for a new OpenSBI (v1.3.1)
 
